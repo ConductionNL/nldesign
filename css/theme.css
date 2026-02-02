@@ -1,0 +1,111 @@
+/**
+ * NL Design System Theme for Nextcloud
+ *
+ * This file maps NL Design System tokens to Nextcloud CSS variables.
+ * The actual token values are loaded from the token set files.
+ */
+
+:root {
+	/* Map NL Design tokens to Nextcloud variables */
+
+	/* Primary colors */
+	--color-primary: var(--nldesign-color-primary, #154273);
+	--color-primary-text: var(--nldesign-color-primary-text, #ffffff);
+	--color-primary-hover: var(--nldesign-color-primary-hover, #1d5499);
+	--color-primary-light: var(--nldesign-color-primary-light, #e8f0f8);
+	--color-primary-element: var(--nldesign-color-primary, #154273);
+	--color-primary-element-text: var(--nldesign-color-primary-text, #ffffff);
+	--color-primary-element-hover: var(--nldesign-color-primary-hover, #1d5499);
+	--color-primary-element-light: var(--nldesign-color-primary-light, #e8f0f8);
+	--color-primary-element-light-text: var(--nldesign-color-primary, #154273);
+	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover, #d4e4f2);
+
+	/* Background colors */
+	--color-main-background: var(--nldesign-color-background, #ffffff);
+	--color-main-background-rgb: var(--nldesign-color-background-rgb, 255, 255, 255);
+	--color-background-hover: var(--nldesign-color-background-hover, #f5f5f5);
+	--color-background-dark: var(--nldesign-color-background-dark, #ededed);
+	--color-background-darker: var(--nldesign-color-background-darker, #dbdbdb);
+
+	/* Text colors */
+	--color-main-text: var(--nldesign-color-text, #333333);
+	--color-text-maxcontrast: var(--nldesign-color-text-muted, #767676);
+	--color-text-light: var(--nldesign-color-text-light, #ffffff);
+
+	/* Status colors */
+	--color-error: var(--nldesign-color-error, #d52b1e);
+	--color-error-rgb: var(--nldesign-color-error-rgb, 213, 43, 30);
+	--color-error-hover: var(--nldesign-color-error-hover, #b5241a);
+	--color-warning: var(--nldesign-color-warning, #e17000);
+	--color-warning-rgb: var(--nldesign-color-warning-rgb, 225, 112, 0);
+	--color-success: var(--nldesign-color-success, #39870c);
+	--color-success-rgb: var(--nldesign-color-success-rgb, 57, 135, 12);
+	--color-info: var(--nldesign-color-info, #007bc7);
+	--color-info-rgb: var(--nldesign-color-info-rgb, 0, 123, 199);
+
+	/* Border colors */
+	--color-border: var(--nldesign-color-border, #e0e0e0);
+	--color-border-dark: var(--nldesign-color-border-dark, #c0c0c0);
+	--color-border-maxcontrast: var(--nldesign-color-border-dark, #c0c0c0);
+
+	/* Focus styles */
+	--color-box-shadow: var(--nldesign-color-focus, rgba(0, 123, 199, 0.5));
+	--color-box-shadow-rgb: var(--nldesign-color-focus-rgb, 0, 123, 199);
+
+	/* Typography */
+	--font-face: var(--nldesign-font-family, 'RijksoverheidSansWebText', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif);
+
+	/* Border radius - NL Design tends to use sharper corners */
+	--border-radius: var(--nldesign-border-radius, 4px);
+	--border-radius-small: var(--nldesign-border-radius-small, 2px);
+	--border-radius-large: var(--nldesign-border-radius-large, 8px);
+	--border-radius-element: var(--nldesign-border-radius, 4px);
+	--border-radius-rounded: var(--nldesign-border-radius-rounded, 28px);
+	--border-radius-pill: var(--nldesign-border-radius-pill, 100px);
+}
+
+/* Header styling */
+#header {
+	background-color: var(--nldesign-color-header-background, var(--color-primary)) !important;
+}
+
+#header .header-appname-container .header-appname {
+	color: var(--nldesign-color-header-text, var(--color-primary-text)) !important;
+}
+
+/* Navigation styling */
+#app-navigation {
+	background-color: var(--nldesign-color-nav-background, var(--color-main-background));
+}
+
+/* Button overrides for government styling */
+.button-vue--vue-primary,
+.primary {
+	background-color: var(--nldesign-color-button-primary-background, var(--color-primary)) !important;
+	color: var(--nldesign-color-button-primary-text, var(--color-primary-text)) !important;
+	border-color: var(--nldesign-color-button-primary-border, var(--color-primary)) !important;
+}
+
+.button-vue--vue-primary:hover,
+.primary:hover {
+	background-color: var(--nldesign-color-button-primary-hover, var(--color-primary-hover)) !important;
+}
+
+/* Focus states - important for government accessibility requirements */
+*:focus-visible {
+	outline: 2px solid var(--nldesign-color-focus, #007bc7) !important;
+	outline-offset: 2px !important;
+}
+
+/* Link styling */
+a {
+	color: var(--nldesign-color-link, var(--color-primary));
+}
+
+a:hover {
+	color: var(--nldesign-color-link-hover, var(--color-primary-hover));
+}
+
+a:visited {
+	color: var(--nldesign-color-link-visited, #7f4980);
+}

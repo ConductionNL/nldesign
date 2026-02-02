@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>nldesign</id>
+	<name>NL Design System Theme</name>
+	<summary>Apply Dutch government design tokens (NL Design System) to Nextcloud</summary>
+	<description><![CDATA[
+This app allows you to apply NL Design System design tokens to your Nextcloud instance.
+
+Supported design token sets:
+- Rijkshuisstijl (Dutch national government)
+- Gemeente Utrecht
+- Gemeente Amsterdam
+- Gemeente Den Haag
+- Gemeente Rotterdam
+
+Configure which token set to use in the admin settings.
+	]]></description>
+	<version>0.1.0</version>
+	<licence>agpl</licence>
+	<author mail="info@conduction.nl">Conduction</author>
+	<namespace>NLDesign</namespace>
+	<category>customization</category>
+	<bugs>https://github.com/ConductionNL/nldesign/issues</bugs>
+	<repository type="git">https://github.com/ConductionNL/nldesign.git</repository>
+	<dependencies>
+		<nextcloud min-version="28" max-version="30"/>
+	</dependencies>
+	<settings>
+		<admin>OCA\NLDesign\Settings\Admin</admin>
+		<admin-section>theming</admin-section>
+	</settings>
+</info>

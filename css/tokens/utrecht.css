@@ -1,0 +1,84 @@
+/**
+ * Gemeente Utrecht Design Tokens
+ *
+ * Based on the Utrecht Design System.
+ * Source: https://github.com/nl-design-system/utrecht
+ *
+ * Note: For production use, consider importing tokens directly from
+ * @utrecht/design-tokens npm package.
+ */
+
+:root {
+	/* Utrecht primary colors - Red is the signature color */
+	--nldesign-color-primary: #cc0000;
+	--nldesign-color-primary-text: #ffffff;
+	--nldesign-color-primary-hover: #a30000;
+	--nldesign-color-primary-light: #ffeaea;
+	--nldesign-color-primary-light-hover: #ffd6d6;
+
+	/* Utrecht color palette */
+	--utrecht-color-red: #cc0000;
+	--utrecht-color-red-dark: #a30000;
+	--utrecht-color-yellow: #ffcc00;
+	--utrecht-color-green: #2a5510;
+	--utrecht-color-blue: #007bc7;
+
+	/* Background colors */
+	--nldesign-color-background: #ffffff;
+	--nldesign-color-background-rgb: 255, 255, 255;
+	--nldesign-color-background-hover: #f5f5f5;
+	--nldesign-color-background-dark: #e8e8e8;
+	--nldesign-color-background-darker: #d4d4d4;
+
+	/* Header - Utrecht uses red header */
+	--nldesign-color-header-background: #cc0000;
+	--nldesign-color-header-text: #ffffff;
+
+	/* Navigation */
+	--nldesign-color-nav-background: #ffffff;
+
+	/* Text colors */
+	--nldesign-color-text: #000000;
+	--nldesign-color-text-muted: #5c5c5c;
+	--nldesign-color-text-light: #ffffff;
+
+	/* Status colors */
+	--nldesign-color-error: #cc0000;
+	--nldesign-color-error-rgb: 204, 0, 0;
+	--nldesign-color-error-hover: #a30000;
+	--nldesign-color-warning: #ffcc00;
+	--nldesign-color-warning-rgb: 255, 204, 0;
+	--nldesign-color-success: #2a5510;
+	--nldesign-color-success-rgb: 42, 85, 16;
+	--nldesign-color-info: #007bc7;
+	--nldesign-color-info-rgb: 0, 123, 199;
+
+	/* Border colors */
+	--nldesign-color-border: #cccccc;
+	--nldesign-color-border-dark: #999999;
+
+	/* Focus color */
+	--nldesign-color-focus: rgba(0, 123, 199, 0.5);
+	--nldesign-color-focus-rgb: 0, 123, 199;
+
+	/* Link colors */
+	--nldesign-color-link: #cc0000;
+	--nldesign-color-link-hover: #a30000;
+	--nldesign-color-link-visited: #5c2d91;
+
+	/* Button colors */
+	--nldesign-color-button-primary-background: #cc0000;
+	--nldesign-color-button-primary-text: #ffffff;
+	--nldesign-color-button-primary-border: #cc0000;
+	--nldesign-color-button-primary-hover: #a30000;
+
+	/* Typography */
+	--nldesign-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+
+	/* Border radius */
+	--nldesign-border-radius: 4px;
+	--nldesign-border-radius-small: 2px;
+	--nldesign-border-radius-large: 8px;
+	--nldesign-border-radius-rounded: 28px;
+	--nldesign-border-radius-pill: 100px;
+}

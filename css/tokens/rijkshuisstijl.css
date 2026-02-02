@@ -1,0 +1,93 @@
+/**
+ * Rijkshuisstijl Design Tokens
+ *
+ * Based on the official Dutch national government design system.
+ * Source: https://github.com/nl-design-system/rijkshuisstijl-community
+ *
+ * Note: For production use, consider importing tokens directly from
+ * @rijkshuisstijl-community/design-tokens npm package.
+ */
+
+:root {
+	/* Rijkshuisstijl primary colors */
+	--nldesign-color-primary: #154273;
+	--nldesign-color-primary-text: #ffffff;
+	--nldesign-color-primary-hover: #1d5499;
+	--nldesign-color-primary-light: #e8f0f8;
+	--nldesign-color-primary-light-hover: #d4e4f2;
+
+	/* Rijkshuisstijl color palette */
+	--rh-color-donkerblauw: #154273;
+	--rh-color-hemelblauw: #007bc7;
+	--rh-color-lichtblauw: #b2d7ee;
+	--rh-color-donkergroen: #275937;
+	--rh-color-groen: #39870c;
+	--rh-color-mintgroen: #76d2b6;
+	--rh-color-geel: #f9e11e;
+	--rh-color-oranje: #e17000;
+	--rh-color-robijnrood: #8b1a15;
+	--rh-color-rood: #d52b1e;
+	--rh-color-roze: #f092cd;
+	--rh-color-violet: #a90061;
+	--rh-color-paars: #42145f;
+	--rh-color-mauve: #b4a7c9;
+
+	/* Background colors */
+	--nldesign-color-background: #ffffff;
+	--nldesign-color-background-rgb: 255, 255, 255;
+	--nldesign-color-background-hover: #f3f3f3;
+	--nldesign-color-background-dark: #e6e6e6;
+	--nldesign-color-background-darker: #cccccc;
+
+	/* Header */
+	--nldesign-color-header-background: #154273;
+	--nldesign-color-header-text: #ffffff;
+
+	/* Navigation */
+	--nldesign-color-nav-background: #ffffff;
+
+	/* Text colors */
+	--nldesign-color-text: #333333;
+	--nldesign-color-text-muted: #696969;
+	--nldesign-color-text-light: #ffffff;
+
+	/* Status colors (Rijkshuisstijl) */
+	--nldesign-color-error: #d52b1e;
+	--nldesign-color-error-rgb: 213, 43, 30;
+	--nldesign-color-error-hover: #8b1a15;
+	--nldesign-color-warning: #e17000;
+	--nldesign-color-warning-rgb: 225, 112, 0;
+	--nldesign-color-success: #39870c;
+	--nldesign-color-success-rgb: 57, 135, 12;
+	--nldesign-color-info: #007bc7;
+	--nldesign-color-info-rgb: 0, 123, 199;
+
+	/* Border colors */
+	--nldesign-color-border: #b4b4b4;
+	--nldesign-color-border-dark: #696969;
+
+	/* Focus color (Rijksoverheid uses hemelblauw) */
+	--nldesign-color-focus: rgba(0, 123, 199, 0.5);
+	--nldesign-color-focus-rgb: 0, 123, 199;
+
+	/* Link colors */
+	--nldesign-color-link: #154273;
+	--nldesign-color-link-hover: #007bc7;
+	--nldesign-color-link-visited: #42145f;
+
+	/* Button colors */
+	--nldesign-color-button-primary-background: #154273;
+	--nldesign-color-button-primary-text: #ffffff;
+	--nldesign-color-button-primary-border: #154273;
+	--nldesign-color-button-primary-hover: #1d5499;
+
+	/* Typography - Rijksoverheid uses RijksoverheidSansWebText */
+	--nldesign-font-family: 'RijksoverheidSansWebText', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+
+	/* Border radius - Rijkshuisstijl typically uses minimal rounding */
+	--nldesign-border-radius: 0;
+	--nldesign-border-radius-small: 0;
+	--nldesign-border-radius-large: 4px;
+	--nldesign-border-radius-rounded: 0;
+	--nldesign-border-radius-pill: 100px;
+}
