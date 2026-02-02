@@ -24,7 +24,7 @@ Configure which token set to use in the admin settings.
 	<bugs>https://github.com/ConductionNL/nldesign/issues</bugs>
 	<repository type="git">https://github.com/ConductionNL/nldesign.git</repository>
 	<dependencies>
-		<nextcloud min-version="28" max-version="30"/>
+		<nextcloud min-version="28" max-version="32"/>
 	</dependencies>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
