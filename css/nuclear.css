@@ -1,0 +1,73 @@
+/**
+ * NUCLEAR GRADIENT KILLER
+ * 
+ * This CSS file contains the most aggressive possible rules
+ * to remove ALL gradients from ALL elements.
+ * 
+ * Load this LAST to override everything.
+ */
+
+/* ============================================
+   KILL SVG GRADIENTS IN NAVIGATION ONLY
+   ============================================ */
+
+/* Simple and direct gradient removal */
+#appmenu svg defs,
+#appmenu svg linearGradient,
+#appmenu svg radialGradient,
+#appmenu svg stop {
+	display: none !important;
+}
+
+/* Force solid white fills */
+#appmenu svg path,
+#appmenu svg circle,
+#appmenu svg rect,
+#appmenu svg ellipse,
+#appmenu svg polygon {
+	fill: white !important;
+	stroke: none !important;
+}
+
+/* ============================================
+   NAVIGATION MENU ICONS (TOP BAR)
+   ============================================ */
+
+/* ULTRA-AGGRESSIVE: Target ALL images and SVGs in header */
+header img:not(.avatardiv img):not(.avatardiv *):not(#nextcloud img):not(#nextcloud *),
+header svg:not(.avatardiv svg):not(.avatardiv *):not(#nextcloud svg):not(#nextcloud *),
+#header img:not(.avatardiv img):not(.avatardiv *):not(#nextcloud img):not(#nextcloud *),
+#header svg:not(.avatardiv svg):not(.avatardiv *):not(#nextcloud svg):not(#nextcloud *) {
+	filter: brightness(0) invert(1) !important;
+	opacity: 1 !important;
+}
+
+/* Also specifically target appmenu */
+#appmenu img,
+#appmenu svg,
+#appmenu a img,
+#appmenu li img,
+#appmenu a svg,
+#appmenu li svg {
+	filter: brightness(0) invert(1) !important;
+	opacity: 1 !important;
+}
+
+/* Target app navigation specifically */
+.app-menu-main img,
+.app-menu-main svg,
+nav[aria-label*="menu"] img,
+nav[aria-label*="menu"] svg {
+	filter: brightness(0) invert(1) !important;
+	opacity: 1 !important;
+}
+
+/* Remove any background images from app menu items */
+#appmenu li,
+#appmenu a,
+.app-menu li,
+.app-menu a,
+li.app-menu-entry,
+a.app-menu-entry {
+	background-image: none !important;
+}

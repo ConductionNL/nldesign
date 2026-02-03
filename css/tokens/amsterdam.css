@@ -74,8 +74,8 @@
 	--nldesign-color-button-primary-border: #004699;
 	--nldesign-color-button-primary-hover: #00336e;
 
-	/* Typography - Amsterdam uses Avenir */
-	--nldesign-font-family: 'Avenir Next', 'Avenir', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+	/* Typography - Using Fira Sans as open-source alternative */
+	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
 
 	/* Border radius */
 	--nldesign-border-radius: 0;

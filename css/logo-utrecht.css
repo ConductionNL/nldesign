@@ -1,0 +1,18 @@
+/**
+ * NL Design System - Utrecht Logo
+ * 
+ * Coat of arms for the municipality of Utrecht
+ */
+
+/* Utrecht coat of arms */
+#nextcloud::before {
+	content: '' !important;
+	display: block !important;
+	width: 36px !important;
+	height: 36px !important;
+	background-image: url('../img/utrecht-logo.svg') !important;
+	background-size: contain !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	text-indent: 0 !important;
+}

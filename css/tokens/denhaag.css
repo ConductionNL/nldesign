@@ -71,7 +71,7 @@
 	--nldesign-color-button-primary-hover: #156633;
 
 	/* Typography */
-	--nldesign-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
 
 	/* Border radius */
 	--nldesign-border-radius: 4px;

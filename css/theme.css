@@ -1,111 +1,484 @@
 /**
  * NL Design System Theme for Nextcloud
  *
- * This file maps NL Design System tokens to Nextcloud CSS variables.
- * The actual token values are loaded from the token set files.
+ * This file applies NL Design System styling directly to Nextcloud elements.
+ * Uses high specificity selectors to override Nextcloud's built-in theming.
  */
 
-:root {
-	/* Map NL Design tokens to Nextcloud variables */
-
+/* Force override Nextcloud's CSS variables using body selector for higher specificity */
+body[data-themes],
+body {
 	/* Primary colors */
-	--color-primary: var(--nldesign-color-primary, #154273);
-	--color-primary-text: var(--nldesign-color-primary-text, #ffffff);
-	--color-primary-hover: var(--nldesign-color-primary-hover, #1d5499);
-	--color-primary-light: var(--nldesign-color-primary-light, #e8f0f8);
-	--color-primary-element: var(--nldesign-color-primary, #154273);
-	--color-primary-element-text: var(--nldesign-color-primary-text, #ffffff);
-	--color-primary-element-hover: var(--nldesign-color-primary-hover, #1d5499);
-	--color-primary-element-light: var(--nldesign-color-primary-light, #e8f0f8);
-	--color-primary-element-light-text: var(--nldesign-color-primary, #154273);
-	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover, #d4e4f2);
+	--color-primary: var(--nldesign-color-primary) !important;
+	--color-primary-text: var(--nldesign-color-primary-text) !important;
+	--color-primary-hover: var(--nldesign-color-primary-hover) !important;
+	--color-primary-light: var(--nldesign-color-primary-light) !important;
+	--color-primary-element: var(--nldesign-color-primary) !important;
+	--color-primary-element-text: var(--nldesign-color-primary-text) !important;
+	--color-primary-element-hover: var(--nldesign-color-primary-hover) !important;
+	--color-primary-element-light: var(--nldesign-color-primary-light) !important;
+	--color-primary-element-light-text: var(--nldesign-color-primary) !important;
+	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover) !important;
 
 	/* Background colors */
-	--color-main-background: var(--nldesign-color-background, #ffffff);
-	--color-main-background-rgb: var(--nldesign-color-background-rgb, 255, 255, 255);
-	--color-background-hover: var(--nldesign-color-background-hover, #f5f5f5);
-	--color-background-dark: var(--nldesign-color-background-dark, #ededed);
-	--color-background-darker: var(--nldesign-color-background-darker, #dbdbdb);
+	--color-main-background: var(--nldesign-color-background) !important;
+	--color-background-hover: var(--nldesign-color-background-hover) !important;
+	--color-background-dark: var(--nldesign-color-background-dark) !important;
+	--color-background-darker: var(--nldesign-color-background-darker) !important;
 
 	/* Text colors */
-	--color-main-text: var(--nldesign-color-text, #333333);
-	--color-text-maxcontrast: var(--nldesign-color-text-muted, #767676);
-	--color-text-light: var(--nldesign-color-text-light, #ffffff);
+	--color-main-text: var(--nldesign-color-text) !important;
+	--color-text-maxcontrast: var(--nldesign-color-text-muted) !important;
+	--color-text-light: var(--nldesign-color-text-light) !important;
 
 	/* Status colors */
-	--color-error: var(--nldesign-color-error, #d52b1e);
-	--color-error-rgb: var(--nldesign-color-error-rgb, 213, 43, 30);
-	--color-error-hover: var(--nldesign-color-error-hover, #b5241a);
-	--color-warning: var(--nldesign-color-warning, #e17000);
-	--color-warning-rgb: var(--nldesign-color-warning-rgb, 225, 112, 0);
-	--color-success: var(--nldesign-color-success, #39870c);
-	--color-success-rgb: var(--nldesign-color-success-rgb, 57, 135, 12);
-	--color-info: var(--nldesign-color-info, #007bc7);
-	--color-info-rgb: var(--nldesign-color-info-rgb, 0, 123, 199);
+	--color-error: var(--nldesign-color-error) !important;
+	--color-warning: var(--nldesign-color-warning) !important;
+	--color-success: var(--nldesign-color-success) !important;
+	--color-info: var(--nldesign-color-info) !important;
 
 	/* Border colors */
-	--color-border: var(--nldesign-color-border, #e0e0e0);
-	--color-border-dark: var(--nldesign-color-border-dark, #c0c0c0);
-	--color-border-maxcontrast: var(--nldesign-color-border-dark, #c0c0c0);
+	--color-border: var(--nldesign-color-border) !important;
+	--color-border-dark: var(--nldesign-color-border-dark) !important;
+	--color-border-maxcontrast: var(--nldesign-color-border-dark) !important;
 
-	/* Focus styles */
-	--color-box-shadow: var(--nldesign-color-focus, rgba(0, 123, 199, 0.5));
-	--color-box-shadow-rgb: var(--nldesign-color-focus-rgb, 0, 123, 199);
-
-	/* Typography */
-	--font-face: var(--nldesign-font-family, 'RijksoverheidSansWebText', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif);
-
-	/* Border radius - NL Design tends to use sharper corners */
-	--border-radius: var(--nldesign-border-radius, 4px);
-	--border-radius-small: var(--nldesign-border-radius-small, 2px);
-	--border-radius-large: var(--nldesign-border-radius-large, 8px);
-	--border-radius-element: var(--nldesign-border-radius, 4px);
-	--border-radius-rounded: var(--nldesign-border-radius-rounded, 28px);
-	--border-radius-pill: var(--nldesign-border-radius-pill, 100px);
+	/* Border radius - government style (sharp corners) */
+	--border-radius: var(--nldesign-border-radius) !important;
+	--border-radius-small: var(--nldesign-border-radius-small) !important;
+	--border-radius-large: var(--nldesign-border-radius-large) !important;
+	--border-radius-element: var(--nldesign-border-radius) !important;
+	--border-radius-rounded: var(--nldesign-border-radius-rounded) !important;
+	--border-radius-pill: var(--nldesign-border-radius-pill) !important;
 }
 
-/* Header styling */
-#header {
-	background-color: var(--nldesign-color-header-background, var(--color-primary)) !important;
+/* ============================================
+   HEADER - Most visible branding element
+   ============================================ */
+
+/* Main header bar */
+#header,
+header#header {
+	background: var(--nldesign-color-header-background) !important;
+	background-color: var(--nldesign-color-header-background) !important;
+	overflow-x: hidden !important;
 }
 
+/* Fix header layout issues - prevent scrollbars */
+#header .header-left,
+#header .header-right {
+	overflow: visible !important;
+}
+
+/* Replace Nextcloud logo with NL Design style */
+#nextcloud {
+	background-image: none !important;
+	background: transparent !important;
+}
+
+#nextcloud .logo {
+	background-image: none !important;
+	opacity: 0 !important;
+	width: 0 !important;
+	height: 0 !important;
+}
+
+/* Add "Rijksoverheid" or organization name instead of logo */
+#nextcloud::after {
+	content: "Rijksoverheid" !important;
+	color: var(--nldesign-color-header-text) !important;
+	font-family: var(--nldesign-font-family) !important;
+	font-size: 20px !important;
+	font-weight: 700 !important;
+	line-height: 50px !important;
+	padding-left: 12px !important;
+}
+
+/* Header text and icons */
+#header *,
+#header .header-appname,
 #header .header-appname-container .header-appname {
-	color: var(--nldesign-color-header-text, var(--color-primary-text)) !important;
+	color: var(--nldesign-color-header-text) !important;
 }
 
-/* Navigation styling */
-#app-navigation {
-	background-color: var(--nldesign-color-nav-background, var(--color-main-background));
+/* Header app icons - make them white/light */
+#header .app-menu-icon,
+#header .header-menu__trigger,
+#header svg {
+	filter: brightness(0) invert(1);
 }
 
-/* Button overrides for government styling */
+/* User menu in header */
+#header .header-menu,
+#header #user-menu {
+	color: var(--nldesign-color-header-text) !important;
+}
+
+/* ============================================
+   LOGIN PAGE
+   ============================================ */
+
+/* Remove background image - Rijkshuisstijl uses solid colors */
+#body-login,
+.body-login-container {
+	background-image: none !important;
+	background-color: var(--nldesign-color-background) !important;
+}
+
+/* Login box primary button */
+#body-login .button-vue--vue-primary,
+#body-login input[type="submit"],
+#body-login button.primary,
+.login-form button[type="submit"] {
+	background-color: var(--nldesign-color-button-primary-background) !important;
+	border-color: var(--nldesign-color-button-primary-border) !important;
+	color: var(--nldesign-color-button-primary-text) !important;
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+#body-login .button-vue--vue-primary:hover,
+#body-login input[type="submit"]:hover,
+#body-login button.primary:hover {
+	background-color: var(--nldesign-color-button-primary-hover) !important;
+}
+
+/* Login header/logo area */
+#body-login #header,
+body.body-login-container #header {
+	background: var(--nldesign-color-header-background) !important;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+/* Primary buttons */
 .button-vue--vue-primary,
-.primary {
-	background-color: var(--nldesign-color-button-primary-background, var(--color-primary)) !important;
-	color: var(--nldesign-color-button-primary-text, var(--color-primary-text)) !important;
-	border-color: var(--nldesign-color-button-primary-border, var(--color-primary)) !important;
+button.primary,
+input.primary,
+a.primary {
+	background-color: var(--nldesign-color-button-primary-background) !important;
+	border-color: var(--nldesign-color-button-primary-border) !important;
+	color: var(--nldesign-color-button-primary-text) !important;
+	border-radius: var(--nldesign-border-radius) !important;
 }
 
 .button-vue--vue-primary:hover,
-.primary:hover {
-	background-color: var(--nldesign-color-button-primary-hover, var(--color-primary-hover)) !important;
+button.primary:hover,
+input.primary:hover,
+a.primary:hover {
+	background-color: var(--nldesign-color-button-primary-hover) !important;
+	border-color: var(--nldesign-color-button-primary-hover) !important;
 }
 
-/* Focus states - important for government accessibility requirements */
-*:focus-visible {
-	outline: 2px solid var(--nldesign-color-focus, #007bc7) !important;
-	outline-offset: 2px !important;
+/* Secondary buttons */
+.button-vue--vue-secondary,
+button.secondary {
+	border-color: var(--nldesign-color-border-dark) !important;
+	border-radius: var(--nldesign-border-radius) !important;
 }
 
-/* Link styling */
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+/* Left sidebar navigation */
+#app-navigation,
+.app-navigation {
+	background-color: var(--nldesign-color-nav-background) !important;
+}
+
+/* Active navigation item */
+#app-navigation li.active > a,
+#app-navigation .app-navigation-entry.active {
+	background-color: var(--nldesign-color-primary-light) !important;
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+
 a {
-	color: var(--nldesign-color-link, var(--color-primary));
+	color: var(--nldesign-color-link) !important;
 }
 
 a:hover {
-	color: var(--nldesign-color-link-hover, var(--color-primary-hover));
+	color: var(--nldesign-color-link-hover) !important;
 }
 
 a:visited {
-	color: var(--nldesign-color-link-visited, #7f4980);
+	color: var(--nldesign-color-link-visited) !important;
+}
+
+/* Don't color header links */
+#header a,
+#header a:hover,
+#header a:visited {
+	color: var(--nldesign-color-header-text) !important;
+}
+
+/* ============================================
+   FOCUS STATES (Accessibility)
+   ============================================ */
+
+*:focus-visible {
+	outline: 2px solid var(--nldesign-color-focus) !important;
+	outline-offset: 2px !important;
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--nldesign-color-primary) !important;
+	box-shadow: 0 0 0 2px var(--nldesign-color-focus) !important;
+}
+
+/* ============================================
+   CHECKBOXES & RADIO BUTTONS
+   ============================================ */
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+	background-color: var(--nldesign-color-primary) !important;
+	border-color: var(--nldesign-color-primary) !important;
+}
+
+/* ============================================
+   LOADING INDICATORS
+   ============================================ */
+
+.icon-loading,
+.icon-loading-small {
+	border-color: var(--nldesign-color-primary) !important;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+/* Apply NL Design typography */
+body,
+#body-user,
+#body-login,
+#body-public {
+	font-family: var(--nldesign-font-family) !important;
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+.toastify.dialogs {
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* ============================================
+   DASHBOARD - Remove gradients, backgrounds, transparency
+   ============================================ */
+
+/* Remove all background images and gradients */
+#body-user,
+#content,
+.app-dashboard,
+#app-content,
+#app-content-wrapper {
+	background-image: none !important;
+	background: var(--nldesign-color-background) !important;
+	background-color: var(--nldesign-color-background) !important;
+}
+
+/* Fix "Goedemorgen" text visibility - ensure it's the right color */
+h2,
+.dashboard-heading,
+.greeting {
+	color: var(--nldesign-color-text) !important;
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* Solid widget backgrounds - no transparency */
+.panel,
+.panel--wrapper,
+.widget,
+.panel__content,
+.dashboard-widget,
+.dashboard-panel {
+	background: var(--nldesign-color-background) !important;
+	background-color: var(--nldesign-color-background) !important;
+	opacity: 1 !important;
+	backdrop-filter: none !important;
+}
+
+/* Remove icon gradients */
+.icon,
+.app-menu-icon,
+.icon-category-monitoring,
+.icon-category-organization,
+.icon-category-social,
+.app-menu .app-icon {
+	background-image: none !important;
+	background-gradient: none !important;
+	filter: none !important;
+}
+
+/* Force solid colors on all SVG icons in NAVIGATION ONLY */
+#appmenu svg,
+#appmenu svg *,
+.app-menu svg,
+.app-menu svg *,
+header nav svg,
+header nav svg * {
+	stop-color: currentColor !important;
+}
+
+/* Remove gradients from NAVIGATION SVGs only */
+#appmenu svg linearGradient,
+#appmenu svg radialGradient,
+.app-menu svg linearGradient,
+.app-menu svg radialGradient,
+header nav svg linearGradient,
+header nav svg radialGradient {
+	display: none !important;
+}
+
+/* Solid borders on widgets/panels */
+.panel,
+.widget {
+	border: 1px solid var(--nldesign-color-border) !important;
+	box-shadow: none !important;
+}
+
+/* ============================================
+   BUTTONS - Fix text overflow
+   ============================================ */
+
+/* Fix "Aanpassen" and other button text overflow */
+.button-vue,
+.button-vue--vue-primary,
+.button-vue--vue-secondary,
+button,
+.button {
+	padding: 8px 16px !important;
+	min-width: max-content !important;
+	white-space: nowrap !important;
+	overflow: visible !important;
+	text-overflow: clip !important;
+}
+
+.button-vue__text,
+.button-vue__wrapper {
+	overflow: visible !important;
+	text-overflow: clip !important;
+	white-space: nowrap !important;
+}
+
+/* ============================================
+   ACTIVE MENU ITEMS - NL Design style
+   ============================================ */
+
+/* Active navigation item with left border accent */
+#app-navigation li.active,
+#app-navigation .app-navigation-entry.active,
+.app-menu-main .app-menu-entry.active {
+	background-color: var(--nldesign-color-primary-light) !important;
+	border-left: 4px solid var(--nldesign-color-primary) !important;
+	font-weight: 700 !important;
+}
+
+/* Active menu item text */
+#app-navigation li.active > a,
+#app-navigation .app-navigation-entry.active a,
+.app-menu-main .app-menu-entry.active a {
+	color: var(--nldesign-color-primary) !important;
+	font-weight: 700 !important;
+}
+
+/* ============================================
+   REMOVE ALL ROUNDED CORNERS (for sharp themes)
+   ============================================ */
+
+/* Force sharp corners on all elements when border-radius is 0 */
+.panel,
+.widget,
+.button-vue,
+button,
+.modal-container,
+.app-navigation-entry,
+input,
+textarea,
+select,
+.dropdown,
+.popover,
+.tooltip,
+img {
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* ============================================
+   FORCE FONT APPLICATION
+   ============================================ */
+
+/* Apply font to absolutely everything */
+* {
+	font-family: var(--nldesign-font-family) !important;
+}
+
+/* Ensure font loads in all contexts */
+body *,
+#app *,
+#content *,
+.app-content *,
+#header *,
+.modal-container *,
+.tooltip *,
+.popover * {
+	font-family: var(--nldesign-font-family) !important;
+}
+
+/* ============================================
+   REMOVE TRANSPARENCY EFFECTS
+   ============================================ */
+
+/* No transparent overlays */
+.app-sidebar,
+.modal-mask,
+.modal-wrapper,
+.app-navigation-entry,
+.panel,
+.widget {
+	opacity: 1 !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+
+/* Solid backgrounds everywhere */
+#app-content,
+.app-content-wrapper,
+.app-content-list,
+.app-content-detail {
+	background: var(--nldesign-color-background) !important;
+	background-color: var(--nldesign-color-background) !important;
+	background-image: none !important;
+}
+
+/* ============================================
+   REMOVE SHADOWS (clean NL Design style)
+   ============================================ */
+
+.panel,
+.widget,
+.modal-container,
+.popover,
+.dropdown,
+button,
+.button-vue,
+#header {
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
 }

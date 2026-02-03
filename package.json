@@ -17,17 +17,12 @@
 		"url": "https://github.com/ConductionNL/nldesign.git"
 	},
 	"scripts": {
-		"build": "npm run build:tokens",
-		"build:tokens": "node scripts/build-tokens.js",
-		"update-tokens": "npm run update-tokens:rijkshuisstijl && npm run update-tokens:utrecht && npm run update-tokens:amsterdam",
-		"update-tokens:rijkshuisstijl": "echo 'TODO: Fetch latest Rijkshuisstijl tokens'",
-		"update-tokens:utrecht": "echo 'TODO: Fetch latest Utrecht tokens'",
-		"update-tokens:amsterdam": "echo 'TODO: Fetch latest Amsterdam tokens'"
+		"build": "npm run build:fonts",
+		"build:fonts": "echo 'Fonts loaded via CDN from @fontsource/fira-sans'",
+		"test": "echo 'No tests yet'"
 	},
-	"dependencies": {},
-	"devDependencies": {
-		"@rijkshuisstijl-community/design-tokens": "^1.0.0",
-		"@utrecht/design-tokens": "^1.0.0",
-		"@amsterdam/design-system-tokens": "^0.10.0"
-	}
+	"dependencies": {
+		"@fontsource/fira-sans": "^5.0.0"
+	},
+	"devDependencies": {}
 }

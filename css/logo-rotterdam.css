@@ -1,0 +1,18 @@
+/**
+ * NL Design System - Rotterdam Logo
+ * 
+ * Coat of arms for the municipality of Rotterdam
+ */
+
+/* Rotterdam coat of arms */
+#nextcloud::before {
+	content: '' !important;
+	display: block !important;
+	width: 32px !important;
+	height: 36px !important;
+	background-image: url('../img/rotterdam-logo.svg') !important;
+	background-size: contain !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	text-indent: 0 !important;
+}

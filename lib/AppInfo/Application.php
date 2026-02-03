@@ -32,8 +32,20 @@ class Application extends App implements IBootstrap {
 		$config = $serverContainer->getConfig();
 		$tokenSet = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
 
+		// Add fonts (Fira Sans from @fontsource)
+		\OCP\Util::addStyle(self::APP_ID, 'fonts');
+		
 		// Add the CSS file for the selected token set
 		\OCP\Util::addStyle(self::APP_ID, 'tokens/' . $tokenSet);
 		\OCP\Util::addStyle(self::APP_ID, 'theme');
+		
+		// Add aggressive overrides last (highest priority)
+		\OCP\Util::addStyle(self::APP_ID, 'overrides');
+		
+		// Add logo for the selected token set
+		\OCP\Util::addStyle(self::APP_ID, 'logo-' . $tokenSet);
+		
+		// Nuclear option for gradients (absolute last)
+		\OCP\Util::addStyle(self::APP_ID, 'nuclear');
 	}
 }

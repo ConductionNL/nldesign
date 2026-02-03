@@ -81,8 +81,8 @@
 	--nldesign-color-button-primary-border: #154273;
 	--nldesign-color-button-primary-hover: #1d5499;
 
-	/* Typography - Rijksoverheid uses RijksoverheidSansWebText */
-	--nldesign-font-family: 'RijksoverheidSansWebText', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+	/* Typography - Using Fira Sans as open-source alternative */
+	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
 
 	/* Border radius - Rijkshuisstijl typically uses minimal rounding */
 	--nldesign-border-radius: 0;
