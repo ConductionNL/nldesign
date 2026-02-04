@@ -17,12 +17,15 @@
 		"url": "https://github.com/ConductionNL/nldesign.git"
 	},
 	"scripts": {
-		"build": "npm run build:fonts",
-		"build:fonts": "echo 'Fonts loaded via CDN from @fontsource/fira-sans'",
+		"build": "npm run build:fonts && npm run build:icons",
+		"build:fonts": "node scripts/build-fonts.js",
+		"build:icons": "node scripts/build-icons.js",
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
-		"@fontsource/fira-sans": "^5.0.0"
+		"@fontsource/fira-sans": "^5.0.0",
+		"@amsterdam/design-system-assets": "latest",
+		"@amsterdam/design-system-react-icons": "latest"
 	},
 	"devDependencies": {}
 }

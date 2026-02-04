@@ -85,6 +85,16 @@ header nav .icon {
 	background: transparent !important;
 }
 
+/* Remove gradient mask from app menu icons */
+.app-menu-icon__icon,
+#appmenu .app-menu-icon__icon,
+.app-menu .app-menu-icon__icon {
+	mask: none !important;
+	-webkit-mask: none !important;
+	mask-image: none !important;
+	-webkit-mask-image: none !important;
+}
+
 /* ============================================
    NEXTCLOUD LOGO REPLACEMENT
    ============================================ */
@@ -127,41 +137,114 @@ header nav .icon {
    FORCE SOLID BACKGROUNDS
    ============================================ */
 
-/* Absolutely no transparency anywhere */
-.panel,
-.widget,
-.dashboard-widget,
-[class*="panel"],
-[class*="widget"],
+/* Set default solid backgrounds, but allow custom widget styles to override */
+/* Exclude tiles and MyDash widgets to allow custom styling */
+.panel:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
+.widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
+.dashboard-widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
+[class*="panel"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
+[class*="widget"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
 #app-content,
 .app-content {
-	background: #ffffff !important;
-	background-color: #ffffff !important;
-	opacity: 1 !important;
-	backdrop-filter: none !important;
-	-webkit-backdrop-filter: none !important;
+	background: #ffffff;
+	background-color: #ffffff;
+	opacity: 1;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
 }
 
 /* ============================================
    TEXT COLOR FIXES
    ============================================ */
 
-/* Ensure all text is visible */
+/* Ensure all text is visible (but exclude header elements and custom tiles to avoid conflicts) */
 body,
 #app,
 #content,
 .app-content,
 p,
-span,
-div,
-li,
-a {
+span:not(#header span):not(#header * span):not(.tile-widget span):not(.tile-widget * span),
+div:not(#header div):not(#header * div):not(.tile-widget div):not(.tile-widget * div),
+li:not(#header li):not(#header * li),
+a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
 	color: #333333 !important;
 }
 
 /* Links should use primary color */
-a:not(#header a) {
+a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
 	color: var(--nldesign-color-primary) !important;
+}
+
+/* ============================================
+   BUTTON TEXT COLOR FIXES
+   ============================================ */
+
+/* Ensure primary buttons have white text (override the aggressive text color rules above) */
+.button-vue--vue-primary,
+.button-vue--vue-primary *,
+.button-vue--vue-primary span,
+.button-vue--vue-primary .button-vue__text,
+.button-vue--vue-primary .button-vue__wrapper,
+button.primary,
+button.primary *,
+button.primary span,
+input.primary,
+a.primary,
+a.primary *,
+.button.primary,
+.button.primary *,
+.button-vue.button-vue--vue-primary,
+.button-vue.button-vue--vue-primary *,
+button[class*="primary"],
+button[class*="primary"] *,
+.button-vue[class*="primary"],
+.button-vue[class*="primary"] * {
+	color: #ffffff !important;
+}
+
+/* Ensure all buttons with blue/primary background have white text */
+button[style*="background"],
+button[style*="background"] *,
+button[style*="background"] span,
+.button-vue[style*="background"],
+.button-vue[style*="background"] *,
+.button-vue[style*="background"] span,
+button[style*="#0082c9"],
+button[style*="#0082c9"] *,
+button[style*="rgb(0, 130, 201)"],
+button[style*="rgb(0, 130, 201)"] * {
+	color: #ffffff !important;
+}
+
+/* ============================================
+   DROPDOWN MENU TEXT FIXES
+   ============================================ */
+
+/* Ensure dropdown menu text is dark and readable - use explicit color */
+#expand,
+#expand *,
+#expand ul,
+#expand ul li,
+#expand ul li a,
+#expand ul li span,
+#expand ul li button,
+#expand .popovermenu,
+#expand .popovermenu *,
+#expand .popovermenu li,
+#expand .popovermenu li a,
+#expand .popovermenu li span,
+.popovermenu,
+.popovermenu *,
+.popovermenu ul,
+.popovermenu ul li,
+.popovermenu ul li a,
+.popovermenu ul li span,
+.popovermenu ul li button,
+#header .popovermenu,
+#header .popovermenu *,
+#header #expand,
+#header #expand * {
+	color: #000000 !important;
 }
 
 /* ============================================
@@ -196,9 +279,7 @@ a:not(#header a) {
    BORDER RADIUS CONSISTENCY
    ============================================ */
 
-/* Apply organization border radius everywhere */
-.panel,
-.widget,
+/* Apply organization border radius to buttons and inputs, but NOT widgets/panels */
 .button,
 button,
 .button-vue,
@@ -207,8 +288,7 @@ textarea,
 select,
 .dropdown,
 .modal-container,
-.popover,
-img {
+.popover {
 	border-radius: var(--nldesign-border-radius) !important;
 }
 

@@ -303,16 +303,17 @@ h2,
 }
 
 /* Solid widget backgrounds - no transparency */
-.panel,
-.panel--wrapper,
-.widget,
-.panel__content,
-.dashboard-widget,
-.dashboard-panel {
-	background: var(--nldesign-color-background) !important;
-	background-color: var(--nldesign-color-background) !important;
-	opacity: 1 !important;
-	backdrop-filter: none !important;
+/* Exclude MyDash widgets and tiles to allow custom styling */
+.panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
+.panel--wrapper:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
+.widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
+.panel__content:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
+.dashboard-widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
+.dashboard-panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *) {
+	background: var(--nldesign-color-background);
+	background-color: var(--nldesign-color-background);
+	opacity: 1;
+	backdrop-filter: none;
 }
 
 /* Remove icon gradients */

@@ -19,6 +19,20 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 - **No Build Required**: Fonts loaded via CDN, tokens are pre-compiled CSS
 
+- **Amsterdam Design System Icons**: Includes 344 SVG icons and 6 logos from the official Amsterdam Design System for use across all Nextcloud apps
+
+## Icons
+
+The app includes **344 icons** and **6 logos** from the Amsterdam Design System:
+
+- Search, navigation, and UI icons
+- Filled and outline variants
+- Amsterdam municipal logos
+- SVG format for scalability
+- Accessible via Nextcloud's image path API
+
+**[View Icon Documentation →](ICONS.md)**
+
 ## Installation
 
 ### Method 1: From Git Repository
@@ -29,10 +43,11 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
    git clone https://github.com/ConductionNL/nldesign.git
    ```
 
-2. Install npm dependencies (for fonts):
+2. Install npm dependencies (for fonts and icons):
    ```bash
    cd nldesign
    npm install
+   npm run build
    ```
 
 3. Enable the app in Nextcloud:
@@ -281,3 +296,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Full CSS variable mapping
 - Admin settings panel
 - Background image removal for clean Rijkshuisstijl compliance
+- **Amsterdam Design System Icons**: 344 SVG icons + 6 logos integrated from @amsterdam/design-system-assets
