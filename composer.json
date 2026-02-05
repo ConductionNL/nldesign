@@ -1,0 +1,42 @@
+{
+	"name": "conductionnl/nldesign",
+	"description": "NL Design System theme for Nextcloud",
+	"license": "AGPL-3.0-or-later",
+	"authors": [
+		{
+			"name": "Conduction b.v.",
+			"email": "info@conduction.nl",
+			"homepage": "https://conduction.nl"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"OCA\\NLDesign\\": "lib/"
+		}
+	},
+	"scripts": {
+		"lint": "find . -name \\*.php -not -path './vendor/*' -not -path './build/*' -print0 | xargs -0 -n1 php -l",
+		"cs:check": "./vendor/bin/phpcs --standard=phpcs.xml",
+		"cs:fix": "./vendor/bin/phpcbf --standard=phpcs.xml",
+		"phpcs": "./vendor/bin/phpcs --standard=phpcs.xml",
+		"phpcs:fix": "./vendor/bin/phpcbf --standard=phpcs.xml"
+	},
+	"require": {
+		"php": "^8.1"
+	},
+	"require-dev": {
+		"nextcloud/coding-standard": "^1.4",
+		"nextcloud/ocp": "^31.0",
+		"squizlabs/php_codesniffer": "^3.9"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
+		"optimize-autoloader": true,
+		"sort-packages": true,
+		"platform": {
+			"php": "8.1"
+		}
+	}
+}
