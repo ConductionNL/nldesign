@@ -49,4 +49,21 @@ class SettingsController extends Controller {
 
 		return new JSONResponse(['tokenSet' => $tokenSet]);
 	}
+
+	/**
+	 * Set the hide slogan setting.
+	 * 
+	 * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+	 * @param bool $hideSlogan Whether to hide the slogan on login page.
+	 * @return JSONResponse The response with the status.
+	 */
+	public function setSloganSetting(bool $hideSlogan): JSONResponse {
+		$this->config->setAppValue(
+			Application::APP_ID,
+			'hide_slogan',
+			$hideSlogan ? '1' : '0'
+		);
+
+		return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
+	}
 }

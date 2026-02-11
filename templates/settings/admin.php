@@ -32,6 +32,18 @@ style('nldesign', 'admin');
 		<?php endforeach; ?>
 	</div>
 
+	<!-- Hide Slogan/Payoff Option -->
+	<div class="nldesign-option">
+		<input type="checkbox"
+			   name="nldesign-hide-slogan"
+			   id="nldesign-hide-slogan"
+			   class="checkbox"
+			   <?php if ($_['hideSlogan']): ?>checked<?php endif; ?>>
+		<label for="nldesign-hide-slogan">
+			<?php p($l->t('Hide Nextcloud slogan/payoff on login page')); ?>
+		</label>
+	</div>
+
 	<div class="nldesign-preview" id="nldesign-preview">
 		<h3><?php p($l->t('Preview')); ?></h3>
 		<div class="nldesign-preview-box">

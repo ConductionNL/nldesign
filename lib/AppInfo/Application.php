@@ -31,6 +31,7 @@ class Application extends App implements IBootstrap {
 	private function injectThemeCSS($serverContainer): void {
 		$config = $serverContainer->getConfig();
 		$tokenSet = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
+		$hideSlogan = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
 
 		// Add fonts (Fira Sans from @fontsource)
 		\OCP\Util::addStyle(self::APP_ID, 'fonts');
@@ -47,5 +48,10 @@ class Application extends App implements IBootstrap {
 		
 		// Nuclear option for gradients (absolute last)
 		\OCP\Util::addStyle(self::APP_ID, 'nuclear');
+		
+		// Hide slogan if enabled
+		if ($hideSlogan) {
+			\OCP\Util::addStyle(self::APP_ID, 'hide-slogan');
+		}
 	}
 }

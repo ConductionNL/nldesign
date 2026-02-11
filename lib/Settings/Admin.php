@@ -49,9 +49,16 @@ class Admin implements ISettings {
 			'rijkshuisstijl'
 		);
 
+		$hideSlogan = $this->config->getAppValue(
+			Application::APP_ID,
+			'hide_slogan',
+			'0'
+		) === '1';
+
 		return new TemplateResponse(Application::APP_ID, 'settings/admin', [
 			'tokenSets' => $tokenSets,
 			'currentTokenSet' => $currentTokenSet,
+			'hideSlogan' => $hideSlogan,
 		]);
 	}
 
