@@ -90,6 +90,44 @@ button.app-navigation-toggle {
 	border-radius: var(--nldesign-border-radius) !important;
 }
 
+/* MyDash specific styling - transparent background and no padding/margins. */
+/* Target the NcAppContent component wrapper for MyDash. */
+body #content #app-content-vue.app-content,
+body #content main.app-content,
+body #app-mydash .app-content,
+body #app-mydash #app-content-vue,
+body #app-mydash main.app-content,
+body [data-v-e64fb40a][data-v-1f87d811].app-content,
+body main[data-v-e64fb40a].app-content,
+#mydash-app {
+	background: transparent !important;
+	background-color: transparent !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* MyDash content wrapper - special margins. */
+#content.app-mydash {
+	margin-left: 2px !important;
+	margin-right: 0 !important;
+	margin-bottom: 0 !important;
+	margin-top: 40px !important;
+}
+
+/* Even more specific - target by parent app structure. */
+#content-vue[data-app="mydash"] .app-content,
+div[id*="mydash"] ~ .app-content,
+body:has(#mydash-app) #app-content-vue,
+body:has(#mydash-app) main.app-content {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+.mydash-container {
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
 /* ============================================
    FIX "GOEDEMORGEN" VISIBILITY
    ============================================ */
