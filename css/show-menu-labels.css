@@ -7,43 +7,45 @@
  */
 
 /* Hide app menu icons. */
-html body #header nav.app-menu .app-menu-icon,
-body #header nav.app-menu .app-menu-icon,
 #header nav.app-menu .app-menu-icon,
-html body #header nav.app-menu .app-menu-entry__icon,
-body #header nav.app-menu .app-menu-entry__icon,
 #header nav.app-menu .app-menu-entry__icon {
 	display: none !important;
-	width: 0 !important;
-	height: 0 !important;
 	visibility: hidden !important;
 }
 
 /* Make labels always visible and properly styled. */
-html body #header nav.app-menu .app-menu-entry__label,
-body #header nav.app-menu .app-menu-entry__label,
 #header nav.app-menu .app-menu-entry__label {
-	display: block !important;
+	display: inline-block !important;
 	visibility: visible !important;
 	opacity: 1 !important;
 	font-size: 14px !important;
 	font-weight: 400 !important;
 	padding: 0 8px !important;
-	line-height: normal !important;
+	line-height: 1.4 !important;
 	white-space: nowrap !important;
 	text-align: center !important;
+	vertical-align: middle !important;
+	position: static !important;
+	top: auto !important;
+	bottom: auto !important;
+	left: auto !important;
+	right: auto !important;
+	transform: none !important;
+	max-width: none !important;
 }
 
 /* Active label styling. */
-html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__label,
-body #header nav.app-menu .app-menu-entry--active .app-menu-entry__label,
 #header nav.app-menu .app-menu-entry--active .app-menu-entry__label {
 	font-weight: 600 !important;
 }
 
+/* Disable Nextcloud's default active indicator (black dot from AppMenuEntry.vue). */
+#header nav.app-menu .app-menu-entry--active::before {
+	background-color: transparent !important;
+	opacity: 0 !important;
+}
+
 /* Menu entry link should be full height and center content. */
-html body #header nav.app-menu .app-menu-entry__link,
-body #header nav.app-menu .app-menu-entry__link,
 #header nav.app-menu .app-menu-entry__link {
 	height: 100% !important;
 	display: flex !important;
@@ -54,11 +56,10 @@ body #header nav.app-menu .app-menu-entry__link,
 }
 
 /* Menu entry item full height. */
-html body #header nav.app-menu .app-menu-entry,
-body #header nav.app-menu .app-menu-entry,
 #header nav.app-menu .app-menu-entry {
 	height: var(--header-height) !important;
 	min-width: 80px !important;
 	width: auto !important;
 	flex-shrink: 0 !important;
 }
+
