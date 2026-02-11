@@ -99,9 +99,11 @@ header nav .icon {
    NEXTCLOUD LOGO REPLACEMENT
    ============================================ */
 
-/* Hide original logo image */
-#nextcloud .logo,
-#nextcloud .logo-icon,
+/* Note: Logo is now handled via normal Nextcloud theming.
+   Apps like mydash can style the logo container as needed.
+   We keep #nextcloud minimal and let the .logo.logo-icon show normally. */
+
+/* Hide direct svg/img children (not the .logo-icon div) */
 #nextcloud > svg,
 #nextcloud > img,
 #nextcloud > a > svg,
@@ -110,25 +112,18 @@ header nav .icon {
 	visibility: hidden !important;
 }
 
-/* Hide any text content inside */
-#nextcloud,
-#nextcloud a,
-#nextcloud span,
-#nextcloud div {
-	font-size: 0 !important;
-	color: transparent !important;
-	text-indent: -9999px !important;
+/* Let .logo and .logo-icon be visible - they contain the themed logo */
+#nextcloud .logo,
+#nextcloud .logo-icon {
+	/* Don't hide these - they contain the configured logo via background-image. */
 }
 
-/* Show only logo icon (specific icon loaded via separate CSS based on token set) */
+/* Basic nextcloud link styling */
 #nextcloud {
 	visibility: visible !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	width: 50px !important;
-	height: 50px !important;
-	padding: 8px !important;
 }
 
 /* Logo icon styling is defined in logo-{tokenset}.css files */

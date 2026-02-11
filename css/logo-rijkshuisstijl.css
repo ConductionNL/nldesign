@@ -2,17 +2,11 @@
  * NL Design System - Rijkshuisstijl Logo
  * 
  * Logo for the national government (Nederland map)
+ * 
+ * Note: Logo is now set via Nextcloud theming (config.php or theming app).
+ * This file can be used for additional Rijkshuisstijl-specific logo styling if needed.
  */
 
-/* Nederland map icon (larger, centered, proper aspect ratio) */
-#nextcloud::before {
-	content: '' !important;
-	display: block !important;
-	width: 28px !important;
-	height: 36px !important;
-	background-image: url('../img/nederland-map.svg') !important;
-	background-size: contain !important;
-	background-repeat: no-repeat !important;
-	background-position: center !important;
-	text-indent: 0 !important;
-}
+/* Logo styling is handled via normal Nextcloud theming. */
+/* Apps like mydash can override the logo container styling as needed. */
+
