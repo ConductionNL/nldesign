@@ -407,5 +407,333 @@ div.guest-box.login-box {
 	overflow: visible !important; /* Allow narrow bar to show */
 }
 
+/* ============================================
+   LOGGED-IN HEADER STYLING (NL DESIGN)
+   ============================================
+   
+   This section applies NL Design styling to the Nextcloud header:
+   - White header background
+   - Blue bar with logo at left (using configured Nextcloud logo)
+   - Dark text and icons on white background
+   - Token-based colors for consistency
+   ============================================ */
 
+/* Remove any top margin/padding from body to eliminate white space. */
+html,
+body {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
 
+/* Allow header to overflow for blue bar sticking out. */
+html body.body-user #body-user,
+body.body-user #body-user,
+html body #body-user,
+body #body-user,
+#body-user {
+	overflow: visible !important;
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* White header background. */
+html body.body-user #body-user #header,
+body.body-user #body-user #header,
+html body #body-user #header,
+body #body-user #header,
+html body #header,
+body #header,
+#body-user #header,
+#header {
+	background-color: #ffffff !important;
+	background-image: none !important;
+	background: #ffffff !important;
+	border-bottom: 1px solid #e0e0e0 !important;
+	position: relative !important;
+	overflow: visible !important;
+}
+
+/* Blue bar container - target the actual nextcloud logo link. */
+html body #header a#nextcloud,
+body #header a#nextcloud,
+#header a#nextcloud,
+html body #header a[href="/"],
+body #header a[href="/"],
+#header a[href="/"] {
+	position: fixed !important;
+	left: 15px !important;
+	top: 0 !important;
+	width: 60px !important;
+	height: 80px !important;
+	margin: 0 !important;
+	background: #154273 !important;
+	background-color: #154273 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: flex-end !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	box-sizing: border-box !important;
+	text-align: center !important;
+}
+
+/* Disable pseudo-element logo approach. */
+html body #header a#nextcloud::before,
+body #header a#nextcloud::before,
+#header a#nextcloud::before,
+html body #header a[href="/"]::before,
+body #header a[href="/"]::before,
+#header a[href="/"]::before {
+	content: none !important;
+	display: none !important;
+}
+
+/* Logo element inside the blue bar - use the actual Nextcloud configured logo. */
+html body #header a#nextcloud .logo.logo-icon,
+body #header a#nextcloud .logo.logo-icon,
+#header a#nextcloud .logo.logo-icon,
+html body #header a[href="/"] .logo.logo-icon,
+body #header a[href="/"] .logo.logo-icon,
+#header a[href="/"] .logo.logo-icon {
+	display: block !important;
+	visibility: visible !important;
+	width: 50px !important;
+	min-width: 50px !important;
+	max-width: 50px !important;
+	height: 0 !important;
+	min-height: 50px !important;
+	max-height: 65px !important;
+	background-size: contain !important;
+	background-repeat: no-repeat !important;
+	background-position: center center !important;
+	background-color: transparent !important;
+	background-image: var(--image-logoheader, var(--image-logo, url(../img/logo/logo.svg))) !important;
+	filter: brightness(0) invert(1) !important;
+	opacity: 1 !important;
+	margin: 0 5px 5px 5px !important;
+	padding: 0 !important;
+	flex-shrink: 0 !important;
+	flex-grow: 0 !important;
+	position: static !important;
+	text-indent: 0 !important;
+	overflow: visible !important;
+	border: none !important;
+	box-shadow: none !important;
+	font-size: 0 !important;
+}
+
+/* Remove old pseudo-elements. */
+html body #header::before,
+body #header::before,
+#header::before,
+html body #header::after,
+body #header::after,
+#header::after {
+	content: none !important;
+	display: none !important;
+}
+
+/* Push header left content to make space for blue bar. */
+html body #header .header-left,
+body #header .header-left,
+#header .header-left,
+html body #header .header-start,
+body #header .header-start,
+#header .header-start {
+	position: relative !important;
+	z-index: 1000 !important;
+	padding-left: 80px !important;
+}
+
+/* App menu - add padding to avoid overlap with blue bar. */
+html body #header nav.app-menu,
+body #header nav.app-menu,
+#header nav.app-menu {
+	background: transparent !important;
+	padding-left: 75px !important;
+	margin-left: 0 !important;
+}
+
+html body #header nav.app-menu ul,
+body #header nav.app-menu ul,
+#header nav.app-menu ul {
+	padding-left: 0 !important;
+	margin-left: 0 !important;
+}
+
+html body #header nav.app-menu li,
+body #header nav.app-menu li,
+#header nav.app-menu li {
+	margin-left: 0 !important;
+}
+
+/* App menu styling - use theme colors. */
+html body #header nav.app-menu a,
+body #header nav.app-menu a,
+#header nav.app-menu a,
+html body #header nav.app-menu .app-menu-entry__link,
+body #header nav.app-menu .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry__link {
+	color: var(--color-main-text) !important;
+	font-weight: 400 !important;
+}
+
+/* App menu icons - override invert filter from theme.css. */
+html body #header nav.app-menu img,
+body #header nav.app-menu img,
+#header nav.app-menu img,
+html body #header nav.app-menu .app-menu-icon img,
+body #header nav.app-menu .app-menu-icon img,
+#header nav.app-menu .app-menu-icon img,
+html body #header nav.app-menu .app-menu-icon__icon,
+body #header nav.app-menu .app-menu-icon__icon,
+#header nav.app-menu .app-menu-icon__icon,
+html body #header nav.app-menu .app-menu-icon,
+body #header nav.app-menu .app-menu-icon,
+#header nav.app-menu .app-menu-icon,
+html body #header nav.app-menu .app-menu-entry__icon,
+body #header nav.app-menu .app-menu-entry__icon,
+#header nav.app-menu .app-menu-entry__icon,
+html body #header nav.app-menu .app-menu-entry__icon img,
+body #header nav.app-menu .app-menu-entry__icon img,
+#header nav.app-menu .app-menu-entry__icon img {
+	filter: none !important;
+	-webkit-filter: none !important;
+	opacity: 1 !important;
+}
+
+html body #header nav.app-menu svg,
+body #header nav.app-menu svg,
+#header nav.app-menu svg,
+html body #header nav.app-menu .app-menu-icon svg,
+body #header nav.app-menu .app-menu-icon svg,
+#header nav.app-menu .app-menu-icon svg {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
+/* Active and hover app menu items. */
+html body #header nav.app-menu .app-menu-entry--active a,
+body #header nav.app-menu .app-menu-entry--active a,
+#header nav.app-menu .app-menu-entry--active a,
+html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__link {
+	color: var(--color-primary) !important;
+	font-weight: 600 !important;
+}
+
+html body #header nav.app-menu a:hover,
+body #header nav.app-menu a:hover,
+#header nav.app-menu a:hover,
+html body #header nav.app-menu .app-menu-entry__link:hover,
+body #header nav.app-menu .app-menu-entry__link:hover,
+#header nav.app-menu .app-menu-entry__link:hover {
+	background-color: var(--color-background-hover) !important;
+	color: var(--color-primary) !important;
+}
+
+/* Header app name and branding text. */
+html body #header .header-appname,
+body #header .header-appname,
+#header .header-appname,
+html body #header .header-left a,
+body #header .header-left a,
+#header .header-left a {
+	color: #154273 !important;
+	font-weight: 600 !important;
+}
+
+/* Header right side icons and buttons. */
+html body #header .header-right a,
+body #header .header-right a,
+#header .header-right a,
+html body #header .header-right button,
+body #header .header-right button,
+#header .header-right button,
+html body #header .menutoggle,
+body #header .menutoggle,
+#header .menutoggle {
+	color: #333333 !important;
+	opacity: 1 !important;
+}
+
+html body #header .header-right [class^="icon-"],
+body #header .header-right [class^="icon-"],
+#header .header-right [class^="icon-"],
+html body #header .header-right svg,
+body #header .header-right svg,
+#header .header-right svg {
+	filter: none !important;
+	opacity: 0.8 !important;
+}
+
+/* Unified search. */
+html body #header .unified-search__button,
+body #header .unified-search__button,
+#header .unified-search__button {
+	color: #333333 !important;
+	filter: none !important;
+}
+
+html body #header .unified-search__button svg,
+body #header .unified-search__button svg,
+#header .unified-search__button svg {
+	fill: #333333 !important;
+	filter: none !important;
+}
+
+/* User menu and notifications. */
+html body #header .header-right .icon-more,
+body #header .header-right .icon-more,
+#header .header-right .icon-more,
+html body #header .header-right .notifications,
+body #header .header-right .notifications,
+#header .header-right .notifications,
+html body #header .header-right .contactsmenu,
+body #header .header-right .contactsmenu,
+#header .header-right .contactsmenu {
+	opacity: 0.8 !important;
+}
+
+html body #header .header-right #settings,
+body #header .header-right #settings,
+#header .header-right #settings {
+	filter: none !important;
+	opacity: 0.8 !important;
+}
+
+/* Legacy #appmenu support. */
+html body #header #appmenu,
+body #header #appmenu,
+#header #appmenu {
+	background: transparent !important;
+	padding-left: 60px !important;
+	margin-left: 0 !important;
+}
+
+html body #header #appmenu li a,
+body #header #appmenu li a,
+#header #appmenu li a {
+	color: var(--color-main-text) !important;
+	font-weight: 400 !important;
+}
+
+html body #header #appmenu li.active a,
+body #header #appmenu li.active a,
+#header #appmenu li.active a,
+html body #header #appmenu li:hover a,
+body #header #appmenu li:hover a,
+#header #appmenu li:hover a {
+	background-color: var(--color-background-hover) !important;
+	color: var(--color-primary) !important;
+	font-weight: 600 !important;
+}
+
+html body #header .header-appname-container,
+body #header .header-appname-container,
+#header .header-appname-container {
+	position: relative !important;
+	z-index: auto !important;
+}

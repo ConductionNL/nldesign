@@ -80,18 +80,15 @@ class Application extends App implements IBootstrap
         // Add fonts (Fira Sans from @fontsource).
         \OCP\Util::addStyle(self::APP_ID, 'fonts');
         
-        // Add the CSS file for the selected token set.
+        // Add the CSS file for the selected token set (organization-specific tokens).
         \OCP\Util::addStyle(self::APP_ID, 'tokens/' . $tokenSet);
+        
+        // Add theme CSS (standard design token application).
         \OCP\Util::addStyle(self::APP_ID, 'theme');
         
-        // Add aggressive overrides last (highest priority).
+        // Add aggressive overrides (applies NL Design styling to Nextcloud).
+        // This includes header styling for logged-in pages.
         \OCP\Util::addStyle(self::APP_ID, 'overrides');
-        
-        // Add logo for the selected token set.
-        \OCP\Util::addStyle(self::APP_ID, 'logo-' . $tokenSet);
-        
-        // Nuclear option for gradients (absolute last).
-        \OCP\Util::addStyle(self::APP_ID, 'nuclear');
         
         // Hide slogan if enabled.
         if ($hideSlogan) {
