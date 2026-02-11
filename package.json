@@ -20,6 +20,7 @@
 		"build": "npm run build:fonts && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
+		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
