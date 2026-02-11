@@ -133,12 +133,12 @@ header nav .icon {
    ============================================ */
 
 /* Set default solid backgrounds, but allow custom widget styles to override */
-/* Exclude tiles and MyDash widgets to allow custom styling */
-.panel:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-.widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-.dashboard-widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-[class*="panel"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-[class*="widget"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
+/* Exclude tiles, MyDash widgets, and header elements to allow custom styling */
+.panel:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+.widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+.dashboard-widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+[class*="panel"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+[class*="widget"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
 #app-content,
 .app-content {
 	background: #ffffff;
@@ -307,37 +307,42 @@ select,
 
 /* ============================================
    LOGIN PAGE - RIJKSOVERHEID BLUE BAR
+   ============================================
+   
+   Blue bar with logo at top center:
+   - Blue bar: 60px wide × 90px high
+   - Logo: 50px wide, positioned at bottom with 5px margin
    ============================================ */
 
-/* Target the guest-box login-box directly */
+/* Narrow blue bar at top center. */
 #body-login .guest-box.login-box::before,
 #body-login div.guest-box.login-box::before,
 div.guest-box.login-box::before {
 	content: '' !important;
 	position: absolute !important;
 	top: 0 !important;
-	left: 0 !important;
-	right: 0 !important;
-	width: 100% !important;
-	height: 100px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	width: 60px !important;
+	height: 90px !important;
 	background: #154273 !important;
 	z-index: 1000 !important;
 	display: block !important;
 	pointer-events: none !important;
 }
 
-/* White logo in the blue bar */
+/* White logo in the narrow blue bar - positioned at bottom. */
 #body-login .guest-box.login-box::after,
 #body-login div.guest-box.login-box::after,
 div.guest-box.login-box::after {
 	content: '' !important;
 	position: absolute !important;
-	top: 30px !important;
+	top: 35px !important; /* 90px - 50px logo - 5px margin = 35px from top */
 	left: 50% !important;
 	transform: translateX(-50%) !important;
-	width: 100px !important;
-	height: 40px !important;
-	background-image: url('../img/nederland-logo.svg') !important;
+	width: 50px !important;
+	height: 50px !important;
+	background-image: var(--image-logo, url('../img/nederland-logo.svg')) !important;
 	background-repeat: no-repeat !important;
 	background-position: center !important;
 	background-size: contain !important;
@@ -347,64 +352,13 @@ div.guest-box.login-box::after {
 	pointer-events: none !important;
 }
 
-/* Push guest-box content down */
+/* Push guest-box content down. */
 #body-login .guest-box.login-box,
 #body-login div.guest-box.login-box,
 div.guest-box.login-box {
 	position: relative !important;
-	padding-top: 100px !important;
-	overflow: hidden !important;
-}
-
-/* ============================================
-   LOGIN PAGE - RIJKSOVERHEID BLUE BAR
-   ============================================ */
-
-/* Target the guest-box login-box directly */
-#body-login .guest-box.login-box::before,
-#body-login div.guest-box.login-box::before,
-div.guest-box.login-box::before {
-	content: '' !important;
-	position: absolute !important;
-	top: 0 !important;
-	left: 50% !important;
-	transform: translateX(-50%) !important;
-	width: 60px !important; /* Narrower bar - 1/3 of original */
-	height: 100px !important;
-	background: #154273 !important;
-	z-index: 1000 !important;
-	display: block !important;
-	pointer-events: none !important;
-}
-
-/* White logo in the narrow blue bar - positioned at bottom */
-#body-login .guest-box.login-box::after,
-#body-login div.guest-box.login-box::after,
-div.guest-box.login-box::after {
-	content: '' !important;
-	position: absolute !important;
-	top: 55px !important; /* Bottom of bar (100px - 40px logo - 5px padding) */
-	left: 50% !important;
-	transform: translateX(-50%) !important;
-	width: 100px !important;
-	height: 40px !important;
-	background-image: url('../img/nederland-logo.svg') !important;
-	background-repeat: no-repeat !important;
-	background-position: center !important;
-	background-size: contain !important;
-	filter: brightness(0) invert(1) !important;
-	z-index: 1001 !important;
-	display: block !important;
-	pointer-events: none !important;
-}
-
-/* Push guest-box content down */
-#body-login .guest-box.login-box,
-#body-login div.guest-box.login-box,
-div.guest-box.login-box {
-	position: relative !important;
-	padding-top: 100px !important;
-	overflow: visible !important; /* Allow narrow bar to show */
+	padding-top: 90px !important;
+	overflow: visible !important;
 }
 
 /* ============================================
@@ -448,7 +402,7 @@ body #header,
 	background-color: #ffffff !important;
 	background-image: none !important;
 	background: #ffffff !important;
-	border-bottom: 1px solid #e0e0e0 !important;
+	border-bottom: var(--nldesign-header-border-bottom, 0) !important;
 	position: relative !important;
 	overflow: visible !important;
 }
@@ -464,7 +418,7 @@ body #header a[href="/"],
 	left: 15px !important;
 	top: 0 !important;
 	width: 60px !important;
-	height: 80px !important;
+	height: 90px !important;
 	margin: 0 !important;
 	background: #154273 !important;
 	background-color: #154273 !important;
@@ -546,12 +500,12 @@ body #header .header-start,
 	padding-left: 80px !important;
 }
 
-/* App menu - add padding to avoid overlap with blue bar. */
+/* App menu - remove padding since logo is in normal flow. */
 html body #header nav.app-menu,
 body #header nav.app-menu,
 #header nav.app-menu {
 	background: transparent !important;
-	padding-left: 75px !important;
+	padding-left: 0 !important;
 	margin-left: 0 !important;
 }
 
@@ -579,16 +533,29 @@ body #header nav.app-menu .app-menu-entry__link,
 	font-weight: 400 !important;
 }
 
-/* App menu icons - override invert filter from theme.css. */
-html body #header nav.app-menu img,
-body #header nav.app-menu img,
-#header nav.app-menu img,
+/* App menu text labels - explicitly set dark color. */
+html body #header nav.app-menu .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry__label,
+html body #header nav.app-menu .app-menu-entry .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry .app-menu-entry__label {
+	color: var(--color-main-text) !important;
+	font-weight: 400 !important;
+}
+
+/* App menu icons - invert if SVGs are white to make them dark. */
+/* CRITICAL: If SVGs are white, invert them to dark for white header background. */
+/* Maximum specificity to override #header .app-menu-icon from theme.css */
+html body #header nav.app-menu .app-menu-entry .app-menu-icon img.app-menu-icon__icon,
+html body #header nav.app-menu .app-menu-entry .app-menu-icon img,
 html body #header nav.app-menu .app-menu-icon img,
 body #header nav.app-menu .app-menu-icon img,
 #header nav.app-menu .app-menu-icon img,
 html body #header nav.app-menu .app-menu-icon__icon,
 body #header nav.app-menu .app-menu-icon__icon,
 #header nav.app-menu .app-menu-icon__icon,
+html body #header nav.app-menu .app-menu-entry .app-menu-icon,
 html body #header nav.app-menu .app-menu-icon,
 body #header nav.app-menu .app-menu-icon,
 #header nav.app-menu .app-menu-icon,
@@ -597,10 +564,24 @@ body #header nav.app-menu .app-menu-entry__icon,
 #header nav.app-menu .app-menu-entry__icon,
 html body #header nav.app-menu .app-menu-entry__icon img,
 body #header nav.app-menu .app-menu-entry__icon img,
-#header nav.app-menu .app-menu-entry__icon img {
-	filter: none !important;
-	-webkit-filter: none !important;
+#header nav.app-menu .app-menu-entry__icon img,
+html body #header nav.app-menu img,
+body #header nav.app-menu img,
+#header nav.app-menu img {
+	filter: invert(1) brightness(0) contrast(100) !important;
+	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
 	opacity: 1 !important;
+}
+
+/* App menu SVGs should also be inverted. */
+html body #header nav.app-menu svg,
+body #header nav.app-menu svg,
+#header nav.app-menu svg,
+html body #header nav.app-menu .app-menu-icon svg,
+body #header nav.app-menu .app-menu-icon svg,
+#header nav.app-menu .app-menu-icon svg {
+	filter: invert(1) !important;
+	-webkit-filter: invert(1) !important;
 }
 
 html body #header nav.app-menu svg,
@@ -622,6 +603,47 @@ body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
 #header nav.app-menu .app-menu-entry--active .app-menu-entry__link {
 	color: var(--color-primary) !important;
 	font-weight: 600 !important;
+	position: relative !important;
+}
+
+/* Blue indicator bar at bottom of active menu item using box-shadow. */
+html body #header nav.app-menu .app-menu-entry--active a::after,
+body #header nav.app-menu .app-menu-entry--active a::after,
+#header nav.app-menu .app-menu-entry--active a::after,
+html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after {
+	content: '' !important;
+	position: absolute !important;
+	bottom: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	height: 5px !important;
+	background: var(--color-primary) !important;
+	display: block !important;
+}
+
+/* Ensure all menu entries have consistent bottom spacing. */
+html body #header nav.app-menu .app-menu-entry,
+body #header nav.app-menu .app-menu-entry,
+#header nav.app-menu .app-menu-entry,
+html body #header nav.app-menu .app-menu-entry a,
+body #header nav.app-menu .app-menu-entry a,
+#header nav.app-menu .app-menu-entry a,
+html body #header nav.app-menu .app-menu-entry .app-menu-entry__link,
+body #header nav.app-menu .app-menu-entry .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry .app-menu-entry__link {
+	margin: 0 !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* Active app menu text labels. */
+html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__label {
+	color: var(--color-primary) !important;
+	font-weight: 600 !important;
 }
 
 html body #header nav.app-menu a:hover,
@@ -631,6 +653,13 @@ html body #header nav.app-menu .app-menu-entry__link:hover,
 body #header nav.app-menu .app-menu-entry__link:hover,
 #header nav.app-menu .app-menu-entry__link:hover {
 	background-color: var(--color-background-hover) !important;
+	color: var(--color-primary) !important;
+}
+
+/* Hover app menu text labels. */
+html body #header nav.app-menu .app-menu-entry__link:hover .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry__link:hover .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry__link:hover .app-menu-entry__label {
 	color: var(--color-primary) !important;
 }
 
@@ -675,6 +704,20 @@ body #header .unified-search__button,
 #header .unified-search__button {
 	color: #333333 !important;
 	filter: none !important;
+}
+
+/* Header dropdown panels and menus - ensure proper colors. */
+html body #header .header-menu,
+body #header .header-menu,
+#header .header-menu,
+html body #header #user-menu,
+body #header #user-menu,
+#header #user-menu,
+html body #header .popover,
+body #header .popover,
+#header .popover {
+	background-color: var(--color-main-background) !important;
+	color: var(--color-main-text) !important;
 }
 
 html body #header .unified-search__button svg,

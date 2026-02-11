@@ -84,11 +84,18 @@ class Admin implements ISettings
             '0'
         ) === '1';
 
+        $showMenuLabels = $this->config->getAppValue(
+            Application::APP_ID,
+            'show_menu_labels',
+            '0'
+        ) === '1';
+
         return new TemplateResponse(
             Application::APP_ID, 'settings/admin', [
             'tokenSets' => $tokenSets,
             'currentTokenSet' => $currentTokenSet,
             'hideSlogan' => $hideSlogan,
+            'showMenuLabels' => $showMenuLabels,
             ]
         );
     }

@@ -20,8 +20,8 @@ body {
 	--color-primary-element-light-text: var(--nldesign-color-primary) !important;
 	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover) !important;
 
-	/* Background colors */
-	--color-main-background: var(--nldesign-color-background) !important;
+	/* Background colors - use Nextcloud's own theming system. */
+	/* --color-main-background: Managed by Nextcloud theming */
 	--color-background-hover: var(--nldesign-color-background-hover) !important;
 	--color-background-dark: var(--nldesign-color-background-dark) !important;
 	--color-background-darker: var(--nldesign-color-background-darker) !important;
@@ -82,17 +82,6 @@ header#header {
 	height: 0 !important;
 }
 
-/* Add "Rijksoverheid" or organization name instead of logo */
-#nextcloud::after {
-	content: "Rijksoverheid" !important;
-	color: var(--nldesign-color-header-text) !important;
-	font-family: var(--nldesign-font-family) !important;
-	font-size: 20px !important;
-	font-weight: 700 !important;
-	line-height: 50px !important;
-	padding-left: 12px !important;
-}
-
 /* Header text and icons */
 #header *,
 #header .header-appname,
@@ -117,11 +106,10 @@ header#header {
    LOGIN PAGE
    ============================================ */
 
-/* Light gray background like Rijkshuisstijl */
+/* Light gray background like Rijkshuisstijl - use Nextcloud's theming. */
 #body-login,
 .body-login-container {
 	background-image: none !important;
-	background-color: #F5F6F7 !important;
 }
 
 /* Login wrapper - centered, clean design */
@@ -453,15 +441,13 @@ body,
    DASHBOARD - Remove gradients, backgrounds, transparency
    ============================================ */
 
-/* Remove all background images and gradients */
+/* Remove all background images and gradients - use Nextcloud theming for background. */
 #body-user,
 #content,
 .app-dashboard,
 #app-content,
 #app-content-wrapper {
 	background-image: none !important;
-	background: var(--nldesign-color-background) !important;
-	background-color: var(--nldesign-color-background) !important;
 }
 
 /* Fix "Goedemorgen" text visibility - ensure it's the right color */
@@ -473,16 +459,15 @@ h2,
 	background-color: transparent !important;
 }
 
-/* Solid widget backgrounds - no transparency */
-/* Exclude MyDash widgets and tiles to allow custom styling */
+/* Solid widget backgrounds - no transparency. */
+/* Exclude MyDash widgets and tiles to allow custom styling. */
+/* Use Nextcloud theming for background color. */
 .panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .panel--wrapper:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .panel__content:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .dashboard-widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .dashboard-panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *) {
-	background: var(--nldesign-color-background);
-	background-color: var(--nldesign-color-background);
 	opacity: 1;
 	backdrop-filter: none;
 }
@@ -629,13 +614,11 @@ body *,
 	-webkit-backdrop-filter: none !important;
 }
 
-/* Solid backgrounds everywhere */
+/* Solid backgrounds everywhere - use Nextcloud theming. */
 #app-content,
 .app-content-wrapper,
 .app-content-list,
 .app-content-detail {
-	background: var(--nldesign-color-background) !important;
-	background-color: var(--nldesign-color-background) !important;
 	background-image: none !important;
 }
 

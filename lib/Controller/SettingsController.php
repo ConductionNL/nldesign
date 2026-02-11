@@ -104,4 +104,24 @@ class SettingsController extends Controller
 
         return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
     }
+
+    /**
+     * Set the show menu labels setting.
+     *
+     * @param bool $showMenuLabels Whether to show text labels in app menu.
+     *
+     * @return JSONResponse The response with the status.
+     *
+     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     */
+    public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
+    {
+        $this->config->setAppValue(
+            Application::APP_ID,
+            'show_menu_labels',
+            $showMenuLabels ? '1' : '0'
+        );
+
+        return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
+    }
 }

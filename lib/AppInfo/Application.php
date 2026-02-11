@@ -76,6 +76,7 @@ class Application extends App implements IBootstrap
         $config = $serverContainer->getConfig();
         $tokenSet = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
         $hideSlogan = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
+        $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
 
         // Add fonts (Fira Sans from @fontsource).
         \OCP\Util::addStyle(self::APP_ID, 'fonts');
@@ -93,6 +94,11 @@ class Application extends App implements IBootstrap
         // Hide slogan if enabled.
         if ($hideSlogan) {
             \OCP\Util::addStyle(self::APP_ID, 'hide-slogan');
+        }
+
+        // Show menu labels (instead of icons) if enabled.
+        if ($showMenuLabels) {
+            \OCP\Util::addStyle(self::APP_ID, 'show-menu-labels');
         }
     }
 }

@@ -32,16 +32,16 @@
 	--rh-color-paars: #42145f;
 	--rh-color-mauve: #b4a7c9;
 
-	/* Background colors */
-	--nldesign-color-background: #F5F6F7;
-	--nldesign-color-background-rgb: 245, 246, 247;
+	/* Background colors - for hover states and dark variants. */
+	/* Main background managed by Nextcloud theming system. */
 	--nldesign-color-background-hover: #e8e9ea;
 	--nldesign-color-background-dark: #e0e1e2;
 	--nldesign-color-background-darker: #d0d1d2;
 
 	/* Header */
 	--nldesign-color-header-background: #154273;
-	--nldesign-color-header-text: #ffffff;
+	--nldesign-color-header-text: #333333;
+	--nldesign-header-border-bottom: 0;
 
 	/* Navigation */
 	--nldesign-color-nav-background: #ffffff;

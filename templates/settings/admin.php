@@ -44,6 +44,18 @@ style('nldesign', 'admin');
 		</label>
 	</div>
 
+	<!-- Show Menu Labels Option -->
+	<div class="nldesign-option">
+		<input type="checkbox"
+			   name="nldesign-show-menu-labels"
+			   id="nldesign-show-menu-labels"
+			   class="checkbox"
+			   <?php if ($_['showMenuLabels']): ?>checked<?php endif; ?>>
+		<label for="nldesign-show-menu-labels">
+			<?php p($l->t('Show text labels in app menu (hide icons)')); ?>
+		</label>
+	</div>
+
 	<div class="nldesign-preview" id="nldesign-preview">
 		<h3><?php p($l->t('Preview')); ?></h3>
 		<div class="nldesign-preview-box">
