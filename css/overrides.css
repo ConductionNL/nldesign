@@ -35,6 +35,62 @@ ol {
 }
 
 /* ============================================
+   OVERRIDE NEXTCLOUD CONTAINER VARIABLES
+   ============================================ */
+
+/* Override body container radius to use NL Design border radius. */
+:root,
+body {
+	--body-container-radius: var(--nldesign-border-radius) !important;
+	--body-container-margin: 15px !important;
+}
+
+/* NL Design Layout - Separate navigation and content cards. */
+/* Main content wrapper should be transparent to show background. */
+#content,
+.content[data-v-1f87d811] {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* App navigation (left sidebar) as white card with margin. */
+#app-navigation,
+.app-navigation,
+#app-navigation-vue {
+	background: var(--color-main-background) !important;
+	background-color: var(--color-main-background) !important;
+	margin-right: 30px !important;
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* Remove margin when navigation is closed. */
+#app-navigation.app-navigation--close,
+.app-navigation.app-navigation--close {
+	margin-right: 0 !important;
+}
+
+/* Navigation toggle button - remove excessive padding. */
+.app-navigation-toggle,
+.app-navigation-toggle.button-vue,
+button.app-navigation-toggle {
+	padding: 0 !important;
+	padding-inline: 0 !important;
+	padding-block: 0 !important;
+	min-width: var(--default-clickable-area) !important;
+	min-height: var(--default-clickable-area) !important;
+}
+
+/* App content (main area) as white card. */
+#app-content,
+.app-content,
+#app-content-vue,
+.app-content-wrapper {
+	background: var(--color-main-background) !important;
+	background-color: var(--color-main-background) !important;
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* ============================================
    FIX "GOEDEMORGEN" VISIBILITY
    ============================================ */
 
