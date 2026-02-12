@@ -12,14 +12,43 @@ const path = require('path');
 
 const FONTS_DIR = path.join(__dirname, '..', 'css', 'fonts');
 const FONTS_CSS = path.join(__dirname, '..', 'css', 'fonts.css');
+const FONTSOURCE_DIR = path.join(__dirname, '..', 'node_modules', '@fontsource', 'fira-sans', 'files');
 
-// Create fonts directory if it doesn't exist
+// Create fonts directory if it doesn't exist.
 if (!fs.existsSync(FONTS_DIR)) {
     fs.mkdirSync(FONTS_DIR, { recursive: true });
     console.log('✓ Created css/fonts directory');
 }
 
-// Generate fonts.css
+// Copy font files from node_modules.
+const fontFiles = [
+    'fira-sans-latin-400-normal.woff2',
+    'fira-sans-latin-400-normal.woff',
+    'fira-sans-latin-400-italic.woff2',
+    'fira-sans-latin-400-italic.woff',
+    'fira-sans-latin-700-normal.woff2',
+    'fira-sans-latin-700-normal.woff',
+    'fira-sans-latin-700-italic.woff2',
+    'fira-sans-latin-700-italic.woff',
+];
+
+let copiedCount = 0;
+if (fs.existsSync(FONTSOURCE_DIR)) {
+    fontFiles.forEach(file => {
+        const sourcePath = path.join(FONTSOURCE_DIR, file);
+        const destPath = path.join(FONTS_DIR, file);
+        if (fs.existsSync(sourcePath)) {
+            fs.copyFileSync(sourcePath, destPath);
+            copiedCount++;
+        }
+    });
+    console.log(`✓ Copied ${copiedCount} font files to css/fonts/`);
+} else {
+    console.log('⚠ Warning: @fontsource/fira-sans not found in node_modules');
+    console.log('  Run: npm install');
+}
+
+// Generate fonts.css with correct paths.
 const fontsCss = `/**
  * Fira Sans Fonts
  * 
@@ -27,18 +56,11 @@ const fontsCss = `/**
  * from @rijkshuisstijl-community/font package
  */
 
-/* Import Fira Sans from fontsource */
-@import url('~@fontsource/fira-sans/400.css');
-@import url('~@fontsource/fira-sans/400-italic.css');
-@import url('~@fontsource/fira-sans/700.css');
-@import url('~@fontsource/fira-sans/700-italic.css');
-
-/* Fallback for direct file access */
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans'),
-         url('../fonts/fira-sans-400-normal.woff2') format('woff2'),
-         url('../fonts/fira-sans-400-normal.woff') format('woff');
+         url('fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-400-normal.woff') format('woff');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -47,8 +69,8 @@ const fontsCss = `/**
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans Italic'),
-         url('../fonts/fira-sans-400-italic.woff2') format('woff2'),
-         url('../fonts/fira-sans-400-italic.woff') format('woff');
+         url('fonts/fira-sans-latin-400-italic.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-400-italic.woff') format('woff');
     font-weight: 400;
     font-style: italic;
     font-display: swap;
@@ -57,8 +79,8 @@ const fontsCss = `/**
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans Bold'),
-         url('../fonts/fira-sans-700-normal.woff2') format('woff2'),
-         url('../fonts/fira-sans-700-normal.woff') format('woff');
+         url('fonts/fira-sans-latin-700-normal.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-700-normal.woff') format('woff');
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -67,8 +89,8 @@ const fontsCss = `/**
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans Bold Italic'),
-         url('../fonts/fira-sans-700-italic.woff2') format('woff2'),
-         url('../fonts/fira-sans-700-italic.woff') format('woff');
+         url('fonts/fira-sans-latin-700-italic.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-700-italic.woff') format('woff');
     font-weight: 700;
     font-style: italic;
     font-display: swap;
@@ -79,5 +101,5 @@ fs.writeFileSync(FONTS_CSS, fontsCss);
 console.log('✓ Generated css/fonts.css');
 
 console.log('\n✅ Font build complete!');
-console.log('\nNote: Fonts are loaded via CDN from @fontsource/fira-sans');
-console.log('To use local files, copy font files from node_modules/@fontsource/fira-sans/files/ to css/fonts/');
+console.log(`   ${copiedCount} font files copied to css/fonts/`);
+
