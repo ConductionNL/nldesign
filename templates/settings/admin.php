@@ -32,6 +32,30 @@ style('nldesign', 'admin');
 		<?php endforeach; ?>
 	</div>
 
+	<!-- Hide Slogan/Payoff Option -->
+	<div class="nldesign-option">
+		<input type="checkbox"
+			   name="nldesign-hide-slogan"
+			   id="nldesign-hide-slogan"
+			   class="checkbox"
+			   <?php if ($_['hideSlogan']): ?>checked<?php endif; ?>>
+		<label for="nldesign-hide-slogan">
+			<?php p($l->t('Hide Nextcloud slogan/payoff on login page')); ?>
+		</label>
+	</div>
+
+	<!-- Show Menu Labels Option -->
+	<div class="nldesign-option">
+		<input type="checkbox"
+			   name="nldesign-show-menu-labels"
+			   id="nldesign-show-menu-labels"
+			   class="checkbox"
+			   <?php if ($_['showMenuLabels']): ?>checked<?php endif; ?>>
+		<label for="nldesign-show-menu-labels">
+			<?php p($l->t('Show text labels in app menu (hide icons)')); ?>
+		</label>
+	</div>
+
 	<div class="nldesign-preview" id="nldesign-preview">
 		<h3><?php p($l->t('Preview')); ?></h3>
 		<div class="nldesign-preview-box">

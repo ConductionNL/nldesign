@@ -23,9 +23,8 @@
 	--utrecht-color-green: #2a5510;
 	--utrecht-color-blue: #007bc7;
 
-	/* Background colors */
-	--nldesign-color-background: #ffffff;
-	--nldesign-color-background-rgb: 255, 255, 255;
+	/* Background colors - for hover states and dark variants. */
+	/* Main background managed by Nextcloud theming system. */
 	--nldesign-color-background-hover: #f5f5f5;
 	--nldesign-color-background-dark: #e8e8e8;
 	--nldesign-color-background-darker: #d4d4d4;

@@ -20,8 +20,8 @@ body {
 	--color-primary-element-light-text: var(--nldesign-color-primary) !important;
 	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover) !important;
 
-	/* Background colors */
-	--color-main-background: var(--nldesign-color-background) !important;
+	/* Background colors - use Nextcloud's own theming system. */
+	/* --color-main-background: Managed by Nextcloud theming */
 	--color-background-hover: var(--nldesign-color-background-hover) !important;
 	--color-background-dark: var(--nldesign-color-background-dark) !important;
 	--color-background-darker: var(--nldesign-color-background-darker) !important;
@@ -82,17 +82,6 @@ header#header {
 	height: 0 !important;
 }
 
-/* Add "Rijksoverheid" or organization name instead of logo */
-#nextcloud::after {
-	content: "Rijksoverheid" !important;
-	color: var(--nldesign-color-header-text) !important;
-	font-family: var(--nldesign-font-family) !important;
-	font-size: 20px !important;
-	font-weight: 700 !important;
-	line-height: 50px !important;
-	padding-left: 12px !important;
-}
-
 /* Header text and icons */
 #header *,
 #header .header-appname,
@@ -117,14 +106,156 @@ header#header {
    LOGIN PAGE
    ============================================ */
 
-/* Remove background image - Rijkshuisstijl uses solid colors */
+/* Light gray background like Rijkshuisstijl - use Nextcloud's theming. */
 #body-login,
 .body-login-container {
 	background-image: none !important;
-	background-color: var(--nldesign-color-background) !important;
 }
 
-/* Login box primary button */
+/* Login wrapper - centered, clean design */
+#body-login .wrapper {
+	max-width: 500px;
+	margin: 0 auto;
+	box-shadow: none !important;
+	border-radius: 0 !important;
+	padding-top: 0 !important; /* Remove top padding so header is at top of box */
+}
+
+/* Main body-login container positioning */
+#body-login {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: center !important;
+	min-height: 100vh !important;
+}
+
+/* Login form container - white background, no shadows, sharp corners */
+#body-login form,
+#body-login .login-form,
+#body-login #login-form,
+#body-login .body-login-container > div {
+	background: #ffffff !important;
+	box-shadow: none !important;
+	border-radius: 0 !important;
+	border: none !important;
+}
+
+/* Guest box and login box - clean Rijkshuisstijl style */
+#body-login .guest-box,
+#body-login .login-box,
+.guest-box,
+.login-box {
+	background: #ffffff !important;
+	background-color: #ffffff !important;
+	box-shadow: none !important;
+	border-radius: 0 !important;
+	border: none !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	padding: 0 !important; /* Remove padding so header can be full width */
+	overflow: hidden !important; /* Contain the header */
+	position: relative !important; /* For pseudo-element positioning */
+}
+
+/* LOGIN PAGE HEADER - Rijksoverheid style with blue bar and logo */
+/* Remove the margin, make blue bar part of the login box */
+#body-login .guest-box.login-box,
+#body-login .login-box,
+#body-login div.guest-box,
+#body-login div[class*="guest-box"],
+#body-login div[class*="login-box"],
+.guest-box.login-box,
+div.guest-box.login-box,
+div[data-v-48234338].guest-box {
+	position: relative !important;
+	overflow: hidden !important; /* Clip the pseudo-element to box width */
+	margin-top: 0 !important; /* No extra margin needed */
+	padding-top: 0 !important;
+}
+
+/* Create blue bar at TOP of login box (not above it) */
+#body-login .guest-box.login-box::before,
+#body-login div.guest-box::before,
+#body-login div[class*="guest-box"]::before,
+.guest-box.login-box::before,
+div.guest-box.login-box::before,
+div[data-v-48234338].guest-box::before {
+	content: '' !important;
+	position: absolute !important;
+	top: 0 !important; /* At the TOP of the login box */
+	left: 0 !important;
+	right: 0 !important;
+	width: 100% !important; /* Full width of login box */
+	height: 100px !important; /* Blue bar height */
+	background: var(--nldesign-color-button-primary-background) !important;
+	background-color: var(--nldesign-color-button-primary-background) !important;
+	z-index: 1 !important;
+	display: block !important;
+	box-sizing: border-box !important;
+}
+
+/* White logo in the blue bar */
+#body-login .guest-box.login-box::after,
+#body-login div.guest-box::after,
+.guest-box.login-box::after,
+div.guest-box.login-box::after {
+	content: '' !important;
+	position: absolute !important;
+	top: 30px !important; /* Vertically centered in blue bar */
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	width: 100px !important;
+	height: 40px !important;
+	background-image: url('../img/nederland-logo.svg') !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: contain !important;
+	filter: brightness(0) invert(1) !important;
+	z-index: 2 !important;
+	display: block !important;
+}
+
+/* Push login content below blue bar */
+#body-login div[class*="login-box__wrapper"],
+#body-login .guest-box div[class*="login-box__wrapper"],
+div[class*="login-box__wrapper"],
+div[data-v-48234338][class*="login-box__wrapper"],
+.login-box__wrapper[data-v-48234338],
+[data-v-48234338].login-box__wrapper {
+	position: relative !important;
+	background: #ffffff !important;
+	padding-top: 100px !important; /* Space for blue bar */
+	z-index: 3 !important;
+}
+
+/* Form content - normal padding */
+#body-login div[class*="login-box__wrapper"] > form,
+#body-login div[class*="login-box__wrapper"] > div,
+div[class*="login-box__wrapper"] > form,
+div[class*="login-box__wrapper"] > div {
+	padding-top: 12px !important;
+	background: transparent !important;
+}
+
+/* Add padding back to the form content area */
+#body-login .guest-box form,
+#body-login .login-box form,
+#body-login .guest-box > div:not(#header),
+#body-login .login-box > div:not(#header) {
+	padding: 12px !important;
+}
+
+/* Remove all shadows from login elements */
+#body-login input,
+#body-login button,
+#body-login .button-vue,
+#body-login a {
+	box-shadow: none !important;
+	border-radius: 0 !important;
+}
+
+/* Login box primary button - sharp corners */
 #body-login .button-vue--vue-primary,
 #body-login input[type="submit"],
 #body-login button.primary,
@@ -132,19 +263,47 @@ header#header {
 	background-color: var(--nldesign-color-button-primary-background) !important;
 	border-color: var(--nldesign-color-button-primary-border) !important;
 	color: var(--nldesign-color-button-primary-text) !important;
-	border-radius: var(--nldesign-border-radius) !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
 }
 
 #body-login .button-vue--vue-primary:hover,
 #body-login input[type="submit"]:hover,
 #body-login button.primary:hover {
 	background-color: var(--nldesign-color-button-primary-hover) !important;
+	box-shadow: none !important;
 }
 
-/* Login header/logo area */
+/* Login header/logo area - HIDE the original header that's outside the login box */
 #body-login #header,
-body.body-login-container #header {
-	background: var(--nldesign-color-header-background) !important;
+#body-login header,
+body.body-login-container #header,
+body.body-login-container header {
+	display: none !important;
+}
+
+/* Login content wrapper */
+#body-login .wrapper,
+#body-login > .wrapper {
+	padding: 0 !important;
+	margin-top: 0 !important;
+}
+
+/* Login form inputs - sharp corners */
+#body-login input[type="text"],
+#body-login input[type="password"],
+#body-login input[type="email"],
+#body-login .input-field {
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	border: 1px solid #d0d0d0 !important;
+}
+
+#body-login input[type="text"]:focus,
+#body-login input[type="password"]:focus,
+#body-login input[type="email"]:focus {
+	border-color: var(--nldesign-color-button-primary-background) !important;
+	box-shadow: none !important;
 }
 
 /* ============================================
@@ -282,15 +441,13 @@ body,
    DASHBOARD - Remove gradients, backgrounds, transparency
    ============================================ */
 
-/* Remove all background images and gradients */
+/* Remove all background images and gradients - use Nextcloud theming for background. */
 #body-user,
 #content,
 .app-dashboard,
 #app-content,
 #app-content-wrapper {
 	background-image: none !important;
-	background: var(--nldesign-color-background) !important;
-	background-color: var(--nldesign-color-background) !important;
 }
 
 /* Fix "Goedemorgen" text visibility - ensure it's the right color */
@@ -302,16 +459,15 @@ h2,
 	background-color: transparent !important;
 }
 
-/* Solid widget backgrounds - no transparency */
-/* Exclude MyDash widgets and tiles to allow custom styling */
+/* Solid widget backgrounds - no transparency. */
+/* Exclude MyDash widgets and tiles to allow custom styling. */
+/* Use Nextcloud theming for background color. */
 .panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .panel--wrapper:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .panel__content:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .dashboard-widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
 .dashboard-panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *) {
-	background: var(--nldesign-color-background);
-	background-color: var(--nldesign-color-background);
 	opacity: 1;
 	backdrop-filter: none;
 }
@@ -458,13 +614,11 @@ body *,
 	-webkit-backdrop-filter: none !important;
 }
 
-/* Solid backgrounds everywhere */
+/* Solid backgrounds everywhere - use Nextcloud theming. */
 #app-content,
 .app-content-wrapper,
 .app-content-list,
 .app-content-detail {
-	background: var(--nldesign-color-background) !important;
-	background-color: var(--nldesign-color-background) !important;
 	background-image: none !important;
 }
 

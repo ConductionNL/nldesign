@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 	const tokenSetInputs = document.querySelectorAll('input[name="nldesign-token-set"]');
+	const hideSloganCheckbox = document.getElementById('nldesign-hide-slogan');
 	const previewBox = document.querySelector('.nldesign-preview-box');
 
 	// Token set color mappings for preview
@@ -102,6 +103,75 @@ document.addEventListener('DOMContentLoaded', function() {
 		.catch(error => {
 			console.error('Error saving token set:', error);
 			OC.Notification.showTemporary(t('nldesign', 'Failed to update theme.'));
+		});
+	}
+
+	// Handle hide slogan checkbox
+	if (hideSloganCheckbox) {
+		hideSloganCheckbox.addEventListener('change', function() {
+			const hideSlogan = this.checked;
+			saveSloganSetting(hideSlogan);
+		});
+	}
+
+	// Handle show menu labels checkbox
+	const showMenuLabelsCheckbox = document.getElementById('nldesign-show-menu-labels');
+	if (showMenuLabelsCheckbox) {
+		showMenuLabelsCheckbox.addEventListener('change', function() {
+			const showMenuLabels = this.checked;
+			saveMenuLabelsSetting(showMenuLabels);
+		});
+	}
+
+	// Save hide slogan setting to server
+	function saveSloganSetting(hideSlogan) {
+		const url = OC.generateUrl('/apps/nldesign/settings/slogan');
+
+		fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ hideSlogan: hideSlogan })
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.status === 'ok') {
+				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. Reload the login page to see changes.'));
+			} else {
+				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+			}
+		})
+		.catch(error => {
+			console.error('Error saving slogan setting:', error);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+		});
+	}
+
+	// Save show menu labels setting to server.
+	function saveMenuLabelsSetting(showMenuLabels) {
+		const url = OC.generateUrl('/apps/nldesign/settings/menulabels');
+
+		fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ showMenuLabels: showMenuLabels })
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.status === 'ok') {
+				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. Reload the page to see changes.'));
+			} else {
+				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+			}
+		})
+		.catch(error => {
+			console.error('Error saving menu labels setting:', error);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
 		});
 	}
 });
