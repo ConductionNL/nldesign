@@ -1,0 +1,179 @@
+/**
+ * Utrecht Bridge — Temporary Token Mapping
+ *
+ * This file maps --utrecht-* component tokens to --nldesign-component-* equivalents.
+ *
+ * TEMPORARY: This file exists because the NL Design System currently uses the
+ * --utrecht-* prefix for component tokens. When the NL Design System adopts a
+ * vendor-neutral prefix, this bridge file can be removed.
+ *
+ * See: https://github.com/nl-design-system/themes
+ *
+ * Load order: fonts → defaults → tokens/{org} → [utrecht-bridge] → theme → overrides
+ * The bridge reads --utrecht-* values (set by token files) and maps them to
+ * --nldesign-component-* variables. If no --utrecht-* value is defined, the
+ * token falls back to the default from defaults.css.
+ */
+
+:root {
+	/* ===================================================================
+	 * BUTTON
+	 * =================================================================== */
+
+	--nldesign-component-button-background-color: var(--utrecht-button-background-color, var(--nldesign-component-button-background-color));
+	--nldesign-component-button-color: var(--utrecht-button-color, var(--nldesign-component-button-color));
+	--nldesign-component-button-border-color: var(--utrecht-button-border-color, var(--nldesign-component-button-border-color));
+	--nldesign-component-button-border-radius: var(--utrecht-button-border-radius, var(--nldesign-component-button-border-radius));
+	--nldesign-component-button-border-width: var(--utrecht-button-border-width, var(--nldesign-component-button-border-width));
+	--nldesign-component-button-font-family: var(--utrecht-button-font-family, var(--nldesign-component-button-font-family));
+	--nldesign-component-button-font-size: var(--utrecht-button-font-size, var(--nldesign-component-button-font-size));
+	--nldesign-component-button-font-weight: var(--utrecht-button-font-weight, var(--nldesign-component-button-font-weight));
+	--nldesign-component-button-padding-block: var(--utrecht-button-padding-block-start, var(--nldesign-component-button-padding-block));
+	--nldesign-component-button-padding-inline: var(--utrecht-button-padding-inline-start, var(--nldesign-component-button-padding-inline));
+
+	/* Button — hover */
+	--nldesign-component-button-hover-background-color: var(--utrecht-button-hover-background-color, var(--nldesign-component-button-hover-background-color));
+	--nldesign-component-button-hover-color: var(--utrecht-button-hover-color, var(--nldesign-component-button-hover-color));
+
+	/* Button — active */
+	--nldesign-component-button-active-background-color: var(--utrecht-button-active-background-color, var(--nldesign-component-button-active-background-color));
+
+	/* Button — disabled */
+	--nldesign-component-button-disabled-background-color: var(--utrecht-button-disabled-background-color, var(--nldesign-component-button-disabled-background-color));
+	--nldesign-component-button-disabled-color: var(--utrecht-button-disabled-color, var(--nldesign-component-button-disabled-color));
+
+	/* Button — focus */
+	--nldesign-component-button-focus-border-color: var(--utrecht-button-focus-border-color, var(--nldesign-component-button-focus-border-color));
+
+	/* Button — primary-action */
+	--nldesign-component-button-primary-action-background-color: var(--utrecht-button-primary-action-background-color, var(--nldesign-component-button-primary-action-background-color));
+	--nldesign-component-button-primary-action-color: var(--utrecht-button-primary-action-color, var(--nldesign-component-button-primary-action-color));
+	--nldesign-component-button-primary-action-border-color: var(--utrecht-button-primary-action-border-color, var(--nldesign-component-button-primary-action-border-color));
+	--nldesign-component-button-primary-action-hover-background-color: var(--utrecht-button-primary-action-hover-background-color, var(--nldesign-component-button-primary-action-hover-background-color));
+	--nldesign-component-button-primary-action-font-weight: var(--utrecht-button-primary-action-font-weight, var(--nldesign-component-button-primary-action-font-weight, 700));
+
+	/* Button — secondary-action */
+	--nldesign-component-button-secondary-action-background-color: var(--utrecht-button-secondary-action-background-color, var(--nldesign-component-button-secondary-action-background-color));
+	--nldesign-component-button-secondary-action-color: var(--utrecht-button-secondary-action-color, var(--nldesign-component-button-secondary-action-color));
+	--nldesign-component-button-secondary-action-border-color: var(--utrecht-button-secondary-action-border-color, var(--nldesign-component-button-secondary-action-border-color));
+
+	/* ===================================================================
+	 * TEXTBOX / FORM INPUT
+	 * =================================================================== */
+
+	--nldesign-component-textbox-background-color: var(--utrecht-textbox-background-color, var(--nldesign-component-textbox-background-color));
+	--nldesign-component-textbox-color: var(--utrecht-textbox-color, var(--nldesign-component-textbox-color));
+	--nldesign-component-textbox-border-color: var(--utrecht-textbox-border-color, var(--utrecht-form-input-border-color, var(--nldesign-component-textbox-border-color)));
+	--nldesign-component-textbox-border-width: var(--utrecht-textbox-border-width, var(--nldesign-component-textbox-border-width));
+	--nldesign-component-textbox-border-radius: var(--utrecht-textbox-border-radius, var(--utrecht-form-input-border-radius, var(--nldesign-component-textbox-border-radius)));
+	--nldesign-component-textbox-font-family: var(--utrecht-textbox-font-family, var(--nldesign-component-textbox-font-family));
+	--nldesign-component-textbox-font-size: var(--utrecht-textbox-font-size, var(--utrecht-form-input-font-size, var(--nldesign-component-textbox-font-size)));
+	--nldesign-component-textbox-focus-border-color: var(--utrecht-textbox-focus-border-color, var(--nldesign-component-textbox-focus-border-color));
+	--nldesign-component-textbox-invalid-border-color: var(--utrecht-textbox-invalid-border-color, var(--nldesign-component-textbox-invalid-border-color));
+
+	/* ===================================================================
+	 * FORM FIELD / SELECT / FIELDSET
+	 * =================================================================== */
+
+	--nldesign-component-form-field-label-color: var(--utrecht-form-label-color, var(--nldesign-component-form-field-label-color));
+	--nldesign-component-form-field-label-font-weight: var(--utrecht-form-label-font-weight, var(--nldesign-component-form-field-label-font-weight));
+	--nldesign-component-form-select-border-color: var(--utrecht-select-border-color, var(--nldesign-component-form-select-border-color));
+	--nldesign-component-form-select-border-radius: var(--utrecht-select-border-radius, var(--nldesign-component-form-select-border-radius));
+
+	/* ===================================================================
+	 * HEADINGS
+	 * =================================================================== */
+
+	--nldesign-component-heading-1-font-size: var(--utrecht-heading-1-font-size, var(--nldesign-component-heading-1-font-size));
+	--nldesign-component-heading-1-font-weight: var(--utrecht-heading-1-font-weight, var(--nldesign-component-heading-1-font-weight));
+	--nldesign-component-heading-1-line-height: var(--utrecht-heading-1-line-height, var(--nldesign-component-heading-1-line-height));
+	--nldesign-component-heading-1-color: var(--utrecht-heading-1-color, var(--nldesign-component-heading-1-color));
+
+	--nldesign-component-heading-2-font-size: var(--utrecht-heading-2-font-size, var(--nldesign-component-heading-2-font-size));
+	--nldesign-component-heading-2-font-weight: var(--utrecht-heading-2-font-weight, var(--nldesign-component-heading-2-font-weight));
+	--nldesign-component-heading-2-line-height: var(--utrecht-heading-2-line-height, var(--nldesign-component-heading-2-line-height));
+	--nldesign-component-heading-2-color: var(--utrecht-heading-2-color, var(--nldesign-component-heading-2-color));
+
+	--nldesign-component-heading-3-font-size: var(--utrecht-heading-3-font-size, var(--nldesign-component-heading-3-font-size));
+	--nldesign-component-heading-3-font-weight: var(--utrecht-heading-3-font-weight, var(--nldesign-component-heading-3-font-weight));
+	--nldesign-component-heading-3-line-height: var(--utrecht-heading-3-line-height, var(--nldesign-component-heading-3-line-height));
+	--nldesign-component-heading-3-color: var(--utrecht-heading-3-color, var(--nldesign-component-heading-3-color));
+
+	--nldesign-component-heading-4-font-size: var(--utrecht-heading-4-font-size, var(--nldesign-component-heading-4-font-size));
+	--nldesign-component-heading-4-font-weight: var(--utrecht-heading-4-font-weight, var(--nldesign-component-heading-4-font-weight));
+	--nldesign-component-heading-4-line-height: var(--utrecht-heading-4-line-height, var(--nldesign-component-heading-4-line-height));
+	--nldesign-component-heading-4-color: var(--utrecht-heading-4-color, var(--nldesign-component-heading-4-color));
+
+	--nldesign-component-heading-5-font-size: var(--utrecht-heading-5-font-size, var(--nldesign-component-heading-5-font-size));
+	--nldesign-component-heading-5-font-weight: var(--utrecht-heading-5-font-weight, var(--nldesign-component-heading-5-font-weight));
+	--nldesign-component-heading-5-line-height: var(--utrecht-heading-5-line-height, var(--nldesign-component-heading-5-line-height));
+	--nldesign-component-heading-5-color: var(--utrecht-heading-5-color, var(--nldesign-component-heading-5-color));
+
+	--nldesign-component-heading-6-font-size: var(--utrecht-heading-6-font-size, var(--nldesign-component-heading-6-font-size));
+	--nldesign-component-heading-6-font-weight: var(--utrecht-heading-6-font-weight, var(--nldesign-component-heading-6-font-weight));
+	--nldesign-component-heading-6-line-height: var(--utrecht-heading-6-line-height, var(--nldesign-component-heading-6-line-height));
+	--nldesign-component-heading-6-color: var(--utrecht-heading-6-color, var(--nldesign-component-heading-6-color));
+
+	/* ===================================================================
+	 * PARAGRAPH
+	 * =================================================================== */
+
+	--nldesign-component-paragraph-font-size: var(--utrecht-paragraph-font-size, var(--nldesign-component-paragraph-font-size));
+	--nldesign-component-paragraph-line-height: var(--utrecht-paragraph-line-height, var(--nldesign-component-paragraph-line-height));
+	--nldesign-component-paragraph-color: var(--utrecht-paragraph-color, var(--nldesign-component-paragraph-color));
+
+	/* ===================================================================
+	 * LINK
+	 * =================================================================== */
+
+	--nldesign-component-link-color: var(--utrecht-link-color, var(--nldesign-component-link-color));
+	--nldesign-component-link-hover-color: var(--utrecht-link-hover-color, var(--nldesign-component-link-hover-color));
+	--nldesign-component-link-visited-color: var(--utrecht-link-visited-color, var(--nldesign-component-link-visited-color));
+	--nldesign-component-link-text-decoration: var(--utrecht-link-text-decoration, var(--nldesign-component-link-text-decoration));
+
+	/* ===================================================================
+	 * TABLE
+	 * =================================================================== */
+
+	--nldesign-component-table-border-color: var(--utrecht-table-border-color, var(--nldesign-component-table-border-color));
+	--nldesign-component-table-border-width: var(--utrecht-table-border-width, var(--nldesign-component-table-border-width));
+	--nldesign-component-table-header-background-color: var(--utrecht-table-header-cell-background-color, var(--nldesign-component-table-header-background-color));
+	--nldesign-component-table-header-color: var(--utrecht-table-header-cell-color, var(--nldesign-component-table-header-color));
+	--nldesign-component-table-header-font-weight: var(--utrecht-table-header-cell-font-weight, var(--nldesign-component-table-header-font-weight));
+
+	/* ===================================================================
+	 * BADGE
+	 * =================================================================== */
+
+	--nldesign-component-badge-background-color: var(--utrecht-badge-background-color, var(--nldesign-component-badge-background-color));
+	--nldesign-component-badge-color: var(--utrecht-badge-color, var(--nldesign-component-badge-color));
+	--nldesign-component-badge-border-radius: var(--utrecht-badge-border-radius, var(--nldesign-component-badge-border-radius));
+	--nldesign-component-badge-font-size: var(--utrecht-badge-font-size, var(--nldesign-component-badge-font-size));
+	--nldesign-component-badge-font-weight: var(--utrecht-badge-font-weight, var(--nldesign-component-badge-font-weight));
+
+	/* ===================================================================
+	 * SEPARATOR
+	 * =================================================================== */
+
+	--nldesign-component-separator-border-color: var(--utrecht-separator-border-color, var(--nldesign-component-separator-border-color));
+	--nldesign-component-separator-border-width: var(--utrecht-separator-border-width, var(--nldesign-component-separator-border-width));
+
+	/* ===================================================================
+	 * LISTS
+	 * =================================================================== */
+
+	--nldesign-component-ordered-list-color: var(--utrecht-ordered-list-color, var(--nldesign-component-ordered-list-color));
+	--nldesign-component-unordered-list-color: var(--utrecht-unordered-list-color, var(--nldesign-component-unordered-list-color));
+
+	/* ===================================================================
+	 * BREADCRUMB
+	 * =================================================================== */
+
+	--nldesign-component-breadcrumb-font-size: var(--utrecht-breadcrumb-nav-font-size, var(--nldesign-component-breadcrumb-font-size, 0.875rem));
+
+	/* ===================================================================
+	 * CODE
+	 * =================================================================== */
+
+	--nldesign-component-code-font-size: var(--utrecht-code-font-size, var(--nldesign-component-code-font-size, 0.875rem));
+}

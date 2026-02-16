@@ -1,0 +1,162 @@
+/**
+ * Provincie Zuid-Holland Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* Logo image */
+	--nldesign-logo-url: url('../img/logos/provincie-zuid-holland.svg');
+
+	/* NL Design tokens */
+	--nldesign-color-wit: #FFFFFF;
+	--nldesign-color-rood-35: hsl(350deg 75% 34%);
+	--nldesign-color-rood-50: hsl(350deg 74% 47%);
+	--nldesign-color-rood-70: hsl(350deg 75% 68%);
+	--nldesign-color-geel-40: hsl(49deg 85% 42%);
+	--nldesign-color-geel-60: hsl(49deg 85% 57%);
+	--nldesign-color-geel-70: hsl(49deg 80% 72%);
+	--nldesign-color-blauw-15: hsl(247deg 55% 15%);
+	--nldesign-color-blauw-30: hsl(247deg 55% 27%);
+	--nldesign-color-blauw-70: hsl(210deg 60% 68%);
+	--nldesign-color-blauw-95: hsl(208deg 58% 94%);
+	--nldesign-color-roze-25: hsl(324deg 100% 23%);
+	--nldesign-color-roze-35: hsl(324deg 100% 33%);
+	--nldesign-color-roze-65: hsl(324deg 58% 63%);
+	--nldesign-color-oranje-35: hsl(25deg 100% 35%);
+	--nldesign-color-oranje-50: hsl(25deg 100% 50%);
+	--nldesign-color-oranje-70: hsl(25deg 95% 70%);
+	--nldesign-color-appelgroen-35: hsl(87deg 62% 36%);
+	--nldesign-color-appelgroen-45: hsla(87deg 70% 43%);
+	--nldesign-color-appelgroen-66: hsl(87deg 51% 66%);
+	--nldesign-color-groen-15: hsl(156deg 100% 15%);
+	--nldesign-color-groen-25: hsl(156deg 100% 25%);
+	--nldesign-color-groen-55: hsla(135deg 35% 54%);
+	--nldesign-color-paars-25: hsl(254deg 41% 25%);
+	--nldesign-color-paars-40: hsl(254deg 40% 40%);
+	--nldesign-color-paars-70: hsl(242deg 33% 70%);
+	--nldesign-color-warm-grijs-30: hsl(26deg 15% 30%);
+	--nldesign-color-warm-grijs-45: hsla(25deg 15% 45%);
+	--nldesign-color-warm-grijs-70: hsl(26deg 15% 70%);
+	--nldesign-color-koel-grijs-35: hsl(0 0% 36%);
+	--nldesign-color-koel-grijs-50: hsl(0 0% 51%);
+	--nldesign-color-koel-grijs-75: hsl(0 0% 75%);
+	--nldesign-color-grijs-60: hsl(246deg 10% 57%);
+	--nldesign-color-grijs-65: hsl(247deg 10% 66%);
+	--nldesign-color-grijs-70: hsl(244deg 9% 70%);
+	--nldesign-color-grijs-90: hsl(255deg 9% 91%);
+	--nldesign-color-grijs-92: hsl(0 0% 92%);
+	--nldesign-color-grijs-95: hsl(0 0% 96%);
+	--nldesign-typography-sans-serif-font-family: "Karbon", "Test Karbon", "Arial", "Helvetica", "Verdana", sans-serif;
+	--nldesign-typography-serif-font-family: "Georgia", "serif";
+	--nldesign-typography-scale-3xl-font-size: 48px;
+	--nldesign-typography-scale-3xl-line-height: 56px;
+	--nldesign-typography-scale-2xl-font-size: 36px;
+	--nldesign-typography-scale-2xl-line-height: 44px;
+	--nldesign-typography-scale-xl-font-size: 24px;
+	--nldesign-typography-scale-xl-line-height: 32px;
+	--nldesign-typography-scale-lg-font-size: 22px;
+	--nldesign-typography-scale-lg-line-height: 30px;
+	--nldesign-typography-scale-md-font-size: 20px;
+	--nldesign-typography-scale-md-line-height: 30px;
+	--nldesign-typography-scale-sm-font-size: 16px;
+	--nldesign-typography-scale-sm-line-height: 25px;
+	--nldesign-typography-weight-scale-bold-font-weight: 600;
+	--nldesign-typography-weight-scale-semi-bold-font-weight: 500;
+	--nldesign-typography-weight-scale-normal-font-weight: 400;
+	--nldesign-focus-outline-offset: 2px;
+	--nldesign-focus-outline-width: 2px;
+	--nldesign-space-row-xs: 10px;
+	--nldesign-space-row-sm: 15px;
+	--nldesign-space-row-md: 20px;
+	--nldesign-space-block-xs: 15px;
+	--nldesign-space-block-sm: 20px;
+	--nldesign-space-block-md: 30px;
+	--nldesign-space-block-lg: 40px;
+	--nldesign-space-block-xl: 60px;
+	--nldesign-space-block-2xl: 80px;
+	--nldesign-space-inline-xs: 15px;
+	--nldesign-space-inline-sm: 20px;
+	--nldesign-space-inline-md: 30px;
+	--nldesign-space-inline-lg: 40px;
+	--nldesign-space-inline-xl: 60px;
+	--nldesign-space-inline-2xl: 80px;
+	--nldesign-component-button-border-radius: 4px;
+	--nldesign-component-button-border-width: 1px;
+	--nldesign-component-button-margin-inline-end: 0;
+	--nldesign-component-button-margin-inline-start: 0;
+	--nldesign-component-button-padding-block-end: 0;
+	--nldesign-component-button-padding-block-start: 0;
+	--nldesign-custom-checkbox-size: 24px;
+	--nldesign-custom-checkbox-border-radius: 4px;
+	--nldesign-custom-checkbox-icon-size: 20px;
+	--nldesign-component-heading-1-font-weight: 500;
+	--nldesign-component-heading-2-font-weight: 500;
+	--nldesign-component-heading-3-font-weight: 500;
+	--nldesign-component-heading-4-font-weight: 500;
+	--nldesign-component-heading-font-weight: 500;
+	--nldesign-component-link-text-decoration: underline;
+	--nldesign-component-link-focus-text-decoration: none;
+	--nldesign-component-link-hover-text-decoration: none;
+	--nldesign-component-paragraph-margin-block-end: 1.3em;
+
+	/* Provincie Zuid-Holland palette */
+	--pzh-color-wit: #FFFFFF;
+	--pzh-color-rood-35: hsl(350deg 75% 34%);
+	--pzh-color-rood-50: hsl(350deg 74% 47%);
+	--pzh-color-rood-70: hsl(350deg 75% 68%);
+	--pzh-color-geel-40: hsl(49deg 85% 42%);
+	--pzh-color-geel-60: hsl(49deg 85% 57%);
+	--pzh-color-geel-70: hsl(49deg 80% 72%);
+	--pzh-color-blauw-15: hsl(247deg 55% 15%);
+	--pzh-color-blauw-30: hsl(247deg 55% 27%);
+	--pzh-color-blauw-70: hsl(210deg 60% 68%);
+	--pzh-color-blauw-95: hsl(208deg 58% 94%);
+	--pzh-color-roze-25: hsl(324deg 100% 23%);
+	--pzh-color-roze-35: hsl(324deg 100% 33%);
+	--pzh-color-roze-65: hsl(324deg 58% 63%);
+	--pzh-color-oranje-35: hsl(25deg 100% 35%);
+	--pzh-color-oranje-50: hsl(25deg 100% 50%);
+	--pzh-color-oranje-70: hsl(25deg 95% 70%);
+	--pzh-color-appelgroen-35: hsl(87deg 62% 36%);
+	--pzh-color-appelgroen-45: hsla(87deg 70% 43%);
+	--pzh-color-appelgroen-66: hsl(87deg 51% 66%);
+	--pzh-color-groen-15: hsl(156deg 100% 15%);
+	--pzh-color-groen-25: hsl(156deg 100% 25%);
+	--pzh-color-groen-55: hsla(135deg 35% 54%);
+	--pzh-color-paars-25: hsl(254deg 41% 25%);
+	--pzh-color-paars-40: hsl(254deg 40% 40%);
+	--pzh-color-paars-70: hsl(242deg 33% 70%);
+	--pzh-color-warm-grijs-30: hsl(26deg 15% 30%);
+	--pzh-color-warm-grijs-45: hsla(25deg 15% 45%);
+	--pzh-color-warm-grijs-70: hsl(26deg 15% 70%);
+	--pzh-color-koel-grijs-35: hsl(0 0% 36%);
+	--pzh-color-koel-grijs-50: hsl(0 0% 51%);
+	--pzh-color-koel-grijs-75: hsl(0 0% 75%);
+	--pzh-color-grijs-60: hsl(246deg 10% 57%);
+	--pzh-color-grijs-65: hsl(247deg 10% 66%);
+	--pzh-color-grijs-70: hsl(244deg 9% 70%);
+	--pzh-color-grijs-90: hsl(255deg 9% 91%);
+	--pzh-color-grijs-92: hsl(0 0% 92%);
+	--pzh-color-grijs-95: hsl(0 0% 96%);
+	--pzh-typography-sans-serif-font-family: "Karbon", "Test Karbon", "Arial", "Helvetica", "Verdana", sans-serif;
+	--pzh-typography-serif-font-family: "Georgia", "serif";
+	--pzh-typography-scale-3xl-font-size: 48px;
+	--pzh-typography-scale-3xl-line-height: 56px;
+	--pzh-typography-scale-2xl-font-size: 36px;
+	--pzh-typography-scale-2xl-line-height: 44px;
+	--pzh-typography-scale-xl-font-size: 24px;
+	--pzh-typography-scale-xl-line-height: 32px;
+	--pzh-typography-scale-lg-font-size: 22px;
+	--pzh-typography-scale-lg-line-height: 30px;
+	--pzh-typography-scale-md-font-size: 20px;
+	--pzh-typography-scale-md-line-height: 30px;
+	--pzh-typography-scale-sm-font-size: 16px;
+	--pzh-typography-scale-sm-line-height: 25px;
+	--pzh-typography-weight-scale-bold-font-weight: 600;
+	--pzh-typography-weight-scale-semi-bold-font-weight: 500;
+	--pzh-typography-weight-scale-normal-font-weight: 400;
+}

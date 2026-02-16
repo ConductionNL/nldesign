@@ -8,28 +8,24 @@ script('nldesign', 'admin');
 style('nldesign', 'admin');
 ?>
 
-<div id="nldesign-settings" class="section">
+<div id="nldesign-settings" class="section"
+	 data-token-sets="<?php p(json_encode($_['tokenSets'])); ?>"
+	 data-current-token-set="<?php p($_['currentTokenSet']); ?>">
 	<h2><?php p($l->t('NL Design System Theme')); ?></h2>
 	<p class="settings-hint">
 		<?php p($l->t('Select which Dutch government design token set to apply to your Nextcloud instance.')); ?>
 	</p>
 
-	<div class="nldesign-token-sets">
-		<?php foreach ($_['tokenSets'] as $key => $tokenSet): ?>
-			<div class="nldesign-token-set">
-				<input type="radio"
-					   name="nldesign-token-set"
-					   id="nldesign-token-set-<?php p($key); ?>"
-					   value="<?php p($key); ?>"
-					   <?php if ($_['currentTokenSet'] === $key): ?>checked<?php endif; ?>>
-				<label for="nldesign-token-set-<?php p($key); ?>">
-					<strong><?php p($tokenSet['name']); ?></strong>
-					<span class="nldesign-token-set-description">
-						<?php p($tokenSet['description']); ?>
-					</span>
-				</label>
-			</div>
-		<?php endforeach; ?>
+	<div class="nldesign-token-set-selector">
+		<label for="nldesign-token-set-select"><?php p($l->t('Design token set')); ?></label>
+		<select id="nldesign-token-set-select" name="nldesign-token-set">
+			<?php foreach ($_['tokenSets'] as $tokenSet): ?>
+				<option value="<?php p($tokenSet['id']); ?>"
+						<?php if ($_['currentTokenSet'] === $tokenSet['id']): ?>selected<?php endif; ?>>
+					<?php p($tokenSet['name']); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
 	</div>
 
 	<!-- Hide Slogan/Payoff Option -->

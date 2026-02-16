@@ -5,6 +5,13 @@
  * Uses high specificity selectors to override Nextcloud's built-in theming.
  */
 
+/* Page background — uses token, distinct from --color-main-background (card/component bg) */
+body,
+#body-user,
+#body-login {
+	background-color: var(--nldesign-color-page-background, #ffffff) !important;
+}
+
 /* Force override Nextcloud's CSS variables using body selector for higher specificity */
 body[data-themes],
 body {
@@ -60,7 +67,7 @@ body {
 header#header {
 	background: var(--nldesign-color-header-background) !important;
 	background-color: var(--nldesign-color-header-background) !important;
-	overflow-x: hidden !important;
+	overflow: visible !important;
 }
 
 /* Fix header layout issues - prevent scrollbars */
@@ -69,17 +76,53 @@ header#header {
 	overflow: visible !important;
 }
 
-/* Replace Nextcloud logo with NL Design style */
+/* Logo area - show municipality logo with optional lint/ribbon background */
 #nextcloud {
 	background-image: none !important;
 	background: transparent !important;
+	position: relative !important;
+	display: flex !important;
+	align-items: flex-end !important;
+	justify-content: center !important;
+	padding: 0 !important;
+	min-width: 56px !important;
+	flex-shrink: 0 !important;
+	overflow: visible !important;
+	z-index: 100 !important;
+	height: 100% !important;
 }
 
+/* Lint/ribbon behind logo — hangs below header when lint-height > header-height */
+/* Invisible (0px width, transparent) when lint tokens are at defaults */
+#nextcloud::before {
+	content: '' !important;
+	position: absolute !important;
+	top: 0 !important;
+	left: 8px !important;
+	width: var(--nldesign-size-lint, 0px) !important;
+	height: var(--nldesign-size-lint-height, 0px) !important;
+	background: var(--nldesign-color-logo-background, transparent) !important;
+	display: block !important;
+	z-index: -1 !important;
+}
+
+/* Municipality logo - dynamic per token set */
 #nextcloud .logo {
-	background-image: none !important;
-	opacity: 0 !important;
-	width: 0 !important;
-	height: 0 !important;
+	background-image: var(--nldesign-logo-url, none) !important;
+	background-size: contain !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	filter: var(--nldesign-logo-filter, none) !important;
+	width: 40px !important;
+	height: 32px !important;
+	opacity: 1 !important;
+	position: absolute !important;
+	bottom: auto !important;
+	left: var(--nldesign-logo-center, 50%) !important;
+	top: calc(max(var(--nldesign-size-lint-height, 0px), 100%) - 32px - 4px) !important;
+	transform: translateX(-50%) !important;
+	margin: 0 !important;
+	flex-shrink: 0 !important;
 }
 
 /* Header text and icons */
@@ -89,11 +132,11 @@ header#header {
 	color: var(--nldesign-color-header-text) !important;
 }
 
-/* Header app icons - make them white/light */
+/* Header app icons - dynamic filter (default: none for white headers) */
 #header .app-menu-icon,
 #header .header-menu__trigger,
 #header svg {
-	filter: brightness(0) invert(1);
+	filter: var(--nldesign-header-icon-filter, none);
 }
 
 /* User menu in header */
@@ -158,8 +201,9 @@ header#header {
 	position: relative !important; /* For pseudo-element positioning */
 }
 
-/* LOGIN PAGE HEADER - Rijksoverheid style with blue bar and logo */
-/* Remove the margin, make blue bar part of the login box */
+/* LOGIN PAGE HEADER - Conditional lint/ribbon with dynamic logo */
+/* When --nldesign-color-logo-background is defined: colored bar + inverted logo (Rijkshuisstijl) */
+/* When not defined: logo in natural colors on white background */
 #body-login .guest-box.login-box,
 #body-login .login-box,
 #body-login div.guest-box,
@@ -169,12 +213,12 @@ header#header {
 div.guest-box.login-box,
 div[data-v-48234338].guest-box {
 	position: relative !important;
-	overflow: hidden !important; /* Clip the pseudo-element to box width */
-	margin-top: 0 !important; /* No extra margin needed */
+	overflow: hidden !important;
+	margin-top: 0 !important;
 	padding-top: 0 !important;
 }
 
-/* Create blue bar at TOP of login box (not above it) */
+/* Lint/ribbon bar at TOP of login box - only visible when logo-background is defined */
 #body-login .guest-box.login-box::before,
 #body-login div.guest-box::before,
 #body-login div[class*="guest-box"]::before,
@@ -183,40 +227,40 @@ div.guest-box.login-box::before,
 div[data-v-48234338].guest-box::before {
 	content: '' !important;
 	position: absolute !important;
-	top: 0 !important; /* At the TOP of the login box */
+	top: 0 !important;
 	left: 0 !important;
 	right: 0 !important;
-	width: 100% !important; /* Full width of login box */
-	height: 100px !important; /* Blue bar height */
-	background: var(--nldesign-color-button-primary-background) !important;
-	background-color: var(--nldesign-color-button-primary-background) !important;
+	width: 100% !important;
+	height: var(--nldesign-size-lint-height, 0px) !important;
+	background: var(--nldesign-color-logo-background, transparent) !important;
 	z-index: 1 !important;
 	display: block !important;
 	box-sizing: border-box !important;
 }
 
-/* White logo in the blue bar */
+/* Municipality logo in the login box - dynamic per token set */
 #body-login .guest-box.login-box::after,
 #body-login div.guest-box::after,
 .guest-box.login-box::after,
 div.guest-box.login-box::after {
 	content: '' !important;
 	position: absolute !important;
-	top: 30px !important; /* Vertically centered in blue bar */
+	/* Center logo vertically in the lint bar (if present) or logo area */
+	top: calc(var(--nldesign-size-lint-height, 80px) / 2 - 20px) !important;
 	left: 50% !important;
 	transform: translateX(-50%) !important;
-	width: 100px !important;
+	width: 120px !important;
 	height: 40px !important;
-	background-image: url('../img/nederland-logo.svg') !important;
+	background-image: var(--nldesign-logo-url, none) !important;
 	background-repeat: no-repeat !important;
 	background-position: center !important;
 	background-size: contain !important;
-	filter: brightness(0) invert(1) !important;
+	filter: var(--nldesign-logo-filter, none) !important;
 	z-index: 2 !important;
 	display: block !important;
 }
 
-/* Push login content below blue bar */
+/* Push login content below the lint bar or logo area */
 #body-login div[class*="login-box__wrapper"],
 #body-login .guest-box div[class*="login-box__wrapper"],
 div[class*="login-box__wrapper"],
@@ -225,7 +269,8 @@ div[data-v-48234338][class*="login-box__wrapper"],
 [data-v-48234338].login-box__wrapper {
 	position: relative !important;
 	background: #ffffff !important;
-	padding-top: 100px !important; /* Space for blue bar */
+	/* Use lint height when defined, otherwise a small logo area */
+	padding-top: var(--nldesign-size-lint-height, 80px) !important;
 	z-index: 3 !important;
 }
 
@@ -260,17 +305,18 @@ div[class*="login-box__wrapper"] > div {
 #body-login input[type="submit"],
 #body-login button.primary,
 .login-form button[type="submit"] {
-	background-color: var(--nldesign-color-button-primary-background) !important;
-	border-color: var(--nldesign-color-button-primary-border) !important;
-	color: var(--nldesign-color-button-primary-text) !important;
+	background-color: var(--nldesign-component-button-primary-action-background-color) !important;
+	border-color: var(--nldesign-component-button-primary-action-border-color) !important;
+	color: var(--nldesign-component-button-primary-action-color) !important;
 	border-radius: 0 !important;
 	box-shadow: none !important;
+	transition: background-color var(--nldesign-animation-quick) ease !important;
 }
 
 #body-login .button-vue--vue-primary:hover,
 #body-login input[type="submit"]:hover,
 #body-login button.primary:hover {
-	background-color: var(--nldesign-color-button-primary-hover) !important;
+	background-color: var(--nldesign-component-button-primary-action-hover-background-color) !important;
 	box-shadow: none !important;
 }
 
@@ -302,38 +348,66 @@ body.body-login-container header {
 #body-login input[type="text"]:focus,
 #body-login input[type="password"]:focus,
 #body-login input[type="email"]:focus {
-	border-color: var(--nldesign-color-button-primary-background) !important;
+	border-color: var(--nldesign-component-textbox-focus-border-color) !important;
 	box-shadow: none !important;
 }
 
 /* ============================================
-   BUTTONS
+   BUTTONS — Component Token Mapping
    ============================================ */
+
+/* Base button styling */
+.button-vue,
+button,
+.button {
+	font-family: var(--nldesign-component-button-font-family) !important;
+	font-weight: var(--nldesign-component-button-font-weight) !important;
+	border-radius: var(--nldesign-component-button-border-radius) !important;
+	border-width: var(--nldesign-component-button-border-width) !important;
+	transition: background-color var(--nldesign-animation-quick) ease,
+	            border-color var(--nldesign-animation-quick) ease,
+	            color var(--nldesign-animation-quick) ease !important;
+}
 
 /* Primary buttons */
 .button-vue--vue-primary,
 button.primary,
 input.primary,
 a.primary {
-	background-color: var(--nldesign-color-button-primary-background) !important;
-	border-color: var(--nldesign-color-button-primary-border) !important;
-	color: var(--nldesign-color-button-primary-text) !important;
-	border-radius: var(--nldesign-border-radius) !important;
+	background-color: var(--nldesign-component-button-primary-action-background-color) !important;
+	border-color: var(--nldesign-component-button-primary-action-border-color) !important;
+	color: var(--nldesign-component-button-primary-action-color) !important;
+	font-weight: var(--nldesign-component-button-primary-action-font-weight, 700) !important;
+	border-radius: var(--nldesign-component-button-border-radius) !important;
 }
 
 .button-vue--vue-primary:hover,
 button.primary:hover,
 input.primary:hover,
 a.primary:hover {
-	background-color: var(--nldesign-color-button-primary-hover) !important;
-	border-color: var(--nldesign-color-button-primary-hover) !important;
+	background-color: var(--nldesign-component-button-primary-action-hover-background-color) !important;
+	border-color: var(--nldesign-component-button-primary-action-hover-background-color) !important;
+}
+
+.button-vue--vue-primary:disabled,
+button.primary:disabled {
+	background-color: var(--nldesign-component-button-disabled-background-color) !important;
+	color: var(--nldesign-component-button-disabled-color) !important;
+	border-color: var(--nldesign-component-button-disabled-border-color) !important;
 }
 
 /* Secondary buttons */
 .button-vue--vue-secondary,
 button.secondary {
-	border-color: var(--nldesign-color-border-dark) !important;
-	border-radius: var(--nldesign-border-radius) !important;
+	background-color: var(--nldesign-component-button-secondary-action-background-color) !important;
+	color: var(--nldesign-component-button-secondary-action-color) !important;
+	border-color: var(--nldesign-component-button-secondary-action-border-color) !important;
+	border-radius: var(--nldesign-component-button-border-radius) !important;
+}
+
+.button-vue--vue-secondary:hover,
+button.secondary:hover {
+	background-color: var(--nldesign-component-button-secondary-action-hover-background-color) !important;
 }
 
 /* ============================================
@@ -350,22 +424,25 @@ button.secondary {
 #app-navigation li.active > a,
 #app-navigation .app-navigation-entry.active {
 	background-color: var(--nldesign-color-primary-light) !important;
+	transition: background-color var(--nldesign-animation-quick) ease !important;
 }
 
 /* ============================================
-   LINKS
+   LINKS — Component Token Mapping
    ============================================ */
 
 a {
-	color: var(--nldesign-color-link) !important;
+	color: var(--nldesign-component-link-color) !important;
+	text-decoration: var(--nldesign-component-link-text-decoration) !important;
+	transition: color var(--nldesign-animation-quick) ease !important;
 }
 
 a:hover {
-	color: var(--nldesign-color-link-hover) !important;
+	color: var(--nldesign-component-link-hover-color) !important;
 }
 
 a:visited {
-	color: var(--nldesign-color-link-visited) !important;
+	color: var(--nldesign-component-link-visited-color) !important;
 }
 
 /* Don't color header links */
@@ -373,6 +450,7 @@ a:visited {
 #header a:hover,
 #header a:visited {
 	color: var(--nldesign-color-header-text) !important;
+	text-decoration: none !important;
 }
 
 /* ============================================
@@ -385,8 +463,36 @@ a:visited {
 }
 
 /* ============================================
-   FORM ELEMENTS
+   FORM ELEMENTS — Component Token Mapping
    ============================================ */
+
+/* Text inputs */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+textarea {
+	background-color: var(--nldesign-component-textbox-background-color) !important;
+	color: var(--nldesign-component-textbox-color) !important;
+	border-color: var(--nldesign-component-textbox-border-color) !important;
+	border-width: var(--nldesign-component-textbox-border-width) !important;
+	border-radius: var(--nldesign-component-textbox-border-radius) !important;
+	font-family: var(--nldesign-component-textbox-font-family) !important;
+	font-size: var(--nldesign-component-textbox-font-size) !important;
+	transition: border-color var(--nldesign-animation-quick) ease,
+	            box-shadow var(--nldesign-animation-quick) ease !important;
+}
+
+input[type="text"]:hover,
+input[type="password"]:hover,
+input[type="email"]:hover,
+input[type="search"]:hover,
+textarea:hover {
+	border-color: var(--nldesign-component-textbox-hover-border-color) !important;
+}
 
 input[type="text"]:focus,
 input[type="password"]:focus,
@@ -394,8 +500,43 @@ input[type="email"]:focus,
 input[type="search"]:focus,
 textarea:focus,
 select:focus {
-	border-color: var(--nldesign-color-primary) !important;
+	border-color: var(--nldesign-component-textbox-focus-border-color) !important;
 	box-shadow: 0 0 0 2px var(--nldesign-color-focus) !important;
+}
+
+input:invalid,
+textarea:invalid {
+	border-color: var(--nldesign-component-textbox-invalid-border-color) !important;
+}
+
+input:disabled,
+textarea:disabled {
+	background-color: var(--nldesign-component-textbox-disabled-background-color) !important;
+	color: var(--nldesign-component-textbox-disabled-color) !important;
+}
+
+/* Placeholder colors */
+::placeholder {
+	color: var(--nldesign-color-placeholder-dark) !important;
+	opacity: 1 !important;
+}
+
+/* Select elements */
+select {
+	border-color: var(--nldesign-component-form-select-border-color) !important;
+	border-radius: var(--nldesign-component-form-select-border-radius) !important;
+	transition: border-color var(--nldesign-animation-quick) ease !important;
+}
+
+select:focus {
+	border-color: var(--nldesign-component-form-select-focus-border-color) !important;
+}
+
+/* Form labels */
+label,
+.input-field__label {
+	color: var(--nldesign-component-form-field-label-color) !important;
+	font-weight: var(--nldesign-component-form-field-label-font-weight) !important;
 }
 
 /* ============================================
@@ -418,7 +559,7 @@ input[type="radio"]:checked {
 }
 
 /* ============================================
-   TYPOGRAPHY
+   TYPOGRAPHY — Component Token Mapping
    ============================================ */
 
 /* Apply NL Design typography */
@@ -427,6 +568,78 @@ body,
 #body-login,
 #body-public {
 	font-family: var(--nldesign-font-family) !important;
+}
+
+/* Headings */
+h1 {
+	font-size: var(--nldesign-component-heading-1-font-size) !important;
+	font-weight: var(--nldesign-component-heading-1-font-weight) !important;
+	line-height: var(--nldesign-component-heading-1-line-height) !important;
+	color: var(--nldesign-component-heading-1-color) !important;
+}
+
+h2 {
+	font-size: var(--nldesign-component-heading-2-font-size) !important;
+	font-weight: var(--nldesign-component-heading-2-font-weight) !important;
+	line-height: var(--nldesign-component-heading-2-line-height) !important;
+	color: var(--nldesign-component-heading-2-color) !important;
+}
+
+h3 {
+	font-size: var(--nldesign-component-heading-3-font-size) !important;
+	font-weight: var(--nldesign-component-heading-3-font-weight) !important;
+	line-height: var(--nldesign-component-heading-3-line-height) !important;
+	color: var(--nldesign-component-heading-3-color) !important;
+}
+
+h4 {
+	font-size: var(--nldesign-component-heading-4-font-size) !important;
+	font-weight: var(--nldesign-component-heading-4-font-weight) !important;
+	line-height: var(--nldesign-component-heading-4-line-height) !important;
+	color: var(--nldesign-component-heading-4-color) !important;
+}
+
+h5 {
+	font-size: var(--nldesign-component-heading-5-font-size) !important;
+	font-weight: var(--nldesign-component-heading-5-font-weight) !important;
+	line-height: var(--nldesign-component-heading-5-line-height) !important;
+	color: var(--nldesign-component-heading-5-color) !important;
+}
+
+h6 {
+	font-size: var(--nldesign-component-heading-6-font-size) !important;
+	font-weight: var(--nldesign-component-heading-6-font-weight) !important;
+	line-height: var(--nldesign-component-heading-6-line-height) !important;
+	color: var(--nldesign-component-heading-6-color) !important;
+}
+
+/* Paragraphs */
+p {
+	font-size: var(--nldesign-component-paragraph-font-size) !important;
+	line-height: var(--nldesign-component-paragraph-line-height) !important;
+	color: var(--nldesign-component-paragraph-color) !important;
+}
+
+/* Tables */
+table {
+	border-color: var(--nldesign-component-table-border-color) !important;
+	border-width: var(--nldesign-component-table-border-width) !important;
+}
+
+th {
+	background-color: var(--nldesign-component-table-header-background-color) !important;
+	color: var(--nldesign-component-table-header-color) !important;
+	font-weight: var(--nldesign-component-table-header-font-weight) !important;
+}
+
+tr:hover td {
+	background-color: var(--nldesign-component-table-row-hover-background-color) !important;
+}
+
+/* Separators */
+hr {
+	border-color: var(--nldesign-component-separator-border-color) !important;
+	border-width: var(--nldesign-component-separator-border-width) !important;
 }
 
 /* ============================================
@@ -484,23 +697,27 @@ h2,
 	filter: none !important;
 }
 
-/* Force solid colors on all SVG icons in NAVIGATION ONLY */
+/* Force solid colors on all SVG icons in NAVIGATION and HEADER-END */
 #appmenu svg,
 #appmenu svg *,
 .app-menu svg,
 .app-menu svg *,
 header nav svg,
-header nav svg * {
+header nav svg *,
+#header .header-end svg,
+#header .header-end svg * {
 	stop-color: currentColor !important;
 }
 
-/* Remove gradients from NAVIGATION SVGs only */
+/* Remove gradients from NAVIGATION and HEADER-END SVGs */
 #appmenu svg linearGradient,
 #appmenu svg radialGradient,
 .app-menu svg linearGradient,
 .app-menu svg radialGradient,
 header nav svg linearGradient,
-header nav svg radialGradient {
+header nav svg radialGradient,
+#header .header-end svg linearGradient,
+#header .header-end svg radialGradient {
 	display: none !important;
 }
 

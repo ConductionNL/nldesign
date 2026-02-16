@@ -1,0 +1,139 @@
+/**
+ * Gemeente Drechterland Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* Logo image */
+	--nldesign-logo-url: url('../img/logos/drechterland.svg');
+
+	/* NL Design tokens */
+	--nldesign-color-blue-40: hsl(198 70% 35%);
+	--nldesign-color-grey-0: hsl(0 0% 0%);
+	--nldesign-color-grey-14: hsl(180, 6%, 14%);
+	--nldesign-color-grey-60: hsl(0 0% 60%);
+	--nldesign-color-grey-88: hsl(0 0% 88%);
+	--nldesign-color-grey-94: hsl(0 0% 94%);
+	--nldesign-color-grey-98: hsl(0deg 0% 98%);
+	--nldesign-color-grey-100: hsl(0 0% 100%);
+	--nldesign-color-orange: hsl(28 89% 52%);
+	--nldesign-typography-sans-serif-font-family: Arial,-apple-system,BlinkMacSystemFont,Segoe UI,Source Sans Pro,Helvetica Neue,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+	--nldesign-typography-scale-md-font-size: 1.4em;
+	--nldesign-typography-scale-md-line-height: 2.1;
+	--nldesign-typography-scale-sm-font-size: 1em;
+	--nldesign-typography-scale-sm-line-height: 1.75;
+	--nldesign-typography-weight-scale-bold-font-weight: 700;
+	--nldesign-typography-weight-scale-semi-bold-font-weight: 500;
+	--nldesign-typography-weight-scale-normal-font-weight: 400;
+	--nldesign-space-block-3xs: 0;
+	--nldesign-space-block-2xs: 4px;
+	--nldesign-space-block-xs: 8px;
+	--nldesign-space-block-sm: 12px;
+	--nldesign-space-block-md: 16px;
+	--nldesign-space-block-lg: 20px;
+	--nldesign-space-block-xl: 24px;
+	--nldesign-space-block-2xl: 28px;
+	--nldesign-space-block-3xl: 32px;
+	--nldesign-space-block-4xl: 36px;
+	--nldesign-space-block-5xl: 40px;
+	--nldesign-space-inline-3xs: 0.125ch;
+	--nldesign-space-inline-2xs: 0.25ch;
+	--nldesign-space-inline-xs: 0.5ch;
+	--nldesign-space-inline-sm: 0.75ch;
+	--nldesign-space-inline-md: 1ch;
+	--nldesign-space-inline-lg: 1.5ch;
+	--nldesign-space-inline-xl: 1.75ch;
+	--nldesign-space-inline-2xl: 2ch;
+	--nldesign-space-inline-3xl: 3ch;
+	--nldesign-space-row-3xs: 0;
+	--nldesign-space-row-2xs: 4px;
+	--nldesign-space-row-xs: 8px;
+	--nldesign-space-row-sm: 12px;
+	--nldesign-space-row-md: 16px;
+	--nldesign-space-row-lg: 20px;
+	--nldesign-space-row-xl: 24px;
+	--nldesign-space-row-2xl: 28px;
+	--nldesign-space-row-3xl: 32px;
+	--nldesign-space-row-4xl: 36px;
+	--nldesign-space-row-5xl: 40px;
+	--nldesign-space-column-3xs: 0;
+	--nldesign-space-column-2xs: 4px;
+	--nldesign-space-column-xs: 8px;
+	--nldesign-space-column-sm: 12px;
+	--nldesign-space-column-md: 16px;
+	--nldesign-space-column-lg: 20px;
+	--nldesign-space-column-xl: 24px;
+	--nldesign-space-column-2xl: 28px;
+	--nldesign-space-column-3xl: 32px;
+	--nldesign-space-column-4xl: 36px;
+	--nldesign-space-column-5xl: 40px;
+	--nldesign-article-max-inline-size: 640px;
+	--nldesign-component-button-border-width: 0;
+	--nldesign-component-button-border-radius: 0;
+	--nldesign-component-button-margin-inline-start: 0;
+	--nldesign-component-button-margin-inline-end: 0;
+	--nldesign-component-document-font-size: 1em;
+	--nldesign-component-document-line-height: 1.75;
+	--nldesign-component-form-input-block-size: 44px;
+	--nldesign-component-form-input-line-height: 1.75;
+	--nldesign-component-form-select-border-width: 1px;
+	--nldesign-component-form-select-font-size: 1rem;
+	--nldesign-component-form-select-max-inline-size: 100%;
+	--nldesign-component-heading-1-font-size: 2.1em;
+	--nldesign-component-heading-1-line-height: 1.2;
+	--nldesign-component-heading-1-margin-block-end: 0;
+	--nldesign-component-heading-1-margin-block-start: 0;
+	--nldesign-component-heading-2-font-size: 1.55em;
+	--nldesign-component-heading-2-line-height: 1.2;
+	--nldesign-component-heading-2-margin-block-end: 8px;
+	--nldesign-component-heading-2-margin-block-start: 0;
+	--nldesign-component-heading-3-font-size: 1.3em;
+	--nldesign-component-heading-3-line-height: 1.2;
+	--nldesign-component-heading-3-margin-block-end: 8px;
+	--nldesign-component-heading-3-margin-block-start: 0;
+	--nldesign-component-link-hover-text-decoration: underline;
+	--nldesign-component-paragraph-line-height: 1.75;
+	--nldesign-component-table-header-font-weight: bold;
+	--nldesign-component-table-cell-padding-block-end: 15px;
+	--nldesign-component-table-cell-padding-block-start: 15px;
+	--nldesign-component-table-cell-padding-inline-end: 6px;
+	--nldesign-component-table-cell-padding-inline-start: 6px;
+	--nldesign-component-table-cell-border-color: hsl(0deg 0% 71%);
+	--nldesign-component-table-row-alternate-odd-background-color: hsl(0deg 0% 90%);
+	--nldesign-component-table-row-alternate-even-background-color: hsl(0deg 0% 100%);
+	--nldesign-component-textarea-min-block-size: 95px;
+	--nldesign-component-textbox-border-bottom-width: 1px;
+	--nldesign-component-textbox-border-radius: 2px;
+	--nldesign-component-textbox-border-width: 1px;
+	--nldesign-component-textbox-min-inline-size: 70px;
+	--nldesign-component-textbox-max-inline-size: 620px;
+	--nldesign-component-unordered-list-margin-block-start: 0;
+	--nldesign-component-unordered-list-margin-block-end: 1rem;
+	--nldesign-component-unordered-list-item-margin-inline-start: 18px;
+	--nldesign-component-unordered-list-item-margin-block-start: 0;
+	--nldesign-component-unordered-list-item-margin-block-end: 8px;
+	--nldesign-component-unordered-list-marker-content: ■;
+
+	/* Gemeente Drechterland palette */
+	--drechterland-color-blue-40: hsl(198 70% 35%);
+	--drechterland-color-grey-0: hsl(0 0% 0%);
+	--drechterland-color-grey-14: hsl(180, 6%, 14%);
+	--drechterland-color-grey-60: hsl(0 0% 60%);
+	--drechterland-color-grey-88: hsl(0 0% 88%);
+	--drechterland-color-grey-94: hsl(0 0% 94%);
+	--drechterland-color-grey-98: hsl(0deg 0% 98%);
+	--drechterland-color-grey-100: hsl(0 0% 100%);
+	--drechterland-color-orange: hsl(28 89% 52%);
+	--drechterland-typography-sans-serif-font-family: Arial,-apple-system,BlinkMacSystemFont,Segoe UI,Source Sans Pro,Helvetica Neue,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+	--drechterland-typography-scale-md-font-size: 1.4em;
+	--drechterland-typography-scale-md-line-height: 2.1;
+	--drechterland-typography-scale-sm-font-size: 1em;
+	--drechterland-typography-scale-sm-line-height: 1.75;
+	--drechterland-typography-weight-scale-bold-font-weight: 700;
+	--drechterland-typography-weight-scale-semi-bold-font-weight: 500;
+	--drechterland-typography-weight-scale-normal-font-weight: 400;
+}

@@ -1,0 +1,29 @@
+/**
+ * Ridderkerk Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* NL Design tokens */
+	--nldesign-color-green-20: #008937;
+	--nldesign-color-purple-30: #4d327c;
+	--nldesign-color-blue-100: #f3f5f9;
+	--nldesign-color-grey-20: #2b2b2b;
+	--nldesign-color-grey-100: #ffffff;
+	--nldesign-typography-sans-serif-font-family: Lato, Helvetica Neue, Arial, sans-serif;
+	--nldesign-action-busy-cursor: wait;
+	--nldesign-action-disabled-cursor: not-allowed;
+	--nldesign-action-submit-cursor: pointer;
+
+	/* Ridderkerk palette */
+	--ridderkerk-color-green-20: #008937;
+	--ridderkerk-color-purple-30: #4d327c;
+	--ridderkerk-color-blue-100: #f3f5f9;
+	--ridderkerk-color-grey-20: #2b2b2b;
+	--ridderkerk-color-grey-100: #ffffff;
+	--ridderkerk-typography-sans-serif-font-family: Lato, Helvetica Neue, Arial, sans-serif;
+}

@@ -1,25 +1,36 @@
 /**
  * Gemeente Rotterdam Design Tokens
  *
- * Based on the Rotterdam Design System.
+ * Based on the Rotterdam Design System (RODS).
  * Source: https://github.com/nl-design-system/rotterdam
+ *
+ * Color mapping follows rods.color.* tokens from the official design system.
+ * Green (#00811f) is the brand/accent color used for buttons and header.
+ * Note: RODS uses black (#000000) as interactive.default for text links,
+ * with green appearing on hover. For Nextcloud, green is used as primary
+ * since it drives button backgrounds and accents.
  */
 
 :root {
-	/* Rotterdam primary colors - Green is the signature color */
+	/* Rotterdam primary color - Green (rods.color.base.green tint-01) */
 	--nldesign-color-primary: #00811f;
 	--nldesign-color-primary-text: #ffffff;
-	--nldesign-color-primary-hover: #006619;
+	--nldesign-color-primary-hover: #006E32;
 	--nldesign-color-primary-light: #e6f5ea;
 	--nldesign-color-primary-light-hover: #ccead5;
 
-	/* Rotterdam color palette */
+	/* Logo image */
+	--nldesign-logo-url: url('../img/logos/rotterdam.svg');
+
+	/* Rotterdam color palette (rods.color.*) */
 	--rotterdam-color-green: #00811f;
-	--rotterdam-color-green-dark: #006619;
-	--rotterdam-color-blue: #0066cc;
-	--rotterdam-color-red: #c30000;
-	--rotterdam-color-orange: #ec6d00;
+	--rotterdam-color-green-tint02: #006E32;
+	--rotterdam-color-green-tint03: #00602E;
+	--rotterdam-color-blue: #00689E;
+	--rotterdam-color-red: #D70D0D;
+	--rotterdam-color-orange: #A65600;
 	--rotterdam-color-yellow: #ffc800;
+	--rotterdam-color-magenta: #C93675;
 
 	/* Background colors - for hover states and dark variants. */
 	/* Main background managed by Nextcloud theming system. */
@@ -34,40 +45,40 @@
 	/* Navigation */
 	--nldesign-color-nav-background: #ffffff;
 
-	/* Text colors */
-	--nldesign-color-text: #000000;
-	--nldesign-color-text-muted: #4a4a4a;
+	/* Text colors (rods.color.gray.*) */
+	--nldesign-color-text: #404B4F;
+	--nldesign-color-text-muted: #6b7579;
 	--nldesign-color-text-light: #ffffff;
 
-	/* Status colors */
-	--nldesign-color-error: #c30000;
-	--nldesign-color-error-rgb: 195, 0, 0;
-	--nldesign-color-error-hover: #990000;
-	--nldesign-color-warning: #ec6d00;
-	--nldesign-color-warning-rgb: 236, 109, 0;
+	/* Status colors (rods notification colors) */
+	--nldesign-color-error: #D70D0D;
+	--nldesign-color-error-rgb: 215, 13, 13;
+	--nldesign-color-error-hover: #A30A0A;
+	--nldesign-color-warning: #A65600;
+	--nldesign-color-warning-rgb: 166, 86, 0;
 	--nldesign-color-success: #00811f;
 	--nldesign-color-success-rgb: 0, 129, 31;
-	--nldesign-color-info: #0066cc;
-	--nldesign-color-info-rgb: 0, 102, 204;
+	--nldesign-color-info: #00689E;
+	--nldesign-color-info-rgb: 0, 104, 158;
 
 	/* Border colors */
 	--nldesign-color-border: #cccccc;
 	--nldesign-color-border-dark: #999999;
 
 	/* Focus color */
-	--nldesign-color-focus: rgba(0, 102, 204, 0.5);
-	--nldesign-color-focus-rgb: 0, 102, 204;
+	--nldesign-color-focus: rgba(0, 104, 158, 0.5);
+	--nldesign-color-focus-rgb: 0, 104, 158;
 
-	/* Link colors */
-	--nldesign-color-link: #0066cc;
+	/* Link colors (rods.color.interactive.*) */
+	--nldesign-color-link: #00689E;
 	--nldesign-color-link-hover: #00811f;
 	--nldesign-color-link-visited: #800080;
 
-	/* Button colors */
+	/* Button colors - Green for primary action buttons */
 	--nldesign-color-button-primary-background: #00811f;
 	--nldesign-color-button-primary-text: #ffffff;
 	--nldesign-color-button-primary-border: #00811f;
-	--nldesign-color-button-primary-hover: #006619;
+	--nldesign-color-button-primary-hover: #006E32;
 
 	/* Typography */
 	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;

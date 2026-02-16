@@ -1,0 +1,18 @@
+/**
+ * Gemeente Groningen Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* NL Design tokens */
+	--nldesign-typography-font-weight-normal: 400;
+	--nldesign-typography-font-weight-bold: 500;
+
+	/* Gemeente Groningen palette */
+	--groningen-typography-font-weight-normal: 400;
+	--groningen-typography-font-weight-bold: 500;
+}

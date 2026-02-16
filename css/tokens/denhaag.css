@@ -13,6 +13,9 @@
 	--nldesign-color-primary-light: #e6f4eb;
 	--nldesign-color-primary-light-hover: #cce9d7;
 
+	/* Logo image */
+	--nldesign-logo-url: url('../img/logos/denhaag.svg');
+
 	/* Den Haag color palette */
 	--denhaag-color-green: #1a7a3e;
 	--denhaag-color-green-dark: #156633;

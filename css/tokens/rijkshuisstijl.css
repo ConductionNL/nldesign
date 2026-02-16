@@ -4,20 +4,22 @@
  * Based on the official Dutch national government design system.
  * Source: https://github.com/nl-design-system/rijkshuisstijl-community
  *
- * Note: For production use, consider importing tokens directly from
- * @rijkshuisstijl-community/design-tokens npm package.
+ * Color mapping follows rhc.color.* tokens from the official design system.
+ * Lintblauw (#154273) is the primary brand color (header, buttons).
+ * Donkerblauw (#01689b) is the link/interactive color.
  */
 
 :root {
-	/* Rijkshuisstijl primary colors */
+	/* Rijkshuisstijl primary colors (rhc.color.primary / lintblauw) */
 	--nldesign-color-primary: #154273;
 	--nldesign-color-primary-text: #ffffff;
-	--nldesign-color-primary-hover: #1d5499;
+	--nldesign-color-primary-hover: #162f50;
 	--nldesign-color-primary-light: #e8f0f8;
 	--nldesign-color-primary-light-hover: #d4e4f2;
 
-	/* Rijkshuisstijl color palette */
-	--rh-color-donkerblauw: #154273;
+	/* Rijkshuisstijl color palette (rhc.color.*) */
+	--rh-color-lintblauw: #154273;
+	--rh-color-donkerblauw: #01689b;
 	--rh-color-hemelblauw: #007bc7;
 	--rh-color-lichtblauw: #b2d7ee;
 	--rh-color-donkergroen: #275937;
@@ -32,22 +34,24 @@
 	--rh-color-paars: #42145f;
 	--rh-color-mauve: #b4a7c9;
 
+	/* Page background — Rijkshuisstijl light grey */
+	--nldesign-color-page-background: #F5F6F7;
+
 	/* Background colors - for hover states and dark variants. */
-	/* Main background managed by Nextcloud theming system. */
 	--nldesign-color-background-hover: #e8e9ea;
 	--nldesign-color-background-dark: #e0e1e2;
 	--nldesign-color-background-darker: #d0d1d2;
 
-	/* Header */
-	--nldesign-color-header-background: #154273;
+	/* Header — white with dark text (lint bar provides the brand color) */
+	--nldesign-color-header-background: #ffffff;
 	--nldesign-color-header-text: #333333;
 	--nldesign-header-border-bottom: 0;
 
 	/* Navigation */
 	--nldesign-color-nav-background: #ffffff;
 
-	/* Text colors */
-	--nldesign-color-text: #333333;
+	/* Text colors (rhc.color.foreground.*) */
+	--nldesign-color-text: #0F172A;
 	--nldesign-color-text-muted: #696969;
 	--nldesign-color-text-light: #ffffff;
 
@@ -70,19 +74,31 @@
 	--nldesign-color-focus: rgba(0, 123, 199, 0.5);
 	--nldesign-color-focus-rgb: 0, 123, 199;
 
-	/* Link colors */
-	--nldesign-color-link: #154273;
+	/* Link colors (rhc.color.foreground.link = donkerblauw) */
+	--nldesign-color-link: #01689b;
 	--nldesign-color-link-hover: #007bc7;
 	--nldesign-color-link-visited: #42145f;
 
-	/* Button colors */
+	/* Button colors (lintblauw primary) */
 	--nldesign-color-button-primary-background: #154273;
 	--nldesign-color-button-primary-text: #ffffff;
 	--nldesign-color-button-primary-border: #154273;
-	--nldesign-color-button-primary-hover: #1d5499;
+	--nldesign-color-button-primary-hover: #162f50;
 
 	/* Typography - Using Fira Sans as open-source alternative */
 	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+
+	/* Logo image */
+	--nldesign-logo-url: url('../img/nederland-logo.svg');
+
+	/* Logo lint/ribbon (rhc.logo.image.* + rhc.size.lint) */
+	/* When these are defined, theme.css renders a colored bar behind the logo */
+	--nldesign-color-logo-background: #154273;
+	--nldesign-color-logo-text: #ffffff;
+	--nldesign-size-lint: 48px;
+	--nldesign-size-lint-height: 96px;
+	--nldesign-logo-center: 32px;
+	--nldesign-logo-filter: brightness(0) invert(1);
 
 	/* Border radius - Rijkshuisstijl typically uses minimal rounding */
 	--nldesign-border-radius: 0;

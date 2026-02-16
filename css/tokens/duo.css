@@ -1,0 +1,124 @@
+/**
+ * Duo Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* NL Design tokens */
+	--nldesign-color-blue-30: hsl(206 100% 32%);
+	--nldesign-color-blue-40: hsl(203 100% 39%);
+	--nldesign-color-yellow: hsl(42 100% 54%);
+	--nldesign-color-green: hsl(101 66% 32%);
+	--nldesign-color-white: hsl(0 0% 100%);
+	--nldesign-color-black: hsl(0 0% 17%);
+	--nldesign-color-grey-70: hsl(0 0% 69%);
+	--nldesign-typography-sans-serif-font-family: RijksoverheidSans, Helvetica, Arial, sans-serif;
+	--nldesign-typography-scale-md-font-size: 1.8rem;
+	--nldesign-typography-scale-md-line-height: 2.6rem;
+	--nldesign-typography-scale-sm-font-size: 1.6rem;
+	--nldesign-typography-scale-sm-line-height: 2.2rem;
+	--nldesign-typography-weight-scale-bold-font-weight: 700;
+	--nldesign-typography-weight-scale-semi-bold-font-weight: 500;
+	--nldesign-typography-weight-scale-normal-font-weight: 400;
+	--nldesign-space-block-3xs: 0;
+	--nldesign-space-block-2xs: 4px;
+	--nldesign-space-block-xs: 8px;
+	--nldesign-space-block-sm: 12px;
+	--nldesign-space-block-md: 16px;
+	--nldesign-space-block-lg: 20px;
+	--nldesign-space-block-xl: 24px;
+	--nldesign-space-block-2xl: 28px;
+	--nldesign-space-block-3xl: 32px;
+	--nldesign-space-block-4xl: 36px;
+	--nldesign-space-block-5xl: 40px;
+	--nldesign-space-inline-3xs: 0.125ch;
+	--nldesign-space-inline-2xs: 0.25ch;
+	--nldesign-space-inline-xs: 0.5ch;
+	--nldesign-space-inline-sm: 0.75ch;
+	--nldesign-space-inline-md: 1ch;
+	--nldesign-space-inline-lg: 1.5ch;
+	--nldesign-space-inline-xl: 1.75ch;
+	--nldesign-space-inline-2xl: 2ch;
+	--nldesign-space-inline-3xl: 3ch;
+	--nldesign-space-row-3xs: 0;
+	--nldesign-space-row-2xs: 4px;
+	--nldesign-space-row-xs: 8px;
+	--nldesign-space-row-sm: 12px;
+	--nldesign-space-row-md: 16px;
+	--nldesign-space-row-lg: 20px;
+	--nldesign-space-row-xl: 24px;
+	--nldesign-space-row-2xl: 28px;
+	--nldesign-space-row-3xl: 32px;
+	--nldesign-space-row-4xl: 36px;
+	--nldesign-space-row-5xl: 40px;
+	--nldesign-space-column-3xs: 0;
+	--nldesign-space-column-2xs: 4px;
+	--nldesign-space-column-xs: 8px;
+	--nldesign-space-column-sm: 12px;
+	--nldesign-space-column-md: 16px;
+	--nldesign-space-column-lg: 20px;
+	--nldesign-space-column-xl: 24px;
+	--nldesign-space-column-2xl: 28px;
+	--nldesign-space-column-3xl: 32px;
+	--nldesign-space-column-4xl: 36px;
+	--nldesign-space-column-5xl: 40px;
+	--nldesign-component-badge-counter-border-radius: 6px;
+	--nldesign-component-badge-counter-padding-block: 1ex;
+	--nldesign-component-badge-counter-padding-inline: 1ex;
+	--nldesign-component-badge-border-radius: 0;
+	--nldesign-component-badge-padding-block: 6px;
+	--nldesign-component-button-border-radius: 0;
+	--nldesign-component-button-border-width: 0;
+	--nldesign-component-button-margin-inline-end: 0;
+	--nldesign-component-button-margin-inline-start: 0;
+	--nldesign-component-document-font-size: 16px;
+	--nldesign-component-document-line-height: 22px;
+	--nldesign-component-form-input-block-size: 44px;
+	--nldesign-component-form-input-line-height: 18px;
+	--nldesign-component-form-select-border-width: 1px;
+	--nldesign-component-form-select-font-size: 1rem;
+	--nldesign-component-form-select-max-inline-size: 100%;
+	--nldesign-component-heading-1-font-size: 2.8rem;
+	--nldesign-component-heading-1-line-height: 3.2rem;
+	--nldesign-component-heading-1-margin-block-end: 0;
+	--nldesign-component-heading-1-margin-block-start: 0;
+	--nldesign-component-link-text-decoration: underline;
+	--nldesign-component-paragraph-font-family: Verdana;
+	--nldesign-component-paragraph-line-height: 22px;
+	--nldesign-component-table-caption-font-weight: 700;
+	--nldesign-component-table-header-font-weight: 700;
+	--nldesign-component-table-header-background-color: duo.color.grey.value;
+	--nldesign-component-table-header-border-block-end-width: 0.5px;
+	--nldesign-component-table-cell-line-height: 0.7;
+	--nldesign-component-table-cell-padding-block-end: 15px;
+	--nldesign-component-table-cell-padding-block-start: 15px;
+	--nldesign-component-table-cell-padding-inline-end: 6px;
+	--nldesign-component-table-cell-padding-inline-start: 6px;
+	--nldesign-component-table-cell-border-color: hsl(0deg 0% 71%);
+	--nldesign-component-table-row-border-block-end-color: duo.color.white.value;
+	--nldesign-component-table-row-border-block-end-width: 1px;
+	--nldesign-component-table-row-alternate-odd-background-color: hsl(0deg 0% 90%);
+	--nldesign-component-table-row-alternate-even-background-color: hsl(0deg 0% 100%);
+	--nldesign-component-textarea-min-block-size: 95px;
+
+	/* Duo palette */
+	--duo-color-blue-30: hsl(206 100% 32%);
+	--duo-color-blue-40: hsl(203 100% 39%);
+	--duo-color-yellow: hsl(42 100% 54%);
+	--duo-color-green: hsl(101 66% 32%);
+	--duo-color-white: hsl(0 0% 100%);
+	--duo-color-black: hsl(0 0% 17%);
+	--duo-color-grey-70: hsl(0 0% 69%);
+	--duo-typography-sans-serif-font-family: RijksoverheidSans, Helvetica, Arial, sans-serif;
+	--duo-typography-scale-md-font-size: 1.8rem;
+	--duo-typography-scale-md-line-height: 2.6rem;
+	--duo-typography-scale-sm-font-size: 1.6rem;
+	--duo-typography-scale-sm-line-height: 2.2rem;
+	--duo-typography-weight-scale-bold-font-weight: 700;
+	--duo-typography-weight-scale-semi-bold-font-weight: 500;
+	--duo-typography-weight-scale-normal-font-weight: 400;
+}

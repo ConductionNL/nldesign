@@ -1,0 +1,70 @@
+/**
+ * Gemeente Westervoort Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* NL Design tokens */
+	--nldesign-color-blue-20: hsl(209 100% 21%);
+	--nldesign-color-blue-30: hsl(209 99% 29%);
+	--nldesign-color-blue-35: hsl(194 60% 35%);
+	--nldesign-color-blue-50: hsl(195 60% 50%);
+	--nldesign-color-yellow: hsl(45 93% 76%);
+	--nldesign-color-green-20: hsl(150 100% 20%);
+	--nldesign-color-green-45: hsl(101 41% 47%);
+	--nldesign-color-green-95: hsl(100deg 37% 97%);
+	--nldesign-color-warning: hsl(38deg 46% 39%);
+	--nldesign-color-white: hsl(0 100% 100%);
+	--nldesign-color-black: hsl(0 0% 0%);
+	--nldesign-color-grey-71: hsl(0 0% 71%);
+	--nldesign-color-grey-100: hsl(0 0% 100%);
+	--nldesign-typography-sans-serif-font-family: "Source Sans Pro", "Arial", "Helvetica", "Verdana", sans-serif;
+	--nldesign-typography-scale-md-font-size: 18px;
+	--nldesign-typography-scale-md-line-height: 1.35;
+	--nldesign-typography-scale-sm-font-size: 16px;
+	--nldesign-typography-scale-sm-line-height: 18px;
+	--nldesign-typography-weight-scale-bold-font-weight: 700;
+	--nldesign-typography-weight-scale-semi-bold-font-weight: 500;
+	--nldesign-typography-weight-scale-normal-font-weight: 400;
+	--nldesign-feedback-warning-color: hsl(38deg 46% 39%);
+	--nldesign-component-blockquote-border-inline-start-width: 3px;
+	--nldesign-component-button-hover-text-decoration: underline;
+	--nldesign-component-button-focus-text-decoration: underline;
+	--nldesign-component-document-font-size: 18px;
+	--nldesign-component-table-caption-font-size: 18px;
+	--nldesign-component-table-header-font-weight: bold;
+	--nldesign-component-table-cell-padding-block-end: 15px;
+	--nldesign-component-table-cell-padding-block-start: 15px;
+	--nldesign-component-table-cell-padding-inline-end: 6px;
+	--nldesign-component-table-cell-padding-inline-start: 6px;
+	--nldesign-component-table-cell-border-color: hsl(0deg 0% 71%);
+	--nldesign-component-table-row-alternate-odd-background-color: hsl(0deg 0% 71%);
+	--nldesign-component-table-row-alternate-even-background-color: hsl(0deg 0% 100%);
+
+	/* Gemeente Westervoort palette */
+	--westervoort-color-blue-20: hsl(209 100% 21%);
+	--westervoort-color-blue-30: hsl(209 99% 29%);
+	--westervoort-color-blue-35: hsl(194 60% 35%);
+	--westervoort-color-blue-50: hsl(195 60% 50%);
+	--westervoort-color-yellow: hsl(45 93% 76%);
+	--westervoort-color-green-20: hsl(150 100% 20%);
+	--westervoort-color-green-45: hsl(101 41% 47%);
+	--westervoort-color-green-95: hsl(100deg 37% 97%);
+	--westervoort-color-warning: hsl(38deg 46% 39%);
+	--westervoort-color-white: hsl(0 100% 100%);
+	--westervoort-color-black: hsl(0 0% 0%);
+	--westervoort-color-grey-71: hsl(0 0% 71%);
+	--westervoort-color-grey-100: hsl(0 0% 100%);
+	--westervoort-typography-sans-serif-font-family: "Source Sans Pro", "Arial", "Helvetica", "Verdana", sans-serif;
+	--westervoort-typography-scale-md-font-size: 18px;
+	--westervoort-typography-scale-md-line-height: 1.35;
+	--westervoort-typography-scale-sm-font-size: 16px;
+	--westervoort-typography-scale-sm-line-height: 18px;
+	--westervoort-typography-weight-scale-bold-font-weight: 700;
+	--westervoort-typography-weight-scale-semi-bold-font-weight: 500;
+	--westervoort-typography-weight-scale-normal-font-weight: 400;
+}

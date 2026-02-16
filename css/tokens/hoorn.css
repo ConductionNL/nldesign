@@ -1,0 +1,145 @@
+/**
+ * Gemeente Hoorn Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* Logo image */
+	--nldesign-logo-url: url('../img/logos/hoorn.svg');
+
+	/* NL Design tokens */
+	--nldesign-color-blue-20: #09366c;
+	--nldesign-color-blue-25: hsl(213deg 85% 23%);
+	--nldesign-color-blue-30: hsl(202deg 100% 27%);
+	--nldesign-color-blue-40: hsl(205deg 62% 39%);
+	--nldesign-color-blue-50: hsl(211deg 73% 49%);
+	--nldesign-color-red-40: hsl(347deg 66% 45%);
+	--nldesign-color-red-50: hsl(357deg 55% 53%);
+	--nldesign-color-red-90: hsl(0deg 100% 87%);
+	--nldesign-color-amber-50: hsl(32deg 57% 51%);
+	--nldesign-color-green-40: hsl(104deg 58% 38%);
+	--nldesign-color-purple-40: hsl(312deg 62% 43%);
+	--nldesign-color-yellow-50: hsl(42deg 98% 49%);
+	--nldesign-color-yellow-70: hsl(36deg 99% 73%);
+	--nldesign-color-grey-10: hsl(194, 0%, 13%);
+	--nldesign-color-grey-20: hsl(207deg 9% 23%);
+	--nldesign-color-grey-30: hsl(60deg 6% 30%);
+	--nldesign-color-grey-40: hsl(0deg 0% 39%);
+	--nldesign-color-grey-50: hsl(204deg 2% 46%);
+	--nldesign-color-grey-80: hsl(0deg 0% 82%);
+	--nldesign-color-grey-85: hsl(0deg 0% 87%);
+	--nldesign-color-grey-90: hsl(210deg 5% 91%);
+	--nldesign-color-grey-100: hsl(210deg 5% 100%);
+	--nldesign-typography-sans-serif-font-family: "Clear Sans", sans-serif;
+	--nldesign-component-button-border-width: 0;
+	--nldesign-component-button-border-radius: 0;
+	--nldesign-component-button-font-size: 16px;
+	--nldesign-component-button-line-height: 26px;
+	--nldesign-component-button-padding-block-end: 6px;
+	--nldesign-component-button-padding-block-start: 6px;
+	--nldesign-component-button-padding-inline-end: 30px;
+	--nldesign-component-button-padding-inline-start: 30px;
+	--nldesign-component-button-secondary-action-border-width: 2px;
+	--nldesign-component-document-font-size: 14px;
+	--nldesign-component-document-line-height: 1.42857143;
+	--nldesign-component-form-field-description-font-size: 80%;
+	--nldesign-component-form-field-margin-block-start: 5px;
+	--nldesign-component-form-input-border-radius: 2px;
+	--nldesign-component-form-input-font-size: 16px;
+	--nldesign-component-form-input-padding-block-start: 5px;
+	--nldesign-component-form-input-padding-block-end: 5px;
+	--nldesign-component-form-input-padding-inline-start: 5px;
+	--nldesign-component-form-input-padding-inline-end: 5px;
+	--nldesign-component-form-input-invalid-border-width: 2px;
+	--nldesign-component-form-input-placeholder-font-style: italic;
+	--nldesign-form-label-font-size: 16px;
+	--nldesign-form-label-font-weight: 700;
+	--nldesign-form-label-line-height: 24px;
+	--nldesign-form-label-margin-block-end: 15px;
+	--nldesign-component-heading-1-font-size: 42px;
+	--nldesign-component-heading-1-line-height: 50px;
+	--nldesign-component-heading-1-font-weight: 700;
+	--nldesign-component-heading-1-margin-block-end: 20px;
+	--nldesign-component-heading-1-margin-block-start: 30px;
+	--nldesign-component-heading-2-font-size: 24px;
+	--nldesign-component-heading-2-line-height: 28px;
+	--nldesign-component-heading-2-font-weight: 500;
+	--nldesign-component-heading-2-margin-block-end: 10px;
+	--nldesign-component-heading-2-margin-block-start: 20px;
+	--nldesign-component-heading-3-font-size: 18px;
+	--nldesign-component-heading-3-line-height: 24px;
+	--nldesign-component-heading-3-margin-block-end: 10px;
+	--nldesign-component-heading-3-margin-block-start: 20px;
+	--nldesign-component-heading-4-font-size: 18px;
+	--nldesign-component-heading-4-line-height: 24px;
+	--nldesign-component-heading-4-margin-block-end: 10px;
+	--nldesign-component-heading-4-margin-block-start: 10px;
+	--nldesign-component-heading-5-font-size: 14px;
+	--nldesign-component-heading-5-line-height: 1.1;
+	--nldesign-component-heading-5-margin-block-end: 10px;
+	--nldesign-component-heading-5-margin-block-start: 10px;
+	--nldesign-component-heading-6-font-size: 12px;
+	--nldesign-component-heading-6-line-height: 1.1;
+	--nldesign-component-heading-6-margin-block-end: 10px;
+	--nldesign-component-heading-6-margin-block-start: 10px;
+	--nldesign-component-heading-font-weight: 500;
+	--nldesign-component-link-text-decoration: underline;
+	--nldesign-component-link-focus-text-decoration: none;
+	--nldesign-component-link-hover-text-decoration: none;
+	--nldesign-component-ordered-list-margin-block-start: 0;
+	--nldesign-component-ordered-list-margin-block-end: 20px;
+	--nldesign-component-ordered-list-padding-inline-start: 15px;
+	--nldesign-component-ordered-list-item-margin-inline-start: 20px;
+	--nldesign-component-paragraph-margin-block-end: 10px;
+	--nldesign-component-paragraph-margin-block-start: 0;
+	--nldesign-component-paragraph-line-height: 26px;
+	--nldesign-component-paragraph-font-size: 18px;
+	--nldesign-component-separator-block-size: 1px;
+	--nldesign-component-separator-margin-block-start: 20px;
+	--nldesign-component-separator-margin-block-end: 20px;
+	--nldesign-component-table-font-size: 18px;
+	--nldesign-component-table-font-weight: bold;
+	--nldesign-component-table-line-height: 1.42857143;
+	--nldesign-component-table-caption-font-size: 20px;
+	--nldesign-component-table-caption-text-align: start;
+	--nldesign-component-table-heading-font-weight: 500;
+	--nldesign-component-table-header-border-block-end-width: 2px;
+	--nldesign-component-table-row-border-block-end-width: 1px;
+	--nldesign-component-table-cell-padding-inline-start: 8px;
+	--nldesign-component-table-cell-padding-inline-end: 8px;
+	--nldesign-component-table-cell-padding-block-start: 8px;
+	--nldesign-component-table-cell-padding-block-end: 8px;
+	--nldesign-component-unordered-list-margin-block-start: 0;
+	--nldesign-component-unordered-list-margin-block-end: 20px;
+	--nldesign-component-unordered-list-padding-inline-start: 15px;
+	--nldesign-component-unordered-list-item-margin-inline-start: 20px;
+
+	/* Gemeente Hoorn palette */
+	--hoorn-color-blue-20: #09366c;
+	--hoorn-color-blue-25: hsl(213deg 85% 23%);
+	--hoorn-color-blue-30: hsl(202deg 100% 27%);
+	--hoorn-color-blue-40: hsl(205deg 62% 39%);
+	--hoorn-color-blue-50: hsl(211deg 73% 49%);
+	--hoorn-color-red-40: hsl(347deg 66% 45%);
+	--hoorn-color-red-50: hsl(357deg 55% 53%);
+	--hoorn-color-red-90: hsl(0deg 100% 87%);
+	--hoorn-color-amber-50: hsl(32deg 57% 51%);
+	--hoorn-color-green-40: hsl(104deg 58% 38%);
+	--hoorn-color-purple-40: hsl(312deg 62% 43%);
+	--hoorn-color-yellow-50: hsl(42deg 98% 49%);
+	--hoorn-color-yellow-70: hsl(36deg 99% 73%);
+	--hoorn-color-grey-10: hsl(194, 0%, 13%);
+	--hoorn-color-grey-20: hsl(207deg 9% 23%);
+	--hoorn-color-grey-30: hsl(60deg 6% 30%);
+	--hoorn-color-grey-40: hsl(0deg 0% 39%);
+	--hoorn-color-grey-50: hsl(204deg 2% 46%);
+	--hoorn-color-grey-80: hsl(0deg 0% 82%);
+	--hoorn-color-grey-85: hsl(0deg 0% 87%);
+	--hoorn-color-grey-90: hsl(210deg 5% 91%);
+	--hoorn-color-grey-100: hsl(210deg 5% 100%);
+	--hoorn-typography-sans-serif-font-family: "Clear Sans", sans-serif;
+}
