@@ -1,7 +1,12 @@
 name: Beta Release
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (leave empty to use info.xml version)'
+        required: false
+        default: ''
   push:
     branches:
       - beta
