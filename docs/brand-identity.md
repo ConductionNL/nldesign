@@ -39,7 +39,7 @@ Colors are sourced from each organization's official NL Design System token set.
 | Gemeente Tubbergen | ![#067432](https://via.placeholder.com/16/067432/067432.png) `#067432` | `#FFFFFF` | -- |
 | Gemeente Venray | ![#2A8113](https://via.placeholder.com/16/2A8113/2A8113.png) `#2A8113` | `#FFFFFF` | -- |
 | Gemeente Vught | ![#0088AD](https://via.placeholder.com/16/0088AD/0088AD.png) `#0088AD` | `#FFFFFF` | -- |
-| VNG | ![#003865](https://via.placeholder.com/16/003865/003865.png) `#003865` | `#FFFFFF` | `vng.svg` |
+| VNG | ![#003865](https://via.placeholder.com/16/003865/003865.png) `#003865` | `#0277BD` | `vng.svg` |
 | Gemeente Westervoort | ![#003C6B](https://via.placeholder.com/16/003C6B/003C6B.png) `#003C6B` | `#FFFFFF` | -- |
 | Gemeente Utrecht | ![#24578F](https://via.placeholder.com/16/24578F/24578F.png) `#24578F` | `#FFFFFF` | `utrecht.svg` |
 | Gemeente Den Haag | ![#1a7a3e](https://via.placeholder.com/16/1a7a3e/1a7a3e.png) `#1a7a3e` | `#FFFFFF` | `denhaag.svg` |

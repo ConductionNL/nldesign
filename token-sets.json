@@ -294,7 +294,7 @@
 		"description": "Design tokens for VNG (Vereniging Nederlandse Gemeenten), the association of Dutch municipalities",
 		"theming": {
 			"primary_color": "#003865",
-			"background_color": "#FFFFFF",
+			"background_color": "#0277BD",
 			"logo": "img/logos/vng.svg"
 		}
 	},
