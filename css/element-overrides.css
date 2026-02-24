@@ -306,8 +306,8 @@ body,
 #content,
 .app-content,
 p,
-span:not(#header span):not(#header * span):not(.tile-widget span):not(.tile-widget * span),
-div:not(#header div):not(#header * div):not(.tile-widget div):not(.tile-widget * div),
+span:not(#header span):not(#header * span):not(.tile-widget span):not(.tile-widget * span):not(.button-vue--vue-primary span):not(.button-vue--vue-primary *),
+div:not(#header div):not(#header * div):not(.tile-widget div):not(.tile-widget * div):not(.button-vue--vue-primary div),
 li:not(#header li):not(#header * li),
 a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
 	color: var(--nldesign-color-text) !important;
