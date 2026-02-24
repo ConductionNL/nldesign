@@ -45,9 +45,6 @@
 	--nldesign-color-background-dark: #e0e1e2;
 	--nldesign-color-background-darker: #d0d1d2;
 
-	/* Page background (body) — overridden per token set */
-	--nldesign-color-page-background: #ffffff;
-
 	/* Header & Navigation — white header by default */
 	--nldesign-color-header-background: #ffffff;
 	--nldesign-color-header-text: #333333;
