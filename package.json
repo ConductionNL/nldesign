@@ -22,6 +22,8 @@
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
 		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
+		"stylelint": "stylelint css/**/*.css",
+		"stylelint-fix": "stylelint css/**/*.css --fix",
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
@@ -29,5 +31,8 @@
 		"@amsterdam/design-system-assets": "latest",
 		"@amsterdam/design-system-react-icons": "latest"
 	},
-	"devDependencies": {}
+	"devDependencies": {
+		"stylelint": "^15.11.0",
+		"stylelint-config-recommended": "^13.0.0"
+	}
 }

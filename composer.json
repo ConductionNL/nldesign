@@ -19,20 +19,28 @@
 		"cs:check": "./vendor/bin/phpcs --standard=phpcs.xml",
 		"cs:fix": "./vendor/bin/phpcbf --standard=phpcs.xml",
 		"phpcs": "./vendor/bin/phpcs --standard=phpcs.xml",
-		"phpcs:fix": "./vendor/bin/phpcbf --standard=phpcs.xml"
+		"phpcs:fix": "./vendor/bin/phpcbf --standard=phpcs.xml",
+		"phpmd": "phpmd lib text phpmd.xml || echo 'PHPMD not installed, skipping...'",
+		"phpmetrics": "./vendor/bin/phpmetrics --report-html=phpmetrics lib/",
+		"phpmetrics:violations": "./vendor/bin/phpmetrics --report-violations=phpmetrics/violations.xml lib/",
+		"check": [
+			"@lint",
+			"@phpcs"
+		],
+		"fix": [
+			"@cs:fix"
+		]
 	},
 	"require": {
 		"php": "^8.1"
 	},
 	"require-dev": {
-		"nextcloud/coding-standard": "^1.4",
 		"nextcloud/ocp": "^31.0",
+		"phpmd/phpmd": "^2.15",
+		"phpmetrics/phpmetrics": "^2.8",
 		"squizlabs/php_codesniffer": "^3.9"
 	},
 	"config": {
-		"allow-plugins": {
-			"dealerdirect/phpcodesniffer-composer-installer": true
-		},
 		"optimize-autoloader": true,
 		"sort-packages": true,
 		"platform": {
