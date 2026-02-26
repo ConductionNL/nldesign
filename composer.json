@@ -1,7 +1,7 @@
 {
 	"name": "conductionnl/nldesign",
 	"description": "NL Design System theme for Nextcloud",
-	"license": "AGPL-3.0-or-later",
+	"license": "EUPL-1.2",
 	"authors": [
 		{
 			"name": "Conduction b.v.",

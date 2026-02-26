@@ -11,7 +11,7 @@
 		"theming"
 	],
 	"homepage": "https://github.com/ConductionNL/nldesign",
-	"license": "AGPL-3.0-or-later",
+	"license": "EUPL-1.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ConductionNL/nldesign.git"
