@@ -24,6 +24,12 @@ use OCP\App\IAppManager;
  */
 class TokenSetService
 {
+
+    /**
+     * The app manager for resolving paths.
+     *
+     * @var IAppManager
+     */
     private IAppManager $appManager;
 
     /**
@@ -34,7 +40,7 @@ class TokenSetService
     public function __construct(IAppManager $appManager)
     {
         $this->appManager = $appManager;
-    }
+    }//end __construct()
 
     /**
      * Get the absolute path to the app's directory.
@@ -44,7 +50,7 @@ class TokenSetService
     private function getAppPath(): string
     {
         return $this->appManager->getAppPath('nldesign');
-    }
+    }//end getAppPath()
 
     /**
      * Get all available token sets with metadata.
@@ -55,39 +61,40 @@ class TokenSetService
      */
     public function getAvailableTokenSets(): array
     {
-        $appPath = $this->getAppPath();
-        $tokensDir = $appPath . '/css/tokens';
-        $manifestPath = $appPath . '/token-sets.json';
+        $appPath      = $this->getAppPath();
+        $tokensDir    = $appPath.'/css/tokens';
+        $manifestPath = $appPath.'/token-sets.json';
 
-        // Read metadata from token-sets.json
+        // Read metadata from token-sets.json.
         $metadata = $this->readManifest($manifestPath);
 
-        // Scan filesystem for actual CSS files
+        // Scan filesystem for actual CSS files.
         $tokenSets = [];
-        if (is_dir($tokensDir)) {
+        if (is_dir($tokensDir) === true) {
             $files = scandir($tokensDir);
             foreach ($files as $file) {
-                if (str_ends_with($file, '.css')) {
-                    $id = basename($file, '.css');
-                    $meta = $metadata[$id] ?? null;
+                if (str_ends_with($file, '.css') === true) {
+                    $id       = basename($file, '.css');
+                    $meta     = $metadata[$id] ?? null;
                     $tokenSet = [
-                        'id' => $id,
-                        'name' => $meta['name'] ?? $this->formatName($id),
-                        'description' => $meta['description'] ?? 'Design tokens for ' . $this->formatName($id),
+                        'id'          => $id,
+                        'name'        => $meta['name'] ?? $this->formatName($id),
+                        'description' => $meta['description'] ?? 'Design tokens for '.$this->formatName($id),
                     ];
-                    if (isset($meta['theming']) && is_array($meta['theming'])) {
+                    if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
                         $tokenSet['theming'] = $meta['theming'];
                     }
+
                     $tokenSets[] = $tokenSet;
                 }
             }
         }
 
-        // Sort alphabetically by name
+        // Sort alphabetically by name.
         usort($tokenSets, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
 
         return $tokenSets;
-    }
+    }//end getAvailableTokenSets()
 
     /**
      * Check if a token set exists on the filesystem.
@@ -98,16 +105,16 @@ class TokenSetService
      */
     public function isValidTokenSet(string $tokenSetId): bool
     {
-        // Prevent path traversal
-        if (str_contains($tokenSetId, '/') || str_contains($tokenSetId, '..')) {
+        // Prevent path traversal.
+        if (str_contains($tokenSetId, '/') === true || str_contains($tokenSetId, '..') === true) {
             return false;
         }
 
         $appPath = $this->getAppPath();
-        $cssFile = $appPath . '/css/tokens/' . $tokenSetId . '.css';
+        $cssFile = $appPath.'/css/tokens/'.$tokenSetId.'.css';
 
         return file_exists($cssFile);
-    }
+    }//end isValidTokenSet()
 
     /**
      * Read the token-sets.json manifest and index by id.
@@ -118,7 +125,7 @@ class TokenSetService
      */
     private function readManifest(string $manifestPath): array
     {
-        if (!file_exists($manifestPath)) {
+        if (file_exists($manifestPath) === false) {
             return [];
         }
 
@@ -128,19 +135,19 @@ class TokenSetService
         }
 
         $data = json_decode($content, true);
-        if (!is_array($data)) {
+        if (is_array($data) === false) {
             return [];
         }
 
         $indexed = [];
         foreach ($data as $entry) {
-            if (isset($entry['id'])) {
+            if (isset($entry['id']) === true) {
                 $indexed[$entry['id']] = $entry;
             }
         }
 
         return $indexed;
-    }
+    }//end readManifest()
 
     /**
      * Format a kebab-case id into a display name.
@@ -152,5 +159,5 @@ class TokenSetService
     private function formatName(string $id): string
     {
         return ucwords(str_replace('-', ' ', $id));
-    }
-}
+    }//end formatName()
+}//end class

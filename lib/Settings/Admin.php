@@ -28,8 +28,26 @@ use OCP\Settings\ISettings;
  */
 class Admin implements ISettings
 {
+
+    /**
+     * The config service.
+     *
+     * @var IConfig
+     */
     private IConfig $config;
+
+    /**
+     * The localization service.
+     *
+     * @var IL10N
+     */
     private IL10N $l;
+
+    /**
+     * The token set service.
+     *
+     * @var TokenSetService
+     */
     private TokenSetService $tokenSetService;
 
     /**
@@ -45,9 +63,9 @@ class Admin implements ISettings
         TokenSetService $tokenSetService
     ) {
         $this->config = $config;
-        $this->l = $l;
+        $this->l      = $l;
         $this->tokenSetService = $tokenSetService;
-    }
+    }//end __construct()
 
     /**
      * Get the settings form.
@@ -77,14 +95,16 @@ class Admin implements ISettings
         ) === '1';
 
         return new TemplateResponse(
-            Application::APP_ID, 'settings/admin', [
-            'tokenSets' => $tokenSets,
-            'currentTokenSet' => $currentTokenSet,
-            'hideSlogan' => $hideSlogan,
-            'showMenuLabels' => $showMenuLabels,
-            ]
+            Application::APP_ID,
+                'settings/admin',
+                [
+                    'tokenSets'       => $tokenSets,
+                    'currentTokenSet' => $currentTokenSet,
+                    'hideSlogan'      => $hideSlogan,
+                    'showMenuLabels'  => $showMenuLabels,
+                ]
         );
-    }
+    }//end getForm()
 
     /**
      * Get the settings section identifier.
@@ -94,7 +114,7 @@ class Admin implements ISettings
     public function getSection(): string
     {
         return 'theming';
-    }
+    }//end getSection()
 
     /**
      * Get the priority for ordering in the settings menu.
@@ -104,5 +124,5 @@ class Admin implements ISettings
     public function getPriority(): int
     {
         return 50;
-    }
-}
+    }//end getPriority()
+}//end class
