@@ -131,8 +131,8 @@ class ThemingService
      */
     private function validateSinglePath(string $imageKey, string $imagePath): ?string
     {
-        $hasDotDot    = str_contains(haystack: $imagePath, needle: '..');
-        $startsSlash  = str_starts_with(haystack: $imagePath, prefix: '/');
+        $hasDotDot   = str_contains(haystack: $imagePath, needle: '..');
+        $startsSlash = str_starts_with(haystack: $imagePath, prefix: '/');
         if ($hasDotDot === true || $startsSlash === true) {
             return "Invalid image path for $imageKey: path traversal not allowed";
         }
@@ -205,5 +205,4 @@ class ThemingService
     {
         return $this->imageManager;
     }//end getImageManager()
-
 }//end class

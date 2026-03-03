@@ -11,9 +11,15 @@ style('nldesign', 'admin');
 <div id="nldesign-settings" class="section"
 	 data-token-sets="<?php p(json_encode($_['tokenSets'])); ?>"
 	 data-current-token-set="<?php p($_['currentTokenSet']); ?>">
-	<h2><?php p($l->t('NL Design System Theme')); ?></h2>
+	<div class="nldesign-settings-header">
+		<h2><?php p($l->t('NL Design System Theme')); ?></h2>
+		<a href="https://nldesign.app" target="_blank" rel="noopener noreferrer" class="nldesign-doc-link">
+			<span class="icon-link-external"></span>
+			<?php p($l->t('Documentation')); ?>
+		</a>
+	</div>
 	<p class="settings-hint">
-		<?php p($l->t('Select which Dutch government design token set to apply to your Nextcloud instance.')); ?>
+		<?php p($l->t('Select a Dutch government design token set as a base, or customize individual Nextcloud CSS tokens below.')); ?>
 	</p>
 
 	<div class="nldesign-token-set-selector">
@@ -61,6 +67,11 @@ style('nldesign', 'admin');
 				<button class="nldesign-preview-button"><?php p($l->t('Secondary Button')); ?></button>
 			</div>
 		</div>
+	</div>
+
+	<!-- Token Editor Panel — mounted by admin.js -->
+	<div id="nldesign-token-editor" style="margin-top:2em">
+		<p class="settings-hint"><?php p($l->t('Loading token editor…')); ?></p>
 	</div>
 
 	<p class="nldesign-info">

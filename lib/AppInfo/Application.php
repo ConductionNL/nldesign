@@ -14,7 +14,9 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\AppInfo;
 
+use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Themes\NLDesignTheme;
+use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -99,6 +101,12 @@ class Application extends App implements IBootstrap
 
         // 7. Element overrides — applies NL Design styling to specific Nextcloud elements.
         \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'element-overrides');
+
+        // 8. Custom overrides — admin-defined token overrides, always wins (loaded last).
+        $appManager           = $serverContainer->get(IAppManager::class);
+        $customOverridesSvc   = new CustomOverridesService(appManager: $appManager);
+        $customOverridesSvc->ensureExists();
+        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'custom-overrides');
 
         // Hide slogan if enabled.
         if ($hideSlogan === true) {
