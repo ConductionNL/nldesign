@@ -1,3 +1,7 @@
+---
+sidebar_position: 8
+---
+
 # NL Design — Developer Guide
 
 ## Branching Strategy

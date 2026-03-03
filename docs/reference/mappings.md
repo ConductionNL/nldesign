@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Nextcloud CSS Variable to NL Design Token Mappings
 
 This document provides a complete mapping between every Nextcloud CSS custom property and its `--nldesign-*` equivalent. Variables are organized by category.

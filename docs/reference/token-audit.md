@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # NL Design System Token Audit Report
 
 **Date**: 2026-02-03  

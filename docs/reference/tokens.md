@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # CSS Token Architecture
 
 This document describes how NL Design System tokens are mapped to Nextcloud styling in the nldesign app.

@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Brand Identity
 
 Overview of the brand color, background color, and logo for each token set in the NL Design System app.

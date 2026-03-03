@@ -1,3 +1,7 @@
+---
+sidebar_position: 6
+---
+
 # NL Design System Assets Guide
 
 This document explains where to find official and community fonts, logos, and other assets for implementing the NL Design System in Nextcloud.

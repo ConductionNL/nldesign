@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Rijkshuisstijl Compliance Checklist
 
 This document tracks compliance with the official Rijkshuisstijl requirements as defined by CommunicatieRijk.
