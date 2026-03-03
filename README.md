@@ -1,4 +1,20 @@
-# NL Design System Theme for Nextcloud
+<p align="center">
+  <img src="img/app-store.svg" alt="NL Design System logo" width="80" height="80">
+</p>
+
+<h1 align="center">NL Design System</h1>
+
+<p align="center">
+  <strong>Dutch government design tokens for Nextcloud — WCAG AA compliant theming with Rijkshuisstijl and 38 municipality token sets</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ConductionNL/nldesign/releases"><img src="https://img.shields.io/github/v/release/ConductionNL/nldesign" alt="Latest release"></a>
+  <a href="https://github.com/ConductionNL/nldesign/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License"></a>
+  <a href="https://github.com/ConductionNL/nldesign/actions"><img src="https://img.shields.io/github/actions/workflow/status/ConductionNL/nldesign/code-quality.yml?label=quality" alt="Code quality"></a>
+</p>
+
+---
 
 Apply Dutch government design tokens (NL Design System) to your Nextcloud instance with open-source fonts and components.
 
