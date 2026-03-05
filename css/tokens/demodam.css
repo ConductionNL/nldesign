@@ -1,0 +1,85 @@
+/**
+ * Demodam Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* NL Design tokens */
+	--nldesign-color-green-10: #CBCE1C;
+	--nldesign-color-blue-30: #03A9F4;
+	--nldesign-color-blue-40: #1AB1F5;
+	--nldesign-color-grey-10: #467F70;
+	--nldesign-color-grey-20: #DDDDDD;
+	--nldesign-color-grey-30: #FFFFFF;
+	--nldesign-color-grey-40: #17252A;
+	--nldesign-typography-sans-serif-font-family: "Lato", sans-serif;
+	--nldesign-typography-serif-font-family: "Source Sans Pro", serif;
+	--nldesign-component-page-background-color: F5FaFD;
+	--nldesign-component-button-border-width: 0;
+	--nldesign-component-button-border-radius: .125rem;
+	--nldesign-component-button-margin-block-end: 0.5rem;
+	--nldesign-component-button-font-size: 1.125rem;
+	--nldesign-component-button-font-weight: 600;
+	--nldesign-component-button-min-inline-size: 250px;
+	--nldesign-component-button-padding-block-start: .84rem;
+	--nldesign-component-button-padding-block-end: .84rem;
+	--nldesign-component-button-padding-inline-start: 2.14rem;
+	--nldesign-component-button-padding-inline-end: 2.14rem;
+	--nldesign-component-button-text-transform: uppercase;
+	--nldesign-component-document-background-color: white;
+	--nldesign-component-document-color: #212121;
+	--nldesign-component-document-font-size: 16px;
+	--nldesign-component-document-font-weight: 300;
+	--nldesign-component-document-line-height: 1.5;
+	--nldesign-emphasis-strong-font-weight: 500;
+	--nldesign-form-label-font-weight: 600;
+	--nldesign-component-form-field-margin-block-start: 1.5rem;
+	--nldesign-component-form-field-margin-block-end: 1.5rem;
+	--nldesign-component-form-input-background-color: transparent;
+	--nldesign-component-form-input-border-width: 0;
+	--nldesign-component-form-input-font-size: 16px;
+	--nldesign-component-form-input-font-weight: 600;
+	--nldesign-component-form-input-padding-block-start: .55rem;
+	--nldesign-component-form-input-padding-block-end: .3rem;
+	--nldesign-component-form-input-padding-inline-start: 0;
+	--nldesign-component-form-input-padding-inline-end: 0;
+	--nldesign-component-select-border-block-end-width: 1px;
+	--nldesign-component-heading-1-font-size: 2.375rem;
+	--nldesign-component-heading-1-margin-block-end: 0.5rem;
+	--nldesign-component-heading-2-font-size: 2.25rem;
+	--nldesign-component-heading-2-margin-block-end: 0.5rem;
+	--nldesign-component-heading-3-font-size: 1.75rem;
+	--nldesign-component-heading-3-margin-block-end: 0.5rem;
+	--nldesign-component-heading-4-font-size: 1.75rem;
+	--nldesign-component-heading-4-margin-block-end: 0.5rem;
+	--nldesign-component-heading-6-font-size: 1.5rem;
+	--nldesign-component-heading-6-margin-block-end: 0.5rem;
+	--nldesign-component-heading-font-weight: 400;
+	--nldesign-component-link-text-decoration: none;
+	--nldesign-component-ordered-list-margin-block-end: 2rem;
+	--nldesign-component-ordered-list-padding-inline-start: 2.5rem;
+	--nldesign-component-page-footer-padding-block-start: 60px;
+	--nldesign-component-paragraph-margin-block-start: 0;
+	--nldesign-component-paragraph-margin-block-end: 2rem;
+	--nldesign-component-paragraph-lead-font-size: 1.25rem;
+	--nldesign-component-paragraph-lead-font-weight: 300;
+	--nldesign-component-paragraph-lead-margin-block-end: 3rem;
+	--nldesign-component-textarea-border-bottom-width: 1px;
+	--nldesign-component-textbox-border-bottom-width: 1px;
+	--nldesign-component-ordered-list-marker-content: ●;
+
+	/* Demodam palette */
+	--demodam-color-green-10: #CBCE1C;
+	--demodam-color-blue-30: #03A9F4;
+	--demodam-color-blue-40: #1AB1F5;
+	--demodam-color-grey-10: #467F70;
+	--demodam-color-grey-20: #DDDDDD;
+	--demodam-color-grey-30: #FFFFFF;
+	--demodam-color-grey-40: #17252A;
+	--demodam-typography-sans-serif-font-family: "Lato", sans-serif;
+	--demodam-typography-serif-font-family: "Source Sans Pro", serif;
+}
