@@ -2,47 +2,50 @@
 sidebar_position: 1
 ---
 
-# Installation
+# Installing NL Design
 
-## From the Nextcloud App Store
+Installing NL Design takes about one minute. You do it from inside Nextcloud — no server access needed.
 
-1. Log in to your Nextcloud instance as an administrator
-2. Go to **Apps** (top-right menu)
-3. Search for **NL Design** in the app store
-4. Click **Download and enable**
+## Step 1 — Open the Apps section
 
-The app is active immediately — it applies the default **Rijkshuisstijl** theme on installation.
+Log in to Nextcloud as an administrator. Click your **avatar** (top-right corner) and choose **Apps**.
 
-## Manual Installation
+![Nextcloud avatar menu showing the Apps option alongside Administration settings and other menu items](../img/avatar-menu.png)
 
-If you prefer to install manually or need a specific version:
+## Step 2 — Search for NL Design
 
-1. Download the latest release from [GitHub Releases](https://github.com/ConductionNL/nldesign/releases)
-2. Extract the archive to your Nextcloud `custom_apps` directory:
-   ```bash
-   tar -xzf nldesign-*.tar.gz -C /var/www/html/custom_apps/
-   ```
-3. Set correct ownership:
-   ```bash
-   chown -R www-data:www-data /var/www/html/custom_apps/nldesign
-   ```
-4. Enable the app via the command line:
-   ```bash
-   php occ app:enable nldesign
-   ```
+In the Apps section, type **NL Design** in the search bar. The app is listed under the **Customization** category.
+
+You can also find it directly in the [Nextcloud App Store](https://apps.nextcloud.com/apps/nldesign).
+
+![NL Design System Theme listing in the Nextcloud App Store, showing the app description and supported token sets](../img/appstore-listing.png)
+
+## Step 3 — Click "Download and enable"
+
+Click the **Download and enable** button next to the NL Design app. Nextcloud downloads and activates it automatically.
+
+:::tip
+Once installed, NL Design immediately applies the **Rijkshuisstijl** (Dutch national government) theme. Your Nextcloud will look different straight away — that's expected!
+:::
+
+## Step 4 — Go to the settings
+
+After installation, you're ready to choose your organisation's theme. Go to the settings:
+
+1. Click your **avatar** (top-right corner)
+2. Choose **Administration settings**
+3. Click **Appearance** in the left sidebar
+4. Scroll down to the **NL Design System Theme** section
+
+→ Continue to [Choose your theme](configuration) to pick your organisation.
+
+---
 
 ## Requirements
 
-- Nextcloud 28 or later
-- PHP 8.1 or later
-- No database required — NL Design uses Nextcloud's built-in configuration storage
+- Nextcloud 28 or newer
+- You need to be an administrator
 
-## What happens on install
+## Removing the app
 
-When NL Design is enabled, it injects CSS files into every page load using Nextcloud's `\OCP\Util::addStyle()` mechanism. The CSS files override Nextcloud's default styling with NL Design System tokens.
-
-By default, the **Rijkshuisstijl** (Dutch national government) theme is applied. You can change this in the [admin settings](configuration).
-
-## Uninstalling
-
-Disabling or removing the app immediately restores Nextcloud's default styling. No configuration data is lost — if you re-enable the app, your previous token set selection is remembered.
+If you ever want to remove NL Design, go to **Apps**, find NL Design, and click **Remove**. Nextcloud will revert to its default look immediately. Your settings are saved — if you reinstall the app later, your previous theme choice will still be there.

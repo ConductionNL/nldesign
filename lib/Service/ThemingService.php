@@ -88,7 +88,7 @@ class ThemingService
     {
         foreach (['primary_color', 'background_color'] as $colorKey) {
             if (isset($params[$colorKey]) === true && $params[$colorKey] !== '') {
-                if ($this->isValidHexColor($params[$colorKey]) === false) {
+                if ($this->isValidHexColor(color: $params[$colorKey]) === false) {
                     return "Invalid hex color for $colorKey: {$params[$colorKey]}";
                 }
             }

@@ -36,7 +36,7 @@ class Application extends App implements IBootstrap
      */
     public function __construct()
     {
-        parent::__construct(self::APP_ID);
+        parent::__construct(appName: self::APP_ID);
     }//end __construct()
 
     /**
@@ -63,7 +63,7 @@ class Application extends App implements IBootstrap
         $serverContainer = $context->getServerContainer();
 
         // Inject our CSS variables.
-        $this->injectThemeCSS($serverContainer);
+        $this->injectThemeCSS(serverContainer: $serverContainer);
     }//end boot()
 
     /**
@@ -82,40 +82,40 @@ class Application extends App implements IBootstrap
 
         // CSS Load Order: fonts, defaults, tokens/{org}, utrecht-bridge, theme, overrides, element-overrides.
         // 1. Fonts (Fira Sans from @fontsource).
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'fonts');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'fonts');
 
         // 2. Defaults — sensible Rijkshuisstijl-based defaults for ALL --nldesign-* tokens.
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'defaults');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'defaults');
 
         // 3. Token set — organization-specific tokens override defaults.
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'tokens/'.$tokenSet);
+        \OCP\Util::addStyle(application: self::APP_ID, file:'tokens/'.$tokenSet);
 
         // 4. Utrecht bridge — maps --utrecht-* component tokens to --nldesign-component-*.
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'utrecht-bridge');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'utrecht-bridge');
 
         // 5. Theme — maps --nldesign-* tokens to Nextcloud element styling.
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'theme');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'theme');
 
         // 6. Variable overrides — maps Nextcloud CSS variables to --nldesign-* tokens.
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'overrides');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'overrides');
 
         // 7. Element overrides — applies NL Design styling to specific Nextcloud elements.
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'element-overrides');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'element-overrides');
 
         // 8. Custom overrides — admin-defined token overrides, always wins (loaded last).
-        $appManager           = $serverContainer->get(IAppManager::class);
-        $customOverridesSvc   = new CustomOverridesService(appManager: $appManager);
+        $appManager         = $serverContainer->get(IAppManager::class);
+        $customOverridesSvc = new CustomOverridesService(appManager: $appManager);
         $customOverridesSvc->ensureExists();
-        \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'custom-overrides');
+        \OCP\Util::addStyle(application: self::APP_ID, file:'custom-overrides');
 
         // Hide slogan if enabled.
         if ($hideSlogan === true) {
-            \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'hide-slogan');
+            \OCP\Util::addStyle(application: self::APP_ID, file:'hide-slogan');
         }
 
         // Show menu labels (instead of icons) if enabled.
         if ($showMenuLabels === true) {
-            \OCP\Util::addStyle(appName: self::APP_ID, styleName: 'show-menu-labels');
+            \OCP\Util::addStyle(application: self::APP_ID, file:'show-menu-labels');
         }
     }//end injectThemeCSS()
 }//end class

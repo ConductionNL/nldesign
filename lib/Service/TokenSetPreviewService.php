@@ -78,10 +78,10 @@ class TokenSetPreviewService
         );
 
         // Step 4: resolve --color-* values using the nldesign map.
-        $resolved        = [];
-        $editableTokens  = TokenRegistry::getTokens();
+        $resolved       = [];
+        $editableTokens = TokenRegistry::getTokens();
 
-        foreach ($editableTokens as $colorToken => $meta) {
+        foreach (array_keys($editableTokens) as $colorToken) {
             if (isset($mappings[$colorToken]) === true) {
                 // Mapping exists in overrides.css.
                 $nldesignRef = $mappings[$colorToken];
@@ -91,6 +91,7 @@ class TokenSetPreviewService
                 );
                 $resolved[$colorToken] = $value;
             }
+
             // Non-mapped tokens (e.g. --border-radius-*) are not in overrides.css mappings.
             // Skip them — they have no nldesign mapping to resolve.
         }
@@ -159,8 +160,8 @@ class TokenSetPreviewService
         );
 
         foreach ($matches as $match) {
-            $colorToken    = trim($match[1]);
-            $nldesignToken = trim($match[2]);
+            $colorToken            = trim($match[1]);
+            $nldesignToken         = trim($match[2]);
             $mappings[$colorToken] = $nldesignToken;
         }
 
@@ -173,7 +174,7 @@ class TokenSetPreviewService
      * Handles simple var(--name) references (one level deep).
      * Returns the raw reference string if resolution fails.
      *
-     * @param string               $ref  The value from overrides.css (e.g. '--nldesign-color-primary').
+     * @param string                $ref  The value from overrides.css (e.g. '--nldesign-color-primary').
      * @param array<string, string> $vars The merged --nldesign-* variable map.
      *
      * @return string The resolved value or the original reference.
@@ -185,9 +186,9 @@ class TokenSetPreviewService
             $value = $vars[$ref];
             // If the value itself is a var(), resolve one more level.
             if (str_starts_with(haystack: $value, needle: 'var(') === true) {
-                preg_match('/var\((--[\w-]+)\)/', $value, $m);
-                if (isset($m[1]) === true && isset($vars[$m[1]]) === true) {
-                    return $vars[$m[1]];
+                preg_match('/var\((--[\w-]+)\)/', $value, $varMatch);
+                if (isset($varMatch[1]) === true && isset($vars[$varMatch[1]]) === true) {
+                    return $vars[$varMatch[1]];
                 }
             }
 
@@ -196,5 +197,4 @@ class TokenSetPreviewService
 
         return $ref;
     }//end resolveVarReference()
-
 }//end class

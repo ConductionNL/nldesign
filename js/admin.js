@@ -63,6 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			var newTokenSet  = this.value;
 			var prevTokenSet = this.dataset.previousValue || this.options[this.selectedIndex === 0 ? 0 : this.selectedIndex].value;
 
+			// Same token set selected — no action needed.
+			if (newTokenSet === prevTokenSet) {
+				return;
+			}
+
 			// Store previous value so we can revert on Cancel.
 			this.dataset.previousValue = newTokenSet;
 

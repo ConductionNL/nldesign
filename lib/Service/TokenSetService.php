@@ -66,7 +66,7 @@ class TokenSetService
         $manifestPath = $appPath.'/token-sets.json';
 
         // Read metadata from token-sets.json.
-        $metadata = $this->readManifest($manifestPath);
+        $metadata = $this->readManifest(manifestPath: $manifestPath);
 
         // Scan filesystem for actual CSS files.
         $tokenSets = [];
@@ -78,8 +78,8 @@ class TokenSetService
                     $meta     = $metadata[$id] ?? null;
                     $tokenSet = [
                         'id'          => $id,
-                        'name'        => $meta['name'] ?? $this->formatName($id),
-                        'description' => $meta['description'] ?? 'Design tokens for '.$this->formatName($id),
+                        'name'        => $meta['name'] ?? $this->formatName(id: $id),
+                        'description' => $meta['description'] ?? 'Design tokens for '.$this->formatName(id: $id),
                     ];
                     if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
                         $tokenSet['theming'] = $meta['theming'];

@@ -1,220 +1,216 @@
 <p align="center">
-  <img src="img/app-store.svg" alt="NL Design System logo" width="80" height="80">
+  <img src="img/app-store.svg" alt="NL Design System Theme logo" width="80" height="80">
 </p>
 
-<h1 align="center">NL Design System</h1>
+<h1 align="center">NL Design System Theme</h1>
 
 <p align="center">
-  <strong>Dutch government design tokens for Nextcloud — WCAG AA compliant theming with Rijkshuisstijl and 38 municipality token sets</strong>
+  <strong>Dutch government design tokens for Nextcloud — 39 token sets, Rijkshuisstijl, and WCAG AA compliance</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/ConductionNL/nldesign/releases"><img src="https://img.shields.io/github/v/release/ConductionNL/nldesign" alt="Latest release"></a>
-  <a href="https://github.com/ConductionNL/nldesign/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License"></a>
+  <a href="https://github.com/ConductionNL/nldesign/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-blue" alt="License"></a>
   <a href="https://github.com/ConductionNL/nldesign/actions"><img src="https://img.shields.io/github/actions/workflow/status/ConductionNL/nldesign/code-quality.yml?label=quality" alt="Code quality"></a>
+  <a href="https://nldesign.app"><img src="https://img.shields.io/badge/docs-nldesign.app-green" alt="Documentation"></a>
 </p>
 
 ---
 
-Apply Dutch government design tokens (NL Design System) to your Nextcloud instance with open-source fonts and components.
+NL Design System Theme transforms your Nextcloud into a fully branded Dutch government workspace. Select your organization's token set in admin settings and the entire interface updates instantly — colors, typography, header, login page, and all. No build step, no Vue frontend, just pure CSS theming powered by the official NL Design System tokens.
+
+It works seamlessly with every Nextcloud app that follows standard theming conventions, and pairs naturally with [NL Design System](https://nldesignsystem.nl/) for government-compliant digital services.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="img/screenshot-themes.png" alt="Token set selection with 39 available themes" width="320"></td>
+    <td><img src="img/screenshot-admin-settings.png" alt="Admin settings panel for NL Design configuration" width="320"></td>
+    <td><img src="img/screenshot-themed-login.png" alt="Themed login page with organization branding" width="320"></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Token Sets</em></td>
+    <td align="center"><em>Admin Settings</em></td>
+    <td align="center"><em>Themed Login</em></td>
+  </tr>
+</table>
 
 ## Features
 
-- **39 Token Sets**: Choose from Dutch government design systems including Rijkshuisstijl, Amsterdam, Utrecht, Den Haag, Rotterdam, and 34 more municipalities and organizations
-- **14 Official Logos**: SVG logos sourced from official websites and the NL Design System themes repository
-- **Open Source Fonts**: Uses **Fira Sans** from `@fontsource/fira-sans` as a professional alternative to proprietary government fonts
-- **Easy Configuration**: Select your preferred token set via the admin settings panel
-- **Theming Sync**: Automatically syncs Nextcloud's built-in theming (login page, email templates) to match your selected token set
-- **CSS Variables**: Uses CSS custom properties for flexible theming that integrates with Nextcloud's existing theme system
-- **No Build Required**: Fonts loaded via CDN, tokens are pre-compiled CSS
-- **Amsterdam Design System Icons**: Includes 344 SVG icons and 6 logos from the official Amsterdam Design System
+### Token Sets
+- **39 Organizations** — Rijkshuisstijl (national government), Amsterdam, Utrecht, Rotterdam, Den Haag, Groningen, Nijmegen, Tilburg, Leiden, Zwolle, and 29 more municipalities and organizations
+- **20 Official Logos** — SVG logos sourced from official websites and the NL Design System themes repository
+- **One-Click Theming** — Select a token set in admin settings and the entire Nextcloud interface adapts instantly
+- **Theming Sync** — Automatically syncs Nextcloud's built-in theming (login page, email templates) to match your selected token set
+- **Smart Fallbacks** — Incomplete token sets automatically inherit from Rijkshuisstijl defaults via `defaults.css`
 
-## Installation
+### Compliance & Accessibility
+- **WCAG AA** — All token sets designed for accessibility compliance with proper contrast ratios
+- **Rijkshuisstijl** — Follows Dutch national government visual identity standards
+- **Fira Sans Font** — Open-source alternative to proprietary government fonts, loaded via CDN
+- **NL Design System** — Built on the official Dutch government design token standard
 
-### From Git Repository
-
-1. Clone or download this app to your Nextcloud apps directory:
-   ```bash
-   cd /path/to/nextcloud/apps
-   git clone https://github.com/ConductionNL/nldesign.git
-   ```
-
-2. Install npm dependencies (for fonts and icons):
-   ```bash
-   cd nldesign
-   npm install
-   npm run build
-   ```
-
-3. Enable the app in Nextcloud:
-   ```bash
-   occ app:enable nldesign
-   ```
-
-4. Configure the theme in **Settings → Administration → Theming**
-
-### Docker Environment
-
-If you're running in the provided Docker environment:
-
-```bash
-docker exec -u 33 nextcloud php occ app:enable nldesign
-```
-
-## Configuration
-
-Navigate to **Settings → Administration → Theming** and find the "NL Design System Theme" section.
-
-Select your preferred design token set and reload the page to see the changes. When selecting a token set with theming metadata, a sync dialog offers to update Nextcloud's built-in theming (login page, email templates) to match.
-
-### Background Color
-
-The NL Design app does not set a background color — this delegates to Nextcloud's built-in theming system so organizations can configure it independently.
-
-**To set the background color:**
-
-1. Navigate to **Settings → Administration → Theming**
-2. Scroll to **Background and color** section
-3. Click **Color** and enter your desired background color
-4. Click **Background image** and select **Remove background image** for a solid color
-
-See [Brand Identity](docs/brand-identity.md) for the full list of brand colors per organization.
+### Developer Features
+- **Seven-Layer CSS Variable System** — Structured cascade from fonts through element overrides
+- **No Build Required** — Pure CSS theming; fonts loaded via CDN, tokens are pre-compiled CSS files
+- **Nightly Token Sync** — GitHub Actions workflow automatically syncs upstream NL Design System changes
+- **Filesystem Discovery** — Adding new token sets requires only a CSS file and a JSON manifest entry; no PHP changes
 
 ## Architecture
 
+```mermaid
+graph TD
+    A[Admin Settings] -->|selects token set| B[Application.php]
+    B -->|loads CSS cascade| C[Seven-Layer CSS System]
+    C --> D[fonts.css — Fira Sans]
+    C --> E[defaults.css — Rijkshuisstijl fallbacks]
+    C --> F["tokens/{org}.css — Organization tokens"]
+    C --> G[utrecht-bridge.css — Component mapping]
+    C --> H[theme.css — Nextcloud element styling]
+    C --> I[overrides.css — Nextcloud variable mapping]
+    C --> J[element-overrides.css — Header, login, etc.]
+```
+
+### CSS Load Order
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| 1 | `fonts.css` | Loads Fira Sans from CDN |
+| 2 | `defaults.css` | Sensible Rijkshuisstijl-based defaults for all `--nldesign-*` tokens |
+| 3 | `tokens/{org}.css` | Organization-specific token overrides |
+| 4 | `utrecht-bridge.css` | Maps `--utrecht-*` component tokens to `--nldesign-component-*` |
+| 5 | `theme.css` | Maps `--nldesign-*` tokens to Nextcloud element styling |
+| 6 | `overrides.css` | Maps Nextcloud CSS variables to `--nldesign-*` tokens |
+| 7 | `element-overrides.css` | Applies NL Design styling to specific Nextcloud elements |
+
+### Directory Structure
+
 ```
 nldesign/
-├── appinfo/
-│   ├── info.xml               # App metadata
-│   └── routes.php             # API routes
+├── appinfo/           # Nextcloud app manifest, routes
+├── lib/               # PHP backend — settings controller, token set service
 ├── css/
-│   ├── fonts.css              # Fira Sans font declarations
-│   ├── defaults.css           # Sensible defaults for ALL --nldesign-* tokens
-│   ├── tokens/                # 39 token set files per organization
-│   │   ├── rijkshuisstijl.css
-│   │   ├── amsterdam.css
-│   │   └── ... (39 files)
-│   ├── utrecht-bridge.css     # --utrecht-* → --nldesign-component-* mapping
-│   ├── theme.css              # Maps --nldesign-* tokens to Nextcloud element styling
-│   ├── overrides.css          # Maps Nextcloud CSS variables to --nldesign-* tokens
-│   ├── element-overrides.css  # Element-level styling overrides (header, login, etc.)
-│   └── admin.css              # Admin settings styles
-├── docs/
-│   ├── brand-identity.md      # Brand colors and logos per organization
-│   ├── tokens.md              # CSS token architecture and mapping guidelines
-│   ├── mappings.md            # Complete Nextcloud → NL Design variable mapping
-│   ├── icons.md               # Amsterdam Design System icon reference
-│   ├── assets.md              # Guide to official Rijkshuisstijl assets
-│   ├── compliance.md          # Rijkshuisstijl compliance checklist
-│   └── token-audit.md         # Token set audit against official specs
+│   ├── fonts.css      # Fira Sans font declarations
+│   ├── defaults.css   # Fallback values for all --nldesign-* tokens
+│   ├── tokens/        # 39 organization token set CSS files
+│   ├── utrecht-bridge.css
+│   ├── theme.css
+│   ├── overrides.css
+│   └── element-overrides.css
 ├── img/
-│   ├── logos/                 # 14 municipality/organization logos (SVG)
-│   └── nederland-logo.svg     # Rijkshuisstijl national logo
-├── lib/
-│   ├── AppInfo/Application.php     # CSS load order bootstrap
-│   ├── Controller/SettingsController.php
-│   ├── Service/TokenSetService.php # Filesystem-based token discovery
-│   └── Settings/Admin.php
-├── scripts/
-│   ├── generate-tokens.mjs    # Generates token CSS from NL Design System themes repo
-│   └── generate-logos.mjs     # Generates placeholder logos for missing municipalities
-├── token-sets.json            # Manifest of available token sets + theming metadata
-├── package.json               # NPM dependencies
-└── .github/workflows/
-    └── sync-tokens.yml        # Nightly upstream token sync
+│   └── logos/         # 20 organization logos (SVG)
+├── scripts/           # Token generation and logo scripts
+├── token-sets.json    # Manifest of available token sets + theming metadata
+├── docs/              # Architecture and token documentation
+└── docusaurus/        # Product documentation site (nldesign.app)
 ```
 
-## How It Works
+## Requirements
 
-### Seven-Layer CSS Variable System
+| Dependency | Version |
+|-----------|---------|
+| Nextcloud | 28 -- 33 |
+| PHP | 8.1+ |
 
-1. **Fonts** (`fonts.css`): Loads Fira Sans from CDN
-2. **Defaults** (`defaults.css`): Sensible Rijkshuisstijl-based defaults for ALL `--nldesign-*` tokens
-3. **Token Set** (`tokens/{org}.css`): Organization-specific tokens override defaults
-4. **Utrecht Bridge** (`utrecht-bridge.css`): Maps `--utrecht-*` component tokens to `--nldesign-component-*` equivalents
-5. **Theme** (`theme.css`): Maps `--nldesign-*` tokens to Nextcloud element styling using component tokens
-6. **Variable Overrides** (`overrides.css`): Maps Nextcloud CSS variables to `--nldesign-*` tokens
-7. **Element Overrides** (`element-overrides.css`): Applies NL Design styling to specific Nextcloud elements
+No additional dependencies. This is a pure CSS theming app -- no OpenRegister, no Vue frontend, no npm build step required at runtime.
 
-Incomplete token sets work correctly because `defaults.css` provides fallback values for every token.
+## Installation
 
-### Loading Order
+### From the Nextcloud App Store
 
-```php
-// In Application.php
-\OCP\Util::addStyle(self::APP_ID, 'fonts');              // 1. Fonts
-\OCP\Util::addStyle(self::APP_ID, 'defaults');           // 2. Defaults
-\OCP\Util::addStyle(self::APP_ID, 'tokens/' . $org);     // 3. Token set
-\OCP\Util::addStyle(self::APP_ID, 'utrecht-bridge');     // 4. Utrecht bridge
-\OCP\Util::addStyle(self::APP_ID, 'theme');              // 5. Theme
-\OCP\Util::addStyle(self::APP_ID, 'overrides');          // 6. Variable overrides
-\OCP\Util::addStyle(self::APP_ID, 'element-overrides');  // 7. Element overrides
+1. Go to **Apps** in your Nextcloud instance
+2. Search for **NL Design System Theme**
+3. Click **Download and enable**
+
+### From Source
+
+```bash
+cd /var/www/html/custom_apps
+git clone https://github.com/ConductionNL/nldesign.git
+php occ app:enable nldesign
 ```
 
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [Brand Identity](docs/brand-identity.md) | Brand colors, background colors, and logos for all 39 token sets |
-| [Token Architecture](docs/tokens.md) | CSS token reference, mapping guidelines, and how to add new token sets |
-| [Variable Mappings](docs/mappings.md) | Complete Nextcloud CSS variable to NL Design token mapping |
-| [Icons](docs/icons.md) | Amsterdam Design System icon integration (344 icons + 6 logos) |
-| [Assets Guide](docs/assets.md) | Finding and using official Rijkshuisstijl fonts, logos, and assets |
-| [Compliance](docs/compliance.md) | Rijkshuisstijl compliance checklist |
-| [Token Audit](docs/token-audit.md) | Audit of token sets against official NL Design System specifications |
+Then navigate to **Settings > Administration > Theming** and select your token set.
 
 ## Development
 
-### Syncing Tokens from Upstream
+### Start the environment
 
-Token sets are auto-generated from the [NL Design System themes repository](https://github.com/nl-design-system/themes). A nightly GitHub Actions workflow handles this automatically.
+```bash
+docker compose -f openregister/docker-compose.yml up -d
+```
 
-To manually sync:
+### Working with tokens
+
+No npm build is needed for the app itself. Token sets are pre-compiled CSS files. To regenerate tokens from the upstream NL Design System themes repository:
 
 ```bash
 git clone https://github.com/nl-design-system/themes.git /tmp/themes
 node scripts/generate-tokens.mjs /tmp/themes
 ```
 
-### Adding a New Token Set
+### Adding a new token set
 
 1. Create a CSS file in `css/tokens/` with `--nldesign-*` variables
 2. Add an entry to `token-sets.json` with `id`, `name`, `description`, and `theming` metadata
-3. Optionally add a logo SVG at `img/logos/{id}.svg` and set `--nldesign-logo-url` in the CSS file
-4. **No PHP changes needed** — the admin dropdown and validation use filesystem scanning
+3. Optionally add a logo SVG at `img/logos/{id}.svg`
+4. No PHP changes needed -- the admin dropdown uses filesystem scanning
 
-See [Token Architecture](docs/tokens.md) for the complete token reference.
+### Code quality
 
-## Compliance
+```bash
+# PHP
+composer phpcs          # Check coding standards
+composer cs:fix         # Auto-fix issues
+composer phpmd          # Mess detection
+composer phpmetrics     # HTML metrics report
 
-### Open Source Implementation
+# CSS
+npm run stylelint       # CSS linting
+```
 
-**Included (Free & Legal)**:
-- Fira Sans fonts (SIL OFL 1.1 license)
-- Design token values (colors, spacing, etc.)
-- CSS mapping to Nextcloud variables
-- All municipality color schemes and 14 official logos
+## Tech Stack
 
-**NOT Included (Requires Permission)**:
-- Official Rijkslogo (crown logo)
-- RijksoverheidSansWebText proprietary fonts
-- Official government imagery
+| Layer | Technology |
+|-------|-----------|
+| Theming | CSS custom properties (design tokens) |
+| Token Source | NL Design System themes repository |
+| Fonts | Fira Sans via fontsource CDN |
+| Backend | PHP 8.1+, Nextcloud App Framework |
+| Discovery | Filesystem-based token set scanning (no database) |
+| Quality | PHPCS, PHPMD, phpmetrics, Stylelint |
 
-## Sources
+## Documentation
 
-- [NL Design System](https://nldesignsystem.nl/)
-- [NL Design System Themes Repository](https://github.com/nl-design-system/themes)
-- [Rijkshuisstijl Community](https://github.com/nl-design-system/rijkshuisstijl-community)
-- [Fira Sans on Google Fonts](https://fonts.google.com/specimen/Fira+Sans)
+Full documentation is available at **[nldesign.app](https://nldesign.app)**
+
+| Page | Description |
+|------|-------------|
+| [Getting Started](https://nldesign.app/docs/intro) | Installation and first configuration |
+| [NL Design System](https://nldesignsystem.nl/) | Official Dutch government design token standard |
+| [NL Design Themes](https://github.com/nl-design-system/themes) | Upstream token source repository |
+
+## Standards & Compliance
+
+- **Design standard:** NL Design System (Dutch government design token specification)
+- **Visual identity:** Rijkshuisstijl (Dutch national government brand guidelines)
+- **Accessibility:** WCAG AA contrast and readability requirements
+- **Font licensing:** Fira Sans under SIL Open Font License 1.1
+- **Localization:** English and Dutch
+
+## Related Apps
+
+- **[OpenRegister](https://github.com/ConductionNL/openregister)** -- Object storage and data register
+- **[OpenCatalogi](https://github.com/ConductionNL/opencatalogi)** -- Publication and catalog management
+- **[MyDash](https://github.com/ConductionNL/mydash)** -- Dashboard app (supports NL Design theming)
+- **[Procest](https://github.com/ConductionNL/procest)** -- Case management (supports NL Design theming)
+- **[Pipelinq](https://github.com/ConductionNL/pipelinq)** -- CRM intake (supports NL Design theming)
 
 ## License
 
-AGPL-3.0-or-later
-
-- **This App**: AGPL-3.0-or-later
-- **Fira Sans Font**: SIL Open Font License 1.1
-- **Design Tokens**: Public domain (color values, measurements)
+EUPL-1.2
 
 ## Authors
 
-- [Conduction](https://conduction.nl)
+Built by [Conduction](https://conduction.nl) -- open-source software for Dutch government and public sector organizations.

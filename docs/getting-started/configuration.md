@@ -2,63 +2,61 @@
 sidebar_position: 2
 ---
 
-# Configuration
+# Choosing your theme
 
-## Admin Settings
+This page walks you through picking your organisation's theme and adjusting the optional display settings.
 
-After installing NL Design, configure it through the Nextcloud admin panel:
+## Where to find the settings
 
-1. Go to **Administration Settings** (top-right menu > Administration settings)
-2. Scroll down to **NL Design** in the left sidebar
-3. You'll see the NL Design settings panel
+After installing NL Design, navigate to:
 
-## Selecting a Token Set
+1. Click your **avatar** (top-right corner)
+2. Choose **Administration settings**
+3. Click **Appearance** in the left sidebar
+4. Scroll down until you see the **NL Design System Theme** section
 
-The main configuration is choosing which organization's theme to apply:
+![The NL Design System Theme section in Nextcloud admin settings, showing the Design token set dropdown, two checkboxes, and the preview area](../img/guide-nl-design-section.png)
 
-1. Open the **Token Set** dropdown in the NL Design settings
-2. Browse the list of 39 available organizations
-3. Select your organization (e.g., "Gemeente Amsterdam", "Gemeente Utrecht")
-4. The theme is applied immediately — a color preview shows the selected theme's primary color
+## Step 1 — Pick your organisation
 
-The token set controls all visual styling: primary colors, header colors, button styles, link colors, border radius, and more.
+Click the **Design token set** dropdown. A list of 39 organisations appears — scroll through and click yours.
 
-## Optional Toggles
+![The Design token set dropdown open, showing a list of Dutch municipalities including Gemeente Amsterdam, Gemeente Den Haag, and others](../img/guide-dropdown-open.png)
 
-NL Design provides two optional settings:
+As soon as you select an organisation, the **Preview** section below updates to show the new colours. The **Apply token set** dialog may appear asking which colours to apply — see [Apply Token Set Dialog](../features/apply-dialog) for details, or simply click **Apply selected** to accept all changes.
 
-### Hide Login Slogan
+:::tip
+Not sure which one to choose? Try a few — the preview updates instantly and nothing is saved until you confirm.
+:::
 
-When enabled, hides the tagline/slogan text on the Nextcloud login page. This is useful for organizations that want a cleaner login experience or whose slogan doesn't match the government branding.
+## Step 2 — Check the preview
 
-### Show Menu Labels
+The **Preview** section shows sample buttons in your organisation's colours. This is a live preview of what Nextcloud will look like after you save.
 
-When enabled, displays text labels next to the icons in the Nextcloud app sidebar (left navigation). By default, Nextcloud only shows icons — enabling this makes the sidebar more accessible and easier to navigate.
+![Preview section showing Primary Button and Secondary Button styled in the selected organisation's brand colours](../img/admin-preview-section.png)
 
-## Theming Sync
+## Step 3 — Optional display settings
 
-When you select a token set, NL Design automatically syncs Nextcloud's built-in theming settings:
+Two checkboxes let you adjust how Nextcloud looks:
 
-- **Primary color** — set to the organization's brand color
-- **Background color** — set to the organization's background
-- **Logo** — set to the organization's logo (if available in the token set)
+![Two checkboxes: Hide Nextcloud slogan/payoff on login page, and Show text labels in app menu](../img/admin-nl-design-panel.png)
 
-This ensures consistency between NL Design's CSS theming and Nextcloud's built-in theming system (which controls elements like email templates and mobile app branding).
+**Hide Nextcloud slogan/payoff on login page**
+Removes the "a safe home for all your data" tagline from the login screen. Useful if you want a cleaner, more professional login page for your organisation.
 
-## Configuration Storage
+**Show text labels in app menu (hide icons)**
+Adds text labels next to the app icons in the left sidebar. This makes navigation easier for users who aren't familiar with the icons, and improves accessibility.
 
-NL Design stores three configuration values using Nextcloud's `IConfig`:
+## That's it!
 
-| Key | Values | Default |
-|-----|--------|---------|
-| `nldesign:token_set` | Any token set ID (e.g., `rijkshuisstijl`, `amsterdam`) | `rijkshuisstijl` |
-| `nldesign:hide_slogan` | `0` or `1` | `0` |
-| `nldesign:show_menu_labels` | `0` or `1` | `0` |
+Your Nextcloud now has your organisation's house style. The change takes effect immediately for all users — no restart needed.
 
-These can also be set via the command line:
+---
 
-```bash
-php occ config:app:set nldesign token_set --value=amsterdam
-php occ config:app:set nldesign hide_slogan --value=1
-php occ config:app:set nldesign show_menu_labels --value=1
-```
+## Fine-tuning (optional)
+
+If the theme isn't quite right — for example your organisation uses a slightly different shade of blue — you can adjust individual colours using the **Custom Token Overrides** section directly below the preview.
+
+See [Token Editor](../features/token-editor) for a step-by-step guide on adjusting specific colours.
+
+You can also **export your settings** as a CSS file and **import** them on another instance. See [Import & Export](../features/import-export).

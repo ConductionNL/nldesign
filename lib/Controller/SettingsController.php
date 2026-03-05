@@ -60,25 +60,25 @@ class SettingsController extends Controller
      *
      * @var CustomOverridesService
      */
-    private CustomOverridesService $customOverridesService;
+    private CustomOverridesService $overridesSvc;
 
     /**
      * The token set preview service.
      *
      * @var TokenSetPreviewService
      */
-    private TokenSetPreviewService $tokenSetPreviewService;
+    private TokenSetPreviewService $previewSvc;
 
     /**
      * Constructor.
      *
-     * @param string                 $appName                The app name.
-     * @param IRequest               $request                The request object.
-     * @param IConfig                $config                 The config service.
-     * @param TokenSetService        $tokenSetService        The token set service.
-     * @param ThemingService         $themingService         The theming service.
-     * @param CustomOverridesService $customOverridesService The custom overrides service.
-     * @param TokenSetPreviewService $tokenSetPreviewService The token set preview service.
+     * @param string                 $appName         The app name.
+     * @param IRequest               $request         The request object.
+     * @param IConfig                $config          The config service.
+     * @param TokenSetService        $tokenSetService The token set service.
+     * @param ThemingService         $themingService  The theming service.
+     * @param CustomOverridesService $overridesSvc    The custom overrides service.
+     * @param TokenSetPreviewService $previewSvc      The token set preview service.
      */
     public function __construct(
         string $appName,
@@ -86,15 +86,15 @@ class SettingsController extends Controller
         IConfig $config,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
-        CustomOverridesService $customOverridesService,
-        TokenSetPreviewService $tokenSetPreviewService
+        CustomOverridesService $overridesSvc,
+        TokenSetPreviewService $previewSvc
     ) {
-        parent::__construct($appName, $request);
-        $this->config                 = $config;
-        $this->tokenSetService        = $tokenSetService;
-        $this->themingService         = $themingService;
-        $this->customOverridesService = $customOverridesService;
-        $this->tokenSetPreviewService = $tokenSetPreviewService;
+        parent::__construct(appName: $appName, request: $request);
+        $this->config          = $config;
+        $this->tokenSetService = $tokenSetService;
+        $this->themingService  = $themingService;
+        $this->overridesSvc    = $overridesSvc;
+        $this->previewSvc      = $previewSvc;
     }//end __construct()
 
     /**
@@ -258,6 +258,7 @@ class SettingsController extends Controller
             ]
         );
     }//end getThemingValues()
+
     /**
      * Get the current custom token overrides.
      *
@@ -287,7 +288,7 @@ class SettingsController extends Controller
      * Write new custom token overrides to custom-overrides.css.
      *
      * Accepts a JSON body with an 'overrides' key containing token name => value pairs.
-     * Only tokens in the TokenRegistry are accepted; others are silently ignored.
+     * Returns HTTP 400 if any token is not in the editable registry.
      *
      * @return JSONResponse Status and count of written tokens.
      *
@@ -300,6 +301,16 @@ class SettingsController extends Controller
 
         if (is_array($overrides) === false) {
             return new JSONResponse(['error' => 'overrides must be an object'], 400);
+        }
+
+        // Reject any token that is not in the editable registry.
+        foreach (array_keys($overrides) as $name) {
+            if (TokenRegistry::isEditable(tokenName: $name) === false) {
+                return new JSONResponse(
+                    ['error' => 'Token not editable: '.$name],
+                    400
+                );
+            }
         }
 
         try {
@@ -417,5 +428,4 @@ class SettingsController extends Controller
 
         return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
     }//end getTokenSetPreview()
-
 }//end class
