@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
 use OCP\IL10N;
@@ -28,44 +27,20 @@ use OCP\Settings\ISettings;
  */
 class Admin implements ISettings
 {
-
-    /**
-     * The config service.
-     *
-     * @var IConfig
-     */
     private IConfig $config;
-
-    /**
-     * The localization service.
-     *
-     * @var IL10N
-     */
     private IL10N $l;
-
-    /**
-     * The token set service.
-     *
-     * @var TokenSetService
-     */
-    private TokenSetService $tokenSetService;
 
     /**
      * Constructor.
      *
-     * @param IConfig         $config          The config service.
-     * @param IL10N           $l               The localization service.
-     * @param TokenSetService $tokenSetService The token set service.
+     * @param IConfig $config The config service.
+     * @param IL10N   $l      The localization service.
      */
-    public function __construct(
-        IConfig $config,
-        IL10N $l,
-        TokenSetService $tokenSetService
-    ) {
+    public function __construct(IConfig $config, IL10N $l)
+    {
         $this->config = $config;
-        $this->l      = $l;
-        $this->tokenSetService = $tokenSetService;
-    }//end __construct()
+        $this->l = $l;
+    }
 
     /**
      * Get the settings form.
@@ -74,7 +49,28 @@ class Admin implements ISettings
      */
     public function getForm(): TemplateResponse
     {
-        $tokenSets = $this->tokenSetService->getAvailableTokenSets();
+        $tokenSets = [
+            'rijkshuisstijl' => [
+                'name' => 'Rijkshuisstijl',
+                'description' => $this->l->t('Dutch national government (Rijksoverheid)'),
+            ],
+            'utrecht' => [
+                'name' => 'Gemeente Utrecht',
+                'description' => $this->l->t('Municipality of Utrecht'),
+            ],
+            'amsterdam' => [
+                'name' => 'Gemeente Amsterdam',
+                'description' => $this->l->t('Municipality of Amsterdam'),
+            ],
+            'denhaag' => [
+                'name' => 'Gemeente Den Haag',
+                'description' => $this->l->t('Municipality of The Hague'),
+            ],
+            'rotterdam' => [
+                'name' => 'Gemeente Rotterdam',
+                'description' => $this->l->t('Municipality of Rotterdam'),
+            ],
+        ];
 
         $currentTokenSet = $this->config->getAppValue(
             Application::APP_ID,
@@ -95,16 +91,14 @@ class Admin implements ISettings
         ) === '1';
 
         return new TemplateResponse(
-            Application::APP_ID,
-                'settings/admin',
-                [
-                    'tokenSets'       => $tokenSets,
-                    'currentTokenSet' => $currentTokenSet,
-                    'hideSlogan'      => $hideSlogan,
-                    'showMenuLabels'  => $showMenuLabels,
-                ]
+            Application::APP_ID, 'settings/admin', [
+            'tokenSets' => $tokenSets,
+            'currentTokenSet' => $currentTokenSet,
+            'hideSlogan' => $hideSlogan,
+            'showMenuLabels' => $showMenuLabels,
+            ]
         );
-    }//end getForm()
+    }
 
     /**
      * Get the settings section identifier.
@@ -114,7 +108,7 @@ class Admin implements ISettings
     public function getSection(): string
     {
         return 'theming';
-    }//end getSection()
+    }
 
     /**
      * Get the priority for ordering in the settings menu.
@@ -124,5 +118,5 @@ class Admin implements ISettings
     public function getPriority(): int
     {
         return 50;
-    }//end getPriority()
-}//end class
+    }
+}

@@ -11,19 +11,16 @@
 		"theming"
 	],
 	"homepage": "https://github.com/ConductionNL/nldesign",
-	"license": "EUPL-1.2",
+	"license": "AGPL-3.0-or-later",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ConductionNL/nldesign.git"
 	},
 	"scripts": {
 		"build": "npm run build:fonts && npm run build:icons",
-		"generate:tokens": "node scripts/generate-tokens.mjs",
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
 		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
-		"stylelint": "stylelint css/**/*.css",
-		"stylelint-fix": "stylelint css/**/*.css --fix",
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
@@ -31,8 +28,5 @@
 		"@amsterdam/design-system-assets": "latest",
 		"@amsterdam/design-system-react-icons": "latest"
 	},
-	"devDependencies": {
-		"stylelint": "^15.11.0",
-		"stylelint-config-recommended": "^13.0.0"
-	}
+	"devDependencies": {}
 }

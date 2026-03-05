@@ -2,60 +2,29 @@
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
 	<id>nldesign</id>
-	<name lang="en">NL Design System Theme</name>
-	<name lang="nl">NL Design System Thema</name>
-	<summary lang="en">Brand your Nextcloud with 39 Dutch government design token sets</summary>
-	<summary lang="nl">Geef je Nextcloud de huisstijl van je organisatie met 39 design token sets</summary>
-	<description lang="en"><![CDATA[NL Design System Theme transforms your Nextcloud into a fully branded government workspace. Pick your organization's token set, and the entire interface updates to match your official design standards — colors, typography, and all.
+	<name>NL Design System Theme</name>
+	<summary>Apply Dutch government design tokens (NL Design System) to Nextcloud</summary>
+	<description><![CDATA[
+This app allows you to apply NL Design System design tokens to your Nextcloud instance.
 
-**Key Features**
+Supported design token sets:
+- Rijkshuisstijl (Dutch national government)
+- Gemeente Utrecht
+- Gemeente Amsterdam
+- Gemeente Den Haag
+- Gemeente Rotterdam
 
-- **39 token sets** — Rijkshuisstijl (national government), Amsterdam, Utrecht, Rotterdam, Den Haag, and 34 more municipalities and organizations
-- **One-click theming** — Select your token set in admin settings and the entire Nextcloud interface adapts instantly
-- **Live preview** — See your chosen colors and typography before activating
-- **WCAG AA accessible** — All token sets are designed for accessibility compliance
-- **No build required** — Pure CSS-based theming, lightweight and fast
-- **Fira Sans included** — Open-source font bundled for consistent government typography
-- **Smart fallbacks** — Incomplete token sets automatically inherit from Rijkshuisstijl defaults
-- **Extra options** — Hide the login page slogan, show text labels in the app menu, sync Nextcloud logos with your token set
-
-Works seamlessly with all Nextcloud apps that follow standard theming conventions.
-
-Free and open source under the AGPL license.
+Configure which token set to use in the admin settings.
 	]]></description>
-	<description lang="nl"><![CDATA[NL Design System Thema maakt van je Nextcloud een volledig huisstijl-conforme overheidswerkplek. Kies de token set van je organisatie en de hele interface past zich direct aan — kleuren, typografie en meer.
-
-**Belangrijkste functies**
-
-- **39 token sets** — Rijkshuisstijl (rijksoverheid), Amsterdam, Utrecht, Rotterdam, Den Haag en 34 andere gemeenten en organisaties
-- **Theming met een klik** — Selecteer je token set in de beheerinstellingen en de hele Nextcloud-interface past zich direct aan
-- **Live preview** — Bekijk je gekozen kleuren en typografie voordat je activeert
-- **WCAG AA toegankelijk** — Alle token sets zijn ontworpen voor toegankelijkheidscompliance
-- **Geen build nodig** — Puur CSS-gebaseerde theming, lichtgewicht en snel
-- **Fira Sans inbegrepen** — Open-source lettertype meegeleverd voor consistente overheidstypografie
-- **Slimme fallbacks** — Onvolledige token sets erven automatisch van Rijkshuisstijl-standaardwaarden
-- **Extra opties** — Verberg de slogan op de loginpagina, toon tekstlabels in het app-menu, synchroniseer Nextcloud-logo's met je token set
-
-Werkt naadloos samen met alle Nextcloud-apps die standaard theming-conventies volgen.
-
-Vrij en open source onder de AGPL-licentie.
-	]]></description>
-	<version>0.1.1-unstable.14</version>
+	<version>0.1.1-unstable.5</version>
 	<licence>agpl</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
-	<documentation>
-		<user>https://github.com/ConductionNL/nldesign</user>
-		<admin>https://github.com/ConductionNL/nldesign</admin>
-		<developer>https://github.com/ConductionNL/nldesign</developer>
-	</documentation>
 	<category>customization</category>
 	<website>https://github.com/ConductionNL/nldesign</website>
-	<discussion>https://github.com/ConductionNL/nldesign/discussions</discussion>
 	<bugs>https://github.com/ConductionNL/nldesign/issues</bugs>
 	<repository type="git">https://github.com/ConductionNL/nldesign.git</repository>
 
-	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/app-store.svg</screenshot>
 	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot.png</screenshot>
 
 	<dependencies>
