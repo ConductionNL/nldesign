@@ -1,0 +1,111 @@
+/**
+ * Gemeente Borne Design Tokens
+ *
+ * Auto-generated from nl-design-system/themes repository.
+ * Do not edit manually — changes will be overwritten by the sync workflow.
+ *
+ * Source: https://github.com/nl-design-system/themes
+ */
+
+:root {
+	/* NL Design tokens */
+	--nldesign-color-blue-20: hsl(206 100% 16%);
+	--nldesign-color-blue-40: hsl(205 100% 35%);
+	--nldesign-color-blue-50: hsl(215 86% 47%);
+	--nldesign-color-green-30: hsl(139 54% 34%);
+	--nldesign-color-green-light-30: hsl(166 73% 46%);
+	--nldesign-color-grey-0: hsl(0 0% 0%);
+	--nldesign-color-grey-100: hsl(0 100% 100%);
+	--nldesign-color-petrol-30: hsl(180 100% 25%);
+	--nldesign-color-petrol-40: hsl(199 45% 41%);
+	--nldesign-typography-sans-serif-font-family: "Droid Sans W01",-apple-system,"BlinkMacSystemFont","Segoe UI","Roboto","Helvetica Neue","Arial","Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+	--nldesign-typography-scale-md-font-size: 16px;
+	--nldesign-typography-scale-md-line-height: 22px;
+	--nldesign-typography-scale-sm-font-size: 14px;
+	--nldesign-typography-scale-sm-line-height: 18px;
+	--nldesign-typography-weight-scale-bold-font-weight: 700;
+	--nldesign-typography-weight-scale-semi-bold-font-weight: 500;
+	--nldesign-typography-weight-scale-normal-font-weight: 400;
+	--nldesign-space-block-3xs: 0;
+	--nldesign-space-block-2xs: 4px;
+	--nldesign-space-block-xs: 8px;
+	--nldesign-space-block-sm: 12px;
+	--nldesign-space-block-md: 16px;
+	--nldesign-space-block-lg: 20px;
+	--nldesign-space-block-xl: 24px;
+	--nldesign-space-block-2xl: 28px;
+	--nldesign-space-block-3xl: 32px;
+	--nldesign-space-block-4xl: 36px;
+	--nldesign-space-block-5xl: 40px;
+	--nldesign-space-inline-3xs: 0.125ch;
+	--nldesign-space-inline-2xs: 0.25ch;
+	--nldesign-space-inline-xs: 0.5ch;
+	--nldesign-space-inline-sm: 0.75ch;
+	--nldesign-space-inline-md: 1ch;
+	--nldesign-space-inline-lg: 1.5ch;
+	--nldesign-space-inline-xl: 1.75ch;
+	--nldesign-space-inline-2xl: 2ch;
+	--nldesign-space-inline-3xl: 3ch;
+	--nldesign-space-row-3xs: 0;
+	--nldesign-space-row-2xs: 4px;
+	--nldesign-space-row-xs: 8px;
+	--nldesign-space-row-sm: 12px;
+	--nldesign-space-row-md: 16px;
+	--nldesign-space-row-lg: 20px;
+	--nldesign-space-row-xl: 24px;
+	--nldesign-space-row-2xl: 28px;
+	--nldesign-space-row-3xl: 32px;
+	--nldesign-space-row-4xl: 36px;
+	--nldesign-space-row-5xl: 40px;
+	--nldesign-space-column-3xs: 0;
+	--nldesign-space-column-2xs: 4px;
+	--nldesign-space-column-xs: 8px;
+	--nldesign-space-column-sm: 12px;
+	--nldesign-space-column-md: 16px;
+	--nldesign-space-column-lg: 20px;
+	--nldesign-space-column-xl: 24px;
+	--nldesign-space-column-2xl: 28px;
+	--nldesign-space-column-3xl: 32px;
+	--nldesign-space-column-4xl: 36px;
+	--nldesign-space-column-5xl: 40px;
+	--nldesign-component-button-border-radius: 2px;
+	--nldesign-component-document-font-size: 14px;
+	--nldesign-component-document-line-height: 1.56;
+	--nldesign-component-form-input-border-width: 1px;
+	--nldesign-component-form-input-border-radius: 2px;
+	--nldesign-component-heading-1-font-size: 1.25rem;
+	--nldesign-component-heading-1-font-weight: 700;
+	--nldesign-component-heading-1-line-height: 30px;
+	--nldesign-component-heading-1-margin-block-end: 0;
+	--nldesign-component-heading-1-margin-block-start: 0;
+	--nldesign-component-link-hover-text-decoration: underline;
+	--nldesign-component-paragraph-line-height: 22px;
+	--nldesign-component-table-header-font-weight: bold;
+	--nldesign-component-table-header-border-block-end-width: 0.5px;
+	--nldesign-component-table-cell-padding-block-end: 15px;
+	--nldesign-component-table-cell-padding-block-start: 15px;
+	--nldesign-component-table-cell-padding-inline-end: 6px;
+	--nldesign-component-table-cell-padding-inline-start: 6px;
+	--nldesign-component-table-cell-border-color: hsl(0deg 0% 71%);
+	--nldesign-component-table-row-alternate-odd-background-color: hsl(0deg 0% 90%);
+	--nldesign-component-table-row-alternate-even-background-color: hsl(0deg 0% 100%);
+
+	/* Gemeente Borne palette */
+	--borne-color-blue-20: hsl(206 100% 16%);
+	--borne-color-blue-40: hsl(205 100% 35%);
+	--borne-color-blue-50: hsl(215 86% 47%);
+	--borne-color-green-30: hsl(139 54% 34%);
+	--borne-color-green-light-30: hsl(166 73% 46%);
+	--borne-color-grey-0: hsl(0 0% 0%);
+	--borne-color-grey-100: hsl(0 100% 100%);
+	--borne-color-petrol-30: hsl(180 100% 25%);
+	--borne-color-petrol-40: hsl(199 45% 41%);
+	--borne-typography-sans-serif-font-family: "Droid Sans W01",-apple-system,"BlinkMacSystemFont","Segoe UI","Roboto","Helvetica Neue","Arial","Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+	--borne-typography-scale-md-font-size: 16px;
+	--borne-typography-scale-md-line-height: 22px;
+	--borne-typography-scale-sm-font-size: 14px;
+	--borne-typography-scale-sm-line-height: 18px;
+	--borne-typography-weight-scale-bold-font-weight: 700;
+	--borne-typography-weight-scale-semi-bold-font-weight: 500;
+	--borne-typography-weight-scale-normal-font-weight: 400;
+}

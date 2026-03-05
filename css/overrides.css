@@ -35,6 +35,175 @@ ol {
 }
 
 /* ============================================
+   OVERRIDE NEXTCLOUD CONTAINER VARIABLES
+   ============================================ */
+
+/* Override body container radius to use NL Design border radius. */
+:root,
+body {
+	--body-container-radius: var(--nldesign-border-radius) !important;
+	--body-container-margin: 15px !important;
+}
+
+/* NL Design Layout - Separate navigation and content cards. */
+/* Main content wrapper should be transparent to show background. */
+#content,
+.content[data-v-1f87d811] {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* App navigation (left sidebar) as white card with margin. */
+#app-navigation,
+.app-navigation,
+#app-navigation-vue {
+	background: var(--color-main-background) !important;
+	background-color: var(--color-main-background) !important;
+	margin-right: 30px !important;
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* Remove margin when navigation is closed. */
+#app-navigation.app-navigation--close,
+.app-navigation.app-navigation--close {
+	margin-right: 0 !important;
+}
+
+/* Navigation toggle button - remove excessive padding. */
+.app-navigation-toggle,
+.app-navigation-toggle.button-vue,
+button.app-navigation-toggle {
+	padding: 0 !important;
+	padding-inline: 0 !important;
+	padding-block: 0 !important;
+	min-width: var(--default-clickable-area) !important;
+	min-height: var(--default-clickable-area) !important;
+}
+
+/* App content (main area) as white card. */
+#app-content,
+.app-content,
+#app-content-vue,
+.app-content-wrapper {
+	background: var(--color-main-background) !important;
+	background-color: var(--color-main-background) !important;
+	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* MyDash specific styling - transparent background and no padding/margins. */
+/* Target the NcAppContent component wrapper for MyDash. */
+body #content #app-content-vue.app-content,
+body #content main.app-content,
+body #app-mydash .app-content,
+body #app-mydash #app-content-vue,
+body #app-mydash main.app-content,
+body [data-v-e64fb40a][data-v-1f87d811].app-content,
+body main[data-v-e64fb40a].app-content,
+#mydash-app {
+	background: transparent !important;
+	background-color: transparent !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* MyDash content wrapper - special margins. */
+#content.app-mydash {
+	margin-left: 2px !important;
+	margin-right: 0 !important;
+	margin-bottom: 0 !important;
+	margin-top: 40px !important;
+}
+
+/* Even more specific - target by parent app structure. */
+#content-vue[data-app="mydash"] .app-content,
+div[id*="mydash"] ~ .app-content,
+body:has(#mydash-app) #app-content-vue,
+body:has(#mydash-app) main.app-content {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+.mydash-container {
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+/* ============================================
+   FIX HEADER-END SPACING
+   ============================================ */
+
+/* Add padding to the right side of the header end section and remove margin. */
+.header-end,
+#header .header-end,
+header#header .header-end {
+	padding-right: 15px !important;
+	margin: 0 !important;
+}
+
+/* Add right positioning to header menu trigger. */
+.header-menu__trigger,
+#header .header-menu__trigger,
+header#header .header-menu__trigger {
+	right: 12px !important;
+}
+
+/* ============================================
+   FIX HEADER-END ICONS (make them visible on white background)
+   ============================================ */
+
+/* Invert icons in header-end section to make them dark on white background. */
+html body #header .header-end svg,
+body #header .header-end svg,
+#header .header-end svg,
+html body #header .header-end .button-vue__icon,
+body #header .header-end .button-vue__icon,
+#header .header-end .button-vue__icon,
+html body #header .header-end .icon-vue,
+body #header .header-end .icon-vue,
+#header .header-end .icon-vue,
+html body #header .header-end img,
+body #header .header-end img,
+#header .header-end img {
+	filter: invert(1) brightness(0) contrast(100) !important;
+	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
+	opacity: 1 !important;
+}
+
+/* Exception: Don't invert the avatar image. */
+html body #header .header-end .avatardiv img,
+body #header .header-end .avatardiv img,
+#header .header-end .avatardiv img {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
+/* Exception: Don't invert the user status icon (it has its own color). */
+html body #header .header-end .user-status-icon svg,
+body #header .header-end .user-status-icon svg,
+#header .header-end .user-status-icon svg {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
+/* Remove gradient masks from header-end icons. */
+html body #header .header-end .icon-vue,
+body #header .header-end .icon-vue,
+#header .header-end .icon-vue,
+html body #header .header-end .button-vue__icon,
+body #header .header-end .button-vue__icon,
+#header .header-end .button-vue__icon,
+html body #header .header-end [class*="icon"],
+body #header .header-end [class*="icon"],
+#header .header-end [class*="icon"] {
+	mask: none !important;
+	-webkit-mask: none !important;
+	mask-image: none !important;
+	-webkit-mask-image: none !important;
+	background-image: none !important;
+	background: transparent !important;
+}
+
+/* ============================================
    FIX "GOEDEMORGEN" VISIBILITY
    ============================================ */
 
@@ -99,9 +268,11 @@ header nav .icon {
    NEXTCLOUD LOGO REPLACEMENT
    ============================================ */
 
-/* Hide original logo image */
-#nextcloud .logo,
-#nextcloud .logo-icon,
+/* Note: Logo is now handled via normal Nextcloud theming.
+   Apps like mydash can style the logo container as needed.
+   We keep #nextcloud minimal and let the .logo.logo-icon show normally. */
+
+/* Hide direct svg/img children (not the .logo-icon div) */
 #nextcloud > svg,
 #nextcloud > img,
 #nextcloud > a > svg,
@@ -110,25 +281,18 @@ header nav .icon {
 	visibility: hidden !important;
 }
 
-/* Hide any text content inside */
-#nextcloud,
-#nextcloud a,
-#nextcloud span,
-#nextcloud div {
-	font-size: 0 !important;
-	color: transparent !important;
-	text-indent: -9999px !important;
+/* Let .logo and .logo-icon be visible - they contain the themed logo */
+#nextcloud .logo,
+#nextcloud .logo-icon {
+	/* Don't hide these - they contain the configured logo via background-image. */
 }
 
-/* Show only logo icon (specific icon loaded via separate CSS based on token set) */
+/* Basic nextcloud link styling */
 #nextcloud {
 	visibility: visible !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	width: 50px !important;
-	height: 50px !important;
-	padding: 8px !important;
 }
 
 /* Logo icon styling is defined in logo-{tokenset}.css files */
@@ -138,12 +302,12 @@ header nav .icon {
    ============================================ */
 
 /* Set default solid backgrounds, but allow custom widget styles to override */
-/* Exclude tiles and MyDash widgets to allow custom styling */
-.panel:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-.widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-.dashboard-widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-[class*="panel"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
-[class*="widget"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *),
+/* Exclude tiles, MyDash widgets, and header elements to allow custom styling */
+.panel:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+.widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+.dashboard-widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+[class*="panel"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+[class*="widget"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
 #app-content,
 .app-content {
 	background: #ffffff;
@@ -308,4 +472,480 @@ select,
 #settings:hover,
 #expand:hover {
 	border-radius: var(--nldesign-border-radius) !important;
+}
+
+/* ============================================
+   LOGIN PAGE - RIJKSOVERHEID BLUE BAR
+   ============================================
+   
+   Blue bar with logo at top center:
+   - Blue bar: 60px wide × 90px high
+   - Logo: 50px wide, positioned at bottom with 5px margin
+   ============================================ */
+
+/* Narrow blue bar at top center. */
+#body-login .guest-box.login-box::before,
+#body-login div.guest-box.login-box::before,
+div.guest-box.login-box::before {
+	content: '' !important;
+	position: absolute !important;
+	top: 0 !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	width: 60px !important;
+	height: 90px !important;
+	background: #154273 !important;
+	z-index: 1000 !important;
+	display: block !important;
+	pointer-events: none !important;
+}
+
+/* White logo in the narrow blue bar - positioned at bottom. */
+#body-login .guest-box.login-box::after,
+#body-login div.guest-box.login-box::after,
+div.guest-box.login-box::after {
+	content: '' !important;
+	position: absolute !important;
+	top: 35px !important; /* 90px - 50px logo - 5px margin = 35px from top */
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	width: 50px !important;
+	height: 50px !important;
+	background-image: var(--image-logo, url('../img/nederland-logo.svg')) !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: contain !important;
+	filter: brightness(0) invert(1) !important;
+	z-index: 1001 !important;
+	display: block !important;
+	pointer-events: none !important;
+}
+
+/* Push guest-box content down. */
+#body-login .guest-box.login-box,
+#body-login div.guest-box.login-box,
+div.guest-box.login-box {
+	position: relative !important;
+	padding-top: 90px !important;
+	overflow: visible !important;
+}
+
+/* ============================================
+   LOGGED-IN HEADER STYLING (NL DESIGN)
+   ============================================
+   
+   This section applies NL Design styling to the Nextcloud header:
+   - White header background
+   - Blue bar with logo at left (using configured Nextcloud logo)
+   - Dark text and icons on white background
+   - Token-based colors for consistency
+   ============================================ */
+
+/* Remove any top margin/padding from body to eliminate white space. */
+html,
+body {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Allow header to overflow for blue bar sticking out. */
+html body.body-user #body-user,
+body.body-user #body-user,
+html body #body-user,
+body #body-user,
+#body-user {
+	overflow: visible !important;
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* White header background. */
+html body.body-user #body-user #header,
+body.body-user #body-user #header,
+html body #body-user #header,
+body #body-user #header,
+html body #header,
+body #header,
+#body-user #header,
+#header {
+	background-color: #ffffff !important;
+	background-image: none !important;
+	background: #ffffff !important;
+	border-bottom: var(--nldesign-header-border-bottom, 0) !important;
+	position: relative !important;
+	overflow: visible !important;
+}
+
+/* Blue bar container - target the actual nextcloud logo link. */
+html body #header a#nextcloud,
+body #header a#nextcloud,
+#header a#nextcloud,
+html body #header a[href="/"],
+body #header a[href="/"],
+#header a[href="/"] {
+	position: fixed !important;
+	left: 15px !important;
+	top: 0 !important;
+	width: 60px !important;
+	height: 90px !important;
+	margin: 0 !important;
+	background: #154273 !important;
+	background-color: #154273 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: flex-end !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	box-sizing: border-box !important;
+	text-align: center !important;
+}
+
+/* Disable pseudo-element logo approach. */
+html body #header a#nextcloud::before,
+body #header a#nextcloud::before,
+#header a#nextcloud::before,
+html body #header a[href="/"]::before,
+body #header a[href="/"]::before,
+#header a[href="/"]::before {
+	content: none !important;
+	display: none !important;
+}
+
+/* Logo element inside the blue bar - use the actual Nextcloud configured logo. */
+html body #header a#nextcloud .logo.logo-icon,
+body #header a#nextcloud .logo.logo-icon,
+#header a#nextcloud .logo.logo-icon,
+html body #header a[href="/"] .logo.logo-icon,
+body #header a[href="/"] .logo.logo-icon,
+#header a[href="/"] .logo.logo-icon {
+	display: block !important;
+	visibility: visible !important;
+	width: 50px !important;
+	min-width: 50px !important;
+	max-width: 50px !important;
+	height: 0 !important;
+	min-height: 50px !important;
+	max-height: 65px !important;
+	background-size: contain !important;
+	background-repeat: no-repeat !important;
+	background-position: center center !important;
+	background-color: transparent !important;
+	background-image: var(--image-logoheader, var(--image-logo, url(../img/logo/logo.svg))) !important;
+	filter: brightness(0) invert(1) !important;
+	opacity: 1 !important;
+	margin: 0 5px 5px 5px !important;
+	padding: 0 !important;
+	flex-shrink: 0 !important;
+	flex-grow: 0 !important;
+	position: static !important;
+	text-indent: 0 !important;
+	overflow: visible !important;
+	border: none !important;
+	box-shadow: none !important;
+	font-size: 0 !important;
+}
+
+/* Remove old pseudo-elements. */
+html body #header::before,
+body #header::before,
+#header::before,
+html body #header::after,
+body #header::after,
+#header::after {
+	content: none !important;
+	display: none !important;
+}
+
+/* Push header left content to make space for blue bar. */
+html body #header .header-left,
+body #header .header-left,
+#header .header-left,
+html body #header .header-start,
+body #header .header-start,
+#header .header-start {
+	position: relative !important;
+	z-index: 1000 !important;
+	padding-left: 80px !important;
+}
+
+/* App menu - remove padding since logo is in normal flow. */
+html body #header nav.app-menu,
+body #header nav.app-menu,
+#header nav.app-menu {
+	background: transparent !important;
+	padding-left: 0 !important;
+	margin-left: 0 !important;
+}
+
+html body #header nav.app-menu ul,
+body #header nav.app-menu ul,
+#header nav.app-menu ul {
+	padding-left: 0 !important;
+	margin-left: 0 !important;
+}
+
+html body #header nav.app-menu li,
+body #header nav.app-menu li,
+#header nav.app-menu li {
+	margin-left: 0 !important;
+}
+
+/* App menu styling - use theme colors. */
+html body #header nav.app-menu a,
+body #header nav.app-menu a,
+#header nav.app-menu a,
+html body #header nav.app-menu .app-menu-entry__link,
+body #header nav.app-menu .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry__link {
+	color: var(--color-main-text) !important;
+	font-weight: 400 !important;
+}
+
+/* App menu text labels - explicitly set dark color. */
+html body #header nav.app-menu .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry__label,
+html body #header nav.app-menu .app-menu-entry .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry .app-menu-entry__label {
+	color: var(--color-main-text) !important;
+	font-weight: 400 !important;
+}
+
+/* App menu icons - invert if SVGs are white to make them dark. */
+/* CRITICAL: If SVGs are white, invert them to dark for white header background. */
+/* Maximum specificity to override #header .app-menu-icon from theme.css */
+html body #header nav.app-menu .app-menu-entry .app-menu-icon img.app-menu-icon__icon,
+html body #header nav.app-menu .app-menu-entry .app-menu-icon img,
+html body #header nav.app-menu .app-menu-icon img,
+body #header nav.app-menu .app-menu-icon img,
+#header nav.app-menu .app-menu-icon img,
+html body #header nav.app-menu .app-menu-icon__icon,
+body #header nav.app-menu .app-menu-icon__icon,
+#header nav.app-menu .app-menu-icon__icon,
+html body #header nav.app-menu .app-menu-entry .app-menu-icon,
+html body #header nav.app-menu .app-menu-icon,
+body #header nav.app-menu .app-menu-icon,
+#header nav.app-menu .app-menu-icon,
+html body #header nav.app-menu .app-menu-entry__icon,
+body #header nav.app-menu .app-menu-entry__icon,
+#header nav.app-menu .app-menu-entry__icon,
+html body #header nav.app-menu .app-menu-entry__icon img,
+body #header nav.app-menu .app-menu-entry__icon img,
+#header nav.app-menu .app-menu-entry__icon img,
+html body #header nav.app-menu img,
+body #header nav.app-menu img,
+#header nav.app-menu img {
+	filter: invert(1) brightness(0) contrast(100) !important;
+	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
+	opacity: 1 !important;
+}
+
+/* App menu SVGs should also be inverted. */
+html body #header nav.app-menu svg,
+body #header nav.app-menu svg,
+#header nav.app-menu svg,
+html body #header nav.app-menu .app-menu-icon svg,
+body #header nav.app-menu .app-menu-icon svg,
+#header nav.app-menu .app-menu-icon svg {
+	filter: invert(1) !important;
+	-webkit-filter: invert(1) !important;
+}
+
+html body #header nav.app-menu svg,
+body #header nav.app-menu svg,
+#header nav.app-menu svg,
+html body #header nav.app-menu .app-menu-icon svg,
+body #header nav.app-menu .app-menu-icon svg,
+#header nav.app-menu .app-menu-icon svg {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
+/* Active and hover app menu items. */
+html body #header nav.app-menu .app-menu-entry--active a,
+body #header nav.app-menu .app-menu-entry--active a,
+#header nav.app-menu .app-menu-entry--active a,
+html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__link {
+	color: var(--color-primary) !important;
+	font-weight: 600 !important;
+	position: relative !important;
+}
+
+/* Blue indicator bar at bottom of active menu item using box-shadow. */
+html body #header nav.app-menu .app-menu-entry--active a::after,
+body #header nav.app-menu .app-menu-entry--active a::after,
+#header nav.app-menu .app-menu-entry--active a::after,
+html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after {
+	content: '' !important;
+	position: absolute !important;
+	bottom: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	height: 5px !important;
+	background: var(--color-primary) !important;
+	display: block !important;
+}
+
+/* Ensure all menu entries have consistent bottom spacing. */
+html body #header nav.app-menu .app-menu-entry,
+body #header nav.app-menu .app-menu-entry,
+#header nav.app-menu .app-menu-entry,
+html body #header nav.app-menu .app-menu-entry a,
+body #header nav.app-menu .app-menu-entry a,
+#header nav.app-menu .app-menu-entry a,
+html body #header nav.app-menu .app-menu-entry .app-menu-entry__link,
+body #header nav.app-menu .app-menu-entry .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry .app-menu-entry__link {
+	margin: 0 !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* Active app menu text labels. */
+html body #header nav.app-menu .app-menu-entry--active .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__label {
+	color: var(--color-primary) !important;
+	font-weight: 600 !important;
+}
+
+html body #header nav.app-menu a:hover,
+body #header nav.app-menu a:hover,
+#header nav.app-menu a:hover,
+html body #header nav.app-menu .app-menu-entry__link:hover,
+body #header nav.app-menu .app-menu-entry__link:hover,
+#header nav.app-menu .app-menu-entry__link:hover {
+	background-color: var(--color-background-hover) !important;
+	color: var(--color-primary) !important;
+}
+
+/* Hover app menu text labels. */
+html body #header nav.app-menu .app-menu-entry__link:hover .app-menu-entry__label,
+body #header nav.app-menu .app-menu-entry__link:hover .app-menu-entry__label,
+#header nav.app-menu .app-menu-entry__link:hover .app-menu-entry__label {
+	color: var(--color-primary) !important;
+}
+
+/* Header app name and branding text. */
+html body #header .header-appname,
+body #header .header-appname,
+#header .header-appname,
+html body #header .header-left a,
+body #header .header-left a,
+#header .header-left a {
+	color: #154273 !important;
+	font-weight: 600 !important;
+}
+
+/* Header right side icons and buttons. */
+html body #header .header-right a,
+body #header .header-right a,
+#header .header-right a,
+html body #header .header-right button,
+body #header .header-right button,
+#header .header-right button,
+html body #header .menutoggle,
+body #header .menutoggle,
+#header .menutoggle {
+	color: #333333 !important;
+	opacity: 1 !important;
+}
+
+html body #header .header-right [class^="icon-"],
+body #header .header-right [class^="icon-"],
+#header .header-right [class^="icon-"],
+html body #header .header-right svg,
+body #header .header-right svg,
+#header .header-right svg {
+	filter: none !important;
+	opacity: 0.8 !important;
+}
+
+/* Unified search. */
+html body #header .unified-search__button,
+body #header .unified-search__button,
+#header .unified-search__button {
+	color: #333333 !important;
+	filter: none !important;
+}
+
+/* Header dropdown panels and menus - ensure proper colors. */
+html body #header .header-menu,
+body #header .header-menu,
+#header .header-menu,
+html body #header #user-menu,
+body #header #user-menu,
+#header #user-menu,
+html body #header .popover,
+body #header .popover,
+#header .popover {
+	background-color: var(--color-main-background) !important;
+	color: var(--color-main-text) !important;
+}
+
+html body #header .unified-search__button svg,
+body #header .unified-search__button svg,
+#header .unified-search__button svg {
+	fill: #333333 !important;
+	filter: none !important;
+}
+
+/* User menu and notifications. */
+html body #header .header-right .icon-more,
+body #header .header-right .icon-more,
+#header .header-right .icon-more,
+html body #header .header-right .notifications,
+body #header .header-right .notifications,
+#header .header-right .notifications,
+html body #header .header-right .contactsmenu,
+body #header .header-right .contactsmenu,
+#header .header-right .contactsmenu {
+	opacity: 0.8 !important;
+}
+
+html body #header .header-right #settings,
+body #header .header-right #settings,
+#header .header-right #settings {
+	filter: none !important;
+	opacity: 0.8 !important;
+}
+
+/* Legacy #appmenu support. */
+html body #header #appmenu,
+body #header #appmenu,
+#header #appmenu {
+	background: transparent !important;
+	padding-left: 60px !important;
+	margin-left: 0 !important;
+}
+
+html body #header #appmenu li a,
+body #header #appmenu li a,
+#header #appmenu li a {
+	color: var(--color-main-text) !important;
+	font-weight: 400 !important;
+}
+
+html body #header #appmenu li.active a,
+body #header #appmenu li.active a,
+#header #appmenu li.active a,
+html body #header #appmenu li:hover a,
+body #header #appmenu li:hover a,
+#header #appmenu li:hover a {
+	background-color: var(--color-background-hover) !important;
+	color: var(--color-primary) !important;
+	font-weight: 600 !important;
+}
+
+html body #header .header-appname-container,
+body #header .header-appname-container,
+#header .header-appname-container {
+	position: relative !important;
+	z-index: auto !important;
 }

@@ -5,18 +5,11 @@
  * from @rijkshuisstijl-community/font package
  */
 
-/* Import Fira Sans from fontsource */
-@import url('~@fontsource/fira-sans/400.css');
-@import url('~@fontsource/fira-sans/400-italic.css');
-@import url('~@fontsource/fira-sans/700.css');
-@import url('~@fontsource/fira-sans/700-italic.css');
-
-/* Fallback for direct file access */
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans'),
-         url('../fonts/fira-sans-400-normal.woff2') format('woff2'),
-         url('../fonts/fira-sans-400-normal.woff') format('woff');
+         url('fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-400-normal.woff') format('woff');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -25,8 +18,8 @@
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans Italic'),
-         url('../fonts/fira-sans-400-italic.woff2') format('woff2'),
-         url('../fonts/fira-sans-400-italic.woff') format('woff');
+         url('fonts/fira-sans-latin-400-italic.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-400-italic.woff') format('woff');
     font-weight: 400;
     font-style: italic;
     font-display: swap;
@@ -35,8 +28,8 @@
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans Bold'),
-         url('../fonts/fira-sans-700-normal.woff2') format('woff2'),
-         url('../fonts/fira-sans-700-normal.woff') format('woff');
+         url('fonts/fira-sans-latin-700-normal.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-700-normal.woff') format('woff');
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -45,8 +38,8 @@
 @font-face {
     font-family: 'Fira Sans';
     src: local('Fira Sans Bold Italic'),
-         url('../fonts/fira-sans-700-italic.woff2') format('woff2'),
-         url('../fonts/fira-sans-700-italic.woff') format('woff');
+         url('fonts/fira-sans-latin-700-italic.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-700-italic.woff') format('woff');
     font-weight: 700;
     font-style: italic;
     font-display: swap;

@@ -63,6 +63,23 @@
 	font-size: 0.9em;
 }
 
+/* Options section */
+.nldesign-option {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	background: var(--color-main-background);
+	margin-bottom: 1em;
+}
+
+.nldesign-option label {
+	cursor: pointer;
+	flex: 1;
+}
+
 /* Preview section */
 .nldesign-preview {
 	margin-top: 2em;

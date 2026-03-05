@@ -25,9 +25,8 @@
 	--amsterdam-color-blue: #004699;
 	--amsterdam-color-purple: #a00078;
 
-	/* Background colors */
-	--nldesign-color-background: #ffffff;
-	--nldesign-color-background-rgb: 255, 255, 255;
+	/* Background colors - for hover states and dark variants. */
+	/* Main background managed by Nextcloud theming system. */
 	--nldesign-color-background-hover: #f5f5f5;
 	--nldesign-color-background-dark: #e6e6e6;
 	--nldesign-color-background-darker: #cccccc;

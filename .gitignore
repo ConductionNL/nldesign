@@ -5,6 +5,7 @@ vendor/
 # Build artifacts
 build/
 dist/
+.docusaurus/
 
 # IDE
 .idea/
