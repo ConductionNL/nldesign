@@ -26,9 +26,12 @@
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
-		"@fontsource/fira-sans": "^5.0.0",
 		"@amsterdam/design-system-assets": "latest",
-		"@amsterdam/design-system-react-icons": "latest"
+		"@amsterdam/design-system-react-icons": "latest",
+		"@fontsource/fira-sans": "^5.0.0"
 	},
-	"devDependencies": {}
+	"devDependencies": {
+		"stylelint": "^17.4.0",
+		"stylelint-config-standard": "^40.0.0"
+	}
 }
