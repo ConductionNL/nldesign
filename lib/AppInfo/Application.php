@@ -34,8 +34,8 @@ class Application extends App implements IBootstrap
      */
     public function __construct()
     {
-        parent::__construct(self::APP_ID);
-    }
+        parent::__construct(appName: self::APP_ID);
+    }//end __construct()
 
     /**
      * Register services and providers.
@@ -47,7 +47,7 @@ class Application extends App implements IBootstrap
     public function register(IRegistrationContext $context): void
     {
         // Register the theme.
-    }
+    }//end register()
 
     /**
      * Boot the application.
@@ -61,8 +61,8 @@ class Application extends App implements IBootstrap
         $serverContainer = $context->getServerContainer();
 
         // Inject our CSS variables.
-        $this->injectThemeCSS($serverContainer);
-    }
+        $this->injectThemeCSS(serverContainer: $serverContainer);
+    }//end boot()
 
     /**
      * Inject theme CSS files based on configuration.
@@ -73,32 +73,32 @@ class Application extends App implements IBootstrap
      */
     private function injectThemeCSS($serverContainer): void
     {
-        $config = $serverContainer->getConfig();
-        $tokenSet = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
-        $hideSlogan = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
+        $config         = $serverContainer->getConfig();
+        $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
+        $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
 
         // Add fonts (Fira Sans from @fontsource).
         \OCP\Util::addStyle(self::APP_ID, 'fonts');
-        
+
         // Add the CSS file for the selected token set (organization-specific tokens).
-        \OCP\Util::addStyle(self::APP_ID, 'tokens/' . $tokenSet);
-        
+        \OCP\Util::addStyle(self::APP_ID, 'tokens/'.$tokenSet);
+
         // Add theme CSS (standard design token application).
         \OCP\Util::addStyle(self::APP_ID, 'theme');
-        
+
         // Add aggressive overrides (applies NL Design styling to Nextcloud).
         // This includes header styling for logged-in pages.
         \OCP\Util::addStyle(self::APP_ID, 'overrides');
-        
+
         // Hide slogan if enabled.
-        if ($hideSlogan) {
+        if ($hideSlogan === true) {
             \OCP\Util::addStyle(self::APP_ID, 'hide-slogan');
         }
 
         // Show menu labels (instead of icons) if enabled.
-        if ($showMenuLabels) {
+        if ($showMenuLabels === true) {
             \OCP\Util::addStyle(self::APP_ID, 'show-menu-labels');
         }
-    }
-}
+    }//end injectThemeCSS()
+}//end class

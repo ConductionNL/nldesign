@@ -742,17 +742,7 @@ body #header nav.app-menu img,
 	opacity: 1 !important;
 }
 
-/* App menu SVGs should also be inverted. */
-html body #header nav.app-menu svg,
-body #header nav.app-menu svg,
-#header nav.app-menu svg,
-html body #header nav.app-menu .app-menu-icon svg,
-body #header nav.app-menu .app-menu-icon svg,
-#header nav.app-menu .app-menu-icon svg {
-	filter: invert(1) !important;
-	-webkit-filter: invert(1) !important;
-}
-
+/* App menu SVGs — reset filter to none (no inversion needed). */
 html body #header nav.app-menu svg,
 body #header nav.app-menu svg,
 #header nav.app-menu svg,

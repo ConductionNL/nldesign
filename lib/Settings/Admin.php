@@ -27,7 +27,19 @@ use OCP\Settings\ISettings;
  */
 class Admin implements ISettings
 {
+
+    /**
+     * The application configuration service.
+     *
+     * @var IConfig
+     */
     private IConfig $config;
+
+    /**
+     * The localization service.
+     *
+     * @var IL10N
+     */
     private IL10N $l;
 
     /**
@@ -39,8 +51,8 @@ class Admin implements ISettings
     public function __construct(IConfig $config, IL10N $l)
     {
         $this->config = $config;
-        $this->l = $l;
-    }
+        $this->l      = $l;
+    }//end __construct()
 
     /**
      * Get the settings form.
@@ -51,23 +63,23 @@ class Admin implements ISettings
     {
         $tokenSets = [
             'rijkshuisstijl' => [
-                'name' => 'Rijkshuisstijl',
+                'name'        => 'Rijkshuisstijl',
                 'description' => $this->l->t('Dutch national government (Rijksoverheid)'),
             ],
-            'utrecht' => [
-                'name' => 'Gemeente Utrecht',
+            'utrecht'        => [
+                'name'        => 'Gemeente Utrecht',
                 'description' => $this->l->t('Municipality of Utrecht'),
             ],
-            'amsterdam' => [
-                'name' => 'Gemeente Amsterdam',
+            'amsterdam'      => [
+                'name'        => 'Gemeente Amsterdam',
                 'description' => $this->l->t('Municipality of Amsterdam'),
             ],
-            'denhaag' => [
-                'name' => 'Gemeente Den Haag',
+            'denhaag'        => [
+                'name'        => 'Gemeente Den Haag',
                 'description' => $this->l->t('Municipality of The Hague'),
             ],
-            'rotterdam' => [
-                'name' => 'Gemeente Rotterdam',
+            'rotterdam'      => [
+                'name'        => 'Gemeente Rotterdam',
                 'description' => $this->l->t('Municipality of Rotterdam'),
             ],
         ];
@@ -91,14 +103,16 @@ class Admin implements ISettings
         ) === '1';
 
         return new TemplateResponse(
-            Application::APP_ID, 'settings/admin', [
-            'tokenSets' => $tokenSets,
-            'currentTokenSet' => $currentTokenSet,
-            'hideSlogan' => $hideSlogan,
-            'showMenuLabels' => $showMenuLabels,
-            ]
+            Application::APP_ID,
+                'settings/admin',
+                [
+                    'tokenSets'       => $tokenSets,
+                    'currentTokenSet' => $currentTokenSet,
+                    'hideSlogan'      => $hideSlogan,
+                    'showMenuLabels'  => $showMenuLabels,
+                ]
         );
-    }
+    }//end getForm()
 
     /**
      * Get the settings section identifier.
@@ -108,7 +122,7 @@ class Admin implements ISettings
     public function getSection(): string
     {
         return 'theming';
-    }
+    }//end getSection()
 
     /**
      * Get the priority for ordering in the settings menu.
@@ -118,5 +132,5 @@ class Admin implements ISettings
     public function getPriority(): int
     {
         return 50;
-    }
-}
+    }//end getPriority()
+}//end class

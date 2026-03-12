@@ -27,6 +27,12 @@ use OCP\IRequest;
  */
 class SettingsController extends Controller
 {
+
+    /**
+     * The application configuration service.
+     *
+     * @var IConfig
+     */
     private IConfig $config;
 
     /**
@@ -41,9 +47,9 @@ class SettingsController extends Controller
         IRequest $request,
         IConfig $config
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
         $this->config = $config;
-    }
+    }//end __construct()
 
     /**
      * Set the active design token set.
@@ -58,14 +64,14 @@ class SettingsController extends Controller
     {
         $validSets = ['rijkshuisstijl', 'utrecht', 'amsterdam', 'denhaag', 'rotterdam'];
 
-        if (!in_array($tokenSet, $validSets)) {
+        if (in_array($tokenSet, $validSets) === false) {
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
         $this->config->setAppValue(Application::APP_ID, 'token_set', $tokenSet);
 
         return new JSONResponse(['status' => 'ok', 'tokenSet' => $tokenSet]);
-    }
+    }//end setTokenSet()
 
     /**
      * Get the currently active design token set.
@@ -83,7 +89,7 @@ class SettingsController extends Controller
         );
 
         return new JSONResponse(['tokenSet' => $tokenSet]);
-    }
+    }//end getTokenSet()
 
     /**
      * Set the hide slogan setting.
@@ -96,14 +102,19 @@ class SettingsController extends Controller
      */
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
+        $value = '0';
+        if ($hideSlogan === true) {
+            $value = '1';
+        }
+
         $this->config->setAppValue(
             Application::APP_ID,
             'hide_slogan',
-            $hideSlogan ? '1' : '0'
+            $value
         );
 
         return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
-    }
+    }//end setSloganSetting()
 
     /**
      * Set the show menu labels setting.
@@ -116,12 +127,17 @@ class SettingsController extends Controller
      */
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
+        $value = '0';
+        if ($showMenuLabels === true) {
+            $value = '1';
+        }
+
         $this->config->setAppValue(
             Application::APP_ID,
             'show_menu_labels',
-            $showMenuLabels ? '1' : '0'
+            $value
         );
 
         return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
-    }
-}
+    }//end setMenuLabelsSetting()
+}//end class
