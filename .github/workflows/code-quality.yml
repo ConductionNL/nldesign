@@ -17,3 +17,4 @@ jobs:
       enable-phpmetrics: true
       enable-frontend: true
       enable-eslint: false
+      enable-phpunit: true
