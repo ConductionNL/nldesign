@@ -14,7 +14,10 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\AppInfo;
 
+use OCA\NLDesign\Service\CustomOverridesService;
+use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Themes\NLDesignTheme;
+use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -74,29 +77,38 @@ class Application extends App implements IBootstrap
     private function injectThemeCSS($serverContainer): void
     {
         $config         = $serverContainer->getConfig();
-        $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
+        $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
         $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
 
-        // Add fonts (Fira Sans from @fontsource).
-        \OCP\Util::addStyle(self::APP_ID, 'fonts');
+        // 1. Resolve which design system this token set uses.
+        $appManager     = $serverContainer->get(IAppManager::class);
+        $dsService      = new DesignSystemService(appManager: $appManager);
+        $tokenSetMeta   = $dsService->getTokenSetMeta($tokenSet);
+        $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
+        $designSystem   = $dsService->getDesignSystem($designSystemId);
 
-        // Add the CSS file for the selected token set (organization-specific tokens).
-        \OCP\Util::addStyle(self::APP_ID, 'tokens/'.$tokenSet);
+        // 2. Load design system stylesheets in declared order.
+        //    For "none" (stock Nextcloud) this array is empty — no CSS loads.
+        foreach ($designSystem['stylesheets'] as $stylesheet) {
+            \OCP\Util::addStyle(self::APP_ID, $stylesheet);
+        }
 
-        // Add theme CSS (standard design token application).
-        \OCP\Util::addStyle(self::APP_ID, 'theme');
+        // 3. Load token values (only when a design system reads --nldesign-* vars).
+        if ($designSystemId !== 'none') {
+            \OCP\Util::addStyle(self::APP_ID, 'tokens/'.$tokenSet);
+        }
 
-        // Add aggressive overrides (applies NL Design styling to Nextcloud).
-        // This includes header styling for logged-in pages.
-        \OCP\Util::addStyle(self::APP_ID, 'overrides');
+        // 4. Custom overrides — admin-defined token overrides, always loaded last.
+        $customOverridesSvc = new CustomOverridesService(appManager: $appManager);
+        $customOverridesSvc->ensureExists();
+        \OCP\Util::addStyle(self::APP_ID, 'custom-overrides');
 
-        // Hide slogan if enabled.
+        // 5. Conditional stylesheets.
         if ($hideSlogan === true) {
             \OCP\Util::addStyle(self::APP_ID, 'hide-slogan');
         }
 
-        // Show menu labels (instead of icons) if enabled.
         if ($showMenuLabels === true) {
             \OCP\Util::addStyle(self::APP_ID, 'show-menu-labels');
         }

@@ -27,11 +27,13 @@ style('nldesign', 'admin');
 		<select id="nldesign-token-set-select" name="nldesign-token-set">
 			<?php foreach ($_['tokenSets'] as $tokenSet): ?>
 				<option value="<?php p($tokenSet['id']); ?>"
+						data-design-system="<?php p($tokenSet['design_system'] ?? 'nldesign'); ?>"
 						<?php if ($_['currentTokenSet'] === $tokenSet['id']): ?>selected<?php endif; ?>>
 					<?php p($tokenSet['name']); ?>
 				</option>
 			<?php endforeach; ?>
 		</select>
+		<span id="nldesign-design-system-badge" class="nldesign-badge"></span>
 	</div>
 
 	<!-- Hide Slogan/Payoff Option -->

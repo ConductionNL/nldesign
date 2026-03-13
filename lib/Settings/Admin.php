@@ -87,7 +87,7 @@ class Admin implements ISettings
         $currentTokenSet = $this->config->getAppValue(
             Application::APP_ID,
             'token_set',
-            'rijkshuisstijl'
+            'nextcloud'
         );
 
         $hideSlogan = $this->config->getAppValue(

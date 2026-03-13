@@ -85,7 +85,7 @@ class SettingsController extends Controller
         $tokenSet = $this->config->getAppValue(
             Application::APP_ID,
             'token_set',
-            'rijkshuisstijl'
+            'nextcloud'
         );
 
         return new JSONResponse(['tokenSet' => $tokenSet]);

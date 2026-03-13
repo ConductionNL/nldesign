@@ -1,0 +1,21 @@
+[
+	{
+		"id": "none",
+		"name": "No design system (stock Nextcloud)",
+		"description": "No additional stylesheets. Nextcloud appears completely stock.",
+		"stylesheets": []
+	},
+	{
+		"id": "nldesign",
+		"name": "NL Design System",
+		"description": "Dutch government design system — Fira Sans, Rijkshuisstijl defaults, Utrecht component bridge, element-level overrides.",
+		"stylesheets": [
+			"systems/nldesign/fonts",
+			"systems/nldesign/defaults",
+			"systems/nldesign/utrecht-bridge",
+			"systems/nldesign/theme",
+			"systems/nldesign/overrides",
+			"systems/nldesign/element-overrides"
+		]
+	}
+]

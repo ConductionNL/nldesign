@@ -77,9 +77,10 @@ class TokenSetService
                     $id       = basename($file, '.css');
                     $meta     = $metadata[$id] ?? null;
                     $tokenSet = [
-                        'id'          => $id,
-                        'name'        => $meta['name'] ?? $this->formatName(id: $id),
-                        'description' => $meta['description'] ?? 'Design tokens for '.$this->formatName(id: $id),
+                        'id'            => $id,
+                        'name'          => $meta['name'] ?? $this->formatName(id: $id),
+                        'description'   => $meta['description'] ?? 'Design tokens for '.$this->formatName(id: $id),
+                        'design_system' => $meta['design_system'] ?? 'nldesign',
                     ];
                     if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
                         $tokenSet['theming'] = $meta['theming'];
