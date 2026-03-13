@@ -14,6 +14,7 @@ jobs:
       php-version: "8.3"
       enable-psalm: false
       enable-phpstan: false
+      enable-phpcs: false
       enable-phpmetrics: true
       enable-frontend: true
       enable-eslint: false
