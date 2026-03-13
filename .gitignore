@@ -5,6 +5,13 @@ vendor/
 # Build artifacts
 build/
 dist/
+.docusaurus/
+
+# Quality tool output
+phpmetrics/
+phpqa/
+coverage/
+phpcs-output.json
 
 # IDE
 .idea/

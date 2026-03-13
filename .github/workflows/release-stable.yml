@@ -1,0 +1,14 @@
+name: Release Stable
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  release-stable:
+    if: github.event.pull_request.merged == true
+    uses: ConductionNL/.github/.github/workflows/release-stable.yml@main
+    with:
+      app-name: nldesign
+    secrets: inherit

@@ -1,0 +1,20 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, development, feature/**, bugfix/**, hotfix/**]
+  pull_request:
+    branches: [main, beta, development]
+
+jobs:
+  quality:
+    uses: ConductionNL/.github/.github/workflows/quality.yml@main
+    with:
+      app-name: nldesign
+      php-version: "8.3"
+      enable-psalm: false
+      enable-phpstan: false
+      enable-phpmetrics: true
+      enable-frontend: true
+      enable-eslint: false
+      enable-phpunit: true

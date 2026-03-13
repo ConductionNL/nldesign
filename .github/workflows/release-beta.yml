@@ -1,0 +1,14 @@
+name: Release Beta
+
+on:
+  pull_request:
+    branches: [beta]
+    types: [closed]
+
+jobs:
+  release-beta:
+    if: github.event.pull_request.merged == true
+    uses: ConductionNL/.github/.github/workflows/release-beta.yml@main
+    with:
+      app-name: nldesign
+    secrets: inherit

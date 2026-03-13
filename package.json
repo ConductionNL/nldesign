@@ -20,12 +20,18 @@
 		"build": "npm run build:fonts && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
+		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
+		"stylelint": "stylelint 'css/**/*.css'",
+		"stylelint:fix": "stylelint 'css/**/*.css' --fix",
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
-		"@fontsource/fira-sans": "^5.0.0",
 		"@amsterdam/design-system-assets": "latest",
-		"@amsterdam/design-system-react-icons": "latest"
+		"@amsterdam/design-system-react-icons": "latest",
+		"@fontsource/fira-sans": "^5.0.0"
 	},
-	"devDependencies": {}
+	"devDependencies": {
+		"stylelint": "^17.4.0",
+		"stylelint-config-standard": "^40.0.0"
+	}
 }

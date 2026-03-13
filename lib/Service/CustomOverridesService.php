@@ -1,0 +1,236 @@
+<?php
+
+/**
+ * NL Design Custom Overrides Service.
+ *
+ * @category Service
+ * @package  OCA\NLDesign
+ * @author   Conduction <info@conduction.nl>
+ * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link     https://github.com/ConductionNL/nldesign
+ */
+
+declare(strict_types=1);
+
+namespace OCA\NLDesign\Service;
+
+use OCP\App\IAppManager;
+use RuntimeException;
+
+/**
+ * Service for reading and writing the custom-overrides.css file.
+ *
+ * This service is the sole write path for user-defined token customizations.
+ * It validates all token names against the TokenRegistry before writing.
+ *
+ * The CSS file format is strictly controlled:
+ * - Single :root {} block
+ * - One declaration per line
+ * - No !important (load order ensures precedence)
+ * - No selectors other than :root
+ */
+class CustomOverridesService
+{
+
+    /**
+     * The app manager for resolving the CSS file path.
+     *
+     * @var IAppManager
+     */
+    private IAppManager $appManager;
+
+    /**
+     * Constructor.
+     *
+     * @param IAppManager $appManager The app manager.
+     */
+    public function __construct(IAppManager $appManager)
+    {
+        $this->appManager = $appManager;
+    }//end __construct()
+
+    /**
+     * Get the absolute path to custom-overrides.css.
+     *
+     * @return string The CSS file path.
+     */
+    private function getFilePath(): string
+    {
+        return $this->appManager->getAppPath('nldesign').'/css/custom-overrides.css';
+    }//end getFilePath()
+
+    /**
+     * Ensure the custom-overrides.css file exists.
+     *
+     * Creates an empty :root {} file if the file is absent.
+     * Safe to call on every page load (no-op if file already exists).
+     *
+     * @return void
+     */
+    public function ensureExists(): void
+    {
+        $path = $this->getFilePath();
+        if (file_exists($path) === false) {
+            $this->writeFile(tokens: []);
+        }
+
+    }//end ensureExists()
+
+    /**
+     * Read the current custom overrides from the CSS file.
+     *
+     * Returns only the tokens explicitly set in the file.
+     * Does not return defaults or resolved values from the full CSS stack.
+     *
+     * @return array<string, string> Map of token name => value for all overrides in the file.
+     */
+    public function read(): array
+    {
+        $path = $this->getFilePath();
+        if (file_exists($path) === false) {
+            return [];
+        }
+
+        $content = file_get_contents($path);
+        if ($content === false) {
+            return [];
+        }
+
+        return $this->parseDeclarations(css: $content);
+    }//end read()
+
+    /**
+     * Write a new set of token overrides to custom-overrides.css.
+     *
+     * Only tokens present in TokenRegistry are accepted — others are silently ignored.
+     * Writes atomically via a temp file + rename to avoid partial writes.
+     *
+     * @param array<string, string> $tokens Map of token name => value to persist.
+     *
+     * @return void
+     *
+     * @throws RuntimeException When the file cannot be written.
+     */
+    public function write(array $tokens): void
+    {
+        // Filter to only editable tokens.
+        $validated = [];
+        foreach ($tokens as $name => $value) {
+            if (TokenRegistry::isEditable(tokenName: $name) === true) {
+                $validated[$name] = $value;
+            }
+        }
+
+        $this->writeFile(tokens: $validated);
+
+    }//end write()
+
+    /**
+     * Write the CSS file atomically using a temp file + rename.
+     *
+     * @param array<string, string> $tokens Validated token map to write.
+     *
+     * @return void
+     *
+     * @throws RuntimeException When the temp file cannot be written or renamed.
+     */
+    private function writeFile(array $tokens): void
+    {
+        $path    = $this->getFilePath();
+        $tmpPath = $path.'.tmp';
+
+        $css = $this->buildCss(tokens: $tokens);
+
+        $result = file_put_contents(filename: $tmpPath, data: $css);
+        if ($result === false) {
+            throw new RuntimeException(
+                message: 'Could not write '.$tmpPath.'. Ensure the web server has write access to the css/ directory.'
+            );
+        }
+
+        if (rename(from: $tmpPath, to: $path) === false) {
+            if (file_exists(filename: $tmpPath) === true) {
+                unlink(filename: $tmpPath);
+            }
+
+            throw new RuntimeException(
+                message: 'Temp file could not be renamed to '.$path.'.'
+            );
+        }
+
+    }//end writeFile()
+
+    /**
+     * Build the CSS file content from a token map.
+     *
+     * @param array<string, string> $tokens Token name => value pairs.
+     *
+     * @return string The CSS file content.
+     */
+    private function buildCss(array $tokens): string
+    {
+        $header = '/* NL Design — custom token overrides. Generated by theme editor. Do not edit manually. */'.PHP_EOL;
+
+        if (empty($tokens) === true) {
+            return $header.':root {}'.PHP_EOL;
+        }
+
+        $lines = [];
+        foreach ($tokens as $name => $value) {
+            // Sanitize: strip newlines and semicolons from values.
+            $safeValue = str_replace(["\n", "\r", ';'], '', $value);
+            $safeName  = preg_replace('/[^a-zA-Z0-9\-]/', '', $name);
+            $lines[]   = '  '.$safeName.': '.$safeValue.';';
+        }
+
+        return $header.':root {'.PHP_EOL.implode(PHP_EOL, $lines).PHP_EOL.'}'.PHP_EOL;
+    }//end buildCss()
+
+    /**
+     * Parse CSS custom property declarations from a :root {} block.
+     *
+     * @param string $css The raw CSS string.
+     *
+     * @return array<string, string> Map of token name => value.
+     */
+    private function parseDeclarations(string $css): array
+    {
+        $tokens = [];
+
+        // Extract the :root block.
+        if (preg_match('/:root\s*\{([^}]*)\}/s', $css, $rootMatch) !== 1) {
+            return $tokens;
+        }
+
+        $block = $rootMatch[1];
+
+        // Match each declaration: --name: value.
+        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $block, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $tokens[trim($match[1])] = trim($match[2]);
+        }
+
+        return $tokens;
+    }//end parseDeclarations()
+
+    /**
+     * Return the raw CSS file content for download.
+     *
+     * @return string The raw file content, or an empty :root {} if the file does not exist.
+     */
+    public function getRawContent(): string
+    {
+        $path = $this->getFilePath();
+        if (file_exists($path) === false) {
+            $header = '/* NL Design — custom token overrides. Generated by theme editor. Do not edit manually. */';
+            return $header.PHP_EOL.':root {}'.PHP_EOL;
+        }
+
+        $content = file_get_contents(filename: $path);
+        if ($content === false) {
+            return '';
+        }
+
+        return $content;
+    }//end getRawContent()
+}//end class

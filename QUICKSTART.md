@@ -31,24 +31,45 @@ Or via web UI: Settings → Apps → search "nldesign" → Enable
 4. Select your organization (Rijkshuisstijl, Utrecht, etc.)
 5. Reload the page
 
-🎉 **Done!** Your Nextcloud now uses Dutch government design styling with professional Fira Sans typography.
+### 5. Set Background Color (Important!)
+
+The NL Design app does not set a background color automatically. You must configure it in Nextcloud's theming:
+
+1. Stay in: **Settings → Administration → Theming** (Nextcloud's main section)
+2. Scroll to: **Background and color** section
+3. Click on **Color** and enter the background color for your token set:
+
+| Token Set | Primary Color | Background Color |
+|-----------|--------------|------------------|
+| **Rijkshuisstijl** | `#154273` (blue) | `#F5F6F7` (light gray) |
+| **Utrecht** | `#CC0000` (red) | `#FFFFFF` (white) |
+| **Amsterdam** | `#EC0000` (red) | `#FFFFFF` (white) |
+| **Den Haag** | `#1A7A3E` (green) | `#FFFFFF` (white) |
+| **Rotterdam** | `#00811F` (green) | `#FFFFFF` (white) |
+
+4. **Click on Background image** → Select **Remove background image**
+5. Save changes
+
+**Note**: Primary colors are set automatically by NL Design when you select a token set. Only the background color needs manual configuration.
+
+🎉 **Done!** Your Nextcloud now uses Dutch government design styling with professional Fira Sans typography and correct colors.
 
 ## 🎨 Token Sets Available
 
-| Set | Color | Best For |
-|-----|-------|----------|
-| **Rijkshuisstijl** | Blue (#154273) | National government |
-| **Utrecht** | Red (#cc0000) | Municipality |
-| **Amsterdam** | Red (#ec0000) | Municipality |
-| **Den Haag** | Green (#1a7a3e) | Municipality |
-| **Rotterdam** | Green (#00811f) | Municipality |
+| Token Set | Primary Color | Background | Best For |
+|-----------|--------------|------------|----------|
+| **Rijkshuisstijl** | `#154273` (blue) | `#F5F6F7` | National government |
+| **Utrecht** | `#CC0000` (red) | `#FFFFFF` | Municipality |
+| **Amsterdam** | `#EC0000` (red) | `#FFFFFF` | Municipality |
+| **Den Haag** | `#1A7A3E` (green) | `#FFFFFF` | Municipality |
+| **Rotterdam** | `#00811F` (green) | `#FFFFFF` | Municipality |
 
 ## ✅ What You Get
 
 - ✅ Professional Fira Sans typography
 - ✅ Official Dutch government colors
 - ✅ Sharp corners (Rijkshuisstijl) or rounded (municipalities)
-- ✅ Clean white backgrounds
+- ✅ Configurable background colors via Nextcloud theming
 - ✅ WCAG AA accessible
 - ✅ Responsive design
 - ✅ No build required
@@ -98,9 +119,13 @@ docker exec -u 33 nextcloud php occ maintenance:repair
 
 ### Colors Wrong?
 
-1. Check which token set is selected
-2. Hard reload browser (Ctrl+Shift+R)
-3. Clear Nextcloud cache
+1. Check which token set is selected in NL Design settings
+2. **Check background color** in Nextcloud Theming settings:
+   - Should be `#F5F6F7` for Rijkshuisstijl
+   - Should be `#FFFFFF` for other token sets
+   - Background image should be removed
+3. Hard reload browser (Ctrl+Shift+R)
+4. Clear Nextcloud cache
 
 ## 📖 Full Documentation
 

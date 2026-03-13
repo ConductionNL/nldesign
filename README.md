@@ -72,6 +72,37 @@ Navigate to **Settings → Administration → Theming** and find the "NL Design 
 
 Select your preferred design token set and reload the page to see the changes.
 
+### Configuring Background Color
+
+The NL Design app does not set a background color - this allows you to use Nextcloud's built-in theming system to configure the background color to match your organization's needs.
+
+**To set the background color:**
+
+1. Navigate to **Settings → Administration → Theming** (Nextcloud's main theming section, not the NL Design section)
+2. Scroll to **Background and color** section
+3. Click on **Color** and enter your desired background color
+4. **Important**: Also click on **Background image** and select **Remove background image** to ensure a solid color background
+
+**Recommended colors by token set:**
+
+| Token Set | Primary Color | Background Color |
+|-----------|--------------|------------------|
+| **Rijkshuisstijl** | `#154273` (donkerblauw) | `#F5F6F7` (light gray) |
+| **Utrecht** | `#CC0000` (red) | `#FFFFFF` (white) |
+| **Amsterdam** | `#EC0000` (red) | `#FFFFFF` (white) |
+| **Den Haag** | `#1A7A3E` (green) | `#FFFFFF` (white) |
+| **Rotterdam** | `#00811F` (green) | `#FFFFFF` (white) |
+
+**Note**: The primary colors are automatically applied by the NL Design app when you select a token set. You only need to configure the background color manually in Nextcloud's theming settings.
+
+**Why does NL Design not set the background color?**
+
+By delegating background color management to Nextcloud's theming system, organizations can:
+- Use their own custom background colors
+- Easily change backgrounds without modifying app code
+- Maintain compatibility with Nextcloud's theming API
+- Allow different backgrounds for different user groups or instances
+
 ## Fonts
 
 This app uses **Fira Sans** as an open-source alternative to the proprietary government fonts:
