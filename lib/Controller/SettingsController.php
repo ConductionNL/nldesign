@@ -15,6 +15,10 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\CustomOverridesService;
+use OCA\NLDesign\Service\TokenRegistry;
+use OCA\NLDesign\Service\TokenSetService;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
@@ -36,19 +40,29 @@ class SettingsController extends Controller
     private IConfig $config;
 
     /**
+     * The app manager.
+     *
+     * @var IAppManager
+     */
+    private IAppManager $appManager;
+
+    /**
      * Constructor.
      *
-     * @param string   $appName The app name.
-     * @param IRequest $request The request object.
-     * @param IConfig  $config  The config service.
+     * @param string      $appName    The app name.
+     * @param IRequest    $request    The request object.
+     * @param IConfig     $config     The config service.
+     * @param IAppManager $appManager The app manager.
      */
     public function __construct(
         string $appName,
         IRequest $request,
-        IConfig $config
+        IConfig $config,
+        IAppManager $appManager
     ) {
         parent::__construct(appName: $appName, request: $request);
-        $this->config = $config;
+        $this->config     = $config;
+        $this->appManager = $appManager;
     }//end __construct()
 
     /**
@@ -62,9 +76,8 @@ class SettingsController extends Controller
      */
     public function setTokenSet(string $tokenSet): JSONResponse
     {
-        $validSets = ['rijkshuisstijl', 'utrecht', 'amsterdam', 'denhaag', 'rotterdam'];
-
-        if (in_array($tokenSet, $validSets) === false) {
+        $tokenSetService = new TokenSetService(appManager: $this->appManager);
+        if ($tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
@@ -140,4 +153,40 @@ class SettingsController extends Controller
 
         return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
     }//end setMenuLabelsSetting()
+
+    /**
+     * Get the token overrides (registry, tabs, and saved overrides).
+     *
+     * @return JSONResponse The token editor data.
+     *
+     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     */
+    public function getOverrides(): JSONResponse
+    {
+        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
+        $customOverridesService->ensureExists();
+
+        return new JSONResponse([
+            'registry'  => TokenRegistry::getTokens(),
+            'tabs'      => TokenRegistry::getTabLabels(),
+            'overrides' => $customOverridesService->read(),
+        ]);
+    }//end getOverrides()
+
+    /**
+     * Save token overrides.
+     *
+     * @param array $overrides The token overrides to save.
+     *
+     * @return JSONResponse The response with the status.
+     *
+     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     */
+    public function setOverrides(array $overrides): JSONResponse
+    {
+        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
+        $customOverridesService->write(tokens: $overrides);
+
+        return new JSONResponse(['status' => 'ok']);
+    }//end setOverrides()
 }//end class

@@ -15,6 +15,8 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\TokenSetService;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
 use OCP\IL10N;
@@ -43,15 +45,24 @@ class Admin implements ISettings
     private IL10N $l;
 
     /**
+     * The app manager.
+     *
+     * @var IAppManager
+     */
+    private IAppManager $appManager;
+
+    /**
      * Constructor.
      *
-     * @param IConfig $config The config service.
-     * @param IL10N   $l      The localization service.
+     * @param IConfig     $config     The config service.
+     * @param IL10N       $l          The localization service.
+     * @param IAppManager $appManager The app manager.
      */
-    public function __construct(IConfig $config, IL10N $l)
+    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager)
     {
-        $this->config = $config;
-        $this->l      = $l;
+        $this->config     = $config;
+        $this->l          = $l;
+        $this->appManager = $appManager;
     }//end __construct()
 
     /**
@@ -61,28 +72,8 @@ class Admin implements ISettings
      */
     public function getForm(): TemplateResponse
     {
-        $tokenSets = [
-            'rijkshuisstijl' => [
-                'name'        => 'Rijkshuisstijl',
-                'description' => $this->l->t('Dutch national government (Rijksoverheid)'),
-            ],
-            'utrecht'        => [
-                'name'        => 'Gemeente Utrecht',
-                'description' => $this->l->t('Municipality of Utrecht'),
-            ],
-            'amsterdam'      => [
-                'name'        => 'Gemeente Amsterdam',
-                'description' => $this->l->t('Municipality of Amsterdam'),
-            ],
-            'denhaag'        => [
-                'name'        => 'Gemeente Den Haag',
-                'description' => $this->l->t('Municipality of The Hague'),
-            ],
-            'rotterdam'      => [
-                'name'        => 'Gemeente Rotterdam',
-                'description' => $this->l->t('Municipality of Rotterdam'),
-            ],
-        ];
+        $tokenSetService = new TokenSetService(appManager: $this->appManager);
+        $tokenSets       = $tokenSetService->getAvailableTokenSets();
 
         $currentTokenSet = $this->config->getAppValue(
             Application::APP_ID,
