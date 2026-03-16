@@ -127,3 +127,28 @@ The hide slogan CSS MUST use both `display: none` and `visibility: hidden` to en
 - THEN `display: none !important` MUST be set (removes from layout flow)
 - AND `visibility: hidden !important` MUST be set (ensures no visual trace)
 - AND both properties MUST use `!important` to override any Nextcloud styles
+
+### Current Implementation Status
+
+**Fully implemented:**
+- Configuration storage: `Application.php` reads `hide_slogan` from `IConfig` with default `'0'`, compares with `=== '1'` (line 80)
+- API endpoint: `POST /apps/nldesign/settings/slogan` mapped in `appinfo/routes.php` (line 10) to `SettingsController::setSloganSetting()` (`lib/Controller/SettingsController.php` lines 161-175)
+- Boolean conversion: `setSloganSetting(bool $hideSlogan)` uses strict `=== true` to convert to `'1'`/`'0'` string (lines 163-166)
+- Conditional CSS loading: `Application::injectThemeCSS()` loads `hide-slogan` CSS only when `$hideSlogan === true` (lines 112-114)
+- CSS file: `css/hide-slogan.css` (17 lines) targets `footer.guest-box`, `#body-login footer.guest-box`, and `body.body-login-container footer.guest-box` with both `display: none !important` and `visibility: hidden !important`
+- Admin-only access: `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on `setSloganSetting()`
+- Settings panel checkbox: `templates/settings/admin.php` renders `#nldesign-hide-slogan` checkbox with correct checked state and label text
+- JavaScript handler: `js/admin.js` calls `saveSloganSetting()` on checkbox change via `POST /apps/nldesign/settings/slogan`
+
+**Not yet implemented:**
+- All requirements in this spec are fully implemented.
+
+### Standards & References
+- Rijkshuisstijl guidelines: Dutch government login pages should present clean, branded appearance without third-party slogans
+- WCAG AA: hiding decorative text does not affect accessibility; the `display: none` approach correctly removes elements from the accessibility tree
+- Nextcloud login page structure: `footer.guest-box` is the standard container for the slogan on guest/login pages
+
+### Specificity Assessment
+- This spec is highly specific and directly implementable. Every scenario maps 1:1 to the implementation.
+- All CSS selectors, IConfig keys, API endpoints, boolean conversion logic, and conditional loading behavior are precisely defined.
+- No ambiguities or open questions remain -- this spec is complete as-is.
