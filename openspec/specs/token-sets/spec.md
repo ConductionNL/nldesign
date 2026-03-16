@@ -175,3 +175,41 @@ The app MUST support at minimum the documented set of organizations. As of 2026-
 - WHEN the `css/tokens/` directory is scanned
 - THEN each manifest entry MUST have a corresponding CSS file
 - AND conversely, each CSS file SHOULD have a corresponding manifest entry (files without manifest entries receive auto-generated names)
+
+### Current Implementation Status
+
+**Fully implemented:**
+- Filesystem-based discovery: `TokenSetService::getAvailableTokenSets()` scans `css/tokens/` for `.css` files and merges metadata from `token-sets.json` (`lib/Service/TokenSetService.php` lines 62-97)
+- Metadata merging: `readManifest()` reads `token-sets.json`, indexes by `id`, merges `name`, `description`, and optional `theming` object (lines 126-150)
+- Auto-generated names for CSS files without manifest entry: `formatName()` uses `ucwords(str_replace('-', ' ', $id))` (lines 159-162)
+- Manifest entries without CSS files are excluded (only files from `scandir()` produce entries)
+- Alphabetical sort by name (case-insensitive): `usort()` with `strcasecmp` (line 94)
+- Malformed/missing manifest: `readManifest()` returns `[]` on invalid JSON or missing file (lines 128-139)
+- Active token set storage: Default `'rijkshuisstijl'` via `IConfig::getAppValue()` in `Application.php` (line 79) and `SettingsController::getTokenSet()` (line 132)
+- Token set validation: `isValidTokenSet()` checks for path traversal (`/` and `..`) and verifies CSS file existence (lines 106-117)
+- API endpoints:
+  - `GET /settings/tokensets` -> `getAvailableTokenSets()` returns `{"tokenSets": [...]}` (routes.php line 7, controller line 145-150)
+  - `GET /settings/tokenset` -> `getTokenSet()` returns `{"tokenSet": "..."}` (routes.php line 9, controller lines 127-136)
+  - `POST /settings/tokenset` -> `setTokenSet()` validates then stores, returns `{"status": "ok", "tokenSet": "..."}` or HTTP 400 (routes.php line 8, controller lines 109-118)
+- Admin-only access: `@AuthorizedAdminSetting` annotation on all endpoints
+- Token set count: 39 CSS files in `css/tokens/` directory, `token-sets.json` has 368 lines
+- Required token sets present: rijkshuisstijl, amsterdam, utrecht, rotterdam, denhaag all exist in `css/tokens/`
+- Theming metadata included in response when present in manifest (`TokenSetService.php` lines 84-86)
+
+**Not yet implemented:**
+- All requirements in this spec are fully implemented.
+
+### Standards & References
+- NL Design System community design tokens: https://nldesignsystem.nl/
+- W3C Design Tokens community group specification: https://design-tokens.github.io/community-group/format/
+- CSS Custom Properties specification: https://www.w3.org/TR/css-variables-1/
+- Rijkshuisstijl (Dutch government house style): https://www.rijkshuisstijl.nl/
+- Utrecht Design System `--utrecht-*` token namespace: https://nl-design-system.github.io/utrecht/
+- OWASP Path Traversal prevention for token set ID validation
+
+### Specificity Assessment
+- This spec is highly specific and directly implementable. Discovery logic, manifest schema, validation rules, API contracts, and default values are all precisely defined.
+- The spec correctly covers edge cases: missing manifest, malformed JSON, CSS files without manifest entries, manifest entries without CSS files, and path traversal attacks.
+- Minor gap: REQ-TSET-005 describes token set CSS structure but does not define which `--nldesign-*` variables are mandatory vs optional in a token set file. The implementation allows fully partial token sets.
+- Minor gap: The spec does not mention the `TokenSetPreviewService` or the `GET /settings/tokenset-preview/{tokenSetId}` endpoint, which exists in the implementation for comparing resolved token values across sets.
+- Open question: Should the `token-sets.json` manifest schema be formally versioned? Currently there is no version field in the manifest.

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 return [
 	'routes' => [
+		// Metrics and health.
+		['name' => 'metrics#index', 'url' => '/api/metrics', 'verb' => 'GET'],
+		['name' => 'health#index', 'url' => '/api/health', 'verb' => 'GET'],
+
 		['name' => 'settings#getAvailableTokenSets', 'url' => '/settings/tokensets', 'verb' => 'GET'],
 		['name' => 'settings#setTokenSet', 'url' => '/settings/tokenset', 'verb' => 'POST'],
 		['name' => 'settings#getTokenSet', 'url' => '/settings/tokenset', 'verb' => 'GET'],

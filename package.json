@@ -27,11 +27,12 @@
 		"test": "echo 'No tests yet'"
 	},
 	"dependencies": {
-		"@fontsource/fira-sans": "^5.0.0",
 		"@amsterdam/design-system-assets": "latest",
-		"@amsterdam/design-system-react-icons": "latest"
+		"@amsterdam/design-system-react-icons": "latest",
+		"@fontsource/fira-sans": "^5.0.0"
 	},
 	"devDependencies": {
+		"@cyclonedx/cyclonedx-npm": "^4.2.1",
 		"stylelint": "^15.11.0",
 		"stylelint-config-recommended": "^13.0.0"
 	}

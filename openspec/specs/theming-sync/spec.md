@@ -179,3 +179,33 @@ The theming sync feature MUST depend on the Nextcloud `theming` app for `Theming
 - WHEN `ThemingService` is constructed
 - THEN it MUST receive `ImageManager`, `ThemingDefaults`, and `IAppManager` via constructor injection
 - AND it MUST NOT instantiate these dependencies directly
+
+### Current Implementation Status
+
+**Fully implemented:**
+- Theming metadata in token sets: `TokenSetService::getAvailableTokenSets()` includes the `theming` object from `token-sets.json` entries when present (`lib/Service/TokenSetService.php` lines 84-86)
+- GET theming values: `GET /apps/nldesign/settings/theming` endpoint in `SettingsController::getThemingValues()` returns `primary_color`, `background_color`, `logo_url`, `background_url`, `has_custom_logo`, `has_custom_background` (`lib/Controller/SettingsController.php` lines 237-260)
+- Color validation: `ThemingService::validateColors()` checks `primary_color` and `background_color` against regex `/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/`, skips empty values, returns error string on failure (`lib/Service/ThemingService.php` lines 87-98)
+- Image path validation: `ThemingService::validateImagePaths()` and `validateSinglePath()` check for path traversal (`..` and `/` prefix), enforce `img/logos/` or `img/backgrounds/` prefix, verify file existence (`lib/Service/ThemingService.php` lines 107-153)
+- Apply colors: `ThemingService::applyColors()` calls `ThemingDefaults::set()` for each non-empty color (`lib/Service/ThemingService.php` lines 162-174)
+- Apply images: `ThemingService::applyImages()` calls `ImageManager::updateImage()` with full path (`lib/Service/ThemingService.php` lines 183-197)
+- POST theming endpoint: `POST /apps/nldesign/settings/theming` in `SettingsController::updateThemingValues()` runs validation then applies, returns `{"status": "ok", "updated": [...]}` (`lib/Controller/SettingsController.php` lines 209-228)
+- ThemingService dependencies: Constructor injection of `ImageManager`, `ThemingDefaults`, `IAppManager` (`lib/Service/ThemingService.php` lines 58-66)
+- Admin-only access: `@AuthorizedAdminSetting` annotation on all theming endpoints
+- Frontend theming sync dialog: `js/admin.js` `checkAndShowThemingDialog()` and `showThemingDialog()` functions compare current vs proposed theming values and show confirmation dialog with color swatches and previews (lines 113-297)
+- Routes: `appinfo/routes.php` lines 12-13
+
+**Not yet implemented:**
+- All requirements in this spec are fully implemented.
+
+### Standards & References
+- Nextcloud Theming API: `OCA\Theming\ThemingDefaults::set()` and `OCA\Theming\ImageManager::updateImage()` are internal Nextcloud APIs
+- OWASP Path Traversal Prevention: validated by checking for `..` and `/` prefix, enforcing allowed directories
+- Hex color validation: Standard CSS hex color format (3 or 6 digit)
+- NL Design System: Token set theming metadata bridges design tokens to Nextcloud's server-level branding (logos, background images, email templates)
+
+### Specificity Assessment
+- This spec is highly specific. Validation rules, API request/response formats, error messages, and dependency injection are all precisely defined.
+- The spec correctly separates color validation from image validation and specifies the order (colors first, images second).
+- Minor gap: The spec does not define what happens when `ThemingDefaults::set()` or `ImageManager::updateImage()` throws an exception. The implementation does not wrap these calls in try/catch.
+- Open question: Should the `background` image field in the theming metadata (referenced in `js/admin.js` line 153-159) be formally documented in REQ-SYNC-001? Currently only `logo` is mentioned as MAY in the manifest schema, but `background` is also handled.
