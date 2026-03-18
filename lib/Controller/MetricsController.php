@@ -37,7 +37,7 @@ class MetricsController extends Controller
      * @param IRequest               $request                The request object.
      * @param IConfig                $config                 The config service.
      * @param TokenSetService        $tokenSetService        The token set service.
-     * @param CustomOverridesService $customOverridesService The custom overrides service.
+     * @param CustomOverridesService $overridesService       The custom overrides service.
      * @param LoggerInterface        $logger                 Logger for error reporting.
      */
     public function __construct(
@@ -45,7 +45,7 @@ class MetricsController extends Controller
         IRequest $request,
         private readonly IConfig $config,
         private readonly TokenSetService $tokenSetService,
-        private readonly CustomOverridesService $customOverridesService,
+        private readonly CustomOverridesService $overridesService,
         private readonly LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);

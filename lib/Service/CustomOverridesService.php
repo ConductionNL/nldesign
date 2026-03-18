@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Service;
 
 use OCP\App\IAppManager;
+use RuntimeException;
 
 /**
  * Service for reading and writing the custom-overrides.css file.
@@ -108,7 +109,7 @@ class CustomOverridesService
      *
      * @return void
      *
-     * @throws \RuntimeException When the file cannot be written.
+     * @throws RuntimeException When the file cannot be written.
      */
     public function write(array $tokens): void
     {
@@ -131,7 +132,7 @@ class CustomOverridesService
      *
      * @return void
      *
-     * @throws \RuntimeException When the temp file cannot be written or renamed.
+     * @throws RuntimeException When the temp file cannot be written or renamed.
      */
     private function writeFile(array $tokens): void
     {
@@ -142,14 +143,17 @@ class CustomOverridesService
 
         $result = file_put_contents($tmpPath, $css);
         if ($result === false) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 message: 'custom-overrides.css could not be written to '.$tmpPath.'. Check that the web server user has write access to the css/ directory.'
             );
         }
 
         if (rename($tmpPath, $path) === false) {
-            @unlink($tmpPath);
-            throw new \RuntimeException(
+            if (file_exists($tmpPath) === true) {
+                unlink($tmpPath);
+            }
+
+            throw new RuntimeException(
                 message: 'custom-overrides.css temp file could not be renamed to '.$path.'.'
             );
         }

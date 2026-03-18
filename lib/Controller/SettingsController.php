@@ -60,14 +60,14 @@ class SettingsController extends Controller
      *
      * @var CustomOverridesService
      */
-    private CustomOverridesService $customOverridesService;
+    private CustomOverridesService $overridesService;
 
     /**
      * The token set preview service.
      *
      * @var TokenSetPreviewService
      */
-    private TokenSetPreviewService $tokenSetPreviewService;
+    private TokenSetPreviewService $previewService;
 
     /**
      * Constructor.
@@ -77,8 +77,8 @@ class SettingsController extends Controller
      * @param IConfig                $config                 The config service.
      * @param TokenSetService        $tokenSetService        The token set service.
      * @param ThemingService         $themingService         The theming service.
-     * @param CustomOverridesService $customOverridesService The custom overrides service.
-     * @param TokenSetPreviewService $tokenSetPreviewService The token set preview service.
+     * @param CustomOverridesService $overridesService       The custom overrides service.
+     * @param TokenSetPreviewService $previewService         The token set preview service.
      */
     public function __construct(
         string $appName,
@@ -86,15 +86,15 @@ class SettingsController extends Controller
         IConfig $config,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
-        CustomOverridesService $customOverridesService,
-        TokenSetPreviewService $tokenSetPreviewService
+        CustomOverridesService $overridesService,
+        TokenSetPreviewService $previewService
     ) {
         parent::__construct($appName, $request);
         $this->config                 = $config;
         $this->tokenSetService        = $tokenSetService;
         $this->themingService         = $themingService;
-        $this->customOverridesService = $customOverridesService;
-        $this->tokenSetPreviewService = $tokenSetPreviewService;
+        $this->overridesService       = $overridesService;
+        $this->previewService         = $previewService;
     }//end __construct()
 
     /**
@@ -270,7 +270,7 @@ class SettingsController extends Controller
      */
     public function getOverrides(): JSONResponse
     {
-        $overrides = $this->customOverridesService->read();
+        $overrides = $this->overridesService->read();
         $registry  = TokenRegistry::getTokens();
         $tabs      = TokenRegistry::getTabLabels();
 
@@ -303,7 +303,7 @@ class SettingsController extends Controller
         }
 
         try {
-            $this->customOverridesService->write(tokens: $overrides);
+            $this->overridesService->write(tokens: $overrides);
         } catch (\RuntimeException $e) {
             return new JSONResponse(['error' => $e->getMessage()], 500);
         }
@@ -320,7 +320,7 @@ class SettingsController extends Controller
      */
     public function exportOverrides(): DataDownloadResponse
     {
-        $content = $this->customOverridesService->getRawContent();
+        $content = $this->overridesService->getRawContent();
 
         return new DataDownloadResponse(
             data: $content,
@@ -381,7 +381,7 @@ class SettingsController extends Controller
         }
 
         try {
-            $this->customOverridesService->write(tokens: $toImport);
+            $this->overridesService->write(tokens: $toImport);
         } catch (\RuntimeException $e) {
             return new JSONResponse(['error' => $e->getMessage()], 500);
         }
@@ -413,7 +413,7 @@ class SettingsController extends Controller
             return new JSONResponse(['error' => 'Token set not found'], 404);
         }
 
-        $resolved = $this->tokenSetPreviewService->getResolvedColors(tokenSetId: $tokenSetId);
+        $resolved = $this->previewService->getResolvedColors(tokenSetId: $tokenSetId);
 
         return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
     }//end getTokenSetPreview()
