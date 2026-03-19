@@ -141,7 +141,7 @@ class MetricsController extends Controller
     private function collectOverrideMetrics(array &$lines): void
     {
         try {
-            $overrides    = $this->customOverridesService->read();
+            $overrides    = $this->overridesService->read();
             $overrideCount = count($overrides);
 
             $lines[] = '# HELP nldesign_custom_overrides_total Total custom CSS overrides';

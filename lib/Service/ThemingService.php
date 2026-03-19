@@ -131,14 +131,14 @@ class ThemingService
      */
     private function validateSinglePath(string $imageKey, string $imagePath): ?string
     {
-        $hasDotDot   = str_contains(haystack: $imagePath, needle: '..');
-        $startsSlash = str_starts_with(haystack: $imagePath, prefix: '/');
+        $hasDotDot   = str_contains($imagePath, '..');
+        $startsSlash = str_starts_with($imagePath, '/');
         if ($hasDotDot === true || $startsSlash === true) {
             return "Invalid image path for $imageKey: path traversal not allowed";
         }
 
-        $inLogos = str_starts_with(haystack: $imagePath, prefix: 'img/logos/');
-        $inBgs   = str_starts_with(haystack: $imagePath, prefix: 'img/backgrounds/');
+        $inLogos = str_starts_with($imagePath, 'img/logos/');
+        $inBgs   = str_starts_with($imagePath, 'img/backgrounds/');
         if ($inLogos === false && $inBgs === false) {
             return "Invalid image path for $imageKey: must be in img/logos/ or img/backgrounds/";
         }
