@@ -46,6 +46,8 @@ class HealthController extends Controller
      * @return JSONResponse JSON response with health status and checks.
      *
      * @NoCSRFRequired
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Server::get() is the Nextcloud service locator API
      */
     public function index(): JSONResponse
     {
@@ -57,10 +59,9 @@ class HealthController extends Controller
         try {
             $config   = \OCP\Server::get(\OCP\IConfig::class);
             $tokenSet = $config->getAppValue('nldesign', 'token_set', 'rijkshuisstijl');
+            $checks['configuration'] = 'degraded';
             if ($tokenSet !== '') {
                 $checks['configuration'] = 'ok';
-            } else {
-                $checks['configuration'] = 'degraded';
             }
         } catch (\Exception $e) {
             $checks['configuration'] = 'error';

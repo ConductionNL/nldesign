@@ -55,6 +55,8 @@ class TokenSetPreviewService
      * @param string $tokenSetId The token set identifier (e.g. 'utrecht').
      *
      * @return array<string, string> Map of --color-* token name => resolved hex/color value.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
      */
     public function getResolvedColors(string $tokenSetId): array
     {

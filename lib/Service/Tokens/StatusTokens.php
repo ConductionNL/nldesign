@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * NL Design Status Token Definitions.
+ *
+ * @category Service
+ * @package  OCA\NLDesign
+ * @author   Conduction <info@conduction.nl>
+ * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link     https://github.com/ConductionNL/nldesign
+ */
+
+declare(strict_types=1);
+
+namespace OCA\NLDesign\Service\Tokens;
+
+/**
+ * Status and feedback tab token definitions.
+ *
+ * Status and feedback colors including error, warning, success, info,
+ * and semantic border/element variants.
+ */
+class StatusTokens
+{
+    /**
+     * Returns the status and feedback tab tokens.
+     *
+     * @return array<string, array{tab: string, type: string, label: string}> Status tokens.
+     */
+    public static function getTokens(): array
+    {
+        return [
+            '--color-error'           => ['tab' => 'status', 'type' => 'color', 'label' => 'Error color'],
+            '--color-error-hover'     => ['tab' => 'status', 'type' => 'color', 'label' => 'Error hover'],
+            '--color-error-rgb'       => ['tab' => 'status', 'type' => 'text',  'label' => 'Error color (RGB)'],
+            '--color-element-error'   => ['tab' => 'status', 'type' => 'color', 'label' => 'Element error'],
+            '--color-border-error'    => ['tab' => 'status', 'type' => 'color', 'label' => 'Border error'],
+            '--color-warning'         => ['tab' => 'status', 'type' => 'color', 'label' => 'Warning color'],
+            '--color-warning-rgb'     => ['tab' => 'status', 'type' => 'text',  'label' => 'Warning color (RGB)'],
+            '--color-element-warning' => ['tab' => 'status', 'type' => 'color', 'label' => 'Element warning'],
+            '--color-success'         => ['tab' => 'status', 'type' => 'color', 'label' => 'Success color'],
+            '--color-success-rgb'     => ['tab' => 'status', 'type' => 'text',  'label' => 'Success color (RGB)'],
+            '--color-element-success' => ['tab' => 'status', 'type' => 'color', 'label' => 'Element success'],
+            '--color-border-success'  => ['tab' => 'status', 'type' => 'color', 'label' => 'Border success'],
+            '--color-info'            => ['tab' => 'status', 'type' => 'color', 'label' => 'Info color'],
+            '--color-element-info'    => ['tab' => 'status', 'type' => 'color', 'label' => 'Element info'],
+            '--color-favorite'        => ['tab' => 'status', 'type' => 'color', 'label' => 'Favorite (star) color'],
+        ];
+    }//end getTokens()
+}//end class

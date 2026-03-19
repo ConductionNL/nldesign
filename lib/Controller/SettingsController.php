@@ -15,13 +15,10 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\ThemingService;
-use OCA\NLDesign\Service\TokenRegistry;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Controller;
-use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -29,7 +26,8 @@ use OCP\IRequest;
 /**
  * Settings controller for NL Design app.
  *
- * Handles API requests for managing NL Design theme settings.
+ * Handles API requests for managing token sets, theming, and display settings.
+ * Override-related endpoints are handled by OverridesController.
  */
 class SettingsController extends Controller
 {
@@ -56,13 +54,6 @@ class SettingsController extends Controller
     private ThemingService $themingService;
 
     /**
-     * The custom overrides service.
-     *
-     * @var CustomOverridesService
-     */
-    private CustomOverridesService $overridesService;
-
-    /**
      * The token set preview service.
      *
      * @var TokenSetPreviewService
@@ -72,13 +63,12 @@ class SettingsController extends Controller
     /**
      * Constructor.
      *
-     * @param string                 $appName          The app name.
-     * @param IRequest               $request          The request object.
-     * @param IConfig                $config           The config service.
-     * @param TokenSetService        $tokenSetService  The token set service.
-     * @param ThemingService         $themingService   The theming service.
-     * @param CustomOverridesService $overridesService The custom overrides service.
-     * @param TokenSetPreviewService $previewService   The token set preview service.
+     * @param string                 $appName         The app name.
+     * @param IRequest               $request         The request object.
+     * @param IConfig                $config          The config service.
+     * @param TokenSetService        $tokenSetService The token set service.
+     * @param ThemingService         $themingService  The theming service.
+     * @param TokenSetPreviewService $previewService  The token set preview service.
      */
     public function __construct(
         string $appName,
@@ -86,15 +76,13 @@ class SettingsController extends Controller
         IConfig $config,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
-        CustomOverridesService $overridesService,
         TokenSetPreviewService $previewService
     ) {
         parent::__construct($appName, $request);
-        $this->config           = $config;
-        $this->tokenSetService  = $tokenSetService;
-        $this->themingService   = $themingService;
-        $this->overridesService = $overridesService;
-        $this->previewService   = $previewService;
+        $this->config          = $config;
+        $this->tokenSetService = $tokenSetService;
+        $this->themingService  = $themingService;
+        $this->previewService  = $previewService;
     }//end __construct()
 
     /**
@@ -150,6 +138,20 @@ class SettingsController extends Controller
     }//end getAvailableTokenSets()
 
     /**
+     * Store a boolean app setting as '0' or '1'.
+     *
+     * @param string $key   The app config key.
+     * @param bool   $value The boolean value.
+     *
+     * @return void
+     */
+    private function saveBooleanSetting(string $key, bool $value): void
+    {
+        $stored = $value === true ? '1' : '0';
+        $this->config->setAppValue(Application::APP_ID, $key, $stored);
+    }//end saveBooleanSetting()
+
+    /**
      * Set the hide slogan setting.
      *
      * @param bool $hideSlogan Whether to hide the slogan on login page.
@@ -160,16 +162,7 @@ class SettingsController extends Controller
      */
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
-        $sloganValue = '0';
-        if ($hideSlogan === true) {
-            $sloganValue = '1';
-        }
-
-        $this->config->setAppValue(
-            Application::APP_ID,
-            'hide_slogan',
-            $sloganValue
-        );
+        $this->saveBooleanSetting('hide_slogan', $hideSlogan);
 
         return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
     }//end setSloganSetting()
@@ -185,16 +178,7 @@ class SettingsController extends Controller
      */
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
-        $menuLabelValue = '0';
-        if ($showMenuLabels === true) {
-            $menuLabelValue = '1';
-        }
-
-        $this->config->setAppValue(
-            Application::APP_ID,
-            'show_menu_labels',
-            $menuLabelValue
-        );
+        $this->saveBooleanSetting('show_menu_labels', $showMenuLabels);
 
         return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
     }//end setMenuLabelsSetting()
@@ -236,165 +220,29 @@ class SettingsController extends Controller
      */
     public function getThemingValues(): JSONResponse
     {
-        $imgManager = $this->themingService->getImageManager();
+        $values = $this->buildThemingSnapshot();
 
-        $primaryColor = $this->config->getAppValue('theming', 'primary_color', '');
-        $bgColor      = $this->config->getAppValue('theming', 'background_color', '');
-
-        $logoUrl = $imgManager->getImageUrl('logo');
-        $bgUrl   = $imgManager->getImageUrl('background');
-
-        $hasLogo = $imgManager->hasImage('logo');
-        $hasBg   = $imgManager->hasImage('background');
-
-        return new JSONResponse(
-            [
-                'primary_color'         => $primaryColor,
-                'background_color'      => $bgColor,
-                'logo_url'              => $logoUrl,
-                'background_url'        => $bgUrl,
-                'has_custom_logo'       => $hasLogo,
-                'has_custom_background' => $hasBg,
-            ]
-        );
+        return new JSONResponse($values);
     }//end getThemingValues()
 
     /**
-     * Get the current custom token overrides.
+     * Build a snapshot of the current theming state.
      *
-     * Returns only tokens explicitly set in custom-overrides.css,
-     * plus the full editable token registry for the UI.
-     *
-     * @return JSONResponse The overrides and token registry.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @return array<string, mixed> The theming snapshot.
      */
-    public function getOverrides(): JSONResponse
+    private function buildThemingSnapshot(): array
     {
-        $overrides = $this->overridesService->read();
-        $registry  = TokenRegistry::getTokens();
-        $tabs      = TokenRegistry::getTabLabels();
+        $imgManager = $this->themingService->getImageManager();
 
-        return new JSONResponse(
-            [
-                'overrides' => $overrides,
-                'registry'  => $registry,
-                'tabs'      => $tabs,
-            ]
-        );
-    }//end getOverrides()
-
-    /**
-     * Write new custom token overrides to custom-overrides.css.
-     *
-     * Accepts a JSON body with an 'overrides' key containing token name => value pairs.
-     * Only tokens in the TokenRegistry are accepted; others are silently ignored.
-     *
-     * @return JSONResponse Status and count of written tokens.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     */
-    public function setOverrides(): JSONResponse
-    {
-        $params    = $this->request->getParams();
-        $overrides = $params['overrides'] ?? [];
-
-        if (is_array($overrides) === false) {
-            return new JSONResponse(['error' => 'overrides must be an object'], 400);
-        }
-
-        try {
-            $this->overridesService->write(tokens: $overrides);
-        } catch (\RuntimeException $e) {
-            return new JSONResponse(['error' => $e->getMessage()], 500);
-        }
-
-        return new JSONResponse(['status' => 'ok', 'written' => count($overrides)]);
-    }//end setOverrides()
-
-    /**
-     * Download custom-overrides.css as a file.
-     *
-     * @return DataDownloadResponse The CSS file as a download.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     */
-    public function exportOverrides(): DataDownloadResponse
-    {
-        $content = $this->overridesService->getRawContent();
-
-        return new DataDownloadResponse(
-            data: $content,
-            filename: 'custom-overrides.css',
-            contentType: 'text/css'
-        );
-    }//end exportOverrides()
-
-    /**
-     * Import custom token overrides from an uploaded CSS file.
-     *
-     * Accepts a multipart/form-data upload with a 'file' field.
-     * Only recognized editable tokens are imported; unknown tokens are silently skipped.
-     * The import fully replaces the existing custom-overrides.css.
-     *
-     * @return JSONResponse Import result with 'imported' and 'skipped' counts.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     */
-    public function importOverrides(): JSONResponse
-    {
-        $file = $this->request->getUploadedFile(key: 'file');
-
-        if (empty($file) === true || isset($file['tmp_name']) === false) {
-            return new JSONResponse(['error' => 'No file uploaded'], 400);
-        }
-
-        // Enforce size limit (256 KB).
-        if ($file['size'] > (256 * 1024)) {
-            return new JSONResponse(['error' => 'File exceeds the 256 KB size limit'], 413);
-        }
-
-        $content = file_get_contents($file['tmp_name']);
-        if ($content === false) {
-            return new JSONResponse(['error' => 'Could not read uploaded file'], 400);
-        }
-
-        // Parse --color-* declarations.
-        $parsed = [];
-        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $content, $matches, PREG_SET_ORDER);
-        if (empty($matches) === true) {
-            return new JSONResponse(['error' => 'No CSS custom property declarations found in the uploaded file'], 400);
-        }
-
-        foreach ($matches as $match) {
-            $parsed[trim($match[1])] = trim($match[2]);
-        }
-
-        // Split into recognized and unknown.
-        $toImport = [];
-        $skipped  = 0;
-        foreach ($parsed as $name => $value) {
-            if (TokenRegistry::isEditable(tokenName: $name) === true) {
-                $toImport[$name] = $value;
-            } else {
-                $skipped++;
-            }
-        }
-
-        try {
-            $this->overridesService->write(tokens: $toImport);
-        } catch (\RuntimeException $e) {
-            return new JSONResponse(['error' => $e->getMessage()], 500);
-        }
-
-        return new JSONResponse(
-            [
-                'status'   => 'ok',
-                'imported' => count($toImport),
-                'skipped'  => $skipped,
-            ]
-        );
-    }//end importOverrides()
+        return [
+            'primary_color'         => $this->config->getAppValue('theming', 'primary_color', ''),
+            'background_color'      => $this->config->getAppValue('theming', 'background_color', ''),
+            'logo_url'              => $imgManager->getImageUrl('logo'),
+            'background_url'        => $imgManager->getImageUrl('background'),
+            'has_custom_logo'       => $imgManager->hasImage('logo'),
+            'has_custom_background' => $imgManager->hasImage('background'),
+        ];
+    }//end buildThemingSnapshot()
 
     /**
      * Get resolved --color-* values for a given token set.
