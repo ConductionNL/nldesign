@@ -2,7 +2,13 @@
  * NL Design System Theme - Admin Settings JavaScript
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+(function nldesignAdminInit() {
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', nldesignAdminMain);
+} else {
+	nldesignAdminMain();
+}
+function nldesignAdminMain() {
 	var settingsEl = document.getElementById('nldesign-settings');
 	var tokenSetSelect = document.getElementById('nldesign-token-set-select');
 	var hideSloganCheckbox = document.getElementById('nldesign-hide-slogan');
@@ -21,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Token set color mappings for preview
 	var tokenSetColors = {
+		nextcloud: { primary: '#0082c9', primaryHover: '#006fad', primaryText: '#ffffff' },
 		rijkshuisstijl: { primary: '#154273', primaryHover: '#162f50', primaryText: '#ffffff' },
 		utrecht: { primary: '#24578F', primaryHover: '#1F4B7A', primaryText: '#ffffff' },
 		amsterdam: { primary: '#004699', primaryHover: '#003677', primaryText: '#ffffff' },
@@ -57,6 +64,25 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
+	// Design system display names
+	var designSystemNames = {
+		'none': 'Stock Nextcloud',
+		'nldesign': 'NL Design System'
+	};
+
+	// Update the design system badge for the selected token set
+	function updateDesignSystemBadge(tokenSetId) {
+		var badge = document.getElementById('nldesign-design-system-badge');
+		if (!badge) return;
+
+		var option = tokenSetSelect ? tokenSetSelect.querySelector('option[value="' + tokenSetId + '"]') : null;
+		var dsId = option ? (option.getAttribute('data-design-system') || 'nldesign') : 'nldesign';
+		var dsName = designSystemNames[dsId] || dsId;
+
+		badge.textContent = dsName;
+		badge.className = 'nldesign-badge' + (dsId === 'none' ? ' nldesign-badge--stock' : ' nldesign-badge--system');
+	}
+
 	// Handle token set dropdown selection — open apply dialog first
 	if (tokenSetSelect) {
 		tokenSetSelect.addEventListener('change', function() {
@@ -66,8 +92,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Store previous value so we can revert on Cancel.
 			this.dataset.previousValue = newTokenSet;
 
-			// Update preview optimistically
+			// Update preview and design system badge optimistically
 			updatePreview(newTokenSet);
+			updateDesignSystemBadge(newTokenSet);
 
 			// Open the token overrides apply dialog.
 			openTokenSetApplyDialog(newTokenSet, prevTokenSet);
@@ -75,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Set initial preview for selected item and remember initial value.
 		updatePreview(tokenSetSelect.value);
+		updateDesignSystemBadge(tokenSetSelect.value);
 		tokenSetSelect.dataset.previousValue = tokenSetSelect.value;
 	}
 
@@ -933,4 +961,5 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Initialise token editor on page load.
 	initTokenEditor();
 
-});
+}
+})();

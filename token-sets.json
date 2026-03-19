@@ -1,5 +1,15 @@
 [
 	{
+		"id": "nextcloud",
+		"name": "Nextcloud (default)",
+		"description": "Stock Nextcloud appearance — system fonts, rounded corners, Nextcloud blue (#0082c9)",
+		"design_system": "none",
+		"theming": {
+			"primary_color": "#0082c9",
+			"background_color": "#FFFFFF"
+		}
+	},
+	{
 		"id": "rijkshuisstijl",
 		"name": "Rijkshuisstijl",
 		"description": "Official Dutch national government design system (Rijksoverheid)",

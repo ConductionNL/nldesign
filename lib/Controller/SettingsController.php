@@ -15,9 +15,12 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\ThemingService;
+use OCA\NLDesign\Service\TokenRegistry;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
@@ -33,11 +36,18 @@ class SettingsController extends Controller
 {
 
     /**
-     * The config service.
+     * The application configuration service.
      *
      * @var IConfig
      */
     private IConfig $config;
+
+    /**
+     * The app manager.
+     *
+     * @var IAppManager
+     */
+    private IAppManager $appManager;
 
     /**
      * The token set service.
@@ -66,6 +76,7 @@ class SettingsController extends Controller
      * @param string                 $appName         The app name.
      * @param IRequest               $request         The request object.
      * @param IConfig                $config          The config service.
+     * @param IAppManager            $appManager      The app manager.
      * @param TokenSetService        $tokenSetService The token set service.
      * @param ThemingService         $themingService  The theming service.
      * @param TokenSetPreviewService $previewService  The token set preview service.
@@ -74,12 +85,14 @@ class SettingsController extends Controller
         string $appName,
         IRequest $request,
         IConfig $config,
+        IAppManager $appManager,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
         TokenSetPreviewService $previewService
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
         $this->config          = $config;
+        $this->appManager      = $appManager;
         $this->tokenSetService = $tokenSetService;
         $this->themingService  = $themingService;
         $this->previewService  = $previewService;
@@ -96,7 +109,8 @@ class SettingsController extends Controller
      */
     public function setTokenSet(string $tokenSet): JSONResponse
     {
-        if ($this->tokenSetService->isValidTokenSet($tokenSet) === false) {
+        $tokenSetService = new TokenSetService(appManager: $this->appManager);
+        if ($tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
@@ -117,7 +131,7 @@ class SettingsController extends Controller
         $tokenSet = $this->config->getAppValue(
             Application::APP_ID,
             'token_set',
-            'rijkshuisstijl'
+            'nextcloud'
         );
 
         return new JSONResponse(['tokenSet' => $tokenSet]);
@@ -188,7 +202,43 @@ class SettingsController extends Controller
     }//end setMenuLabelsSetting()
 
     /**
-     * Update Nextcloud theming values (colors and/or images).
+     * Get the token overrides (registry, tabs, and saved overrides).
+     *
+     * @return JSONResponse The token editor data.
+     *
+     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     */
+    public function getOverrides(): JSONResponse
+    {
+        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
+        $customOverridesService->ensureExists();
+
+        return new JSONResponse([
+            'registry'  => TokenRegistry::getTokens(),
+            'tabs'      => TokenRegistry::getTabLabels(),
+            'overrides' => $customOverridesService->read(),
+        ]);
+    }//end getOverrides()
+
+    /**
+     * Save token overrides.
+     *
+     * @param array $overrides The token overrides to save.
+     *
+     * @return JSONResponse The response with the status.
+     *
+     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     */
+    public function setOverrides(array $overrides): JSONResponse
+    {
+        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
+        $customOverridesService->write(tokens: $overrides);
+
+        return new JSONResponse(['status' => 'ok']);
+    }//end setOverrides()
+
+    /**
+     * Update Nextcloud theming values from NL Design tokens.
      *
      * @return JSONResponse The response with updated fields.
      *

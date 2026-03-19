@@ -188,9 +188,9 @@ class TokenSetPreviewService
             $value = $vars[$ref];
             // If the value itself is a var(), resolve one more level.
             if (str_starts_with(haystack: $value, needle: 'var(') === true) {
-                preg_match('/var\((--[\w-]+)\)/', $value, $match);
-                if (isset($match[1]) === true && isset($vars[$match[1]]) === true) {
-                    return $vars[$match[1]];
+                preg_match('/var\((--[\w-]+)\)/', $value, $varMatch);
+                if (isset($varMatch[1]) === true && isset($vars[$varMatch[1]]) === true) {
+                    return $vars[$varMatch[1]];
                 }
             }
 

@@ -15,9 +15,8 @@ return [
 		['name' => 'settings#setMenuLabelsSetting', 'url' => '/settings/menulabels', 'verb' => 'POST'],
 		['name' => 'settings#getThemingValues', 'url' => '/settings/theming', 'verb' => 'GET'],
 		['name' => 'settings#updateThemingValues', 'url' => '/settings/theming', 'verb' => 'POST'],
-		// Custom token overrides CRUD.
-		['name' => 'overrides#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
-		['name' => 'overrides#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
+		['name' => 'settings#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
+		['name' => 'settings#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
 		// Import/export.
 		['name' => 'overrides#exportOverrides', 'url' => '/settings/overrides/export', 'verb' => 'GET'],
 		['name' => 'overrides#importOverrides', 'url' => '/settings/overrides/import', 'verb' => 'POST'],

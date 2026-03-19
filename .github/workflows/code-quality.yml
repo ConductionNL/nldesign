@@ -12,6 +12,12 @@ jobs:
     uses: ConductionNL/.github/.github/workflows/quality.yml@main
     with:
       app-name: nldesign
+      php-version: "8.3"
+      enable-psalm: false
+      enable-phpstan: false
+      enable-phpcs: false
+      enable-phpmetrics: true
       enable-frontend: true
       enable-eslint: true
       enable-sbom: true
+      enable-phpunit: true

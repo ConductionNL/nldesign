@@ -47,22 +47,13 @@ class CustomOverridesService
     private IAppManager $appManager;
 
     /**
-     * The CSS parser service.
-     *
-     * @var CssParserService
-     */
-    private CssParserService $cssParser;
-
-    /**
      * Constructor.
      *
-     * @param IAppManager      $appManager The app manager.
-     * @param CssParserService $cssParser  The CSS parser service.
+     * @param IAppManager $appManager The app manager.
      */
-    public function __construct(IAppManager $appManager, CssParserService $cssParser)
+    public function __construct(IAppManager $appManager)
     {
         $this->appManager = $appManager;
-        $this->cssParser  = $cssParser;
     }//end __construct()
 
     /**
@@ -112,7 +103,7 @@ class CustomOverridesService
             return [];
         }
 
-        return $this->cssParser->parseRootBlock($content);
+        return $this->parseDeclarations(css: $content);
     }//end read()
 
     /**
@@ -172,41 +163,24 @@ class CustomOverridesService
 
         $css = $this->buildCss(tokens: $tokens);
 
-        $result = file_put_contents($tmpPath, $css);
+        $result = file_put_contents(filename: $tmpPath, data: $css);
         if ($result === false) {
             throw new RuntimeException(
-                message: 'Could not write custom-overrides.css. Check css/ directory permissions.'
+                message: 'Could not write '.$tmpPath.'. Ensure the web server has write access to the css/ directory.'
             );
         }
 
-        $this->atomicRename(from: $tmpPath, to: $path);
+        if (rename(from: $tmpPath, to: $path) === false) {
+            if (file_exists(filename: $tmpPath) === true) {
+                unlink(filename: $tmpPath);
+            }
+
+            throw new RuntimeException(
+                message: 'Temp file could not be renamed to '.$path.'.'
+            );
+        }
 
     }//end writeFile()
-
-    /**
-     * Rename a temp file to its final path, cleaning up on failure.
-     *
-     * @param string $from The temporary file path.
-     * @param string $to   The final file path.
-     *
-     * @return void
-     *
-     * @throws RuntimeException When the rename fails.
-     */
-    private function atomicRename(string $from, string $to): void
-    {
-        if (rename(from: $from, to: $to) === true) {
-            return;
-        }
-
-        if (file_exists($from) === true) {
-            unlink($from);
-        }
-
-        throw new RuntimeException(
-            message: 'custom-overrides.css temp file could not be renamed.'
-        );
-    }//end atomicRename()
 
     /**
      * Build the CSS file content from a token map.
@@ -248,6 +222,33 @@ class CustomOverridesService
     }//end buildDeclarationLines()
 
     /**
+     * Parse CSS custom property declarations from a :root {} block.
+     *
+     * @param string $css The raw CSS string.
+     *
+     * @return array<string, string> Map of token name => value.
+     */
+    private function parseDeclarations(string $css): array
+    {
+        $tokens = [];
+
+        // Extract the :root block.
+        if (preg_match('/:root\s*\{([^}]*)\}/s', $css, $rootMatch) !== 1) {
+            return $tokens;
+        }
+
+        $block = $rootMatch[1];
+
+        // Match each declaration: --name: value.
+        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $block, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $tokens[trim($match[1])] = trim($match[2]);
+        }
+
+        return $tokens;
+    }//end parseDeclarations()
+
+    /**
      * Return the raw CSS file content for download.
      *
      * @return string The raw file content, or an empty :root {} if the file does not exist.
@@ -259,11 +260,11 @@ class CustomOverridesService
             return self::CSS_HEADER.PHP_EOL.':root {}'.PHP_EOL;
         }
 
-        $content = file_get_contents($path);
-        if ($content !== false) {
-            return $content;
+        $content = file_get_contents(filename: $path);
+        if ($content === false) {
+            return '';
         }
 
-        return '';
+        return $content;
     }//end getRawContent()
 }//end class

@@ -24,6 +24,8 @@ use Psr\Log\LoggerInterface;
  */
 class HealthController extends Controller
 {
+
+
     /**
      * Constructor.
      *
@@ -40,14 +42,13 @@ class HealthController extends Controller
 
     }//end __construct()
 
+
     /**
      * Return health check status.
      *
      * @return JSONResponse JSON response with health status and checks.
      *
      * @NoCSRFRequired
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Server::get() is the Nextcloud service locator API
      */
     public function index(): JSONResponse
     {
@@ -59,13 +60,10 @@ class HealthController extends Controller
         try {
             $config   = \OCP\Server::get(\OCP\IConfig::class);
             $tokenSet = $config->getAppValue('nldesign', 'token_set', 'rijkshuisstijl');
-            $checks['configuration'] = 'degraded';
-            if ($tokenSet !== '') {
-                $checks['configuration'] = 'ok';
-            }
+            $checks['configuration'] = ($tokenSet !== '') ? 'ok' : 'degraded';
         } catch (\Exception $e) {
             $checks['configuration'] = 'error';
-            $status = 'error';
+            $status                   = 'error';
             $this->logger->error('Health check: configuration failed', ['exception' => $e->getMessage()]);
         }
 
@@ -77,4 +75,6 @@ class HealthController extends Controller
         );
 
     }//end index()
+
+
 }//end class

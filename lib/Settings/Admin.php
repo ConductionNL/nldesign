@@ -16,6 +16,7 @@ namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\TokenSetService;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
 use OCP\IL10N;
@@ -30,7 +31,7 @@ class Admin implements ISettings
 {
 
     /**
-     * The config service.
+     * The application configuration service.
      *
      * @var IConfig
      */
@@ -44,27 +45,24 @@ class Admin implements ISettings
     private IL10N $l;
 
     /**
-     * The token set service.
+     * The app manager.
      *
-     * @var TokenSetService
+     * @var IAppManager
      */
-    private TokenSetService $tokenSetService;
+    private IAppManager $appManager;
 
     /**
      * Constructor.
      *
-     * @param IConfig         $config          The config service.
-     * @param IL10N           $l               The localization service.
-     * @param TokenSetService $tokenSetService The token set service.
+     * @param IConfig     $config     The config service.
+     * @param IL10N       $l          The localization service.
+     * @param IAppManager $appManager The app manager.
      */
-    public function __construct(
-        IConfig $config,
-        IL10N $l,
-        TokenSetService $tokenSetService
-    ) {
-        $this->config = $config;
-        $this->l      = $l;
-        $this->tokenSetService = $tokenSetService;
+    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager)
+    {
+        $this->config     = $config;
+        $this->l          = $l;
+        $this->appManager = $appManager;
     }//end __construct()
 
     /**
@@ -74,12 +72,13 @@ class Admin implements ISettings
      */
     public function getForm(): TemplateResponse
     {
-        $tokenSets = $this->tokenSetService->getAvailableTokenSets();
+        $tokenSetService = new TokenSetService(appManager: $this->appManager);
+        $tokenSets       = $tokenSetService->getAvailableTokenSets();
 
         $currentTokenSet = $this->config->getAppValue(
             Application::APP_ID,
             'token_set',
-            'rijkshuisstijl'
+            'nextcloud'
         );
 
         $hideSlogan = $this->config->getAppValue(
