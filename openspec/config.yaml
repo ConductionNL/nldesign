@@ -54,3 +54,5 @@ rules:
     - Test Nextcloud theming sync (colors, logo)
     - Test dark mode compatibility
     - Verify WCAG AA contrast ratios
+    - Follow mandatory task categories from ADRs 005, 009, 010, 011
+    - Deduplication check focuses on existing token sets and CSS layers (not OpenRegister services)
