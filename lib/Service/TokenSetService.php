@@ -121,7 +121,7 @@ class TokenSetService
      *
      * @param string $manifestPath Path to token-sets.json.
      *
-     * @return array<string, array{name: string, description: string}> Metadata indexed by id.
+     * @return array<string, array<string, mixed>> Metadata indexed by id.
      */
     private function readManifest(string $manifestPath): array
     {

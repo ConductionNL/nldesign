@@ -40,6 +40,7 @@ class Admin implements ISettings
      * The localization service.
      *
      * @var IL10N
+     * @phpstan-ignore-next-line Property kept for future i18n use.
      */
     private IL10N $l;
 
