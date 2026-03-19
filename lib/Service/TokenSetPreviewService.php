@@ -81,7 +81,7 @@ class TokenSetPreviewService
         $resolved        = [];
         $editableTokens  = TokenRegistry::getTokens();
 
-        foreach ($editableTokens as $colorToken => $_definition) {
+        foreach (array_keys($editableTokens) as $colorToken) {
             if (isset($mappings[$colorToken]) === true) {
                 // Mapping exists in overrides.css.
                 $nldesignRef = $mappings[$colorToken];
