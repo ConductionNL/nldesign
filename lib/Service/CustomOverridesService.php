@@ -143,12 +143,11 @@ class CustomOverridesService
 
         $result = file_put_contents($tmpPath, $css);
         if ($result === false) {
-            throw new RuntimeException(
-                message: 'custom-overrides.css could not be written to '.$tmpPath.'. Check that the web server user has write access to the css/ directory.'
-            );
+            $msg = 'Could not write custom-overrides.css to '.$tmpPath.'. Check css/ directory permissions.';
+            throw new RuntimeException(message: $msg);
         }
 
-        if (rename($tmpPath, $path) === false) {
+        if (rename(from: $tmpPath, to: $path) === false) {
             if (file_exists($tmpPath) === true) {
                 unlink($tmpPath);
             }
@@ -204,7 +203,7 @@ class CustomOverridesService
 
         $block = $rootMatch[1];
 
-        // Match each declaration: --name: value;
+        // Match each declaration: --name: value.
         preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $block, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $tokens[trim($match[1])] = trim($match[2]);
@@ -226,7 +225,10 @@ class CustomOverridesService
         }
 
         $content = file_get_contents($path);
-        return ($content !== false) ? $content : '';
-    }//end getRawContent()
+        if ($content !== false) {
+            return $content;
+        }
 
+        return '';
+    }//end getRawContent()
 }//end class

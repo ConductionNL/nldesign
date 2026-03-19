@@ -28,17 +28,15 @@ use Psr\Log\LoggerInterface;
  */
 class MetricsController extends Controller
 {
-
-
     /**
      * Constructor.
      *
-     * @param string                 $appName                The app name.
-     * @param IRequest               $request                The request object.
-     * @param IConfig                $config                 The config service.
-     * @param TokenSetService        $tokenSetService        The token set service.
-     * @param CustomOverridesService $overridesService       The custom overrides service.
-     * @param LoggerInterface        $logger                 Logger for error reporting.
+     * @param string                 $appName          The app name.
+     * @param IRequest               $request          The request object.
+     * @param IConfig                $config           The config service.
+     * @param TokenSetService        $tokenSetService  The token set service.
+     * @param CustomOverridesService $overridesService The custom overrides service.
+     * @param LoggerInterface        $logger           Logger for error reporting.
      */
     public function __construct(
         string $appName,
@@ -51,7 +49,6 @@ class MetricsController extends Controller
         parent::__construct($appName, $request);
 
     }//end __construct()
-
 
     /**
      * Expose Prometheus metrics.
@@ -66,7 +63,7 @@ class MetricsController extends Controller
 
         $appVersion = $this->config->getAppValue(Application::APP_ID, 'installed_version', '0.0.0');
         $phpVersion = PHP_VERSION;
-        $ncVersion  = $this->config->getSystemValueString('version', '0.0.0');
+        $ncVersion  = $this->config->getSystemValueString(key: 'version', default: '0.0.0');
 
         // Info gauge.
         $lines[] = '# HELP nldesign_info Application information';
@@ -98,7 +95,6 @@ class MetricsController extends Controller
 
     }//end index()
 
-
     /**
      * Collect token set metrics.
      *
@@ -109,7 +105,7 @@ class MetricsController extends Controller
     private function collectTokenSetMetrics(array &$lines): void
     {
         try {
-            $tokenSets    = $this->tokenSetService->getAvailableTokenSets();
+            $tokenSets     = $this->tokenSetService->getAvailableTokenSets();
             $tokenSetCount = count($tokenSets);
 
             $lines[] = '# HELP nldesign_token_sets_total Total number of available token sets';
@@ -130,7 +126,6 @@ class MetricsController extends Controller
 
     }//end collectTokenSetMetrics()
 
-
     /**
      * Collect custom overrides metrics.
      *
@@ -141,7 +136,7 @@ class MetricsController extends Controller
     private function collectOverrideMetrics(array &$lines): void
     {
         try {
-            $overrides    = $this->overridesService->read();
+            $overrides     = $this->overridesService->read();
             $overrideCount = count($overrides);
 
             $lines[] = '# HELP nldesign_custom_overrides_total Total custom CSS overrides';
@@ -155,6 +150,4 @@ class MetricsController extends Controller
         }
 
     }//end collectOverrideMetrics()
-
-
 }//end class

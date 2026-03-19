@@ -72,13 +72,13 @@ class SettingsController extends Controller
     /**
      * Constructor.
      *
-     * @param string                 $appName                The app name.
-     * @param IRequest               $request                The request object.
-     * @param IConfig                $config                 The config service.
-     * @param TokenSetService        $tokenSetService        The token set service.
-     * @param ThemingService         $themingService         The theming service.
-     * @param CustomOverridesService $overridesService       The custom overrides service.
-     * @param TokenSetPreviewService $previewService         The token set preview service.
+     * @param string                 $appName          The app name.
+     * @param IRequest               $request          The request object.
+     * @param IConfig                $config           The config service.
+     * @param TokenSetService        $tokenSetService  The token set service.
+     * @param ThemingService         $themingService   The theming service.
+     * @param CustomOverridesService $overridesService The custom overrides service.
+     * @param TokenSetPreviewService $previewService   The token set preview service.
      */
     public function __construct(
         string $appName,
@@ -90,11 +90,11 @@ class SettingsController extends Controller
         TokenSetPreviewService $previewService
     ) {
         parent::__construct($appName, $request);
-        $this->config                 = $config;
-        $this->tokenSetService        = $tokenSetService;
-        $this->themingService         = $themingService;
-        $this->overridesService       = $overridesService;
-        $this->previewService         = $previewService;
+        $this->config           = $config;
+        $this->tokenSetService  = $tokenSetService;
+        $this->themingService   = $themingService;
+        $this->overridesService = $overridesService;
+        $this->previewService   = $previewService;
     }//end __construct()
 
     /**
@@ -258,6 +258,7 @@ class SettingsController extends Controller
             ]
         );
     }//end getThemingValues()
+
     /**
      * Get the current custom token overrides.
      *
@@ -417,5 +418,4 @@ class SettingsController extends Controller
 
         return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
     }//end getTokenSetPreview()
-
 }//end class

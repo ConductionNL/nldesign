@@ -103,8 +103,8 @@ class Application extends App implements IBootstrap
         \OCP\Util::addStyle(application: self::APP_ID, file: 'element-overrides');
 
         // 8. Custom overrides — admin-defined token overrides, always wins (loaded last).
-        $appManager           = $serverContainer->get(IAppManager::class);
-        $customOverridesSvc   = new CustomOverridesService(appManager: $appManager);
+        $appManager         = $serverContainer->get(IAppManager::class);
+        $customOverridesSvc = new CustomOverridesService(appManager: $appManager);
         $customOverridesSvc->ensureExists();
         \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
 

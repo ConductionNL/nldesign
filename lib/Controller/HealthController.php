@@ -24,8 +24,6 @@ use Psr\Log\LoggerInterface;
  */
 class HealthController extends Controller
 {
-
-
     /**
      * Constructor.
      *
@@ -41,7 +39,6 @@ class HealthController extends Controller
         parent::__construct($appName, $request);
 
     }//end __construct()
-
 
     /**
      * Return health check status.
@@ -60,10 +57,14 @@ class HealthController extends Controller
         try {
             $config   = \OCP\Server::get(\OCP\IConfig::class);
             $tokenSet = $config->getAppValue('nldesign', 'token_set', 'rijkshuisstijl');
-            $checks['configuration'] = ($tokenSet !== '') ? 'ok' : 'degraded';
+            if ($tokenSet !== '') {
+                $checks['configuration'] = 'ok';
+            } else {
+                $checks['configuration'] = 'degraded';
+            }
         } catch (\Exception $e) {
             $checks['configuration'] = 'error';
-            $status                   = 'error';
+            $status = 'error';
             $this->logger->error('Health check: configuration failed', ['exception' => $e->getMessage()]);
         }
 
@@ -75,6 +76,4 @@ class HealthController extends Controller
         );
 
     }//end index()
-
-
 }//end class
