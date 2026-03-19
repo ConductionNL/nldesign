@@ -128,3 +128,36 @@ The app MUST expose an admin-only API endpoint for toggling the show menu labels
 - GIVEN a non-admin user is authenticated
 - WHEN `POST /apps/nldesign/settings/menulabels` is called
 - THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
+
+### Current Implementation Status
+
+**Fully implemented:**
+- Configuration storage: `Application.php` reads `show_menu_labels` from `IConfig` with default `'0'`, compares with `=== '1'` (line 81)
+- API endpoint: `POST /apps/nldesign/settings/menulabels` mapped in `appinfo/routes.php` (line 11) to `SettingsController::setMenuLabelsSetting()` (`lib/Controller/SettingsController.php` lines 186-200)
+- Boolean conversion: `setMenuLabelsSetting(bool $showMenuLabels)` uses strict `=== true` to convert to `'1'`/`'0'` (lines 188-191)
+- Conditional CSS loading: `Application::injectThemeCSS()` loads `show-menu-labels` CSS only when `$showMenuLabels === true` (lines 117-119)
+- CSS file: `css/show-menu-labels.css` (66 lines) implements all requirements:
+  - Icons hidden: `.app-menu-icon` and `.app-menu-entry__icon` with `display: none !important` and `visibility: hidden !important` (lines 10-14)
+  - Labels visible: `.app-menu-entry__label` with `display: inline-block !important`, `visibility: visible !important`, `opacity: 1 !important` (lines 17-35)
+  - Label typography: `font-size: 14px`, `font-weight: 400` normal / `600` active, `white-space: nowrap` (lines 22-24, 38-40)
+  - Label positioning: `position: static`, `transform: none`, `max-width: none`, `text-align: center` (lines 29-35)
+  - Menu entry dimensions: `height: var(--header-height)`, `min-width: 80px`, `width: auto`, `flex-shrink: 0` (lines 59-64)
+  - Menu entry link layout: `display: flex`, `flex-direction: column`, `align-items: center`, `justify-content: center`, `height: 100%`, `padding: 0` (lines 49-56)
+  - Active indicator removed: `.app-menu-entry--active::before` with `background-color: transparent !important` and `opacity: 0 !important` (lines 43-46)
+- Admin-only access: `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on `setMenuLabelsSetting()`
+- Settings panel checkbox: `templates/settings/admin.php` renders `#nldesign-show-menu-labels` checkbox with correct checked state and label text
+- JavaScript handler: `js/admin.js` calls `saveMenuLabelsSetting()` on checkbox change via `POST /apps/nldesign/settings/menulabels`
+
+**Not yet implemented:**
+- All requirements in this spec are fully implemented.
+
+### Standards & References
+- WCAG 2.1 AA: Text labels improve discoverability and accessibility for users who cannot identify icons (SC 1.3.1 Info and Relationships, SC 3.3.2 Labels or Instructions)
+- NL Design System: Government users may be unfamiliar with Nextcloud icon conventions; text labels align with government UX guidelines for clarity
+- Nextcloud header navigation: `.app-menu-entry`, `.app-menu-entry__icon`, `.app-menu-entry__label` are standard Nextcloud component classes from `AppMenuEntry.vue`
+
+### Specificity Assessment
+- This spec is highly specific and directly implementable. Every CSS selector, property, and value is precisely defined.
+- All scenarios map 1:1 to the implementation in `css/show-menu-labels.css`.
+- No ambiguities or open questions remain -- this spec is complete as-is.
+- Minor note: The spec does not address responsive behavior (what happens when many labels overflow the header width). The implementation uses `flex-shrink: 0` which could cause overflow on narrow screens.

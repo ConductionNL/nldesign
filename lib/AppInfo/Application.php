@@ -46,6 +46,8 @@ class Application extends App implements IBootstrap
      * @param IRegistrationContext $context The registration context.
      *
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
      */
     public function register(IRegistrationContext $context): void
     {
@@ -73,6 +75,8 @@ class Application extends App implements IBootstrap
      * @param mixed $serverContainer The server container.
      *
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
      */
     private function injectThemeCSS($serverContainer): void
     {
@@ -91,26 +95,26 @@ class Application extends App implements IBootstrap
         // 2. Load design system stylesheets in declared order.
         //    For "none" (stock Nextcloud) this array is empty — no CSS loads.
         foreach ($designSystem['stylesheets'] as $stylesheet) {
-            \OCP\Util::addStyle(self::APP_ID, $stylesheet);
+            \OCP\Util::addStyle(application: self::APP_ID, file: $stylesheet);
         }
 
         // 3. Load token values (only when a design system reads --nldesign-* vars).
         if ($designSystemId !== 'none') {
-            \OCP\Util::addStyle(self::APP_ID, 'tokens/'.$tokenSet);
+            \OCP\Util::addStyle(application: self::APP_ID, file: 'tokens/'.$tokenSet);
         }
 
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
         $customOverridesSvc = new CustomOverridesService(appManager: $appManager);
         $customOverridesSvc->ensureExists();
-        \OCP\Util::addStyle(self::APP_ID, 'custom-overrides');
+        \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
 
         // 5. Conditional stylesheets.
         if ($hideSlogan === true) {
-            \OCP\Util::addStyle(self::APP_ID, 'hide-slogan');
+            \OCP\Util::addStyle(application: self::APP_ID, file: 'hide-slogan');
         }
 
         if ($showMenuLabels === true) {
-            \OCP\Util::addStyle(self::APP_ID, 'show-menu-labels');
+            \OCP\Util::addStyle(application: self::APP_ID, file: 'show-menu-labels');
         }
     }//end injectThemeCSS()
 }//end class

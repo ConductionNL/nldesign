@@ -292,13 +292,24 @@ This implementation is **fully legal and open-source** for:
 
 ## License
 
-AGPL-3.0-or-later
+This project is licensed under the [EUPL-1.2](LICENSE).
 
-### Component Licenses
+### Dependency license policy
 
-- **This App**: AGPL-3.0-or-later
-- **Fira Sans Font**: SIL Open Font License 1.1
-- **Design Tokens**: Public domain (color values, measurements)
+All dependencies (PHP and JavaScript) are automatically checked against an approved license allowlist during CI. The following SPDX license families are approved for use in dependencies:
+
+- **Permissive:** MIT, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Apache-2.0, Unlicense, CC0-1.0, CC-BY-3.0, CC-BY-4.0, Zlib, BlueOak-1.0.0, Artistic-2.0, BSL-1.0
+- **Copyleft (EUPL-compatible):** LGPL-2.0/2.1/3.0, GPL-2.0/3.0, AGPL-3.0, EUPL-1.1/1.2, MPL-2.0
+- **Font licenses:** OFL-1.0, OFL-1.1
+
+Dependencies with licenses not on this list will fail CI unless explicitly approved in `.license-overrides.json` with a documented justification.
+
+### License exceptions
+
+| Package | Reason |
+|---------|--------|
+| `@amsterdam/design-system-assets` | Amsterdam Design System - government open-source, EUPL-compatible — approved 2026-03-15 |
+| `@amsterdam/design-system-react-icons` | Amsterdam Design System - government open-source, EUPL-compatible — approved 2026-03-15 |
 
 ## Contributing
 

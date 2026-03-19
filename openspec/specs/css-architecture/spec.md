@@ -204,3 +204,39 @@ The element-overrides layer MUST apply NL Design styling to specific HTML elemen
 - WHEN solid background rules are applied
 - THEN elements with `.mydash-widget` or `.tile-widget` classes MUST be excluded
 - AND the MyDash container MUST have transparent background
+
+### Current Implementation Status
+
+**Fully implemented:**
+- Seven-layer CSS load order enforced in `lib/AppInfo/Application.php` (`injectThemeCSS()` method, lines 84-103): fonts, defaults, tokens/{org}, utrecht-bridge, theme, overrides, element-overrides -- all loaded via `\OCP\Util::addStyle()` in exact order
+- Layer 1 (fonts): `css/fonts.css` (46 lines) declares Fira Sans at weights 400/700, normal/italic, with `font-display: swap` and woff2+woff formats
+- Layer 2 (defaults): `css/defaults.css` (319 lines) defines all `--nldesign-*` tokens on `:root` including brand colors, status colors, background colors, text colors, border colors, focus colors, link colors, button colors, typography, border-radius, animation timing, placeholder colors, and `--nldesign-component-*` tokens
+- Layer 3 (token sets): 39 CSS files in `css/tokens/` directory, each overriding `--nldesign-*` variables on `:root`
+- Layer 4 (utrecht-bridge): `css/utrecht-bridge.css` (183 lines) maps `--utrecht-*` component tokens to `--nldesign-component-*` tokens with fallbacks
+- Layer 5 (theme): `css/theme.css` (875 lines) applies tokens to Nextcloud element selectors with `!important`, including `body`/`body[data-themes]` overrides, header styling, login page styling, focus states
+- Layer 6 (overrides): `css/overrides.css` (242 lines) maps Nextcloud `--color-*` variables to `--nldesign-*` tokens on `:root`
+- Layer 7 (element-overrides): `css/element-overrides.css` (597 lines) applies NL Design styling to specific HTML elements and Nextcloud components
+- Conditional CSS loading for `hide-slogan` and `show-menu-labels` after core layers (`Application.php` lines 112-119)
+- An 8th layer (`custom-overrides`) is loaded between layer 7 and conditional layers (`Application.php` lines 106-109) via `CustomOverridesService`
+
+**Not yet implemented:**
+- All requirements in this spec are fully implemented.
+
+**Implementation details beyond spec:**
+- The spec describes 7 layers but the implementation has 8: `custom-overrides` is loaded after `element-overrides` (layer 7) and before the conditional `hide-slogan`/`show-menu-labels` layers. This 8th layer (`CustomOverridesService`) allows admin-defined token overrides that always win.
+
+### Standards & References
+- CSS Custom Properties (CSS Variables) specification: https://www.w3.org/TR/css-variables-1/
+- NL Design System community design tokens: https://nldesignsystem.nl/
+- Rijkshuisstijl (Dutch government visual identity): https://www.rijkshuisstijl.nl/
+- W3C Design Tokens specification (community group): https://design-tokens.github.io/community-group/format/
+- Utrecht Design System component tokens (`--utrecht-*` namespace): https://nl-design-system.github.io/utrecht/
+- WCAG 2.1 AA focus indicator requirements (REQ-CSS-006 focus states)
+- CSS Cascade and Specificity: https://www.w3.org/TR/css-cascade-5/
+
+### Specificity Assessment
+- This spec is very specific and directly matches the implementation. Layer order, file names, variable namespaces, and fallback behavior are all precisely defined.
+- The spec does not cover the 8th layer (`custom-overrides`) which exists in the implementation. This could be added as REQ-CSS-009.
+- REQ-CSS-003 lists token categories but does not enumerate every single token name -- this is appropriate for a spec (the full list is in `defaults.css`).
+- REQ-CSS-008 mentions MyDash exclusion but does not enumerate all app-specific exclusions that may exist in `element-overrides.css`.
+- Open question: Should the `custom-overrides` layer be formally specified? It is a significant architectural element that allows admin customization to override all other layers.

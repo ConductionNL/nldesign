@@ -1,0 +1,659 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:d9eac66a-35e2-4753-9f6a-0cf678b672fb",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-03-16T22:48:02Z",
+    "tools": [
+      {
+        "name": "composer",
+        "version": "2.9.3"
+      },
+      {
+        "vendor": "cyclonedx",
+        "name": "cyclonedx-php-composer",
+        "version": "v6.2.0",
+        "externalReferences": [
+          {
+            "type": "distribution",
+            "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/934440a5ef7c3c3cdb58c3c3d389d412630ccbf6",
+            "comment": "dist reference: 934440a5ef7c3c3cdb58c3c3d389d412630ccbf6"
+          },
+          {
+            "type": "vcs",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-composer.git",
+            "comment": "source reference: 934440a5ef7c3c3cdb58c3c3d389d412630ccbf6"
+          },
+          {
+            "type": "website",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-composer/#readme",
+            "comment": "as detected from Composer manifest 'homepage'"
+          },
+          {
+            "type": "issue-tracker",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-composer/issues",
+            "comment": "as detected from Composer manifest 'support.issues'"
+          },
+          {
+            "type": "vcs",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-composer/",
+            "comment": "as detected from Composer manifest 'support.source'"
+          }
+        ]
+      },
+      {
+        "vendor": "cyclonedx",
+        "name": "cyclonedx-library",
+        "version": "v4.0.0",
+        "externalReferences": [
+          {
+            "type": "distribution",
+            "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/c95a371894c4e32bea42bfa024f2ab5092cbb292",
+            "comment": "dist reference: c95a371894c4e32bea42bfa024f2ab5092cbb292"
+          },
+          {
+            "type": "vcs",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-library.git",
+            "comment": "source reference: c95a371894c4e32bea42bfa024f2ab5092cbb292"
+          },
+          {
+            "type": "website",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-library/#readme",
+            "comment": "as detected from Composer manifest 'homepage'"
+          },
+          {
+            "type": "documentation",
+            "url": "https://cyclonedx-php-library.readthedocs.io",
+            "comment": "as detected from Composer manifest 'support.docs'"
+          },
+          {
+            "type": "issue-tracker",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-library/issues",
+            "comment": "as detected from Composer manifest 'support.issues'"
+          },
+          {
+            "type": "vcs",
+            "url": "https://github.com/CycloneDX/cyclonedx-php-library/",
+            "comment": "as detected from Composer manifest 'support.source'"
+          }
+        ]
+      }
+    ],
+    "component": {
+      "bom-ref": "conductionnl/nldesign-dev-feature/spec-enrichment-and-metrics",
+      "type": "application",
+      "name": "nldesign",
+      "version": "dev-feature/spec-enrichment-and-metrics",
+      "group": "conductionnl",
+      "description": "NL Design System theme for Nextcloud",
+      "author": "Conduction b.v.",
+      "licenses": [
+        {
+          "license": {
+            "id": "EUPL-1.2"
+          }
+        }
+      ],
+      "purl": "pkg:composer/conductionnl/nldesign@dev-feature/spec-enrichment-and-metrics",
+      "properties": [
+        {
+          "name": "cdx:composer:package:distReference",
+          "value": "3163eee82d7bb3bb2a7c355221216ddff8b1a551"
+        },
+        {
+          "name": "cdx:composer:package:sourceReference",
+          "value": "3163eee82d7bb3bb2a7c355221216ddff8b1a551"
+        },
+        {
+          "name": "cdx:composer:package:type",
+          "value": "library"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "design-system-assets",
+      "group": "@amsterdam",
+      "version": "2.0.0",
+      "bom-ref": "nldesign@0.1.0|@amsterdam/design-system-assets@2.0.0",
+      "author": "Design System Team, City of Amsterdam",
+      "description": "All assets from the Amsterdam Design System. Use it to include the correct fonts, icons or logos in your website or application.",
+      "licenses": [
+        {
+          "license": {
+            "name": "SEE LICENSE IN LICENSE.md"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40amsterdam/design-system-assets@2.0.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/Amsterdam/design-system.git#packages-proprietary/assets",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://designsystem.amsterdam",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/Amsterdam/design-system/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@amsterdam/design-system-assets/-/design-system-assets-2.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f9c73e9bb2d6ec569d8dcce4f94ef7aa237b11ec220f42ab087e57b2b89ab8cdcf604cbca4d989d331ca06c5a3e0394bfe93f5b7cec026ade8e0ef88f79a2b29"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@amsterdam/design-system-assets"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "design-system-react-icons",
+      "group": "@amsterdam",
+      "version": "2.0.0",
+      "bom-ref": "nldesign@0.1.0|@amsterdam/design-system-react-icons@2.0.0",
+      "author": "Design System Team, City of Amsterdam",
+      "description": "All icons from the Amsterdam Design System as React components. Use it to use the correct icons in your React project.",
+      "licenses": [
+        {
+          "license": {
+            "name": "SEE LICENSE IN LICENSE.md"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40amsterdam/design-system-react-icons@2.0.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/Amsterdam/design-system.git#packages-proprietary/react-icons",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://designsystem.amsterdam",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/Amsterdam/design-system/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@amsterdam/design-system-react-icons/-/design-system-react-icons-2.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c8c43b68004639370f74e00dca91bd106787079bc1bffb325fc13e2dafed9ac7d8fbe0ad6a1472948215b91a4cab7b3a834dfebdb59a9ff00db9103912ed0d16"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@amsterdam/design-system-react-icons"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fira-sans",
+      "group": "@fontsource",
+      "version": "5.2.7",
+      "bom-ref": "nldesign@0.1.0|@fontsource/fira-sans@5.2.7",
+      "author": "Google Inc.",
+      "description": "Self-host the Fira Sans font in a neatly bundled NPM package.",
+      "licenses": [
+        {
+          "license": {
+            "id": "OFL-1.1"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40fontsource/fira-sans@5.2.7",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/fontsource/font-files.git#fonts/google/fira-sans",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://fontsource.org/fonts/fira-sans",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/fontsource/font-files/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@fontsource/fira-sans/-/fira-sans-5.2.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e4313801e6a50ff5676f07733209e959f0adb4c4016ed78d88af4308913b715c1911b0d33cb52814330cbf1350e3df2765ce629fb32d6bd73fb3edc4861d0102"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@fontsource/fira-sans"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parseargs",
+      "group": "@pkgjs",
+      "version": "0.11.0",
+      "bom-ref": "nldesign@0.1.0|@pkgjs/parseargs@0.11.0",
+      "description": "Polyfill of future proposal for `util.parseArgs()`",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40pkgjs/parseargs@0.11.0",
+      "externalReferences": [
+        {
+          "url": "git+ssh://git@github.com/pkgjs/parseargs.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/pkgjs/parseargs#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/pkgjs/parseargs/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fb55648dd0f44012cfa1d1ab2547aa6ab1fc54022f40e0c86f087d5e93f94b28ac7fb628420b0928f345a2aa8b425bbe550fed552b21311ea5a0f327f14f9d3e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:extraneous",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@pkgjs/parseargs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "encoding",
+      "version": "0.1.13",
+      "bom-ref": "nldesign@0.1.0|encoding@0.1.13",
+      "author": "Andris Reinman",
+      "description": "Convert encodings, uses iconv-lite",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/encoding@0.1.13",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/andris9/encoding.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/andris9/encoding#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/andris9/encoding/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/encoding/-/encoding-0.1.13.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "11305aba8c354f7e58fd664c922a3d8e2334679c631c7989e179a364eab597f757cf796bdac467f3b9c9cb6d11ba9a928751769b71c73d2a7c4a120f409ac9dc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:extraneous",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/encoding"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "iconv-lite",
+      "version": "0.6.3",
+      "bom-ref": "nldesign@0.1.0|iconv-lite@0.6.3",
+      "author": "Alexander Shtuchkin",
+      "description": "Convert character encodings in pure javascript.",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/iconv-lite@0.6.3",
+      "externalReferences": [
+        {
+          "url": "git://github.com/ashtuchkin/iconv-lite.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ashtuchkin/iconv-lite",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/ashtuchkin/iconv-lite/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.6.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e1f0a4efdc2c84c773329dab1f4eaa5ab244e22a25a8b842507f8e8ae22053ef91074fbde0d9432fcd5ab4eec65f9e6e50ab9ea34b711cdb6f13223a0fb59d33"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:extraneous",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/iconv-lite"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react-dom",
+      "version": "19.2.4",
+      "bom-ref": "nldesign@0.1.0|react-dom@19.2.4",
+      "description": "React package for working with the DOM.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react-dom@19.2.4",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/facebook/react.git#packages/react-dom",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://react.dev/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/facebook/react/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "01725d2e8f2480c6e2998f793b668a42ab33da25a2f63320289851040c44084e081717dc6b30762e6ce5a08a226c92370b5d88958db4f8a15a2effbbd5b50979"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react-dom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react",
+      "version": "19.2.4",
+      "bom-ref": "nldesign@0.1.0|react@19.2.4",
+      "description": "React is a JavaScript library for building user interfaces.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react@19.2.4",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/facebook/react.git#packages/react",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://react.dev/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/facebook/react/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/react/-/react-19.2.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f677e9da16290b03a300dfbc4d914686d584c20bd61d7a84487f2a4fcf404ff956925a4b38ddb62dcf2912d9e9b19cfb5666b069b494d200a39e3f1a0b47ae1d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "safer-buffer",
+      "version": "2.1.2",
+      "bom-ref": "nldesign@0.1.0|safer-buffer@2.1.2",
+      "author": "Nikita Skovoroda",
+      "description": "Modern Buffer API polyfill without footguns",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/safer-buffer@2.1.2",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/ChALkeR/safer-buffer.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ChALkeR/safer-buffer#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/ChALkeR/safer-buffer/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "619a372bcd920fb462ca2d04d4440fa232f3ee4a5ea6749023d2323db1c78355d75debdbe5d248eeda72376003c467106c71bbbdcc911e4d1c6f0a9c42b894b6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:extraneous",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/safer-buffer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "scheduler",
+      "version": "0.27.0",
+      "bom-ref": "nldesign@0.1.0|scheduler@0.27.0",
+      "description": "Cooperative scheduler for the browser environment.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/scheduler@0.27.0",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/facebook/react.git#packages/scheduler",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://react.dev/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/facebook/react/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "78dbfe5ab55b2aed5fdef6d8253ff1b62179b320391cf20cb5ff48818fe72a0d2c5aacc0504bea63fc66ece71973fa9a7cbc7f88ef4580e99e480a78bf9b62fd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/scheduler"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "conductionnl/nldesign-dev-feature/spec-enrichment-and-metrics"
+    }
+  ]
+}

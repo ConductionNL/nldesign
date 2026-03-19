@@ -5,6 +5,7 @@ on:
     branches: [main, development, feature/**, bugfix/**, hotfix/**]
   pull_request:
     branches: [main, beta, development]
+  workflow_dispatch:
 
 jobs:
   quality:
@@ -14,7 +15,9 @@ jobs:
       php-version: "8.3"
       enable-psalm: false
       enable-phpstan: false
+      enable-phpcs: false
       enable-phpmetrics: true
       enable-frontend: true
-      enable-eslint: false
+      enable-eslint: true
+      enable-sbom: true
       enable-phpunit: true

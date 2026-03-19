@@ -29,7 +29,7 @@ namespace OCA\NLDesign\Service;
  * Tabs: login | content | status | typography
  * Types: color | text
  */
-class TokenRegistry
+class TokenRegistry implements TokenRegistryInterface
 {
     /**
      * Returns the full registry of editable tokens.
@@ -180,7 +180,7 @@ class TokenRegistry
     /**
      * Returns the display labels for each tab.
      *
-     * @return array<string, string> Map of tab id → display label.
+     * @return array<string, string> Map of tab id to display label.
      */
     public static function getTabLabels(): array
     {

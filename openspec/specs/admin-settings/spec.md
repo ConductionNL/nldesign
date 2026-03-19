@@ -139,3 +139,41 @@ All settings endpoints and the settings panel MUST be restricted to administrato
 - GIVEN the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods
 - WHEN a non-admin user calls any `/settings/*` endpoint
 - THEN the request MUST be rejected with an appropriate error response
+
+### Current Implementation Status
+
+**Fully implemented:**
+- Settings panel registration in the `theming` section with priority 50 (`lib/Settings/Admin.php`: `getSection()` returns `'theming'`, `getPriority()` returns `50`)
+- `Admin::getForm()` returns a `TemplateResponse` for `settings/admin` with all four required parameters: `tokenSets`, `currentTokenSet`, `hideSlogan`, `showMenuLabels` (`lib/Settings/Admin.php` lines 75-107)
+- Token set dropdown populated from `TokenSetService::getAvailableTokenSets()` with `<option>` elements using `id` as value and `name` as display text (`templates/settings/admin.php` lines 27-35)
+- Token set selection saves via JS `POST /apps/nldesign/settings/tokenset` (`js/admin.js` `saveTokenSet()` function)
+- Live preview box with `.nldesign-preview-box`, preview header bar, primary and secondary buttons (`templates/settings/admin.php` lines 61-70)
+- Hide slogan checkbox with id `nldesign-hide-slogan`, checked state from `$_['hideSlogan']`, label text "Hide Nextcloud slogan/payoff on login page" (`templates/settings/admin.php` lines 38-47)
+- Show menu labels checkbox with id `nldesign-show-menu-labels`, checked state from `$_['showMenuLabels']`, label text "Show text labels in app menu (hide icons)" (`templates/settings/admin.php` lines 49-59)
+- External link to `https://nldesign.app` with `target="_blank"` and `rel="noopener noreferrer"` (`templates/settings/admin.php` line 16-19)
+- External link to `https://nldesignsystem.nl/` with arrow indicator (`templates/settings/admin.php` lines 78-80)
+- Vanilla PHP template loads `script('nldesign', 'admin')` and `style('nldesign', 'admin')` with no Vue/webpack (`templates/settings/admin.php` lines 7-8)
+- XSS prevention via `p(json_encode(...))` for `data-token-sets` and `p()` for other values (`templates/settings/admin.php` lines 12-13)
+- `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods (`lib/Controller/SettingsController.php`)
+- All routes defined in `appinfo/routes.php`
+
+**Additional features beyond spec (implemented):**
+- Token editor panel with custom override CRUD, import/export, tabs, live preview (`js/admin.js` lines 375-936, `templates/settings/admin.php` lines 72-75)
+- Token set apply dialog comparing current vs new values (`js/admin.js` lines 726-903)
+- Theming sync dialog with color swatch comparison (`js/admin.js` lines 113-297)
+
+**Not yet implemented:**
+- All requirements in this spec are fully implemented.
+
+### Standards & References
+- NL Design System community: https://nldesignsystem.nl/
+- Nextcloud `ISettings` interface for admin settings registration
+- Nextcloud `TemplateResponse` for server-side rendered PHP templates
+- WCAG AA: form labels are associated with inputs via `for`/`id` attributes
+- OWASP XSS prevention via PHP `p()` helper for HTML escaping
+
+### Specificity Assessment
+- This spec is highly specific and directly implementable as-is. Every requirement has concrete scenarios with exact selectors, API endpoints, and expected values.
+- The spec does not mention the token editor panel, custom overrides CRUD, import/export functionality, or the token set apply dialog -- these are additional features that exist in the implementation but are not covered by this spec.
+- Minor gap: REQ-ASET-003 defines preview color updates but the implementation only has hardcoded colors for 8 token sets in `tokenSetColors` -- the spec does not specify how preview colors are sourced for all 39 token sets.
+- Open question: Should the token editor panel and custom overrides functionality be covered by a separate spec or added to this one?
