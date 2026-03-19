@@ -14,11 +14,6 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\Service;
 
-use OCA\NLDesign\Service\Tokens\ContentTokens;
-use OCA\NLDesign\Service\Tokens\LoginTokens;
-use OCA\NLDesign\Service\Tokens\StatusTokens;
-use OCA\NLDesign\Service\Tokens\TypographyTokens;
-
 /**
  * Canonical registry of editable Nextcloud CSS custom properties.
  *
@@ -35,7 +30,7 @@ use OCA\NLDesign\Service\Tokens\TypographyTokens;
  *
  * @SuppressWarnings(PHPMD.StaticAccess) - Token provider classes use static methods by design
  */
-class TokenRegistry
+class TokenRegistry implements TokenRegistryInterface
 {
     /**
      * Returns the full registry of editable tokens.

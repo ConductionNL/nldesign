@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\Controller;
 
+use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\TokenRegistry;
 use OCP\AppFramework\Controller;
@@ -37,19 +38,29 @@ class OverridesController extends Controller
     private CustomOverridesService $overridesService;
 
     /**
+     * The CSS parser service.
+     *
+     * @var CssParserService
+     */
+    private CssParserService $cssParser;
+
+    /**
      * Constructor.
      *
      * @param string                 $appName          The app name.
      * @param IRequest               $request          The request object.
      * @param CustomOverridesService $overridesService The custom overrides service.
+     * @param CssParserService       $cssParser        The CSS parser service.
      */
     public function __construct(
         string $appName,
         IRequest $request,
-        CustomOverridesService $overridesService
+        CustomOverridesService $overridesService,
+        CssParserService $cssParser
     ) {
         parent::__construct($appName, $request);
         $this->overridesService = $overridesService;
+        $this->cssParser        = $cssParser;
     }//end __construct()
 
     /**
@@ -148,7 +159,7 @@ class OverridesController extends Controller
             return new JSONResponse(['error' => 'Could not read uploaded file'], 400);
         }
 
-        $parsed = $this->parseCssDeclarations($content);
+        $parsed = $this->cssParser->parseDeclarations($content);
         if ($parsed === null) {
             return new JSONResponse(
                 ['error' => 'No CSS custom property declarations found in the uploaded file'],
@@ -196,29 +207,6 @@ class OverridesController extends Controller
 
         return $content;
     }//end readUploadedContent()
-
-    /**
-     * Parse CSS custom property declarations from a raw CSS string.
-     *
-     * @param string $content The raw CSS content.
-     *
-     * @return array<string, string>|null Parsed token map, or null if none found.
-     */
-    private function parseCssDeclarations(string $content): ?array
-    {
-        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $content, $matches, PREG_SET_ORDER);
-
-        if (empty($matches) === true) {
-            return null;
-        }
-
-        $parsed = [];
-        foreach ($matches as $match) {
-            $parsed[trim($match[1])] = trim($match[2]);
-        }
-
-        return $parsed;
-    }//end parseCssDeclarations()
 
     /**
      * Filter parsed tokens and write editable ones to the overrides file.

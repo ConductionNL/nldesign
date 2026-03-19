@@ -21,7 +21,6 @@ namespace OCA\NLDesign\Service;
  */
 class CssParserService
 {
-
     /**
      * Parse CSS custom property declarations from a raw CSS string.
      *
@@ -62,6 +61,10 @@ class CssParserService
 
         $result = $this->parseDeclarations($rootMatch[1]);
 
-        return ($result !== null) ? $result : [];
+        if ($result !== null) {
+            return $result;
+        }
+
+        return [];
     }//end parseRootBlock()
 }//end class

@@ -47,13 +47,22 @@ class CustomOverridesService
     private IAppManager $appManager;
 
     /**
+     * The CSS parser service.
+     *
+     * @var CssParserService
+     */
+    private CssParserService $cssParser;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager $appManager The app manager.
+     * @param IAppManager      $appManager The app manager.
+     * @param CssParserService $cssParser  The CSS parser service.
      */
-    public function __construct(IAppManager $appManager)
+    public function __construct(IAppManager $appManager, CssParserService $cssParser)
     {
         $this->appManager = $appManager;
+        $this->cssParser  = $cssParser;
     }//end __construct()
 
     /**
@@ -103,7 +112,7 @@ class CustomOverridesService
             return [];
         }
 
-        return $this->parseDeclarations(css: $content);
+        return $this->cssParser->parseRootBlock($content);
     }//end read()
 
     /**
@@ -170,7 +179,7 @@ class CustomOverridesService
             );
         }
 
-        $this->atomicRename($tmpPath, $path);
+        $this->atomicRename(from: $tmpPath, to: $path);
 
     }//end writeFile()
 
@@ -237,31 +246,6 @@ class CustomOverridesService
 
         return $lines;
     }//end buildDeclarationLines()
-
-    /**
-     * Parse CSS custom property declarations from a :root {} block.
-     *
-     * @param string $css The raw CSS string.
-     *
-     * @return array<string, string> Map of token name => value.
-     */
-    private function parseDeclarations(string $css): array
-    {
-        $tokens = [];
-
-        if (preg_match('/:root\s*\{([^}]*)\}/s', $css, $rootMatch) !== 1) {
-            return $tokens;
-        }
-
-        $block = $rootMatch[1];
-
-        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $block, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $tokens[trim($match[1])] = trim($match[2]);
-        }
-
-        return $tokens;
-    }//end parseDeclarations()
 
     /**
      * Return the raw CSS file content for download.

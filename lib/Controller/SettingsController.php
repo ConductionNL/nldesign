@@ -147,7 +147,11 @@ class SettingsController extends Controller
      */
     private function saveBooleanSetting(string $key, bool $value): void
     {
-        $stored = $value === true ? '1' : '0';
+        $stored = '0';
+        if ($value === true) {
+            $stored = '1';
+        }
+
         $this->config->setAppValue(Application::APP_ID, $key, $stored);
     }//end saveBooleanSetting()
 
@@ -162,7 +166,7 @@ class SettingsController extends Controller
      */
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
-        $this->saveBooleanSetting('hide_slogan', $hideSlogan);
+        $this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
 
         return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
     }//end setSloganSetting()
@@ -178,7 +182,7 @@ class SettingsController extends Controller
      */
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
-        $this->saveBooleanSetting('show_menu_labels', $showMenuLabels);
+        $this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
 
         return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
     }//end setMenuLabelsSetting()

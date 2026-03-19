@@ -12,7 +12,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service\Tokens;
+namespace OCA\NLDesign\Service;
 
 /**
  * Content area tab token definitions.
