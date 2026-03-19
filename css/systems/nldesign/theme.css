@@ -692,14 +692,13 @@ h2,
 }
 
 /* Solid widget backgrounds - no transparency. */
-/* Exclude MyDash widgets and tiles to allow custom styling. */
 /* Use Nextcloud theming for background color. */
-.panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
-.panel--wrapper:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
-.widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
-.panel__content:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
-.dashboard-widget:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *),
-.dashboard-panel:not(.mydash-widget):not(.mydash-widget *):not(.tile-widget):not(.tile-widget *) {
+.panel,
+.panel--wrapper,
+.widget,
+.panel__content,
+.dashboard-widget,
+.dashboard-panel {
 	opacity: 1;
 	backdrop-filter: none;
 }

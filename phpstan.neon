@@ -4,8 +4,6 @@ parameters:
         - lib
     bootstrapFiles:
         - vendor/autoload.php
-    excludePaths:
-        - vendor
     scanDirectories:
         - vendor/nextcloud/ocp
     reportUnmatchedIgnoredErrors: false
@@ -14,3 +12,8 @@ parameters:
         - '#Call to an undefined method OC::#'
         - '#Class OC not found#'
         - '#Access to static property \$server on an unknown class OC#'
+        # Theming app classes are not available as stubs
+        - '#unknown class OCA\\Theming\\#'
+        - '#invalid (return )?type OCA\\Theming\\#'
+        - '#Call to method .+ on an unknown class OCA\\Theming\\#'
+        - '#invalid type OCA\\Theming\\#'

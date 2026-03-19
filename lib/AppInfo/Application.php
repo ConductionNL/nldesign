@@ -46,6 +46,8 @@ class Application extends App implements IBootstrap
      * @param IRegistrationContext $context The registration context.
      *
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
      */
     public function register(IRegistrationContext $context): void
     {
@@ -73,6 +75,8 @@ class Application extends App implements IBootstrap
      * @param mixed $serverContainer The server container.
      *
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
      */
     private function injectThemeCSS($serverContainer): void
     {

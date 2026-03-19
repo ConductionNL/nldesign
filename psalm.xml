@@ -40,6 +40,9 @@
                 <referencedClass name="OCP\AppFramework\Http\TemplateResponse"/>
                 <referencedClass name="OCP\IL10N"/>
                 <referencedClass name="OCP\IURLGenerator"/>
+                <!-- Nextcloud Theming Classes -->
+                <referencedClass name="OCA\Theming\ImageManager"/>
+                <referencedClass name="OCA\Theming\ThemingDefaults"/>
             </errorLevel>
         </UndefinedClass>
         <UndefinedMagicMethod errorLevel="suppress"/>
@@ -68,6 +71,7 @@
         <EmptyArrayAccess errorLevel="suppress"/>
         <ImplementedReturnTypeMismatch errorLevel="suppress"/>
         <InvalidMethodCall errorLevel="suppress"/>
+        <InvalidArrayOffset errorLevel="suppress"/>
     </issueHandlers>
     <extraFiles>
         <directory name="vendor/nextcloud/ocp" />

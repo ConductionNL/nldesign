@@ -83,36 +83,11 @@ button.app-navigation-toggle {
 	border-radius: var(--nldesign-border-radius) !important;
 }
 
-/* MyDash specific — transparent background */
+/* Dashboard apps — transparent background */
 body #content #app-content-vue.app-content,
-body #content main.app-content,
-body #app-mydash .app-content,
-body #app-mydash #app-content-vue,
-body #app-mydash main.app-content,
-#mydash-app {
+body #content main.app-content {
 	background: transparent !important;
 	background-color: transparent !important;
-	margin: 0 !important;
-	padding: 0 !important;
-}
-
-#content.app-mydash {
-	margin-left: 2px !important;
-	margin-right: 0 !important;
-	margin-bottom: 0 !important;
-	margin-top: 40px !important;
-}
-
-#content-vue[data-app="mydash"] .app-content,
-body:has(#mydash-app) #app-content-vue,
-body:has(#mydash-app) main.app-content {
-	background: transparent !important;
-	background-color: transparent !important;
-}
-
-.mydash-container {
-	padding: 0 !important;
-	margin: 0 !important;
 }
 
 /* ============================================
@@ -283,11 +258,11 @@ header nav .icon {
    SOLID BACKGROUNDS
    ============================================ */
 
-.panel:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
-.widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
-.dashboard-widget:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
-[class*="panel"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
-[class*="widget"]:not(.tile-widget):not(.tile-widget *):not(.mydash-widget):not(.mydash-widget *):not(#header *),
+.panel:not(#header *),
+.widget:not(#header *),
+.dashboard-widget:not(#header *),
+[class*="panel"]:not(#header *),
+[class*="widget"]:not(#header *),
 #app-content,
 .app-content {
 	background: #ffffff;

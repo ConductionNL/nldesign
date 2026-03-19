@@ -38,7 +38,7 @@ class Admin implements ISettings
     private IConfig $config;
 
     /**
-     * The localization service.
+     * The localization service (kept for future i18n use).
      *
      * @var IL10N
      */
