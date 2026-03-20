@@ -1,4 +1,8 @@
-## ADDED Requirements
+---
+status: implemented
+---
+
+## Requirements
 
 ### Requirement: Documentation landing page
 The documentation site SHALL have an `intro.md` file at `docs/intro.md` that serves as the entry point for all documentation. It SHALL provide a high-level overview of what nldesign is, link to key sections (getting started, features, reference), and use the Docusaurus `slug: /` frontmatter to become the docs root.

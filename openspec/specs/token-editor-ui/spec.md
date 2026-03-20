@@ -1,9 +1,13 @@
+---
+status: implemented
+---
+
 # Token Editor UI Specification
 
 ## Purpose
 Provides a tabbed admin settings panel for browsing and editing all editable Nextcloud CSS custom properties (`--color-*`) with live preview and per-token reset controls. Changes are previewed in the browser before being committed to `custom-overrides.css`.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Token Editor Panel
 The admin settings page MUST include a token editor panel below the existing NL Design token-set selector. The panel MUST be rendered as a Vue component within the existing nldesign admin settings template.

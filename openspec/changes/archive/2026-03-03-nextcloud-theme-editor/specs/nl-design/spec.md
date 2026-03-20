@@ -29,7 +29,7 @@ The nldesign app MUST support all organization token sets available in the confi
 - AND `custom-overrides.css` MUST remain unchanged
 - AND no visual change MUST persist
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: App Identity
 The app MUST be positioned as a **Nextcloud Theme Editor with NL Design System support** in its user-facing name, description, and admin settings heading. The scope is broader than NL Design loading: it encompasses editing any Nextcloud CSS custom property.

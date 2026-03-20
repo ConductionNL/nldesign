@@ -1,9 +1,13 @@
+---
+status: implemented
+---
+
 # Token-Set Apply Dialog Specification
 
 ## Purpose
 Defines the modal dialog shown when an admin selects a new NL Design token set. The dialog shows which Nextcloud CSS variable values would change (resolved current value vs the value from the new token set), lets the admin check or uncheck individual changes, and writes only the checked values to `custom-overrides.css`. The NL Design token set CSS file itself is never applied directly.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Dialog Trigger
 Selecting a different NL Design token set from the selector MUST open the apply dialog instead of immediately switching themes.

@@ -1,3 +1,7 @@
+---
+status: implemented
+---
+
 # NL Design System Compliance — Delta Spec
 
 ## Purpose
