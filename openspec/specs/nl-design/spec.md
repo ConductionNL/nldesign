@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # NL Design System Compliance — Delta Spec
 
 ## Purpose

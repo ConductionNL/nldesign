@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # VNG Token Set Specification
 
 ## Purpose

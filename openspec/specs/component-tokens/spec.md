@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Component Tokens Specification
 
 ## Purpose

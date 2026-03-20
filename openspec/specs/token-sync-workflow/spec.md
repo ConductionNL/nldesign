@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Token Sync Workflow Specification
 
 ## Purpose

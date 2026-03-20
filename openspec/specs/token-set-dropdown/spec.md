@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Token Set Dropdown Specification
 
 ## Purpose

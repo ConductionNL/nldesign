@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Token Import/Export Specification
 
 ## Purpose

@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Token Editor UI Specification
 
 ## Purpose

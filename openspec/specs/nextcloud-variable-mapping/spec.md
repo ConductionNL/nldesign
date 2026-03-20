@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Nextcloud Variable Mapping Specification
 
 ## Purpose

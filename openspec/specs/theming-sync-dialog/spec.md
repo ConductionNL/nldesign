@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Theming Sync Dialog Specification
 
 ## Purpose

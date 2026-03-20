@@ -1,3 +1,7 @@
+---
+status: reviewed
+---
+
 # Extended Token Sets Specification
 
 ## Purpose
