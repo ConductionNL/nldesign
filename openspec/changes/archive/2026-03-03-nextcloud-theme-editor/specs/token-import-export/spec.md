@@ -3,7 +3,7 @@
 ## Purpose
 Allows admins to download the current `custom-overrides.css` as a portable file and upload a previously saved file to restore or share a token configuration. Only known, editable Nextcloud `--color-*` tokens are accepted on import — unknown variables are silently rejected and their count is reported.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Export Current Overrides
 The admin settings panel MUST provide a **Download** button that exports the current `custom-overrides.css` as a file download.

@@ -3,7 +3,7 @@
 ## Purpose
 Provides a complete, audited mapping between all Nextcloud CSS custom properties and `--nldesign-*` design tokens, with comprehensive documentation and a defaults layer that ensures all tokens always have a value.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Complete Nextcloud Variable Audit
 The system MUST include a mapping for every CSS custom property defined by Nextcloud's theming system (DefaultTheme.php, CommonThemeTrait.php, and core SCSS files).

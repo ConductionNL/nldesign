@@ -3,7 +3,7 @@
 ## Purpose
 Define requirements for adding VNG (Vereniging Nederlandse Gemeenten) as a selectable design token set in the nldesign Nextcloud app. VNG tokens are manually converted from the tilburg-woo-ui project since they are not available in the upstream nl-design-system/themes repository.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: VNG Token CSS File
 The system MUST provide a `css/tokens/vng.css` file containing VNG design tokens in `:root` scope with `--nldesign-*` semantic tokens and `--vng-*` organization palette tokens.

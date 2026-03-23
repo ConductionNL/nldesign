@@ -3,7 +3,7 @@
 ## Purpose
 Expands the nldesign app from 5 manually maintained token sets to all available NL Design System organization token sets (48+), using auto-generation from official upstream JSON token files.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Support All Available Token Sets
 The system MUST support all organization token sets available in the `nl-design-system/themes` repository.

@@ -3,7 +3,7 @@
 ## Purpose
 After an admin selects a different token set in nldesign, offer to automatically update Nextcloud's built-in theming values (primary color, background color, logo, background image) to match the selected token set, preventing a split-brain theming state where CSS tokens and Nextcloud theming are out of sync.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Theming Metadata in Token Sets
 Each token set entry in `token-sets.json` MAY include a `theming` object with optional fields: `primary_color`, `background_color`, `logo`, and `background`.

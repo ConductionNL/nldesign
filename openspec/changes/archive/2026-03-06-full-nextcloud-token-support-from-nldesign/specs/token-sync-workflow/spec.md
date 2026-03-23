@@ -3,7 +3,7 @@
 ## Purpose
 Automates the synchronization of NL Design System token sets from the upstream `nl-design-system/themes` repository via a nightly GitHub Actions workflow that generates CSS token files and opens PRs when changes are detected.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Nightly Schedule
 The sync workflow MUST run automatically every night to check for upstream token changes.
