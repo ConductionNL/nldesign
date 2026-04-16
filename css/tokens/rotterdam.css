@@ -20,7 +20,7 @@
 	--nldesign-color-primary-light-hover: #ccead5;
 
 	/* Logo image */
-	--nldesign-logo-url: url('../img/logos/rotterdam.svg');
+	--nldesign-logo-url: url('../../../img/logos/rotterdam.svg');
 
 	/* Rotterdam color palette (rods.color.*) */
 	--rotterdam-color-green: #00811f;
