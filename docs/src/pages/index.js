@@ -249,6 +249,7 @@ export default function Home() {
       <main className="marketing-page">
         <DetailHero
           appId="nldesign"
+          background="cobalt"
           status={{ label: 'Beta', color: 'var(--c-orange-knvb)' }}
           version="v0.1"
           locales="NL · EN"
