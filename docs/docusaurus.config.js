@@ -28,14 +28,16 @@ const config = createConfig({
   projectName: 'nldesign',
 
   /* The brand preset's default i18n block (nl/en/de/fr) is replaced
-     wholesale here. NLDesign docs ship with NL + EN translation
-     surfaces; keep both. */
+     wholesale here. Per ADR-030 §7 the docs site ships only the `en`
+     locale until translated `nl` markdown actually exists — having
+     `nl` in `locales` with no translated content ENOENT-crashed the
+     build. `nl` (and its localeConfig) is re-added once translated
+     markdown ships. */
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'nl'],
+    locales: ['en'],
     localeConfigs: {
       en: { label: 'English' },
-      nl: { label: 'Nederlands' },
     },
   },
 
