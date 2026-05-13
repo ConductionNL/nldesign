@@ -250,8 +250,7 @@ export default function Home() {
         <DetailHero
           appId="nldesign"
           background="cobalt"
-          status={{ label: 'Beta', color: 'var(--c-orange-knvb)' }}
-          version="v0.1"
+          {/* status + version dropped — preset 2.10+ auto-derives from appinfo/info.xml */}
           locales="NL · EN"
           title="NLDesign"
           tagline={TAGLINE}
