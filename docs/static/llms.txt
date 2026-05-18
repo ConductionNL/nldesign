@@ -1,0 +1,27 @@
+# NLDesign
+
+> NL Design is an open-source theming app for the Nextcloud workspace.
+
+NL Design is an open-source theming app for the Nextcloud workspace. Administrators pick their organisation from a list of 39 pre-built themes (Rijkshuisstijl, Gemeente Utrecht, Amsterdam, Den Haag, Rotterdam, and more) and the workspace adopts that house style instantly. A token editor lets teams fine-tune individual colours, and customisations export to a file for sharing across instances. Released under EUPL-1.2 and maintained by Conduction since 2019.
+
+## Docs
+
+- [Tutorials](https://nldesign.conduction.nl/tutorials): step-by-step walkthroughs.
+- [Features](https://nldesign.conduction.nl/Features): what the app does, organised by capability.
+- [Use cases](https://nldesign.conduction.nl/UseCases): real customer scenarios.
+- [Integrations](https://nldesign.conduction.nl/Integrations): which external systems the app talks to.
+- [Technical](https://nldesign.conduction.nl/Technical): architecture, data model, security posture.
+- [User guide](https://nldesign.conduction.nl/user-guide): end-user documentation.
+- [API](https://nldesign.conduction.nl/api): OpenAPI reference.
+
+## Optional
+
+- [Install](https://nldesign.conduction.nl/installation): install from the Nextcloud app store.
+- [Source](https://nldesign.conduction.nl): repository and issue tracker.
+- [App page](https://www.conduction.nl/apps/nldesign): product positioning on conduction.nl.
+
+## Contact
+
+- Email: info@conduction.nl
+- GitHub: https://github.com/ConductionNL/nldesign
+- Conduction B.V. · KvK 76741850 · Lauriergracht 14h, Amsterdam, Netherlands
