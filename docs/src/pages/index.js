@@ -244,7 +244,7 @@ export default function Home() {
   return (
     <Layout
       title="NL Design System, government theming for Nextcloud apps"
-      description="NL Design System theme for Nextcloud. Government-compliant typography, colour, and component variants drop in with one install."
+      description="NL Design System for Nextcloud. Government-grade theming with WCAG-AA tokens, type scale, and CSS variables for every Conduction app."
     >
       <main className="marketing-page">
         <DetailHero
