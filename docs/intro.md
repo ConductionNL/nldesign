@@ -1,6 +1,7 @@
 ---
 sidebar_position: 0
 slug: /
+description: Get started with the NL Design System for Nextcloud. WCAG-AA tokens, components, and CSS variables for government-grade theming across apps.
 ---
 
 # NL Design — User Guide
