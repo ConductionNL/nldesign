@@ -243,7 +243,7 @@ const WIDGETS = [
 export default function Home() {
   return (
     <Layout
-      title="NLDesign"
+      title="NL Design System, government theming for Nextcloud apps"
       description="NL Design System theme for Nextcloud. Government-compliant typography, colour, and component variants drop in with one install."
     >
       <main className="marketing-page">
