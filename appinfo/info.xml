@@ -28,8 +28,8 @@ Configure which token set to use in the admin settings.
 	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot.png</screenshot>
 
 	<dependencies>
-		<php min-version="8.1"/>
-		<nextcloud min-version="28" max-version="33"/>
+		<php min-version="8.3"/>
+		<nextcloud min-version="28" max-version="34"/>
 	</dependencies>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
