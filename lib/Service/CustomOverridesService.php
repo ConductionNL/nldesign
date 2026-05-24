@@ -8,6 +8,15 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-30
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-31
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-32
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-33
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-34
  */
 
 declare(strict_types=1);
@@ -28,6 +37,15 @@ use RuntimeException;
  * - One declaration per line
  * - No !important (load order ensures precedence)
  * - No selectors other than :root
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-30
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-31
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-32
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-33
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-34
  */
 class CustomOverridesService
 {
@@ -73,6 +91,8 @@ class CustomOverridesService
      * Safe to call on every page load (no-op if file already exists).
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
      */
     public function ensureExists(): void
     {
@@ -90,6 +110,8 @@ class CustomOverridesService
      * Does not return defaults or resolved values from the full CSS stack.
      *
      * @return array<string, string> Map of token name => value for all overrides in the file.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
      */
     public function read(): array
     {
@@ -117,6 +139,8 @@ class CustomOverridesService
      * @return void
      *
      * @throws RuntimeException When the file cannot be written.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-30
      */
     public function write(array $tokens): void
     {
@@ -134,6 +158,8 @@ class CustomOverridesService
      * @return array<string, string> Filtered tokens.
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
      */
     private function filterEditable(array $tokens): array
     {
@@ -155,6 +181,8 @@ class CustomOverridesService
      * @return void
      *
      * @throws RuntimeException When the temp file cannot be written or renamed.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-31
      */
     private function writeFile(array $tokens): void
     {
@@ -188,6 +216,8 @@ class CustomOverridesService
      * @param array<string, string> $tokens Token name => value pairs.
      *
      * @return string The CSS file content.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-32
      */
     private function buildCss(array $tokens): string
     {
@@ -208,6 +238,8 @@ class CustomOverridesService
      * @param array<string, string> $tokens Token name => value pairs.
      *
      * @return array<string> List of CSS declaration lines.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-33
      */
     private function buildDeclarationLines(array $tokens): array
     {
@@ -227,6 +259,8 @@ class CustomOverridesService
      * @param string $css The raw CSS string.
      *
      * @return array<string, string> Map of token name => value.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
      */
     private function parseDeclarations(string $css): array
     {
@@ -252,6 +286,8 @@ class CustomOverridesService
      * Return the raw CSS file content for download.
      *
      * @return string The raw file content, or an empty :root {} if the file does not exist.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-34
      */
     public function getRawContent(): string
     {

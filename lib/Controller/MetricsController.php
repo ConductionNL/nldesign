@@ -8,6 +8,10 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-5
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-6
  */
 
 declare(strict_types=1);
@@ -25,6 +29,10 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Controller for exposing Prometheus metrics.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-5
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-6
  */
 class MetricsController extends Controller
 {
@@ -59,6 +67,8 @@ class MetricsController extends Controller
      * @return TextPlainResponse Plain text response with Prometheus metrics.
      *
      * @NoCSRFRequired
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
      */
     public function index(): TextPlainResponse
     {
@@ -105,6 +115,8 @@ class MetricsController extends Controller
      * @param array $lines Reference to the metrics output lines.
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-5
      */
     private function collectTokenSetMetrics(array &$lines): void
     {
@@ -137,6 +149,8 @@ class MetricsController extends Controller
      * @param array $lines Reference to the metrics output lines.
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-6
      */
     private function collectOverrideMetrics(array &$lines): void
     {

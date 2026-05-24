@@ -8,6 +8,14 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
  */
 
 declare(strict_types=1);
@@ -26,6 +34,14 @@ use OCP\IRequest;
  * Controller for managing custom CSS token overrides.
  *
  * Handles CRUD, import, and export of custom-overrides.css.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
  */
 class OverridesController extends Controller
 {
@@ -74,6 +90,8 @@ class OverridesController extends Controller
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
      */
     public function getOverrides(): JSONResponse
     {
@@ -99,6 +117,8 @@ class OverridesController extends Controller
      * @return JSONResponse Status and count of written tokens.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
      */
     public function setOverrides(): JSONResponse
     {
@@ -124,6 +144,8 @@ class OverridesController extends Controller
      * @return DataDownloadResponse The CSS file as a download.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
      */
     public function exportOverrides(): DataDownloadResponse
     {
@@ -146,6 +168,8 @@ class OverridesController extends Controller
      * @return JSONResponse Import result with 'imported' and 'skipped' counts.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
      */
     public function importOverrides(): JSONResponse
     {
@@ -174,6 +198,8 @@ class OverridesController extends Controller
      * Validate the uploaded file for the import endpoint.
      *
      * @return JSONResponse|null An error response, or null if the file is valid.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
      */
     private function validateUploadedFile(): ?JSONResponse
     {
@@ -195,6 +221,8 @@ class OverridesController extends Controller
      * Read the content of the uploaded file.
      *
      * @return string|null The file content, or null on failure.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
      */
     private function readUploadedContent(): ?string
     {
@@ -216,6 +244,8 @@ class OverridesController extends Controller
      * @return JSONResponse The import result response.
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
      */
     private function writeImportedTokens(array $parsed): JSONResponse
     {
