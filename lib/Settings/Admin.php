@@ -8,6 +8,10 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
  */
 
 declare(strict_types=1);
@@ -26,6 +30,10 @@ use OCP\Settings\ISettings;
  * Admin settings form for NL Design.
  *
  * Provides the configuration interface for selecting design token sets.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
  */
 class Admin implements ISettings
 {
@@ -69,6 +77,8 @@ class Admin implements ISettings
      * Get the settings form.
      *
      * @return TemplateResponse The settings form template.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
      */
     public function getForm(): TemplateResponse
     {
@@ -109,6 +119,8 @@ class Admin implements ISettings
      * Get the settings section identifier.
      *
      * @return string The section identifier (theming).
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
      */
     public function getSection(): string
     {
@@ -119,6 +131,8 @@ class Admin implements ISettings
      * Get the priority for ordering in the settings menu.
      *
      * @return int The priority value (lower = higher priority).
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
      */
     public function getPriority(): int
     {

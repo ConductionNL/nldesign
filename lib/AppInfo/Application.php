@@ -8,6 +8,9 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
  */
 
 declare(strict_types=1);
@@ -27,6 +30,9 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
  * Main application class for NL Design.
  *
  * Bootstraps the NL Design theme system and injects design tokens.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
  */
 class Application extends App implements IBootstrap
 {
@@ -60,6 +66,8 @@ class Application extends App implements IBootstrap
      * @param IBootContext $context The boot context.
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
      */
     public function boot(IBootContext $context): void
     {
@@ -77,6 +85,8 @@ class Application extends App implements IBootstrap
      * @return void
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
      */
     private function injectThemeCSS($serverContainer): void
     {

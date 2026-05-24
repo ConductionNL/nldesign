@@ -8,6 +8,10 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
  */
 
 declare(strict_types=1);
@@ -28,6 +32,10 @@ namespace OCA\NLDesign\Service;
  *
  * Tabs: login | content | status | typography
  * Types: color | text
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
  */
 class TokenRegistry implements TokenRegistryInterface
 {
@@ -38,6 +46,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Values are arrays with 'tab', 'type', and 'label' keys.
      *
      * @return array<string, array{tab: string, type: string, label: string}> The token registry.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
      */
     public static function getTokens(): array
     {
@@ -181,6 +191,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Returns the display labels for each tab.
      *
      * @return array<string, string> Map of tab id to display label.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
      */
     public static function getTabLabels(): array
     {
@@ -208,6 +220,8 @@ class TokenRegistry implements TokenRegistryInterface
      * @param string $tokenName The CSS custom property name.
      *
      * @return bool True if the token is in the registry.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
      */
     public static function isEditable(string $tokenName): bool
     {

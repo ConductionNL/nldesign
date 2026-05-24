@@ -8,6 +8,8 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
  */
 
 declare(strict_types=1);
@@ -21,6 +23,8 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Controller for health check endpoint.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
  */
 class HealthController extends Controller
 {
@@ -49,6 +53,8 @@ class HealthController extends Controller
      * @return JSONResponse JSON response with health status and checks.
      *
      * @NoCSRFRequired
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
      */
     public function index(): JSONResponse
     {

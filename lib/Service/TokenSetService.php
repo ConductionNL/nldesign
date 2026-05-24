@@ -8,6 +8,11 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
  */
 
 declare(strict_types=1);
@@ -21,6 +26,11 @@ use OCP\App\IAppManager;
  *
  * Discovers available token sets by scanning css/tokens/ directory
  * and reading token-sets.json for metadata.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
  */
 class TokenSetService
 {
@@ -58,6 +68,8 @@ class TokenSetService
      * Scans css/tokens/ for CSS files and merges metadata from token-sets.json.
      *
      * @return array<array{id: string, name: string, description: string}> The available token sets.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
      */
     public function getAvailableTokenSets(): array
     {
@@ -103,6 +115,8 @@ class TokenSetService
      * @param string $tokenSetId The token set identifier.
      *
      * @return bool True if the CSS file exists.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
      */
     public function isValidTokenSet(string $tokenSetId): bool
     {
@@ -123,6 +137,8 @@ class TokenSetService
      * @param string $manifestPath Path to token-sets.json.
      *
      * @return array<string, array<string, mixed>> Metadata indexed by id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
      */
     private function readManifest(string $manifestPath): array
     {
@@ -156,6 +172,8 @@ class TokenSetService
      * @param string $id The kebab-case identifier.
      *
      * @return string The formatted display name.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
      */
     private function formatName(string $id): string
     {

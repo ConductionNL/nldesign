@@ -8,6 +8,19 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-20
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-21
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
  */
 
 declare(strict_types=1);
@@ -31,6 +44,19 @@ use OCP\IRequest;
  *
  * Handles API requests for managing token sets, theming, and display settings.
  * Override-related endpoints are handled by OverridesController.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-20
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-21
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
  */
 class SettingsController extends Controller
 {
@@ -106,6 +132,8 @@ class SettingsController extends Controller
      * @return JSONResponse The response with status and selected token set.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
      */
     public function setTokenSet(string $tokenSet): JSONResponse
     {
@@ -125,6 +153,8 @@ class SettingsController extends Controller
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
      *
      * @return JSONResponse The response with the current token set.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
      */
     public function getTokenSet(): JSONResponse
     {
@@ -143,6 +173,8 @@ class SettingsController extends Controller
      * @return JSONResponse The list of available token sets.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
      */
     public function getAvailableTokenSets(): JSONResponse
     {
@@ -158,6 +190,8 @@ class SettingsController extends Controller
      * @param bool   $value The boolean value.
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
      */
     private function saveBooleanSetting(string $key, bool $value): void
     {
@@ -177,6 +211,8 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
      */
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
@@ -193,6 +229,8 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
      */
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
@@ -207,6 +245,8 @@ class SettingsController extends Controller
      * @return JSONResponse The token editor data.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-20
      */
     public function getOverrides(): JSONResponse
     {
@@ -228,6 +268,8 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-21
      */
     public function setOverrides(array $overrides): JSONResponse
     {
@@ -243,6 +285,8 @@ class SettingsController extends Controller
      * @return JSONResponse The response with updated fields.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
      */
     public function updateThemingValues(): JSONResponse
     {
@@ -271,6 +315,8 @@ class SettingsController extends Controller
      * @return JSONResponse The current theming values.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
      */
     public function getThemingValues(): JSONResponse
     {
@@ -283,6 +329,8 @@ class SettingsController extends Controller
      * Build a snapshot of the current theming state.
      *
      * @return array<string, mixed> The theming snapshot.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
      */
     private function buildThemingSnapshot(): array
     {
@@ -309,6 +357,8 @@ class SettingsController extends Controller
      * @return JSONResponse The resolved color map.
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
      */
     public function getTokenSetPreview(string $tokenSetId): JSONResponse
     {
