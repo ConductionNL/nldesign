@@ -213,11 +213,13 @@ class SettingsController extends Controller
         $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
         $customOverridesService->ensureExists();
 
-        return new JSONResponse([
-            'registry'  => TokenRegistry::getTokens(),
-            'tabs'      => TokenRegistry::getTabLabels(),
-            'overrides' => $customOverridesService->read(),
-        ]);
+        return new JSONResponse(
+                [
+                    'registry'  => TokenRegistry::getTokens(),
+                    'tabs'      => TokenRegistry::getTabLabels(),
+                    'overrides' => $customOverridesService->read(),
+                ]
+                );
     }//end getOverrides()
 
     /**
@@ -261,6 +263,12 @@ class SettingsController extends Controller
         $updatedColors = $this->themingService->applyColors(params: $params);
         $updatedImages = $this->themingService->applyImages(params: $params);
         $updated       = array_merge($updatedColors, $updatedImages);
+
+        // Increment the theming sync counter exposed by MetricsController as
+        // nldesign_theming_syncs_total. Only counted on success (after both
+        // apply* calls completed without throwing).
+        $current = (int) $this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
+        $this->config->setAppValue(Application::APP_ID, 'theming_syncs_total', (string) ($current + 1));
 
         return new JSONResponse(['status' => 'ok', 'updated' => $updated]);
     }//end updateThemingValues()
