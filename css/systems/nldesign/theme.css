@@ -331,6 +331,12 @@ body.body-login-container header {
 	display: none !important;
 }
 
+/* Hide the original Nextcloud theming logo on the login page —
+   NL Design replaces it with the ::after pseudo-element on the guest-box. */
+#body-login .header-guest .logo {
+	display: none !important;
+}
+
 /* Hide empty alternative-logins and empty headline containers */
 #body-login .login-box__alternative-logins:empty,
 #body-login .login-form__headline:empty {

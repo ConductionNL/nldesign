@@ -86,7 +86,7 @@
 	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
 
 	/* Logo image */
-	--nldesign-logo-url: url('../img/nederland-logo.svg');
+	--nldesign-logo-url: url('../../../img/nederland-logo.svg');
 
 	/* Logo lint/ribbon (rhc.logo.image.* + rhc.size.lint) */
 	/* When these are defined, theme.css renders a colored bar behind the logo */
@@ -96,6 +96,14 @@
 	--nldesign-size-lint-height: 96px;
 	--nldesign-logo-center: 32px;
 	--nldesign-logo-filter: brightness(0) invert(1);
+
+	/* Heading sizes — scaled to fit Nextcloud's compact UI */
+	--nldesign-component-heading-1-font-size: 1.75rem;
+	--nldesign-component-heading-2-font-size: 1.35rem;
+	--nldesign-component-heading-3-font-size: 1.15rem;
+	--nldesign-component-heading-4-font-size: 1rem;
+	--nldesign-component-heading-5-font-size: 0.95rem;
+	--nldesign-component-heading-6-font-size: 0.875rem;
 
 	/* Border radius - Rijkshuisstijl typically uses minimal rounding */
 	--nldesign-border-radius: 0;

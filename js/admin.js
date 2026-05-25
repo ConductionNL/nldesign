@@ -121,7 +121,7 @@ function nldesignAdminMain() {
 		.then(function(response) { return response.json(); })
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Theme updated successfully. Reload the page to see changes.'));
+				OC.Notification.showTemporary(t('nldesign', 'Theme updated successfully. reload the page to see changes.'));
 
 				// Check if this token set has theming metadata
 				var tsData = tokenSetsData[tokenSet];
@@ -254,7 +254,7 @@ function nldesignAdminMain() {
 			+ '      <thead><tr><th>' + escapeHtml(t('nldesign', 'Setting')) + '</th><th>' + escapeHtml(t('nldesign', 'Current')) + '</th><th>' + escapeHtml(t('nldesign', 'Proposed')) + '</th></tr></thead>'
 			+ '      <tbody>' + rows + '</tbody>'
 			+ '    </table>'
-			+ '    <p class="nldesign-dialog-hint">' + escapeHtml(t('nldesign', 'Only values that differ are shown. Items without a proposed value are left unchanged.')) + '</p>'
+			+ '    <p class="nldesign-dialog-hint">' + escapeHtml(t('nldesign', 'Only values that differ are shown. items without a proposed value are left unchanged.')) + '</p>'
 			+ '    <div class="nldesign-dialog-actions">'
 			+ '      <button class="nldesign-dialog-cancel">' + escapeHtml(t('nldesign', 'Cancel')) + '</button>'
 			+ '      <button class="nldesign-dialog-confirm">' + escapeHtml(t('nldesign', 'Update theming')) + '</button>'
@@ -308,12 +308,12 @@ function nldesignAdminMain() {
 			.then(function(data) {
 				overlay.remove();
 				if (data.status === 'ok') {
-					OC.Notification.showTemporary(t('nldesign', 'Nextcloud theming updated successfully. Reloading page...'));
+					OC.Notification.showTemporary(t('nldesign', 'Nextcloud theming updated successfully. reloading page...'));
 					setTimeout(function() {
 						window.location.reload();
 					}, 1500);
 				} else {
-					OC.Notification.showTemporary(t('nldesign', 'Failed to update Nextcloud theming: ') + (data.error || ''));
+					OC.Notification.showTemporary(t('nldesign', 'Failed to update Nextcloud theming:') + (data.error || ''));
 				}
 			})
 			.catch(function(error) {
@@ -363,7 +363,7 @@ function nldesignAdminMain() {
 		.then(function(response) { return response.json(); })
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. Reload the login page to see changes.'));
+				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. reload the login page to see changes.'));
 			} else {
 				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
 			}
@@ -389,7 +389,7 @@ function nldesignAdminMain() {
 		.then(function(response) { return response.json(); })
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. Reload the page to see changes.'));
+				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
 			} else {
 				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
 			}
@@ -486,7 +486,7 @@ function nldesignAdminMain() {
 		container.innerHTML = ''
 			+ '<div class="nldesign-token-editor">'
 			+   '<div class="nldesign-token-editor-header">'
-			+     '<h3>' + escapeHtml(t('nldesign', 'Custom Token Overrides')) + '</h3>'
+			+     '<h3>' + escapeHtml(t('nldesign', 'Custom token overrides')) + '</h3>'
 			+     '<div class="nldesign-token-editor-actions">'
 			+       '<button class="nldesign-btn nldesign-btn--small" id="nldesign-export-btn">' + escapeHtml(t('nldesign', 'Download')) + '</button>'
 			+       '<label class="nldesign-btn nldesign-btn--small" style="cursor:pointer">'
@@ -695,7 +695,7 @@ function nldesignAdminMain() {
 				updateSaveStatus();
 				OC.Notification.showTemporary(t('nldesign', 'Token overrides saved.'));
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to save overrides: ') + (data.error || ''));
+				OC.Notification.showTemporary(t('nldesign', 'Failed to save overrides:') + (data.error || ''));
 			}
 		})
 		.catch(function(err) {
@@ -738,7 +738,7 @@ function nldesignAdminMain() {
 				}
 				initTokenEditor();
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Import failed: ') + (data.error || ''));
+				OC.Notification.showTemporary(t('nldesign', 'Import failed:') + (data.error || ''));
 			}
 		})
 		.catch(function(err) {
@@ -810,7 +810,7 @@ function nldesignAdminMain() {
 		var html = '<div id="nldesign-apply-dialog-overlay" class="nldesign-dialog-overlay">'
 			+ '<div class="nldesign-dialog">'
 			+ '<h3>' + escapeHtml(t('nldesign', 'Apply token set: {name}').replace('{name}', newTokenSetId)) + '</h3>'
-			+ '<p class="settings-hint">' + escapeHtml(t('nldesign', 'These values would change. Check which ones to apply to your custom overrides.')) + '</p>'
+			+ '<p class="settings-hint">' + escapeHtml(t('nldesign', 'These values would change. check which ones to apply to your custom overrides.')) + '</p>'
 			+ '<div style="margin-bottom:8px">'
 			+ '<button class="nldesign-apply-dialog-toggle" id="nldesign-apply-select-all">' + escapeHtml(t('nldesign', 'Select all')) + '</button>'
 			+ ' / '

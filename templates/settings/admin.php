@@ -65,8 +65,8 @@ style('nldesign', 'admin');
 		<div class="nldesign-preview-box">
 			<div class="nldesign-preview-header"></div>
 			<div class="nldesign-preview-content">
-				<button class="nldesign-preview-button primary"><?php p($l->t('Primary Button')); ?></button>
-				<button class="nldesign-preview-button"><?php p($l->t('Secondary Button')); ?></button>
+				<button class="nldesign-preview-button primary"><?php p($l->t('Primary button')); ?></button>
+				<button class="nldesign-preview-button"><?php p($l->t('Secondary button')); ?></button>
 			</div>
 		</div>
 	</div>
