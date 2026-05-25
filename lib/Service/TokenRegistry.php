@@ -232,6 +232,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Returns tokens grouped by tab.
      *
      * @return array<string, array<string, array{tab: string, type: string, label: string}>> Tokens grouped by tab id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
      */
     public static function getTokensByTab(): array
     {
