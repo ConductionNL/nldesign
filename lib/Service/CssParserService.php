@@ -58,6 +58,8 @@ class CssParserService
      * @param string $css The raw CSS string containing a :root {} block.
      *
      * @return array<string, string> Map of token name => value.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
      */
     public function parseRootBlock(string $css): array
     {
