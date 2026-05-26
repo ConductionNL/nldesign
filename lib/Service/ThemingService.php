@@ -8,6 +8,11 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-41
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-42
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-43
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-44
  */
 
 declare(strict_types=1);
@@ -23,6 +28,11 @@ use OCP\App\IAppManager;
  *
  * Handles validation and application of color and image changes
  * to the Nextcloud theming system.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-41
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-42
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-43
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-44
  */
 class ThemingService
 {
@@ -71,6 +81,8 @@ class ThemingService
      * @param string $color The color to validate.
      *
      * @return bool True if valid hex color.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-41
      */
     public function isValidHexColor(string $color): bool
     {
@@ -83,6 +95,8 @@ class ThemingService
      * @param array $params The request parameters.
      *
      * @return string|null An error message if validation fails, or null on success.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-41
      */
     public function validateColors(array $params): ?string
     {
@@ -103,6 +117,8 @@ class ThemingService
      * @param array $params The request parameters.
      *
      * @return string|null An error message if validation fails, or null on success.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-42
      */
     public function validateImagePaths(array $params): ?string
     {
@@ -128,6 +144,8 @@ class ThemingService
      * @param string $imagePath The image path to validate.
      *
      * @return string|null An error message if validation fails, or null on success.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-42
      */
     private function validateSinglePath(string $imageKey, string $imagePath): ?string
     {
@@ -158,6 +176,8 @@ class ThemingService
      * @param array $params The request parameters.
      *
      * @return array The list of updated color keys.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-43
      */
     public function applyColors(array $params): array
     {
@@ -179,6 +199,8 @@ class ThemingService
      * @param array $params The request parameters.
      *
      * @return array The list of updated image keys.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-44
      */
     public function applyImages(array $params): array
     {

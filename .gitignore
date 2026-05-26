@@ -1,31 +1,51 @@
+# IDE
+/.idea/
+/*.iml
+*.Identifier
+.vscode/
+
 # Dependencies
-node_modules/
-vendor/
+/vendor/
+/node_modules/
 
 # Build artifacts
-build/
-dist/
-.docusaurus/
+/js/
+/build/
+/dist/
 
-# Quality tool output
-phpmetrics/
-phpqa/
-coverage/
+# Documentation
+/docs/node_modules/
+/docs/build/
+/docs/.docusaurus/
+/website/node_modules/
+/website/.docusaurus/
+
+# Testing & Quality
+/.php-cs-fixer.cache
+/tests/.phpunit.cache
+/.phpunit.cache/
+.phpunit.cache/
+.phpunit.result.cache
+/coverage/
+/coverage-frontend/
+/phpmetrics/
+/quality-reports/
+/phpqa/
 phpcs-output.json
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# Nextcloud
+/custom_apps/
+/config/
+.htaccess
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Nextcloud
-.htaccess
+# SBOM is published as release asset (see SECURITY.md), not stored in repo
+sbom.cdx.json
+bom-php.cdx.json
+bom-npm.cdx.json
 
-# Test/build artifacts
-.phpunit.cache
-.phpunit.result.cache
+# Claude Code
+.claude/worktrees/

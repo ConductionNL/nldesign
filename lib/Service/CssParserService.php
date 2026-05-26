@@ -8,6 +8,8 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
  */
 
 declare(strict_types=1);
@@ -18,6 +20,8 @@ namespace OCA\NLDesign\Service;
  * Service for parsing CSS custom property declarations.
  *
  * Extracts --token-name: value pairs from raw CSS strings.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
  */
 class CssParserService
 {
@@ -29,6 +33,8 @@ class CssParserService
      * @param string $content The raw CSS content.
      *
      * @return array<string, string>|null Parsed token map, or null if none found.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
      */
     public function parseDeclarations(string $content): ?array
     {
@@ -52,6 +58,8 @@ class CssParserService
      * @param string $css The raw CSS string containing a :root {} block.
      *
      * @return array<string, string> Map of token name => value.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
      */
     public function parseRootBlock(string $css): array
     {

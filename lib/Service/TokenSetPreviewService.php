@@ -8,6 +8,9 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-48
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-49
  */
 
 declare(strict_types=1);
@@ -28,6 +31,9 @@ use OCP\App\IAppManager;
  *
  * This is pure string manipulation — no DOM, no CSS parser.
  * Only editable tokens (in TokenRegistry) are returned.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-48
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-49
  */
 class TokenSetPreviewService
 {
@@ -57,6 +63,8 @@ class TokenSetPreviewService
      * @return array<string, string> Map of --color-* token name => resolved hex/color value.
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-48
      */
     public function getResolvedColors(string $tokenSetId): array
     {
@@ -109,6 +117,8 @@ class TokenSetPreviewService
      * @param string $filePath Absolute path to a CSS file.
      *
      * @return array<string, string> Map of --property-name => value.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-49
      */
     private function parseCssVars(string $filePath): array
     {
@@ -139,6 +149,8 @@ class TokenSetPreviewService
      * @param string $filePath Absolute path to overrides.css.
      *
      * @return array<string, string> Map of --color-X => --nldesign-Y.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-49
      */
     private function parseMappings(string $filePath): array
     {
@@ -180,6 +192,8 @@ class TokenSetPreviewService
      * @param array<string, string> $vars The merged --nldesign-* variable map.
      *
      * @return string The resolved value or the original reference.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-49
      */
     private function resolveVarReference(string $ref, array $vars): string
     {

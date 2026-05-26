@@ -8,6 +8,11 @@
  * @author   Conduction <info@conduction.nl>
  * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
  * @link     https://github.com/ConductionNL/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
  */
 
 declare(strict_types=1);
@@ -21,6 +26,11 @@ use OCP\App\IAppManager;
  *
  * Reads design-systems.json and token-sets.json to determine which CSS
  * stylesheets should be loaded for a given token set.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
  */
 class DesignSystemService
 {
@@ -70,6 +80,8 @@ class DesignSystemService
      * Get all available design systems.
      *
      * @return array<string, array{id: string, name: string, description: string, stylesheets: string[]}> Indexed by id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */
     public function getDesignSystems(): array
     {
@@ -91,6 +103,8 @@ class DesignSystemService
      * @param string $id The design system identifier.
      *
      * @return array{id: string, name: string, description: string, stylesheets: string[]} The design system.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
      */
     public function getDesignSystem(string $id): array
     {
@@ -115,6 +129,8 @@ class DesignSystemService
      * @param string $tokenSetId The token set identifier.
      *
      * @return array The token set metadata from token-sets.json (empty array if not found).
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
      */
     public function getTokenSetMeta(string $tokenSetId): array
     {
@@ -142,6 +158,8 @@ class DesignSystemService
      * @param string $path Absolute path to the JSON file.
      *
      * @return array<string, array> Entries indexed by id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
      */
     private function readJsonManifest(string $path): array
     {
