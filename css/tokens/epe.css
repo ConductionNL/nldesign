@@ -8,9 +8,6 @@
  */
 
 :root {
-	/* Logo image */
-	--nldesign-logo-url: url('../img/logos/epe.svg');
-
 	/* NL Design tokens */
 	--nldesign-brand-epe-color-error: #dc3545;
 	--nldesign-brand-epe-color-alert-error-background: #f8d7da;
