@@ -3,10 +3,13 @@
 /**
  * NL Design CSS Parser Service.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Service
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
@@ -67,7 +70,7 @@ class CssParserService
             return [];
         }
 
-        $result = $this->parseDeclarations($rootMatch[1]);
+        $result = $this->parseDeclarations(content: $rootMatch[1]);
 
         if ($result !== null) {
             return $result;

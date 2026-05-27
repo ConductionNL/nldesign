@@ -3,10 +3,13 @@
 /**
  * NL Design Overrides Controller.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Controller
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
@@ -25,7 +28,9 @@ namespace OCA\NLDesign\Controller;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\TokenRegistry;
+use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
@@ -74,7 +79,7 @@ class OverridesController extends Controller
         CustomOverridesService $overridesService,
         CssParserService $cssParser
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
         $this->overridesService = $overridesService;
         $this->cssParser        = $cssParser;
     }//end __construct()
@@ -87,12 +92,11 @@ class OverridesController extends Controller
      *
      * @return JSONResponse The overrides and token registry.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function getOverrides(): JSONResponse
     {
         $overrides = $this->overridesService->read();
@@ -116,10 +120,9 @@ class OverridesController extends Controller
      *
      * @return JSONResponse Status and count of written tokens.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function setOverrides(): JSONResponse
     {
         $params    = $this->request->getParams();
@@ -143,10 +146,9 @@ class OverridesController extends Controller
      *
      * @return DataDownloadResponse The CSS file as a download.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function exportOverrides(): DataDownloadResponse
     {
         $content = $this->overridesService->getRawContent();
@@ -167,10 +169,9 @@ class OverridesController extends Controller
      *
      * @return JSONResponse Import result with 'imported' and 'skipped' counts.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function importOverrides(): JSONResponse
     {
         $validationError = $this->validateUploadedFile();
@@ -191,7 +192,7 @@ class OverridesController extends Controller
             );
         }
 
-        return $this->writeImportedTokens($parsed);
+        return $this->writeImportedTokens(parsed: $parsed);
     }//end importOverrides()
 
     /**
