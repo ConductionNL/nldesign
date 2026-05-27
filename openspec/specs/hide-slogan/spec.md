@@ -7,7 +7,9 @@ enriched_date: 2026-03-20
 # Hide Slogan Specification
 
 ## Purpose
-Defines the "Hide Slogan" feature that removes the Nextcloud slogan/payoff text from the login page. Dutch government organizations typically need to present a clean, branded login page without Nextcloud's default slogan ("a safe home for all your data"). When enabled, the footer element on the login page that contains this slogan is completely hidden via a conditionally loaded CSS file.
+Defines the "Hide Slogan" feature that removes the Nextcloud slogan/payoff text from the login page.
+
+@e2e exclude Backend/CSS/login-page spec — scenarios cover IConfig storage, PHP boot-time CSS injection, CSS selector behaviour on the login page, and API internals; the admin checkbox UI surface is covered by admin-settings tests. Dutch government organizations typically need to present a clean, branded login page without Nextcloud's default slogan ("a safe home for all your data"). When enabled, the footer element on the login page that contains this slogan is completely hidden via a conditionally loaded CSS file.
 
 ## Requirements
 

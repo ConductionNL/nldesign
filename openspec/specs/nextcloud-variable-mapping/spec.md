@@ -7,6 +7,8 @@ status: implemented
 ## Purpose
 Provides a complete, audited mapping between all Nextcloud CSS custom properties and `--nldesign-*` design tokens, with comprehensive documentation and a defaults layer that ensures all tokens always have a value.
 
+@e2e exclude CSS-variable mapping / documentation spec — all scenarios describe CSS file content, variable mapping tables, and cascade ordering; no testable UI surface in the admin settings page.
+
 ## Requirements
 
 ### Requirement: Complete Nextcloud Variable Audit

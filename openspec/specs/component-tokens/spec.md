@@ -7,6 +7,8 @@ status: implemented
 ## Purpose
 Introduces component-level NL Design System tokens using the `--nldesign-component-*` prefix, with a temporary bridge file that maps the current `--utrecht-*` component tokens to the nldesign namespace.
 
+@e2e exclude CSS-variable and bridge-file spec — all scenarios are pure CSS cascade / file-structure assertions with no testable UI surface beyond the admin theming page already covered by admin-settings tests.
+
 ## Requirements
 
 ### Requirement: NLDesign Component Token Prefix
