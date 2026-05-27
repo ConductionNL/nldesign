@@ -3,11 +3,15 @@
 /**
  * NL Design Custom Overrides Service.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
@@ -144,7 +148,7 @@ class CustomOverridesService
      */
     public function write(array $tokens): void
     {
-        $validated = $this->filterEditable($tokens);
+        $validated = $this->filterEditable(tokens: $tokens);
 
         $this->writeFile(tokens: $validated);
 
@@ -227,7 +231,7 @@ class CustomOverridesService
             return $header.':root {}'.PHP_EOL;
         }
 
-        $lines = $this->buildDeclarationLines($tokens);
+        $lines = $this->buildDeclarationLines(tokens: $tokens);
 
         return $header.':root {'.PHP_EOL.implode(PHP_EOL, $lines).PHP_EOL.'}'.PHP_EOL;
     }//end buildCss()

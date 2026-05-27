@@ -3,11 +3,15 @@
 /**
  * NL Design — Design System Service.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
@@ -90,7 +94,7 @@ class DesignSystemService
         }
 
         $path = $this->getAppPath().'/design-systems.json';
-        $this->designSystems = $this->readJsonManifest($path);
+        $this->designSystems = $this->readJsonManifest(path: $path);
 
         return $this->designSystems;
     }//end getDesignSystems()
@@ -135,8 +139,8 @@ class DesignSystemService
     public function getTokenSetMeta(string $tokenSetId): array
     {
         if ($this->tokenSetMeta === null) {
-            $path               = $this->getAppPath().'/token-sets.json';
-            $this->tokenSetMeta = $this->readJsonManifest($path);
+            $path = $this->getAppPath().'/token-sets.json';
+            $this->tokenSetMeta = $this->readJsonManifest(path: $path);
         }
 
         return $this->tokenSetMeta[$tokenSetId] ?? [];
@@ -146,6 +150,8 @@ class DesignSystemService
      * Get all design systems as a flat list (for API responses).
      *
      * @return array<array{id: string, name: string, description: string, stylesheets: string[]}> List of design systems.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */
     public function getDesignSystemsList(): array
     {

@@ -3,11 +3,15 @@
 /**
  * NL Design Settings Controller.
  *
- * @category Controller
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Controller
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
@@ -33,8 +37,10 @@ use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenRegistry;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
+use OCA\NLDesign\Settings\Admin;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -135,6 +141,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function setTokenSet(string $tokenSet): JSONResponse
     {
         $tokenSetService = new TokenSetService(appManager: $this->appManager);
@@ -156,6 +163,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function getTokenSet(): JSONResponse
     {
         $tokenSet = $this->config->getAppValue(
@@ -176,6 +184,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function getAvailableTokenSets(): JSONResponse
     {
         $tokenSets = $this->tokenSetService->getAvailableTokenSets();
@@ -214,6 +223,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
         $this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
@@ -232,6 +242,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
         $this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
@@ -246,18 +257,21 @@ class SettingsController extends Controller
      *
      * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
      *
+     * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-20
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function getOverrides(): JSONResponse
     {
-        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
-        $customOverridesService->ensureExists();
+        $overridesSvc = new CustomOverridesService(appManager: $this->appManager);
+        $overridesSvc->ensureExists();
 
         return new JSONResponse(
                 [
                     'registry'  => TokenRegistry::getTokens(),
                     'tabs'      => TokenRegistry::getTabLabels(),
-                    'overrides' => $customOverridesService->read(),
+                    'overrides' => $overridesSvc->read(),
                 ]
                 );
     }//end getOverrides()
@@ -273,10 +287,11 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-21
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function setOverrides(array $overrides): JSONResponse
     {
-        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
-        $customOverridesService->write(tokens: $overrides);
+        $overridesSvc = new CustomOverridesService(appManager: $this->appManager);
+        $overridesSvc->write(tokens: $overrides);
 
         return new JSONResponse(['status' => 'ok']);
     }//end setOverrides()
@@ -290,6 +305,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function updateThemingValues(): JSONResponse
     {
         $params = $this->request->getParams();
@@ -326,6 +342,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function getThemingValues(): JSONResponse
     {
         $values = $this->buildThemingSnapshot();
@@ -368,6 +385,7 @@ class SettingsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function getTokenSetPreview(string $tokenSetId): JSONResponse
     {
         if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSetId) === false) {

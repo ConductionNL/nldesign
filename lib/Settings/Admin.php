@@ -3,11 +3,15 @@
 /**
  * NL Design Admin Settings.
  *
- * @category Settings
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Settings
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
@@ -24,7 +28,7 @@ use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
 use OCP\IL10N;
-use OCP\Settings\ISettings;
+use OCP\Settings\IDelegatedSettings;
 
 /**
  * Admin settings form for NL Design.
@@ -35,7 +39,7 @@ use OCP\Settings\ISettings;
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
  */
-class Admin implements ISettings
+class Admin implements IDelegatedSettings
 {
 
     /**
@@ -72,6 +76,41 @@ class Admin implements ISettings
         $this->l          = $l;
         $this->appManager = $appManager;
     }//end __construct()
+
+    /**
+     * Get the display name for partial admin delegation.
+     *
+     * Returns null so only the section name appears in the settings list.
+     *
+     * @return string|null Always null (no extra label needed).
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+     */
+    public function getName(): ?string
+    {
+        return null;
+    }//end getName()
+
+    /**
+     * Get the authorized app config keys for delegation.
+     *
+     * Returns the nldesign app config keys that can be modified via delegated admin.
+     *
+     * @return array<string, string[]> Map of app name to allowed config key patterns.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+     */
+    public function getAuthorizedAppConfig(): array
+    {
+        return [
+            Application::APP_ID => [
+                '/token_set/',
+                '/hide_slogan/',
+                '/show_menu_labels/',
+                '/theming_syncs_total/',
+            ],
+        ];
+    }//end getAuthorizedAppConfig()
 
     /**
      * Get the settings form.

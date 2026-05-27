@@ -3,11 +3,15 @@
 /**
  * NL Design Metrics Controller.
  *
- * @category Controller
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Controller
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-5
@@ -36,30 +40,27 @@ use Psr\Log\LoggerInterface;
  */
 class MetricsController extends Controller
 {
-
-
     /**
      * Constructor.
      *
-     * @param string                 $appName                The app name.
-     * @param IRequest               $request                The request object.
-     * @param IConfig                $config                 The config service.
-     * @param TokenSetService        $tokenSetService        The token set service.
-     * @param CustomOverridesService $customOverridesService The custom overrides service.
-     * @param LoggerInterface        $logger                 Logger for error reporting.
+     * @param string                 $appName          The app name.
+     * @param IRequest               $request          The request object.
+     * @param IConfig                $config           The config service.
+     * @param TokenSetService        $tokenSetService  The token set service.
+     * @param CustomOverridesService $overridesService The custom overrides service.
+     * @param LoggerInterface        $logger           Logger for error reporting.
      */
     public function __construct(
         string $appName,
         IRequest $request,
         private readonly IConfig $config,
         private readonly TokenSetService $tokenSetService,
-        private readonly CustomOverridesService $customOverridesService,
+        private readonly CustomOverridesService $overridesService,
         private readonly LoggerInterface $logger
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
 
     }//end __construct()
-
 
     /**
      * Expose Prometheus metrics.
@@ -89,10 +90,10 @@ class MetricsController extends Controller
         $lines[] = 'nldesign_up 1';
 
         // Token sets total.
-        $this->collectTokenSetMetrics($lines);
+        $this->collectTokenSetMetrics(lines: $lines);
 
         // Custom overrides total.
-        $this->collectOverrideMetrics($lines);
+        $this->collectOverrideMetrics(lines: $lines);
 
         // Theming syncs counter.
         $syncsTotal = (int) $this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
@@ -108,7 +109,6 @@ class MetricsController extends Controller
 
     }//end index()
 
-
     /**
      * Collect token set metrics.
      *
@@ -121,7 +121,7 @@ class MetricsController extends Controller
     private function collectTokenSetMetrics(array &$lines): void
     {
         try {
-            $tokenSets    = $this->tokenSetService->getAvailableTokenSets();
+            $tokenSets     = $this->tokenSetService->getAvailableTokenSets();
             $tokenSetCount = count($tokenSets);
 
             $lines[] = '# HELP nldesign_token_sets_total Total number of available token sets';
@@ -142,7 +142,6 @@ class MetricsController extends Controller
 
     }//end collectTokenSetMetrics()
 
-
     /**
      * Collect custom overrides metrics.
      *
@@ -155,7 +154,7 @@ class MetricsController extends Controller
     private function collectOverrideMetrics(array &$lines): void
     {
         try {
-            $overrides    = $this->customOverridesService->read();
+            $overrides     = $this->overridesService->read();
             $overrideCount = count($overrides);
 
             $lines[] = '# HELP nldesign_custom_overrides_total Total custom CSS overrides';
@@ -169,6 +168,4 @@ class MetricsController extends Controller
         }
 
     }//end collectOverrideMetrics()
-
-
 }//end class

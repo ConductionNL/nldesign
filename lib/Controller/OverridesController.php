@@ -3,11 +3,15 @@
 /**
  * NL Design Overrides Controller.
  *
- * @category Controller
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Controller
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
@@ -25,7 +29,9 @@ namespace OCA\NLDesign\Controller;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\TokenRegistry;
+use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
@@ -74,69 +80,10 @@ class OverridesController extends Controller
         CustomOverridesService $overridesService,
         CssParserService $cssParser
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
         $this->overridesService = $overridesService;
         $this->cssParser        = $cssParser;
     }//end __construct()
-
-    /**
-     * Get the current custom token overrides.
-     *
-     * Returns only tokens explicitly set in custom-overrides.css,
-     * plus the full editable token registry for the UI.
-     *
-     * @return JSONResponse The overrides and token registry.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
-     */
-    public function getOverrides(): JSONResponse
-    {
-        $overrides = $this->overridesService->read();
-        $registry  = TokenRegistry::getTokens();
-        $tabs      = TokenRegistry::getTabLabels();
-
-        return new JSONResponse(
-            [
-                'overrides' => $overrides,
-                'registry'  => $registry,
-                'tabs'      => $tabs,
-            ]
-        );
-    }//end getOverrides()
-
-    /**
-     * Write new custom token overrides to custom-overrides.css.
-     *
-     * Accepts a JSON body with an 'overrides' key containing token name => value pairs.
-     * Only tokens in the TokenRegistry are accepted; others are silently ignored.
-     *
-     * @return JSONResponse Status and count of written tokens.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
-     */
-    public function setOverrides(): JSONResponse
-    {
-        $params    = $this->request->getParams();
-        $overrides = $params['overrides'] ?? [];
-
-        if (is_array($overrides) === false) {
-            return new JSONResponse(['error' => 'overrides must be an object'], 400);
-        }
-
-        try {
-            $this->overridesService->write(tokens: $overrides);
-        } catch (\RuntimeException $e) {
-            return new JSONResponse(['error' => $e->getMessage()], 500);
-        }
-
-        return new JSONResponse(['status' => 'ok', 'written' => count($overrides)]);
-    }//end setOverrides()
 
     /**
      * Download custom-overrides.css as a file.
@@ -147,6 +94,7 @@ class OverridesController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function exportOverrides(): DataDownloadResponse
     {
         $content = $this->overridesService->getRawContent();
@@ -171,6 +119,7 @@ class OverridesController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
      */
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     public function importOverrides(): JSONResponse
     {
         $validationError = $this->validateUploadedFile();
@@ -183,7 +132,7 @@ class OverridesController extends Controller
             return new JSONResponse(['error' => 'Could not read uploaded file'], 400);
         }
 
-        $parsed = $this->cssParser->parseDeclarations($content);
+        $parsed = $this->cssParser->parseDeclarations(content: $content);
         if ($parsed === null) {
             return new JSONResponse(
                 ['error' => 'No CSS custom property declarations found in the uploaded file'],
@@ -191,7 +140,7 @@ class OverridesController extends Controller
             );
         }
 
-        return $this->writeImportedTokens($parsed);
+        return $this->writeImportedTokens(parsed: $parsed);
     }//end importOverrides()
 
     /**

@@ -3,11 +3,15 @@
 /**
  * NL Design Token Registry.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2024 Conduction B.V.
+ * @license   https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @link      https://github.com/ConductionNL/nldesign
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: Copyright (C) 2024 Conduction B.V.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
@@ -46,6 +50,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Values are arrays with 'tab', 'type', and 'label' keys.
      *
      * @return array<string, array{tab: string, type: string, label: string}> The token registry.
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength) - data definition; each entry is a CSS token declaration
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
      */
@@ -208,6 +214,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Returns the set of all editable token names.
      *
      * @return array<string> List of token names.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
      */
     public static function getTokenNames(): array
     {

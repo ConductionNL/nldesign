@@ -85,6 +85,9 @@
                 <referencedClass name="OCP\Migration\IRepairStep"/>
                 <!-- Nextcloud server internals -->
                 <referencedClass name="OC"/>
+                <!-- Nextcloud Theming app — peer dep, loaded dynamically at runtime -->
+                <referencedClass name="OCA\Theming\ImageManager"/>
+                <referencedClass name="OCA\Theming\ThemingDefaults"/>
                 <!-- GuzzleHttp (loaded via composer at runtime) -->
                 <referencedClass name="GuzzleHttp\Client"/>
                 <referencedClass name="GuzzleHttp\Exception\GuzzleException"/>
