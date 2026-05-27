@@ -25,23 +25,37 @@ function nldesignAdminMain() {
 		console.error('Failed to parse token sets data:', e);
 	}
 
-	// Token set color mappings for preview
-	var tokenSetColors = {
-		nextcloud: { primary: '#0082c9', primaryHover: '#006fad', primaryText: '#ffffff' },
-		rijkshuisstijl: { primary: '#154273', primaryHover: '#162f50', primaryText: '#ffffff' },
-		utrecht: { primary: '#24578F', primaryHover: '#1F4B7A', primaryText: '#ffffff' },
-		amsterdam: { primary: '#004699', primaryHover: '#003677', primaryText: '#ffffff' },
-		denhaag: { primary: '#1a7a3e', primaryHover: '#156633', primaryText: '#ffffff' },
-		rotterdam: { primary: '#00811f', primaryHover: '#006E32', primaryText: '#ffffff' },
-		vng: { primary: '#003865', primaryHover: '#026596', primaryText: '#ffffff' },
-		leiden: { primary: '#d62410', primaryHover: '#b01d0d', primaryText: '#ffffff' },
-		noaberkracht: { primary: '#4376fc', primaryHover: '#2b5fd4', primaryText: '#ffffff' }
-	};
+	/**
+	 * Derive preview colors dynamically from the token set's theming metadata
+	 * (primary_color field in token-sets.json, already passed in data-token-sets).
+	 * Falls back to a neutral dark if no data is available.
+	 * This replaces the old hardcoded 9-entry palette (issue #123).
+	 */
+	function getPreviewColors(tokenSetId) {
+		var ts = tokenSetsData[tokenSetId];
+		var primary = (ts && ts.theming && ts.theming.primary_color) ? ts.theming.primary_color : '#333333';
+		// Compute a simple hover by darkening the hex value ~10%
+		var primaryHover = darkenHex(primary, 0.1);
+		return { primary: primary, primaryHover: primaryHover, primaryText: '#ffffff' };
+	}
+
+	/**
+	 * Darken a hex colour by the given fraction (0–1).
+	 * Returns the original colour if parsing fails.
+	 */
+	function darkenHex(hex, fraction) {
+		var m = /^#([0-9a-fA-F]{6})$/.exec(hex);
+		if (m === null) { return hex; }
+		var r = Math.max(0, Math.round(parseInt(m[1].substring(0, 2), 16) * (1 - fraction)));
+		var g = Math.max(0, Math.round(parseInt(m[1].substring(2, 4), 16) * (1 - fraction)));
+		var b = Math.max(0, Math.round(parseInt(m[1].substring(4, 6), 16) * (1 - fraction)));
+		return '#' + ('0' + r.toString(16)).slice(-2) + ('0' + g.toString(16)).slice(-2) + ('0' + b.toString(16)).slice(-2);
+	}
 
 	// Update preview when token set changes
 	function updatePreview(tokenSet) {
-		var colors = tokenSetColors[tokenSet];
-		if (!colors || !previewBox) return;
+		var colors = getPreviewColors(tokenSet);
+		if (!previewBox) return;
 
 		var header = previewBox.querySelector('.nldesign-preview-header');
 		var primaryButton = previewBox.querySelector('.nldesign-preview-button.primary');

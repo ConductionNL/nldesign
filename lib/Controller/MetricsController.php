@@ -25,6 +25,7 @@ use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\TextPlainResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -70,6 +71,7 @@ class MetricsController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
      */
+    #[PublicPage]
     public function index(): TextPlainResponse
     {
         $lines = [];

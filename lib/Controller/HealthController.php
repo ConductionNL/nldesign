@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Controller;
 
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
@@ -58,6 +59,7 @@ class HealthController extends Controller
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
      */
+    #[PublicPage]
     public function index(): JSONResponse
     {
         $checks = [];

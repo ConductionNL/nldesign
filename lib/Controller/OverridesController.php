@@ -215,6 +215,23 @@ class OverridesController extends Controller
             return new JSONResponse(['error' => 'File exceeds the 256 KB size limit'], 413);
         }
 
+        // Validate file extension.
+        $originalName = $file['name'] ?? '';
+        $extension    = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        if ($extension !== 'css') {
+            return new JSONResponse(['error' => 'Only .css files are accepted'], 415);
+        }
+
+        // Validate MIME type via server-side detection (ignore client-provided type).
+        $tmpName  = $file['tmp_name'];
+        $mimeType = mime_content_type($tmpName);
+        // Accept text/css, text/plain (editors often send this for .css), and
+        // application/octet-stream (generic fallback from some browsers).
+        $allowedMimes = ['text/css', 'text/plain', 'application/octet-stream'];
+        if (in_array($mimeType, $allowedMimes, true) === false) {
+            return new JSONResponse(['error' => 'File does not appear to be a CSS file'], 415);
+        }
+
         return null;
     }//end validateUploadedFile()
 
