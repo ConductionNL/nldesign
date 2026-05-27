@@ -183,18 +183,15 @@
 	bottom: 0;
 	background: var(--color-main-background);
 	padding-top: 8px;
+	display: flex;
+	gap: 8px;
+	margin-top: 16px;
+	justify-content: flex-end;
 }
 
 .nldesign-dialog h3 {
 	margin-top: 0;
 	margin-bottom: 0.75em;
-}
-
-.nldesign-dialog-actions {
-	display: flex;
-	gap: 8px;
-	margin-top: 16px;
-	justify-content: flex-end;
 }
 
 .nldesign-dialog-cancel,

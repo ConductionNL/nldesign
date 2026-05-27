@@ -3,10 +3,13 @@
 /**
  * NL Design Health Controller.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Controller
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
@@ -28,8 +31,6 @@ use Psr\Log\LoggerInterface;
  */
 class HealthController extends Controller
 {
-
-
     /**
      * Constructor.
      *
@@ -42,10 +43,9 @@ class HealthController extends Controller
         IRequest $request,
         private readonly LoggerInterface $logger
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
 
     }//end __construct()
-
 
     /**
      * Return health check status.
@@ -53,6 +53,8 @@ class HealthController extends Controller
      * @return JSONResponse JSON response with health status and checks.
      *
      * @NoCSRFRequired
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Server::get() is the Nextcloud API for container access
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
      */
@@ -66,10 +68,13 @@ class HealthController extends Controller
         try {
             $config   = \OCP\Server::get(\OCP\IConfig::class);
             $tokenSet = $config->getAppValue('nldesign', 'token_set', 'rijkshuisstijl');
-            $checks['configuration'] = ($tokenSet !== '') ? 'ok' : 'degraded';
+            $checks['configuration'] = 'degraded';
+            if ($tokenSet !== '') {
+                $checks['configuration'] = 'ok';
+            }
         } catch (\Exception $e) {
             $checks['configuration'] = 'error';
-            $status                   = 'error';
+            $status = 'error';
             $this->logger->error('Health check: configuration failed', ['exception' => $e->getMessage()]);
         }
 
@@ -81,6 +86,4 @@ class HealthController extends Controller
         );
 
     }//end index()
-
-
 }//end class

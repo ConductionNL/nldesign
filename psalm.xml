@@ -85,6 +85,11 @@
                 <referencedClass name="OCP\Migration\IRepairStep"/>
                 <!-- Nextcloud server internals -->
                 <referencedClass name="OC"/>
+                <!-- Nextcloud Theming app peer-app classes (theming app is always enabled in NC) -->
+                <referencedClass name="OCA\Theming\ImageManager"/>
+                <referencedClass name="OCA\Theming\ThemingDefaults"/>
+                <!-- NLDesign own Settings class (loaded at runtime, not in Psalm analysis path) -->
+                <referencedClass name="OCA\NLDesign\Settings\Admin"/>
                 <!-- GuzzleHttp (loaded via composer at runtime) -->
                 <referencedClass name="GuzzleHttp\Client"/>
                 <referencedClass name="GuzzleHttp\Exception\GuzzleException"/>

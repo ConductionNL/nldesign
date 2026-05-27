@@ -3,10 +3,13 @@
 /**
  * NL Design Application Bootstrap.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Application
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
@@ -54,6 +57,8 @@ class Application extends App implements IBootstrap
      * @return void
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
      */
     public function register(IRegistrationContext $context): void
     {
@@ -103,7 +108,7 @@ class Application extends App implements IBootstrap
         $designSystem   = $dsService->getDesignSystem($designSystemId);
 
         // 2. Load design system stylesheets in declared order.
-        //    For "none" (stock Nextcloud) this array is empty — no CSS loads.
+        // For "none" (stock Nextcloud) this array is empty — no CSS loads.
         foreach ($designSystem['stylesheets'] as $stylesheet) {
             \OCP\Util::addStyle(application: self::APP_ID, file: $stylesheet);
         }
