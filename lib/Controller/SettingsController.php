@@ -35,7 +35,6 @@ use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCA\NLDesign\Settings\Admin;
-use OCP\App\IAppManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\JSONResponse;
@@ -72,13 +71,6 @@ class SettingsController extends Controller
     private IConfig $config;
 
     /**
-     * The app manager.
-     *
-     * @var IAppManager
-     */
-    private IAppManager $appManager;
-
-    /**
      * The token set service.
      *
      * @var TokenSetService
@@ -105,7 +97,6 @@ class SettingsController extends Controller
      * @param string                 $appName         The app name.
      * @param IRequest               $request         The request object.
      * @param IConfig                $config          The config service.
-     * @param IAppManager            $appManager      The app manager.
      * @param TokenSetService        $tokenSetService The token set service.
      * @param ThemingService         $themingService  The theming service.
      * @param TokenSetPreviewService $previewService  The token set preview service.
@@ -114,14 +105,12 @@ class SettingsController extends Controller
         string $appName,
         IRequest $request,
         IConfig $config,
-        IAppManager $appManager,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
         TokenSetPreviewService $previewService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->config          = $config;
-        $this->appManager      = $appManager;
         $this->tokenSetService = $tokenSetService;
         $this->themingService  = $themingService;
         $this->previewService  = $previewService;
@@ -139,8 +128,7 @@ class SettingsController extends Controller
     #[AuthorizedAdminSetting(Admin::class)]
     public function setTokenSet(string $tokenSet): JSONResponse
     {
-        $tokenSetService = new TokenSetService(appManager: $this->appManager);
-        if ($tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
+        if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
