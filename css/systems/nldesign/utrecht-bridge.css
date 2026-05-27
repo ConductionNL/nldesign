@@ -10,9 +10,20 @@
  * See: https://github.com/nl-design-system/themes
  *
  * Load order: fonts → defaults → tokens/{org} → [utrecht-bridge] → theme → overrides
- * The bridge reads --utrecht-* values (set by token files) and maps them to
- * --nldesign-component-* variables. If no --utrecht-* value is defined, the
- * token falls back to the default from defaults.css.
+ *
+ * HOW FALLBACKS WORK
+ * ==================
+ * Each mapping uses the pattern:
+ *   --nldesign-component-X: var(--utrecht-Y, <fallback>)
+ *
+ * If a token set defines --utrecht-Y, that value wins.
+ * If NOT, the <fallback> is used — which comes from defaults.css.
+ *
+ * This means: if a token set is INCOMPLETE (missing some --utrecht-* tokens),
+ * the appearance falls back to the Utrecht/Rijkshuisstijl-flavoured defaults
+ * silently. To debug unexpected styling, check whether the active token set
+ * defines the relevant --utrecht-* variable. A browser DevTools custom properties
+ * panel will show which layer each variable is sourced from.
  *
  * NOTE: Fallback values MUST match defaults.css — do NOT self-reference
  * (e.g. var(--nldesign-foo, var(--nldesign-foo))) as that creates a CSS cycle
