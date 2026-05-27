@@ -154,6 +154,67 @@
 	background: var(--color-primary-hover);
 }
 
+/* Dialog overlays (apply dialog, theming-sync dialog) */
+.nldesign-dialog-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 10000;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow-y: auto;
+	padding: 20px;
+}
+
+.nldesign-dialog {
+	background: var(--color-main-background);
+	border-radius: var(--border-radius-large);
+	padding: 24px;
+	max-width: 700px;
+	width: 100%;
+	max-height: 80vh;
+	overflow-y: auto;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.nldesign-dialog-actions {
+	position: sticky;
+	bottom: 0;
+	background: var(--color-main-background);
+	padding-top: 8px;
+}
+
+.nldesign-dialog h3 {
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+.nldesign-dialog-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 16px;
+	justify-content: flex-end;
+}
+
+.nldesign-dialog-cancel,
+.nldesign-dialog-confirm {
+	padding: 8px 16px;
+	border-radius: var(--border-radius-element);
+	border: 1px solid var(--color-border);
+	cursor: pointer;
+}
+
+.nldesign-dialog-confirm {
+	background: var(--color-primary);
+	color: var(--color-primary-text);
+	border-color: var(--color-primary);
+}
+
+.nldesign-dialog-confirm:hover {
+	background: var(--color-primary-hover);
+}
+
 /* Info link */
 .nldesign-info {
 	margin-top: 2em;

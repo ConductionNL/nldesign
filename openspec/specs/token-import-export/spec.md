@@ -20,12 +20,14 @@ The admin settings panel MUST provide a **Download** button that exports the cur
 - AND the file MUST be formatted identically to the server-side `custom-overrides.css`
 
 #### Scenario: Download with no custom overrides
+@e2e exclude Requires custom-overrides.css to be empty — environment state not guaranteed; file content verification requires intercepting download response.
 - GIVEN `custom-overrides.css` is empty (no custom tokens set)
 - WHEN the admin clicks Download
 - THEN the browser MUST download a file with only the header comment and an empty `:root {}` block
 - AND the download MUST NOT be blocked or result in an error
 
 #### Scenario: Download is a GET request to a dedicated endpoint
+@e2e exclude API-layer assertion (Content-Type, Content-Disposition headers) — not testable via browser UI DOM; would require network interception.
 - GIVEN the admin clicks Download
 - WHEN the request is made
 - THEN it MUST call `GET /api/overrides/export`
@@ -43,6 +45,7 @@ The admin settings panel MUST provide an **Upload** button that accepts a CSS fi
 - AND the live preview MUST update to show the imported values
 
 #### Scenario: Import replaces existing overrides
+@e2e exclude Requires file upload and filesystem verification of custom-overrides.css content — mutates shared env; file content not verifiable via DOM.
 - GIVEN `custom-overrides.css` currently contains `--color-warning: #ff8800`
 - AND the uploaded file contains `--color-primary: #aa0000` but NOT `--color-warning`
 - WHEN the admin uploads the file
@@ -50,6 +53,7 @@ The admin settings panel MUST provide an **Upload** button that accepts a CSS fi
 - AND `--color-warning` MUST be removed (import is a full replace, not a merge)
 
 ### Requirement: Import Validation
+@e2e exclude All import-validation scenarios require file upload + server-side parse response assertions — backend validation logic, not testable via DOM; would mutate shared-env custom-overrides.css.
 On upload, the importer MUST validate each CSS custom property against the canonical editable token registry. Only tokens on the editable list MUST be written.
 
 #### Scenario: File contains unknown tokens
@@ -86,6 +90,7 @@ On upload, the importer MUST validate each CSS custom property against the canon
 - AND `custom-overrides.css` MUST remain unchanged
 
 ### Requirement: Import Result Feedback
+@e2e exclude Requires performing a file upload that mutates shared-env custom-overrides.css — not safe to run in shared test environment.
 After a successful import, the UI MUST show a summary of the import result before the admin can continue.
 
 #### Scenario: Import summary is shown
@@ -96,6 +101,7 @@ After a successful import, the UI MUST show a summary of the import result befor
 - AND the token editor forms MUST immediately reflect the imported values without a page reload
 
 ### Requirement: Upload Endpoint
+@e2e exclude API endpoint assertion (multipart POST, JSON response format) — backend/network-layer, not testable via DOM; upload control presence is covered by token-import-export spec-coverage.
 The import MUST be handled by a dedicated POST endpoint that accepts a multipart file upload.
 
 #### Scenario: Upload endpoint receives file

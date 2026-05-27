@@ -7,7 +7,9 @@ enriched_date: 2026-03-20
 # Token Sets Specification
 
 ## Purpose
-Defines how the NL Design app discovers, validates, stores, and serves design token sets. Token sets are organization-specific CSS files that override default Rijkshuisstijl design tokens, enabling Dutch government organizations to apply their own visual identity to Nextcloud. The system uses filesystem-based discovery combined with a JSON manifest for metadata, and supports multiple design systems via a `design_system` field that determines which CSS stack is loaded.
+Defines how the NL Design app discovers, validates, stores, and serves design token sets.
+
+@e2e exclude Backend/filesystem/API spec — scenarios cover TokenSetService PHP logic, manifest parsing, IConfig storage, path-traversal checks, and route configuration; the admin dropdown UI surface is covered by admin-settings tests. Token sets are organization-specific CSS files that override default Rijkshuisstijl design tokens, enabling Dutch government organizations to apply their own visual identity to Nextcloud. The system uses filesystem-based discovery combined with a JSON manifest for metadata, and supports multiple design systems via a `design_system` field that determines which CSS stack is loaded.
 
 ## Requirements
 

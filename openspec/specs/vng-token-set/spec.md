@@ -5,7 +5,9 @@ status: implemented
 # VNG Token Set Specification
 
 ## Purpose
-Define requirements for adding VNG (Vereniging Nederlandse Gemeenten) as a selectable design token set in the nldesign Nextcloud app. VNG tokens are manually converted from the tilburg-woo-ui project since they are not available in the upstream nl-design-system/themes repository.
+Define requirements for adding VNG (Vereniging Nederlandse Gemeenten) as a selectable design token set in the nldesign Nextcloud app.
+
+@e2e exclude CSS token-set / colour-value spec — scenarios describe CSS custom property values, colour palette, typography tokens, and border-radius values; the manifest entry and dropdown visibility are covered by admin-settings tests. VNG tokens are manually converted from the tilburg-woo-ui project since they are not available in the upstream nl-design-system/themes repository.
 
 ## Requirements
 

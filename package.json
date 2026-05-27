@@ -32,7 +32,10 @@
 	},
 	"devDependencies": {
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
+		"@playwright/test": "^1.60.0",
 		"stylelint": "^17.4.0",
-		"stylelint-config-standard": "^40.0.0"
+		"stylelint-config-standard": "^40.0.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^6.0.3"
 	}
 }

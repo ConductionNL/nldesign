@@ -28,12 +28,14 @@ The admin settings panel MUST be registered in the Nextcloud Theming section wit
 - AND both sections MUST be independently scrollable
 
 #### Scenario: Settings panel is absent when app is disabled
+@e2e exclude Requires disabling the app mid-session — not safe to test in shared environment.
 - GIVEN the nldesign app is not enabled
 - WHEN the admin navigates to Settings -> Administration -> Theming
 - THEN the "NL Design System Theme" section MUST NOT appear
 - AND no nldesign CSS MUST be injected into the page
 
 ### REQ-ASET-002: Template Response and Parameters
+@e2e exclude PHP controller internals (TemplateResponse parameters, default config values) — not testable via browser UI; covered by unit tests.
 The settings form MUST return a `TemplateResponse` with all required parameters for the admin template.
 
 #### Scenario: Settings panel loads template with all parameters
@@ -73,6 +75,7 @@ The settings panel MUST provide a searchable dropdown for selecting the active d
 - AND the currently active token set MUST have the `selected` attribute
 
 #### Scenario: Admin selects a different token set
+@e2e exclude POSTs to IConfig and triggers theming-sync dialog — covered by token-set-apply-dialog spec-coverage tests which use Cancel to avoid mutating shared env.
 - GIVEN the admin changes the dropdown to "Gemeente Amsterdam"
 - WHEN the selection is saved (via JavaScript calling `POST /apps/nldesign/settings/tokenset`)
 - THEN the active token set MUST be updated in IConfig
@@ -80,6 +83,7 @@ The settings panel MUST provide a searchable dropdown for selecting the active d
 - AND if the selected token set has theming metadata, the theming sync dialog MUST be triggered
 
 #### Scenario: Token set with stock Nextcloud design system
+@e2e exclude Requires saving a specific token set and verifying CSS injection — mutates IConfig; CSS injection is a PHP boot-time concern not testable via DOM assertion.
 - GIVEN the admin selects the "Nextcloud" token set (design_system: "none")
 - WHEN the selection is saved
 - THEN no nldesign design system stylesheets MUST be loaded
@@ -108,12 +112,14 @@ The settings panel MUST include a preview box that shows the visual effect of th
 - AND the preview MUST be contained in a `.nldesign-preview-box` element
 
 #### Scenario: Preview updates on token set change
+@e2e exclude Requires triggering dropdown change and asserting CSS color on preview element — overlaps with token-set-apply-dialog trigger tests which use Cancel to avoid saving.
 - GIVEN the admin selects a different token set from the dropdown
 - WHEN the JavaScript handles the change event
 - THEN the preview box MUST update its colors to reflect the newly selected token set
 - AND the update MUST happen without a full page reload
 
 #### Scenario: Preview reflects Rijkshuisstijl defaults for unknown sets
+@e2e exclude Requires a token set not in the hardcoded color map — no such token set guaranteed to exist in the test environment.
 - GIVEN the admin selects a token set that is not in the hardcoded `tokenSetColors` map
 - WHEN the preview renders
 - THEN it MUST fall back to Rijkshuisstijl default colors (#154273 primary, #ffffff text)
@@ -128,6 +134,7 @@ The settings panel MUST include a checkbox to toggle the hide slogan feature.
 - AND the checkbox MUST have `class="checkbox"` for Nextcloud styling
 
 #### Scenario: Checkbox reflects disabled state
+@e2e exclude Requires IConfig to be set to disabled state — not guaranteed in shared env; initial-state tested by checkbox-presence test in admin-settings spec-coverage.
 - GIVEN the hide slogan setting is disabled (value `'0'` in IConfig)
 - WHEN the settings panel loads
 - THEN the `#nldesign-hide-slogan` checkbox MUST NOT be checked
@@ -139,6 +146,7 @@ The settings panel MUST include a checkbox to toggle the hide slogan feature.
 - AND this MUST satisfy WCAG AA SC 1.3.1 (Info and Relationships)
 
 #### Scenario: Checkbox change triggers API call
+@e2e exclude API call assertion (POST /settings/slogan) — not testable via DOM; would also toggle shared-env IConfig state.
 - GIVEN the admin toggles the hide slogan checkbox
 - WHEN the change event fires
 - THEN JavaScript MUST call `POST /apps/nldesign/settings/slogan` with `hideSlogan` as a boolean
@@ -153,6 +161,7 @@ The settings panel MUST include a checkbox to toggle the show menu labels featur
 - THEN the `#nldesign-show-menu-labels` checkbox MUST be checked
 
 #### Scenario: Checkbox reflects disabled state
+@e2e exclude Requires IConfig to be set to disabled state — not guaranteed in shared env; covered by initial-state assertions in admin-settings spec-coverage.
 - GIVEN the show menu labels setting is disabled (value `'0'` in IConfig)
 - WHEN the settings panel loads
 - THEN the `#nldesign-show-menu-labels` checkbox MUST NOT be checked
@@ -163,6 +172,7 @@ The settings panel MUST include a checkbox to toggle the show menu labels featur
 - AND the label MUST have `for="nldesign-show-menu-labels"` to associate with the input
 
 #### Scenario: Checkbox change triggers API call
+@e2e exclude API call assertion (POST /settings/menulabels) — not testable via DOM; would also toggle shared-env IConfig state.
 - GIVEN the admin toggles the show menu labels checkbox
 - WHEN the change event fires
 - THEN JavaScript MUST call `POST /apps/nldesign/settings/menulabels` with `showMenuLabels` as a boolean
@@ -186,12 +196,14 @@ The settings panel MUST include external links to relevant documentation with pr
 - AND the link text MUST read "Learn more about NL Design System" (localized) with an arrow indicator
 
 #### Scenario: Links open in new tab without security risk
+@e2e exclude rel/target attribute presence is verified by admin-settings spec-coverage link tests; behaviour of window.opener is browser-intrinsic and not testable via DOM assertion.
 - GIVEN the admin clicks any external link in the settings panel
 - WHEN the link opens
 - THEN `rel="noopener noreferrer"` MUST prevent the opened page from accessing `window.opener`
 - AND `target="_blank"` MUST open in a new tab/window
 
 ### REQ-ASET-008: Vanilla Implementation (No Vue)
+@e2e exclude Implementation-architecture requirement (template type, build tooling) — verified by code inspection and the fact that the admin page loads correctly; not testable via browser UI.
 The admin settings MUST be implemented using vanilla PHP templates and vanilla JavaScript without Vue, webpack, or any frontend build step.
 
 #### Scenario: Template is plain PHP
@@ -219,11 +231,13 @@ The admin settings MUST be implemented using vanilla PHP templates and vanilla J
 All settings endpoints and the settings panel MUST be restricted to administrators.
 
 #### Scenario: Settings panel restricted to admin
+@e2e exclude Requires a non-admin session — test environment only has the admin user.
 - GIVEN a non-admin user navigates to the admin settings area
 - WHEN Nextcloud checks the `ISettings` implementation
 - THEN the NL Design settings panel MUST NOT be visible to non-admin users
 
 #### Scenario: API endpoints restricted to admin via annotation
+@e2e exclude Requires a non-admin session to test the 403 response — test environment only has the admin user.
 - GIVEN the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods
 - WHEN a non-admin user calls any `/settings/*` endpoint
 - THEN the request MUST be rejected with an appropriate error response
@@ -246,12 +260,14 @@ The settings panel MUST include a mount point for the token editor that allows c
 - AND the JavaScript MUST populate this element with the token editor UI on page load
 
 #### Scenario: Token editor loads override data from API
+@e2e exclude Network-request assertion (GET /settings/overrides) — not testable via DOM; tab rendering is covered by token-editor-ui spec-coverage tests.
 - GIVEN the settings panel loads and JavaScript initializes
 - WHEN the token editor mounts
 - THEN it MUST call `GET /apps/nldesign/settings/overrides` to fetch the registry, tabs, and current overrides
 - AND it MUST render a tabbed interface for browsing tokens by category
 
 #### Scenario: Token editor saves changes via API
+@e2e exclude Network-request assertion (POST /settings/overrides) — not testable via DOM; clicking Save would mutate shared-env custom-overrides.css.
 - GIVEN the admin modifies a token value in the editor
 - WHEN the save action is triggered
 - THEN it MUST call `POST /apps/nldesign/settings/overrides` with the updated overrides map
@@ -267,11 +283,13 @@ The settings panel MUST include instructional text explaining the purpose of the
 - AND the hint MUST appear between the header and the token set selector
 
 #### Scenario: Hint text is localized
+@e2e exclude Requires Dutch-language Nextcloud session — test environment uses English locale.
 - GIVEN the admin has their Nextcloud language set to Dutch
 - WHEN the settings panel loads
 - THEN the hint text MUST be displayed in Dutch via the `$l->t()` localization function
 
 #### Scenario: Hint text provides sufficient context
+@e2e exclude Subjective copy-quality assertion — not verifiable via automated DOM test; hint text presence is covered by admin-settings spec-coverage.
 - GIVEN a first-time admin user opens the settings panel
 - WHEN they read the hint text
 - THEN they MUST understand that they can either select a preset token set OR customize individual tokens
@@ -293,6 +311,7 @@ The settings panel MUST pass configuration data to JavaScript via HTML data attr
 - AND the value MUST be HTML-escaped via `p()`
 
 #### Scenario: JavaScript reads data attributes on initialization
+@e2e exclude Internal JS initialization detail — observable effect (correct dropdown state + preview) is covered by admin-settings spec-coverage; data-attribute presence is also verified.
 - GIVEN the admin.js script loads
 - WHEN it initializes the settings panel
 - THEN it MUST read token set data from `data-token-sets` and parse it as JSON
@@ -300,6 +319,7 @@ The settings panel MUST pass configuration data to JavaScript via HTML data attr
 - AND these values MUST drive the initial state of the dropdown and preview
 
 ### REQ-ASET-013: Localization Support
+@e2e exclude l10n system verification — requires Dutch-language session and translation file inspection; not testable via browser UI in English-only test environment.
 All user-visible text in the settings panel MUST be localizable via Nextcloud's l10n system.
 
 #### Scenario: All static text uses l10n

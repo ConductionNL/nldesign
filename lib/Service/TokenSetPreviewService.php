@@ -72,7 +72,7 @@ class TokenSetPreviewService
 
         // Step 1: parse defaults.css → --nldesign-* defaults.
         $nldesignVars = $this->parseCssVars(
-            filePath: $appPath.'/css/defaults.css'
+            filePath: $appPath.'/css/systems/nldesign/defaults.css'
         );
 
         // Step 2: parse tokens/{id}.css → overrides.
@@ -84,7 +84,7 @@ class TokenSetPreviewService
 
         // Step 3: parse overrides.css → mapping --color-X: var(--nldesign-Y).
         $mappings = $this->parseMappings(
-            filePath: $appPath.'/css/overrides.css'
+            filePath: $appPath.'/css/systems/nldesign/overrides.css'
         );
 
         // Step 4: resolve --color-* values using the nldesign map.

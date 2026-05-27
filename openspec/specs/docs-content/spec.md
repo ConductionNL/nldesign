@@ -2,6 +2,11 @@
 status: implemented
 ---
 
+## Purpose
+Documentation site content and structure specification.
+
+@e2e exclude Documentation/Docusaurus site spec — all scenarios describe docs-site file structure, sidebar ordering, and build output; not part of the Nextcloud admin UI that can be tested against localhost:8080.
+
 ## Requirements
 
 ### Requirement: Documentation landing page
