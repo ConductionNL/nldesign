@@ -200,7 +200,7 @@
 	--nldesign-component-unordered-list-padding-inline-start: 2ch;
 	--nldesign-component-unordered-list-item-padding-inline-start: 1ch;
 	--nldesign-component-page-footer-background-color: unset;
-	--nldesign-component-page-footer-background-image: url(https://www.tubbergen.nl/sites/all/themes/tubbergen/dist/assets/img/footer-bg.svg);
+	--nldesign-component-page-footer-background-image: unset; /* External footer-bg.svg removed (privacy/availability). Replace with a locally-bundled asset under img/themes/tubbergen/ if needed. */
 	--nldesign-component-page-max-inline-size: 1140px;
 	--nldesign-component-paragraph-line-height: 1.5em;
 	--nldesign-component-radio-button-icon-size: 5px;
