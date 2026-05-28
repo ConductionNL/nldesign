@@ -23,7 +23,6 @@ namespace OCA\NLDesign\AppInfo;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Themes\NLDesignTheme;
-use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -101,8 +100,7 @@ class Application extends App implements IBootstrap
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
 
         // 1. Resolve which design system this token set uses.
-        $appManager     = $serverContainer->get(IAppManager::class);
-        $dsService      = new DesignSystemService(appManager: $appManager);
+        $dsService      = $serverContainer->get(DesignSystemService::class);
         $tokenSetMeta   = $dsService->getTokenSetMeta($tokenSet);
         $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
         $designSystem   = $dsService->getDesignSystem($designSystemId);
@@ -119,7 +117,7 @@ class Application extends App implements IBootstrap
         }
 
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
-        $customOverridesSvc = new CustomOverridesService(appManager: $appManager);
+        $customOverridesSvc = $serverContainer->get(CustomOverridesService::class);
         $customOverridesSvc->ensureExists();
         \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
 
