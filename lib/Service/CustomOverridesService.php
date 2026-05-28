@@ -3,10 +3,13 @@
 /**
  * NL Design Custom Overrides Service.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Service
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
@@ -65,13 +68,22 @@ class CustomOverridesService
     private IAppManager $appManager;
 
     /**
+     * The CSS parser service (shared :root-block parsing, avoids duplication).
+     *
+     * @var CssParserService
+     */
+    private CssParserService $cssParser;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager $appManager The app manager.
+     * @param IAppManager      $appManager The app manager.
+     * @param CssParserService $cssParser  CSS parser for :root block extraction.
      */
-    public function __construct(IAppManager $appManager)
+    public function __construct(IAppManager $appManager, CssParserService $cssParser)
     {
         $this->appManager = $appManager;
+        $this->cssParser  = $cssParser;
     }//end __construct()
 
     /**
@@ -144,7 +156,7 @@ class CustomOverridesService
      */
     public function write(array $tokens): void
     {
-        $validated = $this->filterEditable($tokens);
+        $validated = $this->filterEditable(tokens: $tokens);
 
         $this->writeFile(tokens: $validated);
 
@@ -227,7 +239,7 @@ class CustomOverridesService
             return $header.':root {}'.PHP_EOL;
         }
 
-        $lines = $this->buildDeclarationLines($tokens);
+        $lines = $this->buildDeclarationLines(tokens: $tokens);
 
         return $header.':root {'.PHP_EOL.implode(PHP_EOL, $lines).PHP_EOL.'}'.PHP_EOL;
     }//end buildCss()
@@ -245,7 +257,12 @@ class CustomOverridesService
     {
         $lines = [];
         foreach ($tokens as $name => $value) {
-            $safeValue = str_replace(["\n", "\r", ';'], '', $value);
+            // Reject any value containing CSS injection characters.
+            if (preg_match('/[{};]|\/\*|\*\//', $value) === 1) {
+                continue;
+            }
+
+            $safeValue = str_replace(["\n", "\r", ';', '{', '}', '/*', '*/'], '', $value);
             $safeName  = preg_replace('/[^a-zA-Z0-9\-]/', '', $name);
             $lines[]   = '  '.$safeName.': '.$safeValue.';';
         }
@@ -256,6 +273,8 @@ class CustomOverridesService
     /**
      * Parse CSS custom property declarations from a :root {} block.
      *
+     * Delegates to CssParserService to avoid duplicating the parse logic.
+     *
      * @param string $css The raw CSS string.
      *
      * @return array<string, string> Map of token name => value.
@@ -264,22 +283,7 @@ class CustomOverridesService
      */
     private function parseDeclarations(string $css): array
     {
-        $tokens = [];
-
-        // Extract the :root block.
-        if (preg_match('/:root\s*\{([^}]*)\}/s', $css, $rootMatch) !== 1) {
-            return $tokens;
-        }
-
-        $block = $rootMatch[1];
-
-        // Match each declaration: --name: value.
-        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $block, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $tokens[trim($match[1])] = trim($match[2]);
-        }
-
-        return $tokens;
+        return $this->cssParser->parseRootBlock(css: $css);
     }//end parseDeclarations()
 
     /**

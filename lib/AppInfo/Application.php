@@ -3,10 +3,13 @@
 /**
  * NL Design Application Bootstrap.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Application
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
@@ -20,7 +23,6 @@ namespace OCA\NLDesign\AppInfo;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Themes\NLDesignTheme;
-use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -54,6 +56,8 @@ class Application extends App implements IBootstrap
      * @return void
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
      */
     public function register(IRegistrationContext $context): void
     {
@@ -96,14 +100,13 @@ class Application extends App implements IBootstrap
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
 
         // 1. Resolve which design system this token set uses.
-        $appManager     = $serverContainer->get(IAppManager::class);
-        $dsService      = new DesignSystemService(appManager: $appManager);
+        $dsService      = $serverContainer->get(DesignSystemService::class);
         $tokenSetMeta   = $dsService->getTokenSetMeta($tokenSet);
         $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
         $designSystem   = $dsService->getDesignSystem($designSystemId);
 
         // 2. Load design system stylesheets in declared order.
-        //    For "none" (stock Nextcloud) this array is empty — no CSS loads.
+        // For "none" (stock Nextcloud) this array is empty — no CSS loads.
         foreach ($designSystem['stylesheets'] as $stylesheet) {
             \OCP\Util::addStyle(application: self::APP_ID, file: $stylesheet);
         }
@@ -114,7 +117,7 @@ class Application extends App implements IBootstrap
         }
 
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
-        $customOverridesSvc = new CustomOverridesService(appManager: $appManager);
+        $customOverridesSvc = $serverContainer->get(CustomOverridesService::class);
         $customOverridesSvc->ensureExists();
         \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
 

@@ -3,10 +3,13 @@
 /**
  * NL Design — Design System Service.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Service
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
@@ -90,7 +93,7 @@ class DesignSystemService
         }
 
         $path = $this->getAppPath().'/design-systems.json';
-        $this->designSystems = $this->readJsonManifest($path);
+        $this->designSystems = $this->readJsonManifest(path: $path);
 
         return $this->designSystems;
     }//end getDesignSystems()
@@ -135,8 +138,8 @@ class DesignSystemService
     public function getTokenSetMeta(string $tokenSetId): array
     {
         if ($this->tokenSetMeta === null) {
-            $path               = $this->getAppPath().'/token-sets.json';
-            $this->tokenSetMeta = $this->readJsonManifest($path);
+            $path = $this->getAppPath().'/token-sets.json';
+            $this->tokenSetMeta = $this->readJsonManifest(path: $path);
         }
 
         return $this->tokenSetMeta[$tokenSetId] ?? [];
@@ -146,6 +149,8 @@ class DesignSystemService
      * Get all design systems as a flat list (for API responses).
      *
      * @return array<array{id: string, name: string, description: string, stylesheets: string[]}> List of design systems.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */
     public function getDesignSystemsList(): array
     {

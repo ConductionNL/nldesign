@@ -7,7 +7,9 @@ enriched_date: 2026-03-20
 # Show Menu Labels Specification
 
 ## Purpose
-Defines the "Show Menu Labels" feature that replaces app menu icons in the Nextcloud header with text labels. When enabled, the header navigation displays application names (e.g. "Files", "Mail", "Calendar") instead of icons, improving discoverability and accessibility for users unfamiliar with Nextcloud's icon-based navigation. This feature aligns with Dutch government UX guidelines that prioritize clarity and readability over icon recognition.
+Defines the "Show Menu Labels" feature that replaces app menu icons in the Nextcloud header with text labels.
+
+@e2e exclude Backend/CSS spec — scenarios cover IConfig storage, PHP boot-time CSS injection, CSS typography/layout rules, and API internals; the admin checkbox UI surface is covered by admin-settings tests. When enabled, the header navigation displays application names (e.g. "Files", "Mail", "Calendar") instead of icons, improving discoverability and accessibility for users unfamiliar with Nextcloud's icon-based navigation. This feature aligns with Dutch government UX guidelines that prioritize clarity and readability over icon recognition.
 
 ## Requirements
 

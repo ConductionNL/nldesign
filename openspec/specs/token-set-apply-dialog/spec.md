@@ -19,6 +19,7 @@ Selecting a different NL Design token set from the selector MUST open the apply 
 - AND the dropdown MUST NOT visually change to "utrecht" until the admin confirms or cancels
 
 #### Scenario: Admin selects the same token set that is already active
+@e2e exclude Browser <select> onChange does not fire when the same option is re-selected — the behaviour is inherent to the browser and does not require a UI assertion.
 - GIVEN the current token set is "utrecht"
 - WHEN the admin selects "utrecht" again
 - THEN the apply dialog MUST NOT open
@@ -34,6 +35,7 @@ The dialog MUST compare the resolved current values — what the browser is actu
 - AND the 36 unchanged tokens MUST NOT appear in the dialog
 
 #### Scenario: Current value is from custom-overrides.css
+@e2e exclude Requires known custom-overrides.css content — environment state not guaranteed.
 - GIVEN `custom-overrides.css` sets `--color-primary: #AA0000`
 - AND the new token set (utrecht) would contribute `--color-primary: #CC0000` (via the --nldesign-* mapping chain)
 - WHEN the dialog opens
@@ -41,6 +43,7 @@ The dialog MUST compare the resolved current values — what the browser is actu
 - AND the new column MUST show `#CC0000`
 
 #### Scenario: Resolved value is obtained from CSS custom property API
+@e2e exclude Internal JS implementation detail (getComputedStyle) — not testable via DOM.
 - GIVEN the admin has the settings page open
 - WHEN the dialog opens
 - THEN the "current" values MUST be read using `getComputedStyle(document.documentElement).getPropertyValue('--color-X')`
@@ -55,6 +58,7 @@ Every token row in the dialog MUST have a checkbox. All checkboxes MUST be check
 - THEN all 8 checkboxes MUST be checked
 
 #### Scenario: Admin unchecks a row
+@e2e exclude Requires dialog + live preview interaction and verifying custom-overrides.css content — covered by dialog-cancel flow in token-set-apply-dialog spec-coverage.
 - GIVEN the dialog is open
 - WHEN the admin unchecks the row for `--color-primary`
 - THEN `--color-primary` MUST be excluded from the values written to `custom-overrides.css`
@@ -66,6 +70,7 @@ Every token row in the dialog MUST have a checkbox. All checkboxes MUST be check
 - THEN all checkboxes MUST be set to checked or unchecked respectively
 
 ### Requirement: Live Preview in Dialog
+@e2e exclude Live preview via inline style injection — requires specific token values to assert; checking/unchecking interactions covered indirectly by checkbox-presence tests.
 Checked rows MUST update the live page preview immediately as the admin checks and unchecks them, so they can see the effect before confirming.
 
 #### Scenario: Admin checks a row
@@ -88,6 +93,7 @@ Checked rows MUST update the live page preview immediately as the admin checks a
 - AND the token-set dropdown MUST remain on its previous value
 
 ### Requirement: Apply Action
+@e2e exclude Clicking Apply POSTs to /api/overrides and changes IConfig token_set — mutates shared env custom-overrides.css and active token set.
 Clicking **Apply** MUST write only the checked token values to `custom-overrides.css` and close the dialog.
 
 #### Scenario: Admin applies selected changes
@@ -112,6 +118,7 @@ Clicking **Apply** MUST write only the checked token values to `custom-overrides
 - AND no pre-existing custom override MUST be lost
 
 ### Requirement: Token Set Applied Together With Overrides
+@e2e exclude Requires Apply click and IConfig/filesystem verification — mutates shared env.
 Clicking **Apply** MUST both write the checked token values to `custom-overrides.css` AND save the selected token set as the new active base layer. The NL Design token set CSS file is NOT injected directly by the dialog — it is registered via the normal `token_set` config key and loaded on the next request as part of the standard CSS stack.
 
 #### Scenario: Active token set in config after apply

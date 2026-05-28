@@ -7,7 +7,9 @@ enriched_date: 2026-03-20
 # CSS Architecture Specification
 
 ## Purpose
-Defines the layered CSS architecture that transforms NL Design System tokens into Nextcloud-compatible theming. The architecture uses a design-system-driven approach: `design-systems.json` declares ordered stylesheet bundles, and `Application::boot()` loads the correct bundle for the active token set. Organization-specific tokens cascade correctly, incomplete token sets fall back gracefully, and NL Design System component tokens (using the `--utrecht-*` prefix) are bridged to the `--nldesign-*` namespace. The load order is critical: each layer builds on the previous one.
+Defines the layered CSS architecture that transforms NL Design System tokens into Nextcloud-compatible theming.
+
+@e2e exclude CSS-architecture / PHP boot-order spec — all scenarios describe CSS cascade layers, file load order, and server-side PHP logic with no testable UI surface in the admin settings page. The architecture uses a design-system-driven approach: `design-systems.json` declares ordered stylesheet bundles, and `Application::boot()` loads the correct bundle for the active token set. Organization-specific tokens cascade correctly, incomplete token sets fall back gracefully, and NL Design System component tokens (using the `--utrecht-*` prefix) are bridged to the `--nldesign-*` namespace. The load order is critical: each layer builds on the previous one.
 
 ## Requirements
 
@@ -366,6 +368,61 @@ Design system CSS files MUST be organized in a `css/systems/{designSystemId}/` d
 
 **Not yet implemented:**
 - All requirements in this spec are fully implemented.
+
+### ADR-CSS-001: Font Application via Body Inheritance (not universal selector)
+
+**Decision (2026-05-27):** NL Design font is applied to `body` and key Nextcloud
+containers without `!important`. Form elements (`button`, `input`, `textarea`,
+`select`, `label`) that resist inheritance are targeted explicitly without
+`!important`. The universal selector `* { font-family: ... !important }` MUST NOT
+be used because it clobbers icon fonts (Material Design Icons, Font Awesome),
+monospace fonts in code editors, and any consumer component that explicitly
+declares its own font family.
+
+**Rationale:** CSS cascade inheritance from `body` is the correct mechanism.
+Using `!important` on `*` (all elements) breaks consumer apps silently and
+violates the principle of least surprise.
+
+**References:** Issues #116, #117.
+
+### ADR-CSS-002: !important Usage Restricted to Essential Overrides
+
+**Decision (2026-05-27):** `!important` MUST only be used in two categories:
+
+1. **Essential structural rules** — rules that must win over Nextcloud's
+   own `body[data-themes]` CSS variable assignments (e.g. remapping
+   `--color-primary` to `--nldesign-color-primary`). These require
+   `!important` because Nextcloud sets the same variables with equal
+   specificity.
+
+2. **Accessibility rules** — focus outlines, contrast-critical colours.
+
+`!important` MUST NOT be used on:
+- Generic typographic preferences (font-size, line-height on h1–h6, p).
+- Layout preferences that consumer apps may legitimately override.
+- Any rule that is also set by `body` or `:root` in this app's own
+  stylesheets (redundant escalation).
+
+**Rationale:** ~280 `!important` declarations (issue #117) prevent consumer apps
+from overriding theme values even with correct specificity. Reducing this to
+essential-only allows consuming apps to use normal specificity to customise.
+
+**References:** Issues #116, #117.
+
+### ADR-CSS-003: --color-focus Semi-Transparency is a Deliberate Exception
+
+**Decision (2026-05-27):** `--nldesign-color-focus: rgba(0, 123, 199, 0.5)` uses
+an rgba (semi-transparent) value. This is a DELIBERATE EXCEPTION to the
+Conduction brand rule "solid colours only". Rationale: focus outlines must be
+visible on any background colour without requiring separate light/dark theme
+variants. The translucent value composites naturally against the element's
+background, satisfying WCAG 2.4.7 (focus visible) and 2.4.11 (focus appearance)
+on both light and dark surfaces with a single token value.
+
+**Revisit if:** the brand rule is updated to explicitly cover focus indicators,
+or if a contrast audit shows the current value fails on specific backgrounds.
+
+**References:** Issue #131.
 
 ### Standards & References
 - CSS Custom Properties (CSS Variables) specification: https://www.w3.org/TR/css-variables-1/

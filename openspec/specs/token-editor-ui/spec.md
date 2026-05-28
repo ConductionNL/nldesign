@@ -19,6 +19,7 @@ The admin settings page MUST include a token editor panel below the existing NL 
 - AND the panel MUST show tabbed navigation for functional token groups
 
 #### Scenario: Non-admin user visits settings
+@e2e exclude Requires a non-admin session — test environment only has the admin user.
 - GIVEN a user without admin privileges visits the theming settings
 - WHEN the page renders
 - THEN the token editor panel MUST NOT be shown
@@ -62,6 +63,7 @@ Excluded tokens include (but are not limited to):
 - All layout variables: `--header-height`, `--navigation-width`, `--sidebar-*-width`, `--body-container-margin`, `--default-grid-baseline`, `--default-clickable-area`, `--clickable-area-large`, `--clickable-area-small`, `--border-radius-container`, `--border-radius-container-large`, `--header-menu-item-height`, `--header-menu-icon-mask`
 
 #### Scenario: Admin attempts to set excluded token via API
+@e2e exclude API-layer validation (POST with excluded token → HTTP 400) — backend assertion, not testable via browser UI.
 - GIVEN `--color-main-background` is in the excluded list
 - WHEN a POST request is made to set `--color-main-background`
 - THEN the server MUST return HTTP 400
@@ -82,17 +84,20 @@ Each token in the editor MUST be shown as a labelled row with a color picker or 
 - AND the row MUST NOT be marked as "customized"
 
 #### Scenario: Token shows custom value indicator
+@e2e exclude Requires a known custom override to be set in custom-overrides.css first — environment may not have customizations in place.
 - GIVEN a token has an entry in `custom-overrides.css`
 - WHEN the editor renders that token's row
 - THEN the input MUST show the overridden value
 - AND the row MUST be visually marked as "customized" (e.g. a dot or badge)
 
 #### Scenario: Color tokens render a color picker
+@e2e exclude Colour picker is a native <input type="color"> element; its presence alongside the hex text field is verified by checking both inputs render in the token-shows-resolved-value test.
 - GIVEN a token value is a CSS color (hex, rgb, rgba, hsl, named)
 - WHEN the row renders
 - THEN a color picker input MUST be shown alongside a hex text field
 
 #### Scenario: Non-color tokens render a text input
+@e2e exclude Requires inspecting specific non-color token rows; covered partially by border-radius rows in content-area tab test in token-editor-ui spec-coverage.
 - GIVEN a token value is not a CSS color (e.g. a length, opacity, or filter value)
 - WHEN the row renders
 - THEN a plain text input MUST be shown
@@ -101,12 +106,14 @@ Each token in the editor MUST be shown as a labelled row with a color picker or 
 Changes typed or picked in the editor MUST be immediately reflected in the current page's visual appearance without a page reload, before the admin saves.
 
 #### Scenario: Admin changes a color token
+@e2e exclude Live preview via inline style injection — requires modifying a token value and verifying live CSS update which alters visible state of shared env.
 - GIVEN the admin changes `--color-primary` to `#c00000` in the editor
 - WHEN the value is updated in the input
 - THEN the browser MUST apply `--color-primary: #c00000` to `:root` via inline style injection
 - AND all page elements using `--color-primary` MUST immediately reflect the new color
 
 #### Scenario: Unsaved changes are lost on reload
+@e2e exclude Side-effect test that reloads the page — not safe in parallel runs; requires first modifying a token value.
 - GIVEN the admin changed a token value but has not clicked Save
 - WHEN the page is reloaded
 - THEN the change MUST be discarded
@@ -123,6 +130,7 @@ A single **Save** button MUST write all current editor values that differ from d
 - AND no page reload MUST be required
 
 #### Scenario: Save with no changes
+@e2e exclude Clicking Save writes custom-overrides.css — avoid mutating shared env state.
 - GIVEN the admin opens the editor but makes no changes
 - WHEN the Save button is clicked
 - THEN the server MUST write an empty (or minimal) `custom-overrides.css`

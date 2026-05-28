@@ -9,7 +9,7 @@ style('nldesign', 'admin');
 ?>
 
 <div id="nldesign-settings" class="section"
-	 data-token-sets="<?php p(json_encode($_['tokenSets'])); ?>"
+	 data-token-sets="<?php p(json_encode($_['tokenSets'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>"
 	 data-current-token-set="<?php p($_['currentTokenSet']); ?>">
 	<div class="nldesign-settings-header">
 		<h2><?php p($l->t('NL Design System Theme')); ?></h2>

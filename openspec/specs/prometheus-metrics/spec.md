@@ -7,7 +7,9 @@ enriched_date: 2026-03-20
 # Prometheus Metrics Endpoint
 
 ## Purpose
-Expose application metrics in Prometheus text exposition format at `GET /api/metrics` for monitoring, alerting, and operational dashboards. The nldesign app is a CSS-only theming layer with no database tables, so metrics focus on configuration state (active token set, custom overrides count, theming sync operations) and standard application health signals.
+Expose application metrics in Prometheus text exposition format at `GET /api/metrics` for monitoring, alerting, and operational dashboards.
+
+@e2e exclude API/backend metrics spec — all scenarios describe HTTP response format, metric values, and controller dependency injection; no admin UI surface. The nldesign app is a CSS-only theming layer with no database tables, so metrics focus on configuration state (active token set, custom overrides count, theming sync operations) and standard application health signals.
 
 ## Requirements
 

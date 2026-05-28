@@ -7,7 +7,9 @@ enriched_date: 2026-03-20
 # Theming Sync Specification
 
 ## Purpose
-Defines how the NL Design app synchronizes design token values with Nextcloud's built-in theming system. When a token set includes theming metadata (primary color, background color, logo, background image), the app can update Nextcloud's `ThemingDefaults` and `ImageManager` to ensure consistency between the NL Design CSS layer and Nextcloud's core theming (which controls background images, server branding, and email templates). This prevents a split-brain state where CSS tokens show one color scheme but Nextcloud's internal theming references another.
+Defines how the NL Design app synchronizes design token values with Nextcloud's built-in theming system.
+
+@e2e exclude Backend/API theming-sync spec — scenarios cover PHP service logic, validation methods, IConfig/ImageManager API calls, and route config; the frontend dialog surface is covered by theming-sync-dialog tests. When a token set includes theming metadata (primary color, background color, logo, background image), the app can update Nextcloud's `ThemingDefaults` and `ImageManager` to ensure consistency between the NL Design CSS layer and Nextcloud's core theming (which controls background images, server branding, and email templates). This prevents a split-brain state where CSS tokens show one color scheme but Nextcloud's internal theming references another.
 
 ## Requirements
 

@@ -587,15 +587,7 @@ input[type="radio"]:checked {
    TYPOGRAPHY — Component Token Mapping
    ============================================ */
 
-/* Apply NL Design typography */
-body,
-#body-user,
-#body-login,
-#body-public {
-	font-family: var(--nldesign-font-family) !important;
-}
-
-/* Headings */
+/* Headings — use !important to win over Nextcloud's high-specificity defaults */
 h1 {
 	font-size: var(--nldesign-component-heading-1-font-size) !important;
 	font-weight: var(--nldesign-component-heading-1-font-weight) !important;
@@ -818,24 +810,23 @@ img {
 }
 
 /* ============================================
-   FORCE FONT APPLICATION
+   FONT APPLICATION
    ============================================ */
 
-/* Apply font to absolutely everything */
-* {
-	font-family: var(--nldesign-font-family) !important;
-}
-
-/* Ensure font loads in all contexts */
-body *,
-#app *,
-#content *,
-.app-content *,
-#header *,
-.modal-container *,
-.tooltip *,
-.popover * {
-	font-family: var(--nldesign-font-family) !important;
+/* Apply NL Design font to body — child elements inherit via CSS cascade.
+ * We do NOT use * { font-family: ... !important } here because that would
+ * clobber icon fonts (e.g. Material Design Icons, Font Awesome), monospace
+ * fonts in code editors, and any component that explicitly declares its own
+ * font-family. Inheritance from body is the correct approach.
+ * (ADR decision: prefer cascade inheritance over universal forced override) */
+body,
+#body-user,
+#body-login,
+#body-public,
+#app,
+#content,
+.app-content {
+	font-family: var(--nldesign-font-family);
 }
 
 /* ============================================

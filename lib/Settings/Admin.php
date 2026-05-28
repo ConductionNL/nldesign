@@ -3,10 +3,13 @@
 /**
  * NL Design Admin Settings.
  *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
  * @category Settings
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link     https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
@@ -60,17 +63,26 @@ class Admin implements ISettings
     private IAppManager $appManager;
 
     /**
+     * The token set service.
+     *
+     * @var TokenSetService
+     */
+    private TokenSetService $tokenSetService;
+
+    /**
      * Constructor.
      *
-     * @param IConfig     $config     The config service.
-     * @param IL10N       $l          The localization service.
-     * @param IAppManager $appManager The app manager.
+     * @param IConfig         $config          The config service.
+     * @param IL10N           $l               The localization service.
+     * @param IAppManager     $appManager      The app manager.
+     * @param TokenSetService $tokenSetService The token set service.
      */
-    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager)
+    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager, TokenSetService $tokenSetService)
     {
-        $this->config     = $config;
-        $this->l          = $l;
-        $this->appManager = $appManager;
+        $this->config          = $config;
+        $this->l               = $l;
+        $this->appManager      = $appManager;
+        $this->tokenSetService = $tokenSetService;
     }//end __construct()
 
     /**
@@ -82,8 +94,7 @@ class Admin implements ISettings
      */
     public function getForm(): TemplateResponse
     {
-        $tokenSetService = new TokenSetService(appManager: $this->appManager);
-        $tokenSets       = $tokenSetService->getAvailableTokenSets();
+        $tokenSets = $this->tokenSetService->getAvailableTokenSets();
 
         $currentTokenSet = $this->config->getAppValue(
             Application::APP_ID,

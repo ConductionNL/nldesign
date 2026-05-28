@@ -7,6 +7,8 @@ status: implemented
 ## Purpose
 Updates the existing nl-design shared spec to reflect expanded token set support and component-level tokens.
 
+@e2e exclude CSS-variable / delta spec — scenarios describe CSS variable usage rules and component-token prefix conventions; no distinct testable UI surface beyond what admin-settings tests cover.
+
 ## MODIFIED Requirements
 
 ### Requirement: Supported Token Sets
