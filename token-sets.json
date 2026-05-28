@@ -203,7 +203,8 @@
 		"theming": {
 			"primary_color": "#4376fc",
 			"background_color": "#FFFFFF"
-		}
+		},
+		"note": "primary_color #4376fc is legacy Conduction cobalt (retired 2026-05-13) — verify with municipality upstream"
 	},
 	{
 		"id": "noordoostpolder",
