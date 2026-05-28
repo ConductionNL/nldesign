@@ -6,11 +6,12 @@
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
- * @category Settings
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link     https://github.com/ConductionNL/nldesign
+ * @category  Settings
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://github.com/ConductionNL/nldesign
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
@@ -23,22 +24,22 @@ namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\TokenSetService;
-use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
 use OCP\IL10N;
-use OCP\Settings\ISettings;
+use OCP\Settings\IDelegatedSettings;
 
 /**
  * Admin settings form for NL Design.
  *
  * Provides the configuration interface for selecting design token sets.
+ * Implements IDelegatedSettings so AuthorizedAdminSetting can reference this class.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
  */
-class Admin implements ISettings
+class Admin implements IDelegatedSettings
 {
 
     /**
@@ -56,13 +57,6 @@ class Admin implements ISettings
     private IL10N $l;
 
     /**
-     * The app manager.
-     *
-     * @var IAppManager
-     */
-    private IAppManager $appManager;
-
-    /**
      * The token set service.
      *
      * @var TokenSetService
@@ -74,14 +68,12 @@ class Admin implements ISettings
      *
      * @param IConfig         $config          The config service.
      * @param IL10N           $l               The localization service.
-     * @param IAppManager     $appManager      The app manager.
      * @param TokenSetService $tokenSetService The token set service.
      */
-    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager, TokenSetService $tokenSetService)
+    public function __construct(IConfig $config, IL10N $l, TokenSetService $tokenSetService)
     {
-        $this->config          = $config;
-        $this->l               = $l;
-        $this->appManager      = $appManager;
+        $this->config = $config;
+        $this->l      = $l;
         $this->tokenSetService = $tokenSetService;
     }//end __construct()
 
@@ -149,4 +141,40 @@ class Admin implements ISettings
     {
         return 50;
     }//end getPriority()
+
+    /**
+     * Get the display name for this delegated settings section.
+     *
+     * Returns null so only the section name is displayed (no sub-name).
+     *
+     * @return string|null The settings display name, or null.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+     */
+    public function getName(): ?string
+    {
+        return null;
+    }//end getName()
+
+    /**
+     * Get the list of authorized app config keys this setting may modify.
+     *
+     * Returns the nldesign app config keys that admin-delegated users
+     * are allowed to modify through this settings panel.
+     *
+     * @return array<string, string[]> The authorized app config map.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+     */
+    public function getAuthorizedAppConfig(): array
+    {
+        return [
+            Application::APP_ID => [
+                '/token_set/',
+                '/hide_slogan/',
+                '/show_menu_labels/',
+                '/theming_syncs_total/',
+            ],
+        ];
+    }//end getAuthorizedAppConfig()
 }//end class
