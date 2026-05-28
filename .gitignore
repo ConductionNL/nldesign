@@ -10,6 +10,7 @@
 
 # Build artifacts
 /js/
+!/js/admin.js
 /build/
 /dist/
 

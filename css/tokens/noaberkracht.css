@@ -99,13 +99,13 @@
 	--nldesign-conduction-download-card-border-radius: 22px;
 	--nldesign-conduction-logo-header-inline-size: 130px;
 	--nldesign-conduction-logo-header-block-size: 75px;
-	--nldesign-conduction-logo-header-background-image: url('https://werkenbijnoaberkracht.nl/assets/img/base/logo.png');
+	--nldesign-conduction-logo-header-background-image: url('../../../img/logos/noaberkracht.svg');
 	--nldesign-conduction-logo-footer-inline-size: 150px;
 	--nldesign-conduction-logo-footer-block-size: 87px;
-	--nldesign-conduction-logo-footer-background-image: url('https://werkenbijnoaberkracht.nl/assets/img/base/logo.png');
+	--nldesign-conduction-logo-footer-background-image: url('../../../img/logos/noaberkracht.svg');
 	--nldesign-conduction-logo-navbar-inline-size: 69px;
 	--nldesign-conduction-logo-navbar-block-size: 43px;
-	--nldesign-conduction-logo-navbar-background-image: url('https://werkenbijnoaberkracht.nl/assets/img/base/logo.png');
+	--nldesign-conduction-logo-navbar-background-image: url('../../../img/logos/noaberkracht.svg');
 	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-box-shadow: inset 0 -4px {noaberkracht.color.yellow.47}; */
 	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-mobile-box-shadow: inset 4px 0 {noaberkracht.color.yellow.47}; */
 	--nldesign-conduction-primary-top-nav-dropdown-border-style: solid;

@@ -97,10 +97,10 @@
 	--nldesign-conduction-download-card-border-radius: 0px;
 	--nldesign-conduction-logo-header-inline-size: 150px;
 	--nldesign-conduction-logo-header-block-size: 36px;
-	--nldesign-conduction-logo-header-background-image: url('https://www.tubbergen.nl/sites/all/themes/tubbergen/logo.svg');
+	--nldesign-conduction-logo-header-background-image: url('../../../img/logos/tubbergen.svg');
 	--nldesign-conduction-logo-navbar-inline-size: 150px;
 	--nldesign-conduction-logo-navbar-block-size: 50px;
-	--nldesign-conduction-logo-navbar-background-image: url('https://www.tubbergen.nl/sites/all/themes/tubbergen/logo.svg');
+	--nldesign-conduction-logo-navbar-background-image: url('../../../img/logos/tubbergen.svg');
 	--nldesign-conduction-primary-top-nav-current-background-color: unset;
 	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-box-shadow: inset 0 -4px {tubbergen.color.primary}; */
 	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-mobile-box-shadow: inset 4px 0 {tubbergen.color.primary}; */
