@@ -93,13 +93,13 @@
 	--nldesign-conduction-download-card-border-radius: 0px;
 	--nldesign-conduction-logo-header-inline-size: 80px;
 	--nldesign-conduction-logo-header-block-size: 37px;
-	--nldesign-conduction-logo-header-background-image: url('https://gemeente.leiden.nl/typo3conf/ext/leiden_template/Resources/Public/Images/logo_leiden.svg');
+	--nldesign-conduction-logo-header-background-image: url('../../../img/logos/leiden.svg');
 	--nldesign-conduction-logo-footer-inline-size: 120px;
 	--nldesign-conduction-logo-footer-block-size: 100px;
-	--nldesign-conduction-logo-footer-background-image: url('https://gemeente.leiden.nl/typo3conf/ext/leiden_template/Resources/Public/Images/logo_leiden.svg');
+	--nldesign-conduction-logo-footer-background-image: url('../../../img/logos/leiden.svg');
 	--nldesign-conduction-logo-navbar-inline-size: 80px;
 	--nldesign-conduction-logo-navbar-block-size: 45px;
-	--nldesign-conduction-logo-navbar-background-image: url('https://gemeente.leiden.nl/typo3conf/ext/leiden_template/Resources/Public/Images/logo_leiden.svg');
+	--nldesign-conduction-logo-navbar-background-image: url('../../../img/logos/leiden.svg');
 	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-box-shadow: inset 0 -4px {leiden.color.white.100}; */
 	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-mobile-box-shadow: inset 4px 0 {leiden.color.white.100}; */
 	--nldesign-conduction-primary-top-nav-item-padding: 18px;
