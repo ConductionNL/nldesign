@@ -118,7 +118,7 @@
 	--nldesign-conduction-primary-top-nav-padding-block-start: 16px;
 	--nldesign-conduction-secondary-top-nav-background-color: transparent;
 	--nldesign-conduction-secondary-top-nav-current-background-color: unset;
-	--nldesign-conduction-secondary-top-nav-current-box-shadow: inset 0 -4px {xxllnc.color.primary};
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-secondary-top-nav-current-box-shadow: inset 0 -4px {xxllnc.color.primary}; */
 	--nldesign-conduction-secondary-top-nav-font-weight: 400;
 	--nldesign-conduction-secondary-top-nav-item-padding: 18px;
 	--nldesign-conduction-secondary-top-nav-padding-inline-end: 16px;
@@ -141,7 +141,7 @@
 	--nldesign-conduction-pagination-current-page-text-decoration: unset;
 	--nldesign-conduction-pagination-page-hover-text-decoration: unset;
 	--nldesign-conduction-pagination-page-hover-text-decoration-thickness: 0px;
-	--nldesign-conduction-input-select-border: 1px solid {xxllnc.color.grey.92};
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-input-select-border: 1px solid {xxllnc.color.grey.92}; */
 	--nldesign-conduction-input-select-border-focus: unset;
 	--nldesign-conduction-table-wrapper-scroll-button-border-style: solid;
 	--nldesign-conduction-tabs-tab-background-color: transparent;
@@ -160,9 +160,9 @@
 	--nldesign-conduction-tooltip-border-radius: 0px;
 	--nldesign-conduction-tooltip-z-index: 9999;
 	--nldesign-component-badge-counter-border-radius: 50%;
-	--nldesign-component-badge-background-color: {xxllnc.color.black.16} ;
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-component-badge-background-color: {xxllnc.color.black.16}; */
 	--nldesign-component-badge-border-radius: 10000px;
-	--nldesign-component-badge-color: {xxllnc.color.white.95} ;
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-component-badge-color: {xxllnc.color.white.95}; */
 	--nldesign-component-button-border-radius: 16px;
 	--nldesign-component-button-font-size: inherit;
 	--nldesign-component-button-font-weight: inherit;
