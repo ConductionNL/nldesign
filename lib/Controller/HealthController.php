@@ -22,6 +22,7 @@ namespace OCA\NLDesign\Controller;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IConfig;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 
@@ -38,11 +39,13 @@ class HealthController extends Controller
      * @param string          $appName The app name.
      * @param IRequest        $request The request object.
      * @param LoggerInterface $logger  Logger for error reporting.
+     * @param IConfig         $config  The Nextcloud config service.
      */
     public function __construct(
         string $appName,
         IRequest $request,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly IConfig $config
     ) {
         parent::__construct(appName: $appName, request: $request);
 
@@ -55,8 +58,6 @@ class HealthController extends Controller
      *
      * @NoCSRFRequired
      *
-     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Server::get() is the Nextcloud API for container access
-     *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-3
      */
     #[PublicPage]
@@ -68,8 +69,7 @@ class HealthController extends Controller
         // NL Design is CSS-only, no database tables.
         // Check that the token set config is accessible.
         try {
-            $config   = \OCP\Server::get(\OCP\IConfig::class);
-            $tokenSet = $config->getAppValue('nldesign', 'token_set', 'rijkshuisstijl');
+            $tokenSet = $this->config->getAppValue('nldesign', 'token_set', 'rijkshuisstijl');
             $checks['configuration'] = 'degraded';
             if ($tokenSet !== '') {
                 $checks['configuration'] = 'ok';

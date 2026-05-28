@@ -63,17 +63,26 @@ class Admin implements ISettings
     private IAppManager $appManager;
 
     /**
+     * The token set service.
+     *
+     * @var TokenSetService
+     */
+    private TokenSetService $tokenSetService;
+
+    /**
      * Constructor.
      *
-     * @param IConfig     $config     The config service.
-     * @param IL10N       $l          The localization service.
-     * @param IAppManager $appManager The app manager.
+     * @param IConfig         $config          The config service.
+     * @param IL10N           $l               The localization service.
+     * @param IAppManager     $appManager      The app manager.
+     * @param TokenSetService $tokenSetService The token set service.
      */
-    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager)
+    public function __construct(IConfig $config, IL10N $l, IAppManager $appManager, TokenSetService $tokenSetService)
     {
-        $this->config     = $config;
-        $this->l          = $l;
-        $this->appManager = $appManager;
+        $this->config          = $config;
+        $this->l               = $l;
+        $this->appManager      = $appManager;
+        $this->tokenSetService = $tokenSetService;
     }//end __construct()
 
     /**
@@ -85,8 +94,7 @@ class Admin implements ISettings
      */
     public function getForm(): TemplateResponse
     {
-        $tokenSetService = new TokenSetService(appManager: $this->appManager);
-        $tokenSets       = $tokenSetService->getAvailableTokenSets();
+        $tokenSets = $this->tokenSetService->getAvailableTokenSets();
 
         $currentTokenSet = $this->config->getAppValue(
             Application::APP_ID,
