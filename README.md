@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="img/app-store.svg" alt="NL Design System Theme logo" width="80" height="80">
+</p>
+
 # NL Design System Theme for Nextcloud
 
 Apply Dutch government design tokens (NL Design System) to your Nextcloud instance with open-source fonts and components.
