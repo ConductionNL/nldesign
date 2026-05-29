@@ -10,7 +10,7 @@ The NL Design app now includes **344 icons** and **6 logos** from the Amsterdam 
 
 ## Available Icons
 
-View all available icons in the [icon documentation](https://github.com/ConductionNL/nldesign/blob/main/img/ICONS.md) or browse the files in:
+View all available icons in the [icon documentation](https://codeberg.org/Conduction/nldesign/src/branch/main/img/ICONS.md) or browse the files in:
 - **Icons:** `img/icons/` (344 SVG files)
 - **Logos:** `img/logos/` (6 SVG files)
 
