@@ -40,7 +40,7 @@ The app includes **344 icons** and **6 logos** from the Amsterdam Design System:
 1. Clone or download this app to your Nextcloud apps directory:
    ```bash
    cd /path/to/nextcloud/apps
-   git clone https://github.com/ConductionNL/nldesign.git
+   git clone https://codeberg.org/Conduction/nldesign.git
    ```
 
 2. Install npm dependencies (for fonts and icons):
