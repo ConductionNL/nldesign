@@ -10,11 +10,11 @@
 		"design-tokens",
 		"theming"
 	],
-	"homepage": "https://github.com/ConductionNL/nldesign",
+	"homepage": "https://codeberg.org/Conduction/nldesign",
 	"license": "AGPL-3.0-or-later",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ConductionNL/nldesign.git"
+		"url": "https://codeberg.org/Conduction/nldesign.git"
 	},
 	"scripts": {
 		"build": "npm run build:fonts && npm run build:icons",

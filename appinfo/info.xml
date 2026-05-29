@@ -21,11 +21,11 @@ Configure which token set to use in the admin settings.
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
 	<category>customization</category>
-	<website>https://github.com/ConductionNL/nldesign</website>
-	<bugs>https://github.com/ConductionNL/nldesign/issues</bugs>
-	<repository type="git">https://github.com/ConductionNL/nldesign.git</repository>
+	<website>https://codeberg.org/Conduction/nldesign</website>
+	<bugs>https://codeberg.org/Conduction/nldesign/issues</bugs>
+	<repository type="git">https://codeberg.org/Conduction/nldesign.git</repository>
 
-	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/master/img/screenshot.png</screenshot>
 
 	<dependencies>
 		<php min-version="8.3"/>
