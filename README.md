@@ -1,4 +1,9 @@
-# NL Design System Theme for Nextcloud
+> [!IMPORTANT]
+> ## 🚚 This repository has moved to Codeberg
+>
+> Active development now happens at **https://codeberg.org/Conduction/nldesign**.
+> This GitHub mirror is read-only — issues, pull requests, and new commits should go to Codeberg.
+> Update your remote with: `git remote set-url origin https://codeberg.org/Conduction/nldesign`# NL Design System Theme for Nextcloud
 
 Apply Dutch government design tokens (NL Design System) to your Nextcloud instance with open-source fonts and components.
 
