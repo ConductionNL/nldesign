@@ -29,7 +29,7 @@
 - [x] **T27**: Create Layer 5 — implement `:focus-visible` rule with `outline: 2px solid var(--nldesign-color-focus)` and `outline-offset: 2px` — `css/theme.css`
 - [x] **T28**: Create Layer 5 — map textbox component tokens to input/textarea/select selectors including hover, focus, invalid, and disabled states — `css/theme.css`
 - [x] **T29**: Create Layer 5 — apply heading component tokens (h1–h6 font-size/weight/line-height/color) and paragraph tokens — `css/theme.css`
-- [x] **T30**: Create Layer 5 — exclude `.mydash-widget` and `.tile-widget` from solid background rules in dashboard panel selectors — `css/theme.css`
+- [x] **T30**: Create Layer 5 — exclude `.launchpad-widget` and `.tile-widget` from solid background rules in dashboard panel selectors — `css/theme.css`
 - [x] **T31**: Create Layer 6 — map all primary-related Nextcloud variables on `:root` with `!important`; document intentionally-unmapped variables (`--color-main-background`, derivatives, dark mode filters) with explanatory comments — `css/overrides.css`
 - [x] **T32**: Create Layer 6 — map status colors (error/warning/success/info and -rgb/-hover/-element/-border variants) to `--nldesign-*` equivalents — `css/overrides.css`
 - [x] **T33**: Create Layer 6 — map border, border-radius, typography (`--font-face`), animation, placeholder, and favorite color variables; leave layout/spacing/clickable-area variables intentionally unmapped — `css/overrides.css`
@@ -37,8 +37,8 @@
 - [x] **T35**: Create Layer 7 — apply `filter: invert(1) brightness(0) contrast(100)` to `#header .header-end svg` and related icons for visibility on white header; carve out exceptions for `.avatardiv img` and `.user-status-icon svg` — `css/element-overrides.css`
 - [x] **T36**: Create Layer 7 — remove gradient masks and `mask-image` from header-end icons; force `fill: currentColor` and hide `linearGradient`/`radialGradient` elements — `css/element-overrides.css`
 - [x] **T37**: Create Layer 7 — app navigation card layout: `margin-right: 30px` on `#app-navigation`, `margin-right: 0` on `.app-navigation--close` — `css/element-overrides.css`
-- [x] **T38**: Create Layer 7 — app content card layout: `--color-main-background` background on `#app-content`; MyDash-specific transparent background overrides — `css/element-overrides.css`
-- [x] **T39**: Create Layer 7 — solid white backgrounds on panels/widgets/dashboard elements (excluding MyDash/tile-widget); remove `backdrop-filter` and `opacity` effects — `css/element-overrides.css`
+- [x] **T38**: Create Layer 7 — app content card layout: `--color-main-background` background on `#app-content`; LaunchPad-specific transparent background overrides — `css/element-overrides.css`
+- [x] **T39**: Create Layer 7 — solid white backgrounds on panels/widgets/dashboard elements (excluding LaunchPad/tile-widget); remove `backdrop-filter` and `opacity` effects — `css/element-overrides.css`
 - [x] **T40**: Create Layer 7 — text color fixes (force `--nldesign-color-text` with `:not(#header *)` exclusion); primary button text color override (`--nldesign-color-primary-text`); dropdown/popover text forced to `#000000` — `css/element-overrides.css`
 - [x] **T41**: Create Layer 7 — avatar styling: `--nldesign-color-primary` background, white text, bold, visible — `css/element-overrides.css`
 - [x] **T42**: Create Layer 7 — `#header` overflow chain: `overflow: visible` on `#header`, `overflow: hidden` on `.header-menu`, `overflow: visible` on `.header-start` — `css/element-overrides.css`

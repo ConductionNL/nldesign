@@ -125,7 +125,7 @@ This layer is the primary styling layer. It applies `--nldesign-*` tokens to act
 - **Links** — `a`, `a:hover`, `a:visited` with header exceptions
 - **Focus** — `*:focus-visible` with 2px solid outline using `--nldesign-color-focus`
 - **Typography** — `h1`–`h6`, `p` from component tokens; `font-family` on body
-- **Dashboard** — removes gradients, removes transparency, excludes `.mydash-widget` and `.tile-widget` from solid backgrounds
+- **Dashboard** — removes gradients, removes transparency, excludes `.launchpad-widget` and `.tile-widget` from solid backgrounds
 
 The theme layer uses `!important` throughout because Nextcloud's own component styles (often Vue scoped) use high-specificity or also `!important`. Without it, token-based values are silently overridden.
 
@@ -162,9 +162,9 @@ Key responsibilities:
 
 **App content as card**: `#app-content` and `.app-content` get `--color-main-background` as background (respecting dark mode) and `border-radius: var(--nldesign-border-radius)`.
 
-**MyDash exclusion**: Elements under `#app-mydash` and `body:has(#mydash-app)` get transparent backgrounds so MyDash's own widget styling is not overridden.
+**LaunchPad exclusion**: Elements under `#app-launchpad` and `body:has(#launchpad-app)` get transparent backgrounds so LaunchPad's own widget styling is not overridden.
 
-**Solid backgrounds**: Panels, widgets, and dashboard elements outside MyDash get `background: #ffffff` and `backdrop-filter: none` to prevent translucency effects.
+**Solid backgrounds**: Panels, widgets, and dashboard elements outside LaunchPad get `background: #ffffff` and `backdrop-filter: none` to prevent translucency effects.
 
 **Text color corrections**: A targeted list of element selectors (excluding `#header *`, `.tile-widget *`, and `.button-vue--vue-primary *`) forces `--nldesign-color-text`. Button text color corrections are handled separately to ensure primary button text is always `--nldesign-color-primary-text`.
 
@@ -233,7 +233,7 @@ These are never set by this app — they are read from token set files if presen
 | Override element styles from Nextcloud components | `!important` on property declarations |
 | Override `--nldesign-*` tokens between layers | Normal cascade (later layer wins on same `:root` selector) |
 | Target Nextcloud-specific structure | ID selectors (`#header`, `#app-navigation`, `#body-login`) |
-| Exclude special containers | `:not(.mydash-widget)` chaining |
+| Exclude special containers | `:not(.launchpad-widget)` chaining |
 
 The `!important` on Nextcloud CSS variable declarations in `theme.css` and `overrides.css` is required because Nextcloud's own theming system also sets these variables with `!important` on `body[data-themes]`. Without matching `!important`, the design tokens silently lose.
 
