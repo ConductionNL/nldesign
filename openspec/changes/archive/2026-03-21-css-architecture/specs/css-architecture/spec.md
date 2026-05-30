@@ -259,10 +259,10 @@ The element-overrides layer MUST apply NL Design styling to specific HTML elemen
 - AND the closed state (`.app-navigation--close`) MUST have 0 margin
 
 #### Scenario: App-specific exclusions
-- GIVEN certain apps have custom widget styling (e.g., MyDash)
+- GIVEN certain apps have custom widget styling (e.g., LaunchPad)
 - WHEN solid background rules are applied
-- THEN elements with `.mydash-widget` or `.tile-widget` classes MUST be excluded
-- AND the MyDash container MUST have transparent background
+- THEN elements with `.launchpad-widget` or `.tile-widget` classes MUST be excluded
+- AND the LaunchPad container MUST have transparent background
 - AND these exclusions MUST prevent breaking app-specific layouts
 
 ### REQ-CSS-009: Custom Overrides Layer (Layer 8)
