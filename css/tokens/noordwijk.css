@@ -8,9 +8,6 @@
  */
 
 :root {
-	/* Logo image */
-	--nldesign-logo-url: url('../img/logos/noordwijk.svg');
-
 	/* NL Design tokens */
 	--nldesign-color-error: #dc3545;
 	--nldesign-color-alert-error: #721c24;
