@@ -2,7 +2,7 @@ name: Stable Release
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -10,4 +10,5 @@ jobs:
     uses: Conduction/.github/.forgejo/workflows/release-semrel.yml@main
     with:
       app-name: nldesign
+      release-branch: master
     secrets: inherit
