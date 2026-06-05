@@ -57,6 +57,37 @@ test.describe('token-editor-ui', () => {
 	)
 
 	test(
+		// @e2e openspec/specs/token-editor-ui/spec.md#admin-selects-login-page-tab
+		'Switching tabs activates the clicked panel and hides the previous one',
+		async ({ page }) => {
+			await page.goto(THEMING_URL)
+			await page.waitForSelector('#nldesign-token-editor', { timeout: 15_000 })
+
+			// The first tab (Login page & Branding) is active by default and its
+			// panel must contain the primary-colour token rows.
+			const loginPanel = page.locator('.nldesign-tab-panel[data-panel="login"]')
+			const contentPanel = page.locator('.nldesign-tab-panel[data-panel="content"]')
+			await expect(loginPanel).toHaveClass(/active/)
+			await expect(loginPanel.locator('[data-token-row="--color-primary"]')).toHaveCount(1)
+
+			// Clicking "Content area" must activate the content panel, deactivate the
+			// login panel, and surface a content-area-only token (a border colour).
+			await page.locator('button.nldesign-tab-btn:has-text("Content area")').click()
+			await expect(contentPanel).toHaveClass(/active/)
+			await expect(loginPanel).not.toHaveClass(/active/)
+			await expect(
+				contentPanel.locator('[data-token-row="--color-border"]'),
+			).toHaveCount(1)
+
+			// The primary-colour row must NOT live in the content tab — confirming
+			// tokens belong to exactly one functional area.
+			await expect(
+				contentPanel.locator('[data-token-row="--color-primary"]'),
+			).toHaveCount(0)
+		},
+	)
+
+	test(
 		// @e2e openspec/specs/token-editor-ui/spec.md#every-editable-token-appears-in-exactly-one-tab
 		'All four tabs are rendered in token editor',
 		async ({ page }) => {
