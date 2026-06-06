@@ -50,3 +50,8 @@ bom-npm.cdx.json
 
 # Claude Code
 .claude/worktrees/
+
+# Playwright e2e run artifacts (regenerated every run; never committed)
+tests/e2e/playwright-report/
+tests/e2e/test-results/
+tests/e2e/.auth/
