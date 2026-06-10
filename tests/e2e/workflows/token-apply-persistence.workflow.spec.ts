@@ -87,8 +87,10 @@ test.describe('workflow: token-apply persistence', () => {
 		expect(persisted[TEST_TOKEN], 'override should be persisted in backend GET').toBe(TEST_VALUE)
 
 		// (a') The generated custom-overrides.css file on disk contains the declaration.
+		// It is emitted with !important so the user override wins the cascade over the
+		// nldesign design-system stylesheets and Nextcloud core theming.
 		const css = await getServedOverrideCss(page)
-		expect(css, 'custom-overrides.css should contain the saved declaration').toContain(`${TEST_TOKEN}: ${TEST_VALUE};`)
+		expect(css, 'custom-overrides.css should contain the saved declaration').toContain(`${TEST_TOKEN}: ${TEST_VALUE} !important;`)
 	})
 
 	test('after a FRESH RELOAD the editor shows the persisted override', async ({ page }) => {
@@ -105,26 +107,19 @@ test.describe('workflow: token-apply persistence', () => {
 	})
 
 	/*
-	 * BUG (flagged): the SAVED override is NOT reflected in the live CSS variable.
+	 * The SAVED override IS reflected in the live CSS variable (the "applies the
+	 * theme to the instance" promise): after saving an override for --color-primary
+	 * and reloading, getComputedStyle(:root)['--color-primary'] equals the override.
 	 *
-	 * The "applies the theme to the instance" promise: after saving an override
-	 * for --color-primary and reloading, getComputedStyle(:root)['--color-primary']
-	 * should equal the override value. It does NOT.
-	 *
-	 * Root cause (verified empirically + in source): every editable token is
-	 * re-declared with `!important` by css/systems/nldesign/{theme,overrides,
-	 * element-overrides}.css, which load when the active token set uses the
-	 * nldesign design system (the default for all sets except "nextcloud").
-	 * custom-overrides.css is loaded last but WITHOUT !important, so it loses the
-	 * cascade. Even under the stock "nextcloud" set, Nextcloud's own theming
-	 * stylesheet overrides --color-primary. Net effect: the token editor persists
-	 * overrides that have NO visible effect on the running instance for core
-	 * tokens. This is the core "applied theme not reflected" defect.
-	 *
-	 * Remove .fixme once custom-overrides.css emits !important (or the nldesign
-	 * layer stops clobbering editable tokens) so saved overrides win the cascade.
+	 * This now works because custom-overrides.css emits each user override with
+	 * `!important` (CustomOverridesService::buildDeclarationLines) and loads last,
+	 * so it wins the cascade over the nldesign design-system stylesheets
+	 * (css/systems/nldesign/{theme,overrides,element-overrides}.css — which also
+	 * use !important) and over Nextcloud's own theming stylesheet. The !important is
+	 * scoped to user-set overrides only; it does not blanket-!important the full
+	 * token registry.
 	 */
-	test.fixme('saved override is reflected in the LIVE CSS variable after reload', async ({ page }) => {
+	test('saved override is reflected in the LIVE CSS variable after reload', async ({ page }) => {
 		await openTheming(page)
 		const live = await liveCssVar(page, TEST_TOKEN)
 		expect(live.toLowerCase()).toBe(TEST_VALUE.toLowerCase())
@@ -149,6 +144,7 @@ test.describe('workflow: token-apply persistence', () => {
 
 		// The served file no longer contains the declaration.
 		const css = await getServedOverrideCss(page)
-		expect(css).not.toContain(`${TEST_TOKEN}: ${TEST_VALUE};`)
+		expect(css).not.toContain(`${TEST_TOKEN}: ${TEST_VALUE} !important;`)
+		expect(css).not.toContain(TEST_VALUE)
 	})
 })

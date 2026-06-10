@@ -50,7 +50,14 @@ class CssParserService
 
         $parsed = [];
         foreach ($matches as $match) {
-            $parsed[trim($match[1])] = trim($match[2]);
+            $value = trim($match[2]);
+
+            // Strip a trailing !important so persisted overrides (which are written
+            // with !important to win the cascade) round-trip back to the editor as
+            // the clean value the admin entered.
+            $value = trim(preg_replace('/\s*!\s*important\s*$/i', '', $value));
+
+            $parsed[trim($match[1])] = $value;
         }
 
         return $parsed;

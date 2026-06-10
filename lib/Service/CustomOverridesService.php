@@ -39,7 +39,8 @@ use RuntimeException;
  * The CSS file format is strictly controlled:
  * - Single :root {} block
  * - One declaration per line
- * - No !important (load order ensures precedence)
+ * - Each declaration carries !important so user overrides win the cascade over
+ *   the nldesign design-system stylesheets and Nextcloud core theming
  * - No selectors other than :root
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
@@ -265,8 +266,21 @@ class CustomOverridesService
 
             $safeValue = str_replace(["\n", "\r", ';', '{', '}', '/*', '*/'], '', $value);
             $safeName  = preg_replace('/[^a-zA-Z0-9\-]/', '', $name);
-            $lines[]   = '  '.$safeName.': '.$safeValue.';';
-        }
+
+            // Strip any pre-existing !important the caller may have included; it is
+            // re-applied uniformly below so the round-trip stays canonical.
+            $safeValue = trim(preg_replace('/\s*!\s*important\s*$/i', '', $safeValue));
+
+            // Emit each user override with !important so it wins the cascade.
+            // The nldesign design-system stylesheets (theme/overrides/element-overrides.css)
+            // re-declare every editable token with !important, and Nextcloud core theming
+            // also overrides tokens like --color-primary. custom-overrides.css loads last,
+            // but without !important it loses the cascade and the saved theme has no visible
+            // effect. !important here is scoped to user-set overrides only (this file only
+            // ever contains tokens the admin explicitly set in the editor), so it does not
+            // blanket-!important the full token registry.
+            $lines[] = '  '.$safeName.': '.$safeValue.' !important;';
+        }//end foreach
 
         return $lines;
     }//end buildDeclarationLines()
