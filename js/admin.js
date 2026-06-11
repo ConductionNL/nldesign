@@ -563,15 +563,21 @@ function nldesignAdminMain() {
 
 		var badgeHtml = isCustom ? '<span class="nldesign-token-custom-badge" title="' + escapeHtml(t('nldesign', 'Custom value')) + '"></span>' : '';
 
+		// Accessible name for the token inputs. The visible label lives in a
+		// sibling span (.nldesign-token-label), so associate it via aria-label
+		// to satisfy WCAG 1.3.1/4.1.2 (axe "label").
+		var inputLabel = escapeHtml(meta.label || name);
+		var pickerLabel = escapeHtml(t('nldesign', 'Colour picker for {label}', { label: meta.label || name }));
+
 		var inputHtml = '';
 		if (meta.type === 'color') {
 			var pickerVal = normaliseColorForPicker(displayVal);
 			inputHtml = '<div class="nldesign-color-input-wrap">'
-				+ '<input type="color" class="nldesign-color-picker" data-token="' + escapeHtml(name) + '" value="' + escapeHtml(pickerVal) + '">'
-				+ '<input type="text" class="nldesign-color-text" data-token="' + escapeHtml(name) + '" value="' + escapeHtml(displayVal) + '">'
+				+ '<input type="color" class="nldesign-color-picker" aria-label="' + pickerLabel + '" data-token="' + escapeHtml(name) + '" value="' + escapeHtml(pickerVal) + '">'
+				+ '<input type="text" class="nldesign-color-text" aria-label="' + inputLabel + '" data-token="' + escapeHtml(name) + '" value="' + escapeHtml(displayVal) + '">'
 				+ '</div>';
 		} else {
-			inputHtml = '<input type="text" class="nldesign-text-input" data-token="' + escapeHtml(name) + '" value="' + escapeHtml(displayVal) + '">';
+			inputHtml = '<input type="text" class="nldesign-text-input" aria-label="' + inputLabel + '" data-token="' + escapeHtml(name) + '" value="' + escapeHtml(displayVal) + '">';
 		}
 
 		return '<div class="nldesign-token-row" data-token-row="' + escapeHtml(name) + '">'

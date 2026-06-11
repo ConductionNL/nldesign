@@ -1,5 +1,6 @@
 {
     "translations": {
+        "Colour picker for {label}": "Colour picker for {label}",
         "NL design system theme": "NL Design System Theme",
         "Documentation": "Documentation",
         "Select a dutch government design token set as a base, or customize individual Nextcloud CSS tokens below.": "Select a Dutch government design token set as a base, or customize individual Nextcloud CSS tokens below.",
