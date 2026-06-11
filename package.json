@@ -17,6 +17,8 @@
 		"url": "https://codeberg.org/Conduction/nldesign.git"
 	},
 	"scripts": {
+		"test:l10n": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js",
+		"test:l10n:write": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js --write",
 		"build": "npm run build:fonts && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
