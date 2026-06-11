@@ -9,6 +9,12 @@ if (document.readyState === 'loading') {
 	nldesignAdminMain();
 }
 function nldesignAdminMain() {
+	// Pure token / colour transforms, extracted to js/lib/tokenTransforms.js so
+	// they can be unit-tested offline (tests/vitest/). Registered on
+	// window.NldesignTokenTransforms by that script (loaded before this one). The
+	// `|| {}` fallback keeps admin.js working even if the helper script is absent.
+	var TT = (typeof window !== 'undefined' && window.NldesignTokenTransforms) || {};
+
 	var settingsEl = document.getElementById('nldesign-settings');
 	var tokenSetSelect = document.getElementById('nldesign-token-set-select');
 	var hideSloganCheckbox = document.getElementById('nldesign-hide-slogan');
@@ -33,17 +39,22 @@ function nldesignAdminMain() {
 	 */
 	function getPreviewColors(tokenSetId) {
 		var ts = tokenSetsData[tokenSetId];
+		if (typeof TT.getPreviewColors === 'function') {
+			return TT.getPreviewColors(ts);
+		}
+		// Inline fallback (mirrors js/lib/tokenTransforms.js getPreviewColors).
 		var primary = (ts && ts.theming && ts.theming.primary_color) ? ts.theming.primary_color : '#333333';
-		// Compute a simple hover by darkening the hex value ~10%
-		var primaryHover = darkenHex(primary, 0.1);
-		return { primary: primary, primaryHover: primaryHover, primaryText: '#ffffff' };
+		return { primary: primary, primaryHover: darkenHex(primary, 0.1), primaryText: '#ffffff' };
 	}
 
 	/**
 	 * Darken a hex colour by the given fraction (0–1).
-	 * Returns the original colour if parsing fails.
+	 * Delegates to the extracted pure helper, with an inline fallback.
 	 */
 	function darkenHex(hex, fraction) {
+		if (typeof TT.darkenHex === 'function') {
+			return TT.darkenHex(hex, fraction);
+		}
 		var m = /^#([0-9a-fA-F]{6})$/.exec(hex);
 		if (m === null) { return hex; }
 		var r = Math.max(0, Math.round(parseInt(m[1].substring(0, 2), 16) * (1 - fraction)));
@@ -78,7 +89,7 @@ function nldesignAdminMain() {
 		}
 	}
 
-	// Design system display names
+	// Design system display names (inline fallback for designSystemLabel()).
 	var designSystemNames = {
 		'none': 'Stock Nextcloud',
 		'nldesign': 'NL Design System'
@@ -91,7 +102,7 @@ function nldesignAdminMain() {
 
 		var option = tokenSetSelect ? tokenSetSelect.querySelector('option[value="' + tokenSetId + '"]') : null;
 		var dsId = option ? (option.getAttribute('data-design-system') || 'nldesign') : 'nldesign';
-		var dsName = designSystemNames[dsId] || dsId;
+		var dsName = (typeof TT.designSystemLabel === 'function') ? TT.designSystemLabel(dsId) : (designSystemNames[dsId] || dsId);
 
 		badge.textContent = dsName;
 		badge.className = 'nldesign-badge' + (dsId === 'none' ? ' nldesign-badge--stock' : ' nldesign-badge--system');
@@ -949,16 +960,27 @@ function nldesignAdminMain() {
 	 * ========================================================================== */
 
 	function normaliseColorForPicker(value) {
-		if (value === undefined || value === null || value === '') {
-			return '#000000';
+		// The pure #RRGGBB / #RGB / empty cases are handled by the extracted
+		// helper; it returns null for values needing browser colour resolution
+		// (named colours, rgb()/hsl()), which we resolve via a canvas below.
+		if (typeof TT.normaliseColorForPicker === 'function') {
+			var pure = TT.normaliseColorForPicker(value);
+			if (pure !== null) {
+				return pure;
+			}
+		} else {
+			if (value === undefined || value === null || value === '') {
+				return '#000000';
+			}
+			var vv = value.trim();
+			if (/^#[0-9a-fA-F]{6}$/.test(vv) === true) {
+				return vv;
+			}
+			if (/^#[0-9a-fA-F]{3}$/.test(vv) === true) {
+				return '#' + vv[1] + vv[1] + vv[2] + vv[2] + vv[3] + vv[3];
+			}
 		}
-		var v = value.trim();
-		if (/^#[0-9a-fA-F]{6}$/.test(v) === true) {
-			return v;
-		}
-		if (/^#[0-9a-fA-F]{3}$/.test(v) === true) {
-			return '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
-		}
+		var v = String(value).trim();
 		try {
 			var canvas  = document.createElement('canvas');
 			canvas.width = canvas.height = 1;

@@ -9,8 +9,13 @@
 /node_modules/
 
 # Build artifacts
-/js/
+# admin.js + its extracted pure helpers (js/lib/) are hand-authored SOURCE
+# (no JS bundler in this app — served directly as <script>), so they are
+# tracked; everything else generated under js/ is ignored. Use /js/* (not
+# /js/) so git can still descend into js/lib to honour the negations.
+/js/*
 !/js/admin.js
+!/js/lib/
 /build/
 /dist/
 

@@ -1,0 +1,32 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Conduction / NL Design System Contributors
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Vitest configuration for the NL Design System app's frontend unit tests.
+ *
+ * nldesign is a CSS/PHP theming app — it has no Vue/Pinia frontend. The
+ * testable client-side logic is the set of PURE design-token / colour
+ * transforms used by the admin settings page, extracted into
+ * js/lib/tokenTransforms.js (darkenHex, getPreviewColors,
+ * normaliseColorForPicker, designSystemLabel). admin.js consumes them via the
+ * window.NldesignTokenTransforms global the helper script registers.
+ *
+ * The transforms are framework-free, so the environment is `node` and no stubs
+ * are needed. Vitest only collects tests/vitest/**.
+ */
+
+const path = require('path')
+
+module.exports = {
+	test: {
+		environment: 'node',
+		globals: false,
+		include: ['tests/vitest/**/*.spec.{js,ts}'],
+		exclude: ['tests/e2e/**', 'tests/integration/**', 'node_modules/**'],
+	},
+	resolve: {
+		alias: [
+			{ find: '@', replacement: path.resolve(__dirname, 'js') },
+		],
+	},
+}
