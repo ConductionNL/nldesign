@@ -4,7 +4,7 @@
 	<id>nldesign</id>
 	<name>NL Design System Theme</name>
 	<summary>Apply Dutch government design tokens (NL Design System) to Nextcloud</summary>
-	<description><![CDATA[> ⚠️ **Active development — not for production use yet.** This app is under active development. Although it may carry a stable release status, **please do not use it in production environments before 12 June 2026.** See the [app page on conduction.nl](https://conduction.nl/apps/nldesign) for release planning and what this app does.
+	<description><![CDATA[> ⚠️ **Active development — not for production use yet.** This app is under active development. Although it may carry a stable release status, **please do not use it in production environments before 17 June 2026.** See the [app page on conduction.nl](https://conduction.nl/apps/nldesign) for release planning and what this app does.
 
 
 This app allows you to apply NL Design System design tokens to your Nextcloud instance.
@@ -18,7 +18,7 @@ Supported design token sets:
 
 Configure which token set to use in the admin settings.
 	]]></description>
-	<version>0.1.0</version>
+	<version>0.1.1</version>
 	<licence>agpl</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
