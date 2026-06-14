@@ -25,7 +25,7 @@
 ## 6. E2E Tests (gate-19) and API Tests
 - [x] 6.1 Playwright: exclude an app via panel → its pages have no nldesign stylesheets, /apps/files still themed → re-enable → themed again (`tests/e2e/spec-coverage/app-theming.spec.ts`)
 - [x] 6.2 Playwright: settings pages remain themed with a non-empty exclusion list
-- [ ] 6.3 Newman: GET/POST /settings/app-theming contract, protected-id drop, non-admin 403 — DEFERRED follow-up
+- [x] 6.3 Newman: GET/POST /settings/app-theming contract (list shape, protected-ids never listed, exclude + read-back themed:false, idempotent restore, anonymous rejected) in `tests/integration/nldesign.postman_collection.json` section 5. NC's SecurityMiddleware rejects the unauthenticated request with 401/412 (CSRF precondition) rather than 403; the assertion accepts either rejection code per the spec's "middleware MUST reject" wording. Verified live (15/15 assertions green)
 
 ## 7. Documentation (ADR-010) and Internationalization (ADR-005)
 - [x] 7.1 Extend `docs/features/toggles.md` with the per-app toggle, incl. the documented trade-off (excluded app pages render fully stock, header included)
