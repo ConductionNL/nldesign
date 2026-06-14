@@ -841,6 +841,7 @@ function nldesignAdminMain() {
 		var html = '<div id="nldesign-apply-dialog-overlay" class="nldesign-dialog-overlay">'
 			+ '<div class="nldesign-dialog">'
 			+ '<h3>' + escapeHtml(t('nldesign', 'Apply token set: {name}').replace('{name}', newTokenSetId)) + '</h3>'
+			+ buildContrastWarningHtml(newTokenSetId)
 			+ '<p class="settings-hint">' + escapeHtml(t('nldesign', 'These values would change. check which ones to apply to your custom overrides.')) + '</p>'
 			+ '<div style="margin-bottom:8px">'
 			+ '<button class="nldesign-apply-dialog-toggle" id="nldesign-apply-select-all">' + escapeHtml(t('nldesign', 'Select all')) + '</button>'
@@ -1101,6 +1102,207 @@ function nldesignAdminMain() {
 
 	// Initialise the per-app theming panel on page load.
 	initAppTheming();
+
+	/* ==========================================================================
+	 * CUSTOM TOKEN SETS — upload / list / download / delete (eigen huisstijl)
+	 * ========================================================================== */
+
+	// Build the non-blocking contrast-warning banner for a token set, from the
+	// warnings persisted on the dropdown's data-token-sets payload.
+	function buildContrastWarningHtml(tokenSetId) {
+		var ts = tokenSetsData[tokenSetId];
+		if (!ts || !ts.warnings || ts.warnings.length === 0) {
+			return '';
+		}
+		var items = ts.warnings.map(function(w) {
+			if (w.unevaluated === true) {
+				return '<li>' + escapeHtml(t('nldesign', '{pair}: contrast could not be evaluated (non-literal colour).').replace('{pair}', w.pair)) + '</li>';
+			}
+			return '<li>' + escapeHtml(
+				t('nldesign', '{pair}: contrast {ratio}:1 is below the WCAG 2.1 AA threshold of {threshold}:1.')
+					.replace('{pair}', w.pair)
+					.replace('{ratio}', w.ratio)
+					.replace('{threshold}', w.threshold)
+			) + '</li>';
+		}).join('');
+		return '<div class="nldesign-contrast-warning" role="alert">'
+			+ '<strong>' + escapeHtml(t('nldesign', 'WCAG 2.1 AA contrast warning')) + '</strong>'
+			+ '<ul>' + items + '</ul>'
+			+ '</div>';
+	}
+
+	function initCustomTokenSets() {
+		var uploadBtn  = document.getElementById('nldesign-upload-btn');
+		var fileInput  = document.getElementById('nldesign-upload-input');
+		var nameInput  = document.getElementById('nldesign-upload-name');
+		if (uploadBtn === null || fileInput === null || nameInput === null) {
+			return;
+		}
+
+		uploadBtn.addEventListener('click', function() {
+			if (nameInput.value.trim() === '') {
+				OC.Notification.showTemporary(t('nldesign', 'Enter a token set name first.'));
+				nameInput.focus();
+				return;
+			}
+			fileInput.click();
+		});
+
+		fileInput.addEventListener('change', function(e) {
+			var file = e.target.files[0];
+			if (!file) {
+				return;
+			}
+			uploadCustomTokenSet(nameInput.value.trim(), file);
+			fileInput.value = '';
+		});
+
+		loadCustomTokenSets();
+	}
+
+	function uploadCustomTokenSet(name, file) {
+		var resultEl = document.getElementById('nldesign-upload-result');
+		var formData = new FormData();
+		formData.append('name', name);
+		formData.append('file', file);
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/tokensets/upload'), {
+			method: 'POST',
+			headers: { 'requesttoken': OC.requestToken },
+			body: formData
+		})
+		.then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+		.then(function(res) {
+			if (resultEl !== null) {
+				resultEl.style.display = 'block';
+			}
+			if (res.status >= 400) {
+				if (resultEl !== null) {
+					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
+				return;
+			}
+			var msg = t('nldesign', '{imported} tokens imported, {skipped} skipped.')
+				.replace('{imported}', res.data.imported)
+				.replace('{skipped}', (res.data.skipped || []).length);
+			if (res.data.warnings && res.data.warnings.length > 0) {
+				msg += ' ' + t('nldesign', '{count} WCAG AA contrast warning(s) — see the apply dialog.')
+					.replace('{count}', res.data.warnings.length);
+			}
+			if (resultEl !== null) {
+				resultEl.textContent = msg;
+			}
+			OC.Notification.showTemporary(t('nldesign', 'Token set uploaded. Reload the page to apply it.'));
+			loadCustomTokenSets();
+		})
+		.catch(function(err) {
+			console.error('Error uploading custom token set:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Upload failed.'));
+		});
+	}
+
+	function loadCustomTokenSets() {
+		var listEl = document.getElementById('nldesign-custom-set-list');
+		if (listEl === null) {
+			return;
+		}
+		fetch(OC.generateUrl('/apps/nldesign/settings/tokensets/custom'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderCustomSetList(listEl, (data && data.sets) || []);
+		})
+		.catch(function(err) {
+			console.error('Error loading custom token sets:', err);
+			listEl.textContent = t('nldesign', 'Failed to load custom token sets.');
+		});
+	}
+
+	function renderCustomSetList(listEl, sets) {
+		listEl.innerHTML = '';
+		if (sets.length === 0) {
+			var empty = document.createElement('p');
+			empty.className = 'settings-hint';
+			empty.textContent = t('nldesign', 'No custom token sets uploaded yet.');
+			listEl.appendChild(empty);
+			return;
+		}
+
+		sets.forEach(function(set) {
+			var row = document.createElement('div');
+			row.className = 'nldesign-custom-set-row';
+
+			var nameSpan = document.createElement('span');
+			nameSpan.className = 'nldesign-custom-set-name';
+			nameSpan.textContent = set.name || set.id;
+			row.appendChild(nameSpan);
+
+			var badge = document.createElement('span');
+			badge.className = 'nldesign-badge';
+			if (set.warnings && set.warnings.length > 0) {
+				badge.classList.add('nldesign-badge--warning');
+				badge.textContent = t('nldesign', 'Contrast warning');
+			} else {
+				badge.textContent = t('nldesign', 'WCAG AA OK');
+			}
+			row.appendChild(badge);
+
+			var downloadBtn = document.createElement('button');
+			downloadBtn.type = 'button';
+			downloadBtn.className = 'nldesign-btn nldesign-btn--small';
+			downloadBtn.textContent = t('nldesign', 'Download');
+			downloadBtn.addEventListener('click', function() {
+				window.location = OC.generateUrl('/apps/nldesign/settings/tokensets/custom/' + encodeURIComponent(set.id) + '/export');
+			});
+			row.appendChild(downloadBtn);
+
+			var deleteBtn = document.createElement('button');
+			deleteBtn.type = 'button';
+			deleteBtn.className = 'nldesign-btn nldesign-btn--small nldesign-btn--danger';
+			deleteBtn.textContent = t('nldesign', 'Delete');
+			deleteBtn.addEventListener('click', function() {
+				deleteCustomSet(set.id, set.name || set.id);
+			});
+			row.appendChild(deleteBtn);
+
+			listEl.appendChild(row);
+		});
+	}
+
+	function deleteCustomSet(id, name) {
+		OC.dialogs.confirm(
+			t('nldesign', 'Delete the custom token set "{name}"? If it is currently active, the theme will fall back to Nextcloud.').replace('{name}', name),
+			t('nldesign', 'Delete custom token set'),
+			function(confirmed) {
+				if (confirmed !== true) {
+					return;
+				}
+				fetch(OC.generateUrl('/apps/nldesign/settings/tokensets/custom/' + encodeURIComponent(id)), {
+					method: 'DELETE',
+					headers: { 'requesttoken': OC.requestToken }
+				})
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (data && data.status === 'ok') {
+						OC.Notification.showTemporary(t('nldesign', 'Custom token set deleted. Reload the page to refresh the dropdown.'));
+						loadCustomTokenSets();
+					} else {
+						OC.Notification.showTemporary(t('nldesign', 'Failed to delete custom token set.'));
+					}
+				})
+				.catch(function(err) {
+					console.error('Error deleting custom token set:', err);
+					OC.Notification.showTemporary(t('nldesign', 'Failed to delete custom token set.'));
+				});
+			},
+			true
+		);
+	}
+
+	// Initialise the custom token set panel on page load.
+	initCustomTokenSets();
 
 }
 })();

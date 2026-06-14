@@ -225,3 +225,69 @@
 .nldesign-info a:hover {
 	text-decoration: underline;
 }
+
+/* Custom token sets (eigen huisstijl) */
+.nldesign-upload-form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 12px 0;
+}
+
+.nldesign-upload-name {
+	min-width: 220px;
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+}
+
+.nldesign-import-result {
+	margin: 8px 0;
+	padding: 8px 12px;
+	border-radius: var(--border-radius);
+	background: var(--color-background-dark);
+	color: var(--color-main-text);
+}
+
+.nldesign-custom-set-list {
+	margin-top: 12px;
+}
+
+.nldesign-custom-set-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+	border-top: 1px solid var(--color-border);
+}
+
+.nldesign-custom-set-name {
+	font-weight: bold;
+	flex: 1 1 auto;
+}
+
+.nldesign-badge--warning {
+	background: var(--color-warning, #c7a008);
+	color: var(--color-primary-text, #fff);
+}
+
+.nldesign-btn--danger {
+	color: var(--color-error, #c7000a);
+}
+
+.nldesign-contrast-warning {
+	margin: 8px 0 12px;
+	padding: 10px 12px;
+	border-left: 4px solid var(--color-warning, #c7a008);
+	background: var(--color-background-dark);
+	border-radius: var(--border-radius);
+}
+
+.nldesign-contrast-warning ul {
+	margin: 4px 0 0;
+	padding-left: 18px;
+}

@@ -39,6 +39,29 @@ style('nldesign', 'admin');
 		<span id="nldesign-design-system-badge" class="nldesign-badge"></span>
 	</div>
 
+	<!-- Custom token set upload (eigen huisstijl) -->
+	<div class="nldesign-custom-token-sets" id="nldesign-custom-token-sets" style="margin-top:2em">
+		<h3><?php p($l->t('Custom token sets')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Upload your own house style as a token set, either as an NL Design CSS file (--nldesign-* variables) or a W3C Design Tokens JSON file. Uploaded sets appear in the dropdown above.')); ?>
+		</p>
+		<div class="nldesign-upload-form">
+			<label for="nldesign-upload-name"><?php p($l->t('Token set name')); ?></label>
+			<input type="text" id="nldesign-upload-name" class="nldesign-upload-name"
+				   placeholder="<?php p($l->t('e.g. Gemeente Voorbeeld')); ?>"
+				   maxlength="64">
+			<input type="file" id="nldesign-upload-input" accept=".css,.json,.tokens.json" style="display:none">
+			<button type="button" id="nldesign-upload-btn" class="button">
+				<?php p($l->t('Choose file and upload')); ?>
+			</button>
+		</div>
+		<div id="nldesign-upload-result" class="nldesign-import-result" role="status" aria-live="polite" style="display:none"></div>
+		<div id="nldesign-custom-set-list" class="nldesign-custom-set-list" role="group"
+			 aria-label="<?php p($l->t('Custom token sets')); ?>">
+			<p class="settings-hint"><?php p($l->t('Loading custom token sets…')); ?></p>
+		</div>
+	</div>
+
 	<!-- Hide Slogan/Payoff Option -->
 	<div class="nldesign-option">
 		<input type="checkbox"
