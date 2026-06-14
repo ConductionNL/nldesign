@@ -1,0 +1,240 @@
+<?php
+
+/**
+ * NL Design Custom Token Set Validator.
+ *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+ */
+
+declare(strict_types=1);
+
+namespace OCA\NLDesign\Service;
+
+/**
+ * Validates and re-serialises an uploaded custom token set.
+ *
+ * The served CSS file is always generated from the parsed-and-whitelisted
+ * declarations, never from the raw upload bytes, so only `--nldesign-*` /
+ * `--{slug}-*` custom property declarations inside a single `:root` block can
+ * ever reach a file that is served to anonymous users on the login page.
+ *
+ * Validation is intentionally strict: a custom token set is a whole huisstijl
+ * expressed in the published `--nldesign-*` vocabulary. Arbitrary CSS, external
+ * resources, and selectors other than `:root` are rejected.
+ *
+ * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+ */
+class CustomTokenSetValidator
+{
+
+    /**
+     * Maximum accepted upload size in bytes (512 KB).
+     *
+     * @var int
+     */
+    public const MAX_SIZE = (512 * 1024);
+
+    /**
+     * The CSS file header comment written to every generated set.
+     *
+     * @var string
+     */
+    private const CSS_HEADER = '/* NL Design — custom token set. Generated from an admin upload. Do not edit manually. */';
+
+    /**
+     * Error thrown when validation fails. Carries an HTTP status hint.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $lastError = null;
+
+    /**
+     * Validate a list of token declarations against the whitelist.
+     *
+     * Splits the declarations into accepted (`--nldesign-*` / `--{slug}-*`)
+     * and skipped (everything else, e.g. Nextcloud `--color-*` variables that
+     * belong in custom-overrides.css). Any accepted declaration whose value
+     * contains a forbidden construct is a hard failure (sets lastError).
+     *
+     * @param array<string, string> $declarations Parsed token name => value map.
+     * @param string                 $slug         The set slug for `--{slug}-*` extras.
+     *
+     * @return array{accepted: array<string, string>, skipped: string[]}|null
+     *     The split, or null on hard failure (see getLastError()).
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     */
+    public function validateDeclarations(array $declarations, string $slug): ?array
+    {
+        $this->lastError = null;
+
+        $accepted = [];
+        $skipped  = [];
+
+        $namePattern = '/^--(nldesign|'.preg_quote($slug, '/').')-[a-z0-9-]+$/';
+
+        foreach ($declarations as $name => $value) {
+            if (preg_match($namePattern, $name) !== 1) {
+                // Not part of the supported vocabulary — counted, not written.
+                $skipped[] = $name;
+                continue;
+            }
+
+            if ($this->isForbiddenValue(value: $value) === true) {
+                $this->lastError = [
+                    'status'   => 422,
+                    'message'  => 'Property '.$name.' contains a forbidden value (external resource, @import, expression, or markup).',
+                    'property' => $name,
+                ];
+
+                return null;
+            }
+
+            $accepted[$name] = trim($value);
+        }//end foreach
+
+        if (empty($accepted) === true) {
+            $this->lastError = [
+                'status'  => 422,
+                'message' => 'No --nldesign-* declarations found in the uploaded token set.',
+            ];
+
+            return null;
+        }
+
+        return [
+            'accepted' => $accepted,
+            'skipped'  => $skipped,
+        ];
+    }//end validateDeclarations()
+
+    /**
+     * Determine whether a CSS string contains a selector other than `:root`.
+     *
+     * Used as a pre-parse structural guard: the upload MUST reduce to exactly
+     * one `:root { … }` rule. Any at-rule (@import, @font-face, @media) or any
+     * other selector block is rejected.
+     *
+     * @param string $css The raw CSS upload.
+     *
+     * @return bool True when a disallowed selector or at-rule is present.
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     */
+    public function hasDisallowedSelector(string $css): bool
+    {
+        // Strip comments so a commented-out selector does not trip the guard.
+        $stripped = preg_replace('#/\*.*?\*/#s', '', $css);
+
+        // Any at-rule is forbidden (covers @import, @font-face, @media, @charset).
+        if (preg_match('/@[a-z-]+/i', $stripped) === 1) {
+            return true;
+        }
+
+        // Find every block selector (text preceding a `{`). The only one allowed
+        // is `:root` (optionally `html` is NOT allowed — strictly :root).
+        if (preg_match_all('/([^{}]+)\{/', $stripped, $matches) > 0) {
+            foreach ($matches[1] as $selector) {
+                $selector = trim($selector);
+                if ($selector !== '' && strcasecmp($selector, ':root') !== 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }//end hasDisallowedSelector()
+
+    /**
+     * Determine whether a single declaration value is forbidden.
+     *
+     * Rejects: @import, expression(, javascript:, raw markup (`<`), and url()
+     * with a scheme or host. Relative url('../../img/…') and data:image/svg+xml
+     * URIs are permitted, matching bundled logo usage.
+     *
+     * @param string $value The declaration value.
+     *
+     * @return bool True when the value must be rejected.
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     */
+    public function isForbiddenValue(string $value): bool
+    {
+        $lower = strtolower($value);
+
+        if (str_contains($lower, '@import') === true
+            || str_contains($lower, 'expression(') === true
+            || str_contains($lower, 'javascript:') === true
+            || str_contains($value, '<') === true
+            || str_contains($value, '{') === true
+            || str_contains($value, '}') === true
+        ) {
+            return true;
+        }
+
+        // Inspect every url(...) occurrence.
+        if (preg_match_all('/url\(\s*([\'"]?)(.*?)\1\s*\)/i', $value, $urls, PREG_SET_ORDER) > 0) {
+            foreach ($urls as $url) {
+                $target = trim($url[2]);
+
+                // data:image/svg+xml and data:image/png are allowed.
+                if (preg_match('#^data:image/(svg\+xml|png|jpeg|gif|webp)#i', $target) === 1) {
+                    continue;
+                }
+
+                // A scheme or protocol-relative or host reference is forbidden.
+                if (preg_match('#^([a-z][a-z0-9+.-]*:|//)#i', $target) === 1) {
+                    return true;
+                }
+
+                // Bare relative paths (../img/..., img/...) are allowed.
+            }
+        }
+
+        return false;
+    }//end isForbiddenValue()
+
+    /**
+     * Re-serialise accepted declarations into a canonical CSS file body.
+     *
+     * The output is generated from the parsed declarations only — the raw
+     * upload bytes never reach the served file.
+     *
+     * @param array<string, string> $declarations Accepted token name => value map.
+     *
+     * @return string The canonical CSS file content.
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     */
+    public function serialize(array $declarations): string
+    {
+        $lines = [];
+        foreach ($declarations as $name => $value) {
+            $lines[] = '  '.$name.': '.trim($value).';';
+        }
+
+        return self::CSS_HEADER.PHP_EOL.':root {'.PHP_EOL.implode(PHP_EOL, $lines).PHP_EOL.'}'.PHP_EOL;
+    }//end serialize()
+
+    /**
+     * Get the last hard-failure error, if any.
+     *
+     * @return array<string, mixed>|null The error with a `status` and `message`.
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     */
+    public function getLastError(): ?array
+    {
+        return $this->lastError;
+    }//end getLastError()
+}//end class

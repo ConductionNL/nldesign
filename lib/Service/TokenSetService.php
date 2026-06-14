@@ -23,18 +23,23 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\Service;
 
+use OCA\NLDesign\AppInfo\Application;
 use OCP\App\IAppManager;
+use OCP\IConfig;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service for filesystem-based token set discovery.
  *
- * Discovers available token sets by scanning css/tokens/ directory
- * and reading token-sets.json for metadata.
+ * Discovers available token sets by scanning css/tokens/ directory and merging
+ * metadata from token-sets.json (shipped sets) and the custom_token_sets
+ * appconfig manifest (admin-uploaded custom-* sets).
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
+ * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.3
  */
 class TokenSetService
 {
@@ -47,13 +52,31 @@ class TokenSetService
     private IAppManager $appManager;
 
     /**
+     * The config service for reading the custom-set appconfig manifest.
+     *
+     * @var IConfig
+     */
+    private IConfig $config;
+
+    /**
+     * The logger for the defensive id-collision warning.
+     *
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager $appManager The app manager for resolving paths.
+     * @param IAppManager     $appManager The app manager for resolving paths.
+     * @param IConfig         $config     The config service.
+     * @param LoggerInterface $logger     The logger.
      */
-    public function __construct(IAppManager $appManager)
+    public function __construct(IAppManager $appManager, IConfig $config, LoggerInterface $logger)
     {
         $this->appManager = $appManager;
+        $this->config     = $config;
+        $this->logger     = $logger;
     }//end __construct()
 
     /**
@@ -81,8 +104,11 @@ class TokenSetService
         $tokensDir    = $appPath.'/css/tokens';
         $manifestPath = $appPath.'/token-sets.json';
 
-        // Read metadata from token-sets.json.
+        // Read metadata from token-sets.json (shipped sets).
         $metadata = $this->readManifest(manifestPath: $manifestPath);
+
+        // Read metadata for admin-uploaded custom sets from appconfig.
+        $customMetadata = $this->readCustomManifest();
 
         // Scan filesystem for actual CSS files.
         $tokenSets = [];
@@ -90,8 +116,21 @@ class TokenSetService
             $files = scandir($tokensDir);
             foreach ($files as $file) {
                 if (str_ends_with($file, '.css') === true) {
-                    $id       = basename($file, '.css');
-                    $meta     = $metadata[$id] ?? null;
+                    $id        = basename($file, '.css');
+                    $isCustom  = str_starts_with($id, 'custom-');
+
+                    // Shipped manifest takes precedence on an (impossible) id
+                    // collision; log it so the operator can investigate.
+                    $shippedMeta = $metadata[$id] ?? null;
+                    $customMeta  = $customMetadata[$id] ?? null;
+                    if ($shippedMeta !== null && $customMeta !== null) {
+                        $this->logger->warning(
+                            'NL Design token set id "'.$id.'" exists in both the shipped manifest and the custom manifest; using the shipped metadata.'
+                        );
+                        $customMeta = null;
+                    }
+
+                    $meta     = ($shippedMeta ?? $customMeta);
                     $tokenSet = [
                         'id'            => $id,
                         'name'          => $meta['name'] ?? $this->formatName(id: $id),
@@ -102,10 +141,17 @@ class TokenSetService
                         $tokenSet['theming'] = $meta['theming'];
                     }
 
+                    if ($isCustom === true && $shippedMeta === null) {
+                        $tokenSet['custom'] = true;
+                        if (isset($meta['warnings']) === true && is_array($meta['warnings']) === true) {
+                            $tokenSet['warnings'] = $meta['warnings'];
+                        }
+                    }
+
                     $tokenSets[] = $tokenSet;
-                }
-            }
-        }
+                }//end if
+            }//end foreach
+        }//end if
 
         // Sort alphabetically by name.
         usort($tokenSets, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
@@ -169,6 +215,29 @@ class TokenSetService
 
         return $indexed;
     }//end readManifest()
+
+    /**
+     * Read the custom-set appconfig manifest, indexed by id.
+     *
+     * The manifest is a JSON object keyed by the custom set id, so it is
+     * already in the indexed shape readManifest() produces for the shipped
+     * list. Malformed JSON degrades to an empty map.
+     *
+     * @return array<string, array<string, mixed>> Custom metadata indexed by id.
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.3
+     */
+    private function readCustomManifest(): array
+    {
+        $raw     = $this->config->getAppValue(Application::APP_ID, 'custom_token_sets', '{}');
+        $decoded = json_decode($raw, true);
+
+        if (is_array($decoded) === false) {
+            return [];
+        }
+
+        return $decoded;
+    }//end readCustomManifest()
 
     /**
      * Format a kebab-case id into a display name.
