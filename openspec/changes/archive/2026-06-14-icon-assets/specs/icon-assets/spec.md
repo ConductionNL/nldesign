@@ -31,6 +31,7 @@ The app MUST bundle the Amsterdam Design System icon set as individual SVG files
 Other Nextcloud apps MUST be able to consume the icons through Nextcloud's standard image-path API — `IURLGenerator::imagePath('nldesign', 'icons/{Name}.svg')` (or `OC.imagePath('nldesign', 'icons/{Name}.svg')` in frontend code) — without any nldesign-specific bootstrap. This URL contract only holds while the nldesign app is enabled; consumer documentation MUST state that consumers need a fallback (or an app dependency) for instances without nldesign.
 
 #### Scenario: Icon resolves through the image-path API
+@e2e exclude server-side image-path contract — static asset served by the NC app-image route, not a UI flow; verified by curl against the dev container and by the inventory regression test (tests/Unit/IconAssetsTest.php)
 - GIVEN the nldesign app is enabled
 - WHEN a page references the URL produced by `imagePath('nldesign', 'icons/Search.svg')`
 - THEN the server MUST return the SVG with an image SVG content type and an HTTP 200
