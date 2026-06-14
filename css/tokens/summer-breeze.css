@@ -12,15 +12,15 @@
  */
 
 :root {
-	/* Primary — a calm, legible sky blue (Acato accent). */
-	--summer-color-primary: #2874d1;
+	/* Primary — Conduction cobalt (Dutch-flag blue brand). */
+	--summer-color-primary: #21468b;
 	--summer-color-primary-text: #ffffff;
-	--summer-color-primary-hover: #1f5fb0;
-	--summer-color-primary-light: #e8f1fb;
-	--summer-color-primary-light-hover: #d8e8f8;
+	--summer-color-primary-hover: #1b3a75;
+	--summer-color-primary-light: #eef2f8;
+	--summer-color-primary-light-hover: #dce3f0;
 
-	/* Surfaces — light and airy. */
-	--summer-color-background-plain: #eaf2fb;
+	/* Surfaces — light grey page, white panels (the original Acato look). */
+	--summer-color-background-plain: #f7f7f7;
 	--summer-color-surface: #ffffff;
 	--summer-color-background-hover: #eef5fb;
 	--summer-color-background-dark: #e7eef6;
