@@ -272,6 +272,35 @@ button,
 	border-radius: var(--summer-radius-large) !important;
 }
 
+/* ============================================
+   DASHBOARD — one uniform bordered card per grid cell
+   Every dashboard widget (KPIs, charts, lists) is the same rounded bordered
+   card. The shell IS the card; inner content that carries its own card chrome
+   (stat blocks) renders flush so it never reads as a card-in-card.
+   ============================================ */
+.cn-dashboard-grid .cn-widget-wrapper,
+.cn-dashboard-grid .cn-widget-wrapper--borderless {
+	background: var(--summer-color-surface) !important;
+	border: 1px solid var(--summer-color-border) !important;
+	border-radius: var(--summer-radius-large) !important;
+	box-shadow: var(--summer-shadow-panel) !important;
+}
+
+/* Previously-borderless widgets shipped zero content padding — restore it so
+   the content sits inside the card with consistent breathing room. */
+.cn-dashboard-grid .cn-widget-wrapper--borderless .cn-widget-wrapper__content {
+	padding: 16px !important;
+}
+
+/* Self-carded inner content (stat blocks) goes flush inside the card. */
+.cn-dashboard-grid .cn-stats-block {
+	background: transparent !important;
+	border: none !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+}
+
 /* The actions toolbar itself is transparent (no pale rounded box) so the
    search + toggle sit directly on the page, like the docudesk header. */
 .cn-actions-bar {
