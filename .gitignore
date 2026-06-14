@@ -8,6 +8,12 @@
 /vendor/
 /node_modules/
 
+# Runtime theme state — written by the NL Design theme editor at runtime
+# (CustomOverridesService). ensureExists() recreates an empty :root {} on
+# boot, so it must never be committed (a stray test value here restyles the
+# whole instance the moment the app is activated).
+/css/custom-overrides.css
+
 # Build artifacts
 # admin.js + its extracted pure helpers (js/lib/) are hand-authored SOURCE
 # (no JS bundler in this app — served directly as <script>), so they are
