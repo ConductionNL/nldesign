@@ -25,5 +25,10 @@ return [
 		['name' => 'overrides#importOverrides', 'url' => '/settings/overrides/import', 'verb' => 'POST'],
 		// Token set preview for apply dialog.
 		['name' => 'settings#getTokenSetPreview', 'url' => '/settings/tokenset-preview/{tokenSetId}', 'verb' => 'GET'],
+		// Custom token set upload lifecycle.
+		['name' => 'customTokenSet#upload', 'url' => '/settings/tokensets/upload', 'verb' => 'POST'],
+		['name' => 'customTokenSet#list', 'url' => '/settings/tokensets/custom', 'verb' => 'GET'],
+		['name' => 'customTokenSet#export', 'url' => '/settings/tokensets/custom/{id}/export', 'verb' => 'GET'],
+		['name' => 'customTokenSet#delete', 'url' => '/settings/tokensets/custom/{id}', 'verb' => 'DELETE'],
 	],
 ];

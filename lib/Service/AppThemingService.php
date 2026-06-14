@@ -126,7 +126,10 @@ class AppThemingService
     {
         $clean = [];
         foreach ($appIds as $appId) {
-            if (is_string($appId) === false || $appId === '') {
+            // Coerce defensively — callers may pass a loosely-typed payload
+            // (e.g. decoded JSON) even though the signature promises string[].
+            $appId = (string) $appId;
+            if ($appId === '') {
                 continue;
             }
 
