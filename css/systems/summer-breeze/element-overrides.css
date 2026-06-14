@@ -265,6 +265,13 @@ button,
 	border-bottom: none !important;
 }
 
+/* Widget panels are rounded like every other surface (CnWidgetWrapper itself
+   ships with square corners). overflow:hidden on the wrapper clips the body to
+   match. Borderless widgets have no visible edge so the radius is a no-op. */
+.cn-widget-wrapper {
+	border-radius: var(--summer-radius-large) !important;
+}
+
 /* The actions toolbar itself is transparent (no pale rounded box) so the
    search + toggle sit directly on the page, like the docudesk header. */
 .cn-actions-bar {
