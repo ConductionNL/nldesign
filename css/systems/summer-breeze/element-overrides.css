@@ -37,15 +37,26 @@ body,
    NAVIGATION — pale-blue gradient floating card
    ============================================ */
 
+/* Only the OUTER navigation container is the floating card. */
 #app-navigation,
-.app-navigation,
-#app-navigation-vue {
+.app-navigation {
 	background: var(--summer-color-surface) !important;
 	border-right: none !important;
 	border-radius: var(--summer-radius-panel) !important;
 	box-shadow: var(--summer-shadow-panel) !important;
 	margin: 8px !important;
 	padding: 8px !important;
+}
+
+/* The inner Vue nav content sits flush inside the card — repeating the card
+   chrome (radius + shadow + margin) here is what produced the double border. */
+#app-navigation-vue,
+.app-navigation__content {
+	background: transparent !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 /* Collapsed navigation keeps no right margin. */
@@ -252,6 +263,13 @@ button,
 .cn-detail-card__header,
 .cardHeader {
 	border-bottom: none !important;
+}
+
+/* Widget panels are rounded like every other surface (CnWidgetWrapper itself
+   ships with square corners). overflow:hidden on the wrapper clips the body to
+   match. Borderless widgets have no visible edge so the radius is a no-op. */
+.cn-widget-wrapper {
+	border-radius: var(--summer-radius-large) !important;
 }
 
 /* The actions toolbar itself is transparent (no pale rounded box) so the
