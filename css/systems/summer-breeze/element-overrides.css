@@ -1,0 +1,176 @@
+/**
+ * Summer Breeze — element-level overrides.
+ *
+ * The signature airy chrome that the core variable mapping (theme.css) cannot
+ * express on its own: a pale-blue gradient navigation, floating rounded cards
+ * with soft shadows, a solid pill for the active menu item, and pill-shaped
+ * inputs. These reach Nextcloud core selectors directly with high specificity.
+ */
+
+/* ============================================
+   LAYOUT — let the pale background breathe
+   ============================================ */
+
+/* Strip Nextcloud's default wavy background image so the soft pale-blue
+   surface shows through consistently across dashboard, files and login. */
+body,
+#body-user,
+#body-login,
+.body-login-container,
+#content,
+.app-dashboard,
+#app-content,
+#app-content-wrapper {
+	background-image: none !important;
+}
+
+#content,
+#content-vue,
+#app-content,
+#app-content-vue,
+.app-content {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* ============================================
+   NAVIGATION — pale-blue gradient floating card
+   ============================================ */
+
+#app-navigation,
+.app-navigation,
+#app-navigation-vue {
+	background: var(--summer-gradient-nav) !important;
+	border-right: none !important;
+	border-radius: var(--summer-radius-panel) !important;
+	box-shadow: var(--summer-shadow-panel) !important;
+	margin: 8px !important;
+	padding: 8px !important;
+}
+
+/* Collapsed navigation keeps no right margin. */
+#app-navigation.app-navigation--close,
+.app-navigation.app-navigation--close {
+	margin-right: 0 !important;
+}
+
+/* Navigation entries — rounded, roomy, gentle hover. */
+.app-navigation-entry,
+.app-navigation-entry-link {
+	border-radius: var(--summer-radius) !important;
+}
+
+.app-navigation-entry:hover {
+	background-color: var(--summer-color-background-hover) !important;
+}
+
+/* Active entry — solid primary pill with white text and a soft lift. */
+#app-navigation .app-navigation-entry.active,
+#app-navigation .app-navigation-entry--active,
+.app-navigation-entry.active,
+.app-navigation-entry--active {
+	background: var(--summer-color-primary) !important;
+	border-left: none !important;
+	border-radius: var(--summer-radius) !important;
+	box-shadow: var(--summer-shadow-popout) !important;
+}
+
+#app-navigation .app-navigation-entry.active a,
+#app-navigation .app-navigation-entry.active .app-navigation-entry-link,
+.app-navigation-entry.active a,
+.app-navigation-entry--active a {
+	color: var(--summer-color-primary-text) !important;
+	font-weight: 600 !important;
+}
+
+/* ============================================
+   CARDS & PANELS — white, rounded, soft shadow
+   ============================================ */
+
+.cn-card,
+.cn-object-card,
+.panel,
+.widget,
+.dashboard-widget,
+.dashboard-panel,
+.app-content-list-item {
+	background: var(--summer-color-surface) !important;
+	border: 1px solid var(--summer-color-border) !important;
+	border-radius: var(--summer-radius-large) !important;
+	box-shadow: var(--summer-shadow-panel) !important;
+	transition: box-shadow var(--summer-animation-quick) ease,
+	            transform var(--summer-animation-quick) ease !important;
+}
+
+.cn-card:hover,
+.cn-object-card:hover,
+.dashboard-widget:hover {
+	box-shadow: var(--summer-shadow-panel-hover) !important;
+}
+
+/* ============================================
+   INPUTS & SEARCH — pill-shaped, gentle
+   ============================================ */
+
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+.input-field__input {
+	border-radius: var(--summer-radius-pill) !important;
+	border: 1px solid var(--summer-color-border) !important;
+	box-shadow: var(--summer-shadow-panel) !important;
+	transition: border-color var(--summer-animation-quick) ease,
+	            box-shadow var(--summer-animation-quick) ease !important;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus {
+	border-color: var(--summer-color-primary) !important;
+	box-shadow: 0 0 0 2px var(--summer-color-focus) !important;
+}
+
+/* ============================================
+   BUTTONS — rounded, smooth, no hard edges
+   ============================================ */
+
+.button-vue,
+button,
+.button {
+	border-radius: var(--summer-radius) !important;
+	transition: background-color var(--summer-animation-quick) ease,
+	            box-shadow var(--summer-animation-quick) ease !important;
+}
+
+/* ============================================
+   STATUS BADGES — pastel pills
+   ============================================ */
+
+.cn-status-badge {
+	border-radius: var(--summer-radius-pill) !important;
+}
+
+/* ============================================
+   DASHBOARD — greeting legibility
+   ============================================ */
+
+/* The "Good morning" greeting normally sits on Nextcloud's dark wavy
+   background image (white text). With that image stripped and a pale surface
+   underneath, the greeting must switch to the dark navy text colour. */
+#app-dashboard > h2,
+.app-dashboard > h2 {
+	color: var(--summer-color-text) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================
+   HEADER — keep the calm primary bar
+   ============================================ */
+
+#header,
+header#header {
+	background-color: var(--summer-color-primary) !important;
+	box-shadow: none !important;
+}
