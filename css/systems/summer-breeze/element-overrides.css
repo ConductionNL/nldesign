@@ -166,6 +166,51 @@ button,
 }
 
 /* ============================================
+   NC-VUE COMPONENT BRIDGE
+   Make the Cn* component library render the airy Acato look natively, so a
+   plain app (CnIndexPage etc.) matches the bespoke docudesk design.
+   ============================================ */
+
+/* Content table card — rounded panel with a soft shadow (the floating-card
+   look). Scoped to the table container so the cards-grid is left to lay out
+   its own individual .cn-card children. */
+.cn-table-container {
+	border-radius: var(--summer-radius-panel) !important;
+	box-shadow: var(--summer-shadow-panel) !important;
+	border: 1px solid var(--summer-color-border) !important;
+}
+
+/* Segmented view toggle (Cards/Table, Tiles/List) → white thumb on a neutral
+   grey track, replacing the stock solid-primary active segment. */
+.cn-actions-bar__view-toggle {
+	background: var(--summer-color-toggle-track) !important;
+	border-radius: var(--summer-radius-pill) !important;
+	padding: 4px !important;
+	gap: 0 !important;
+}
+
+.cn-actions-bar__view-toggle .checkbox-radio-switch {
+	margin: 0 !important;
+}
+
+.cn-actions-bar__view-toggle .checkbox-content--button-variant {
+	background: transparent !important;
+	border: none !important;
+	border-radius: var(--summer-radius-pill) !important;
+	color: var(--summer-color-text) !important;
+	box-shadow: none !important;
+	min-height: 32px !important;
+}
+
+/* The selected segment becomes the white "thumb". */
+.cn-actions-bar__view-toggle .checkbox-radio-switch__input:checked + .checkbox-content {
+	background: var(--summer-color-surface) !important;
+	color: var(--summer-color-text) !important;
+	border-radius: var(--summer-radius-pill) !important;
+	box-shadow: var(--summer-shadow-thumb) !important;
+}
+
+/* ============================================
    HEADER — keep the calm primary bar
    ============================================ */
 
