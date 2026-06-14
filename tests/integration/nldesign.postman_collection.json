@@ -220,6 +220,119 @@
 			]
 		},
 		{
+			"name": "4. Custom token sets (upload/list/export/delete)",
+			"item": [
+				{
+					"name": "Upload custom set ERROR: no file -> 400 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('no file -> 400', () => pm.response.to.have.status(400));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "POST", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Newman No File", "type": "text" } ] }, "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "Upload custom set ERROR: no name -> 400 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('no name -> 400', () => pm.response.to.have.status(400));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "POST", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "file", "src": "tests/integration/fixtures/newman-valid.css", "type": "file" } ] }, "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "Upload valid CSS custom set (200, id + imported + warnings)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('upload (200)', () => pm.response.to.have.status(200));",
+						"const b = pm.response.json();",
+						"pm.test('id is namespaced custom-*', () => pm.expect(b.id).to.match(/^custom-/));",
+						"pm.test('imported count present', () => pm.expect(b.imported).to.be.a('number'));",
+						"pm.test('skipped is an array', () => pm.expect(b.skipped).to.be.an('array'));",
+						"pm.test('warnings is an empty array for a compliant set', () => { pm.expect(b.warnings).to.be.an('array'); pm.expect(b.warnings.length).to.eql(0); });",
+						"pm.collectionVariables.set('newmanCustomId', b.id);"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "POST", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Newman Custom Set", "type": "text" }, { "key": "file", "src": "tests/integration/fixtures/newman-valid.css", "type": "file" } ] }, "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "Upload duplicate name ERROR: -> 409 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('collision -> 409', () => pm.response.to.have.status(409));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "POST", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Newman Custom Set", "type": "text" }, { "key": "file", "src": "tests/integration/fixtures/newman-valid.css", "type": "file" } ] }, "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "Upload disallowed selector ERROR: -> 422 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('disallowed selector -> 422', () => pm.response.to.have.status(422));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "POST", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Newman Bad Selector", "type": "text" }, { "key": "file", "src": "tests/integration/fixtures/newman-bad-selector.css", "type": "file" } ] }, "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "Upload malformed JSON ERROR: -> 422 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('malformed json -> 422', () => pm.response.to.have.status(422));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "POST", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Newman Bad Json", "type": "text" }, { "key": "file", "src": "tests/integration/fixtures/newman-malformed.tokens.json", "type": "file" } ] }, "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "List custom sets (200, includes uploaded set)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('list (200)', () => pm.response.to.have.status(200));",
+						"const b = pm.response.json();",
+						"pm.test('sets is an array', () => pm.expect(b.sets).to.be.an('array'));",
+						"const id = pm.collectionVariables.get('newmanCustomId');",
+						"pm.test('uploaded set is listed', () => pm.expect(b.sets.map(s => s.id)).to.include(id));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "GET", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "custom" ] } }
+				},
+				{
+					"name": "Export custom set (200, css download)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('export (200)', () => pm.response.to.have.status(200));",
+						"pm.test('content-type is css', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.include('css'));",
+						"pm.test('body is the re-serialised root block', () => pm.expect(pm.response.text()).to.include('--nldesign-color-primary'));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "GET", "header": [ { "key": "OCS-APIRequest", "value": "true" } ], "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/{{newmanCustomId}}/export", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "custom", "{{newmanCustomId}}", "export" ] } }
+				},
+				{
+					"name": "Export unknown set -> 404 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('unknown export -> 404', () => pm.response.to.have.status(404));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "GET", "header": [ { "key": "OCS-APIRequest", "value": "true" } ], "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/custom-newman-does-not-exist/export", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "custom", "custom-newman-does-not-exist", "export" ] } }
+				},
+				{
+					"name": "Delete custom set (200, status ok)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('delete (200)', () => pm.response.to.have.status(200));",
+						"const b = pm.response.json();",
+						"pm.test('status ok', () => pm.expect(b.status).to.eql('ok'));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "DELETE", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/{{newmanCustomId}}", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "custom", "{{newmanCustomId}}" ] } }
+				},
+				{
+					"name": "Delete non-custom id -> 400 (not 500)",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+						"pm.test('non-custom id -> 400', () => pm.response.to.have.status(400));",
+						"pm.test('not a 500', () => pm.expect(pm.response.code).to.not.eql(500));"
+					] } } ],
+					"request": { "auth": { "type": "basic", "basic": [ { "key": "username", "value": "{{adminUser}}", "type": "string" }, { "key": "password", "value": "{{adminPass}}", "type": "string" } ] }, "method": "DELETE", "header": [ { "key": "OCS-APIRequest", "value": "true" }, { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/utrecht", "host": [ "{{baseUrl}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "custom", "utrecht" ] } }
+				},
+				{
+					"name": "Upload AUTHZ: anonymous -> 401",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('anonymous upload rejected 401', () => pm.response.to.have.status(401));" ] } } ],
+					"request": { "method": "POST", "header": [ { "key": "Accept", "value": "application/json" } ], "body": { "mode": "formdata", "formdata": [ { "key": "name", "value": "Anon", "type": "text" } ] }, "url": { "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/tokensets/upload", "host": [ "{{noAuthBase}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "upload" ] } }
+				},
+				{
+					"name": "List custom AUTHZ: anonymous -> 401",
+					"event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [ "pm.test('anonymous list rejected 401', () => pm.response.to.have.status(401));" ] } } ],
+					"request": { "method": "GET", "header": [ { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/tokensets/custom", "host": [ "{{noAuthBase}}" ], "path": [ "index.php", "apps", "nldesign", "settings", "tokensets", "custom" ] } }
+				}
+			]
+		},
+		{
 			"name": "9. Teardown: restore captured state",
 			"item": [
 				{

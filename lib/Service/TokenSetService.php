@@ -116,8 +116,8 @@ class TokenSetService
             $files = scandir($tokensDir);
             foreach ($files as $file) {
                 if (str_ends_with($file, '.css') === true) {
-                    $id        = basename($file, '.css');
-                    $isCustom  = str_starts_with($id, 'custom-');
+                    $id       = basename($file, '.css');
+                    $isCustom = str_starts_with($id, 'custom-');
 
                     // Shipped manifest takes precedence on an (impossible) id
                     // collision; log it so the operator can investigate.
@@ -125,7 +125,7 @@ class TokenSetService
                     $customMeta  = $customMetadata[$id] ?? null;
                     if ($shippedMeta !== null && $customMeta !== null) {
                         $this->logger->warning(
-                            'NL Design token set id "'.$id.'" exists in both the shipped manifest and the custom manifest; using the shipped metadata.'
+                            'NL Design token set id "'.$id.'" exists in both the shipped and custom manifests; using the shipped metadata.'
                         );
                         $customMeta = null;
                     }

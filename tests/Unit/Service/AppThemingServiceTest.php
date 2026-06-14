@@ -20,6 +20,25 @@ use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * Test-only extension of IAppManager that re-declares getEnabledApps().
+ *
+ * The OCP 31 IAppManager stub no longer types getEnabledApps(), but the real
+ * OC\App\AppManager still implements it and AppThemingService::getThemableApps()
+ * relies on it. Declaring it here lets PHPUnit's MockBuilder configure the
+ * method when running against the OCP stub package outside a full Nextcloud
+ * server, without touching production code.
+ */
+interface IAppManagerWithEnabledApps extends IAppManager
+{
+    /**
+     * Get all enabled app ids (present on the concrete OC\App\AppManager).
+     *
+     * @return string[] The enabled app ids.
+     */
+    public function getEnabledApps(): array;
+}//end interface
+
+/**
  * Unit tests for AppThemingService.
  */
 class AppThemingServiceTest extends TestCase
@@ -53,9 +72,9 @@ class AppThemingServiceTest extends TestCase
     {
         parent::setUp();
         $this->config     = $this->createMock(IConfig::class);
-        $this->appManager = $this->createMock(IAppManager::class);
+        $this->appManager = $this->createMock(IAppManagerWithEnabledApps::class);
         $this->service    = new AppThemingService($this->config, $this->appManager);
-    }
+    }//end setUp()
 
     /**
      * Absent config returns an empty list (today's global theming).
@@ -64,7 +83,7 @@ class AppThemingServiceTest extends TestCase
     {
         $this->config->method('getAppValue')->willReturn('[]');
         $this->assertSame([], $this->service->getDisabledApps());
-    }
+    }//end testGetDisabledAppsDefaultsToEmpty()
 
     /**
      * Malformed JSON degrades to an empty list, never an error.
@@ -73,7 +92,7 @@ class AppThemingServiceTest extends TestCase
     {
         $this->config->method('getAppValue')->willReturn('not-json{');
         $this->assertSame([], $this->service->getDisabledApps());
-    }
+    }//end testGetDisabledAppsMalformedJsonIsEmpty()
 
     /**
      * A stored list is read back, de-duplicated and string-filtered.
@@ -82,7 +101,7 @@ class AppThemingServiceTest extends TestCase
     {
         $this->config->method('getAppValue')->willReturn('["calendar","files","calendar"]');
         $this->assertSame(['calendar', 'files'], $this->service->getDisabledApps());
-    }
+    }//end testGetDisabledAppsReadsStoredList()
 
     /**
      * Unknown app ids are dropped on save (self-heal); known ids retained.
@@ -107,7 +126,7 @@ class AppThemingServiceTest extends TestCase
 
         $this->service->setDisabledApps(['files', 'uninstalled-app']);
         $this->assertSame(['files'], json_decode((string) $captured, true));
-    }
+    }//end testSetDisabledAppsDropsUnknownIds()
 
     /**
      * Protected ids can never enter the exclusion list.
@@ -125,7 +144,7 @@ class AppThemingServiceTest extends TestCase
 
         $this->service->setDisabledApps(['calendar', 'nldesign', 'settings', 'theming']);
         $this->assertSame(['calendar'], json_decode((string) $captured, true));
-    }
+    }//end testSetDisabledAppsDropsProtectedIds()
 
     /**
      * Null/unresolved app id is always themed.
@@ -134,7 +153,7 @@ class AppThemingServiceTest extends TestCase
     {
         $this->assertFalse($this->service->isThemingDisabledFor(null));
         $this->assertFalse($this->service->isThemingDisabledFor(''));
-    }
+    }//end testIsThemingDisabledForNullIsFalse()
 
     /**
      * An app in the exclusion list is reported as disabled.
@@ -144,7 +163,7 @@ class AppThemingServiceTest extends TestCase
         $this->config->method('getAppValue')->willReturn('["calendar"]');
         $this->assertTrue($this->service->isThemingDisabledFor('calendar'));
         $this->assertFalse($this->service->isThemingDisabledFor('files'));
-    }
+    }//end testIsThemingDisabledForExcludedApp()
 
     /**
      * The resolver extracts the app id from app-page paths and only those.
@@ -157,7 +176,7 @@ class AppThemingServiceTest extends TestCase
     public function testResolveAppIdFromPath(?string $pathInfo, ?string $expected): void
     {
         $this->assertSame($expected, $this->service->resolveAppIdFromPath($pathInfo));
-    }
+    }//end testResolveAppIdFromPath()
 
     /**
      * Path resolution cases.
@@ -167,17 +186,17 @@ class AppThemingServiceTest extends TestCase
     public static function pathProvider(): array
     {
         return [
-            'plain app path'        => ['/apps/files/', 'files'],
-            'app path no slash'     => ['/apps/calendar', 'calendar'],
-            'index.php prefix'      => ['/index.php/apps/calendar/', 'calendar'],
-            'underscore app id'     => ['/apps/files_external/list', 'files_external'],
-            'settings page'        => ['/settings/admin/theming', null],
-            'login page'           => ['/login', null],
-            'share link'           => ['/s/abcd1234', null],
-            'empty path'           => ['', null],
-            'null path'            => [null, null],
+            'plain app path'    => ['/apps/files/', 'files'],
+            'app path no slash' => ['/apps/calendar', 'calendar'],
+            'index.php prefix'  => ['/index.php/apps/calendar/', 'calendar'],
+            'underscore app id' => ['/apps/files_external/list', 'files_external'],
+            'settings page'     => ['/settings/admin/theming', null],
+            'login page'        => ['/login', null],
+            'share link'        => ['/s/abcd1234', null],
+            'empty path'        => ['', null],
+            'null path'         => [null, null],
         ];
-    }
+    }//end pathProvider()
 
     /**
      * getThemableApps omits protected ids, sorts by name, sets themed flag.
@@ -206,5 +225,5 @@ class AppThemingServiceTest extends TestCase
         $byId = array_column($apps, 'themed', 'id');
         $this->assertFalse($byId['calendar']);
         $this->assertTrue($byId['files']);
-    }
+    }//end testGetThemableAppsListsEnabledAppsWithState()
 }//end class

@@ -131,8 +131,8 @@ class CustomTokenSetService
      * with code 409), writes the canonical CSS atomically, persists the
      * manifest entry (name, description, derived theming, contrast warnings).
      *
-     * @param string                 $displayName  The admin display name.
-     * @param string                 $description  Optional description.
+     * @param string                $displayName  The admin display name.
+     * @param string                $description  Optional description.
      * @param array<string, string> $declarations The whitelisted declarations.
      *
      * @return array{id: string, warnings: array<int, array<string, mixed>>} The result.
@@ -161,10 +161,15 @@ class CustomTokenSetService
 
         $warnings = $this->contrast->check(declarations: $declarations);
 
+        $resolvedDescription = $description;
+        if ($resolvedDescription === '') {
+            $resolvedDescription = 'Custom token set: '.$displayName;
+        }
+
         $manifest      = $this->getManifest();
         $manifest[$id] = [
             'name'        => $displayName,
-            'description' => ($description !== '' ? $description : 'Custom token set: '.$displayName),
+            'description' => $resolvedDescription,
             'theming'     => $this->deriveTheming(declarations: $declarations),
             'warnings'    => $warnings,
         ];
@@ -235,7 +240,11 @@ class CustomTokenSetService
                 continue;
             }
 
-            $entry       = (is_array($meta) === true ? $meta : []);
+            $entry = [];
+            if (is_array($meta) === true) {
+                $entry = $meta;
+            }
+
             $entry['id'] = $id;
             $result[]    = $entry;
         }

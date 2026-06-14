@@ -67,7 +67,7 @@ class CustomTokenSetValidator
      * contains a forbidden construct is a hard failure (sets lastError).
      *
      * @param array<string, string> $declarations Parsed token name => value map.
-     * @param string                 $slug         The set slug for `--{slug}-*` extras.
+     * @param string                $slug         The set slug for `--{slug}-*` extras.
      *
      * @return array{accepted: array<string, string>, skipped: string[]}|null
      *     The split, or null on hard failure (see getLastError()).
@@ -187,7 +187,7 @@ class CustomTokenSetValidator
             foreach ($urls as $url) {
                 $target = trim($url[2]);
 
-                // data:image/svg+xml and data:image/png are allowed.
+                // Data image URIs (svg+xml, png, …) are allowed.
                 if (preg_match('#^data:image/(svg\+xml|png|jpeg|gif|webp)#i', $target) === 1) {
                     continue;
                 }

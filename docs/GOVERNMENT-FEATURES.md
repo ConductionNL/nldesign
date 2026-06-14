@@ -30,7 +30,7 @@
 | F-01 | NL Design System token-ondersteuning | Beschikbaar | Design tokens van NL Design System community |
 | F-02 | Meerdere token sets (gemeenten, provincies) | Beschikbaar | VNG, Den Haag, Rotterdam, Utrecht, etc. |
 | F-03 | Token set selectie per organisatie | Beschikbaar | Dropdown in admin settings |
-| F-04 | Aangepaste token sets uploaden | Beschikbaar | Eigen huisstijl als token set |
+| F-04 | Aangepaste token sets uploaden | Beschikbaar | Eigen huisstijl als token set (CSS of W3C Design Tokens JSON) — zie [Custom token sets](features/custom-token-sets.md) |
 | F-05 | Live preview van theming | Beschikbaar | Direct zichtbare wijzigingen |
 | F-06 | Nextcloud Theming synchronisatie | Beschikbaar | Design tokens synchroniseren naar Nextcloud thema |
 | F-07 | CSS-variabelen architectuur | Beschikbaar | Geen hardgecodeerde kleuren |

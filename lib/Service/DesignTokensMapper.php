@@ -45,17 +45,17 @@ class DesignTokensMapper
      * @var array<string, string>
      */
     private const MAPPING = [
-        'color.primary-text'   => '--nldesign-color-primary-text',
-        'color.on-primary'     => '--nldesign-color-primary-text',
-        'color.primary-hover'  => '--nldesign-color-primary-hover',
-        'color.primary-light'  => '--nldesign-color-primary-light',
-        'color.primary'        => '--nldesign-color-primary',
-        'brand.primary'        => '--nldesign-color-primary',
-        'color.background'     => '--nldesign-color-background',
-        'color.text'           => '--nldesign-color-text',
-        'fontfamily.base'      => '--nldesign-font-family',
-        'typography.font-family' => '--nldesign-font-family',
-        'border-radius.base'   => '--nldesign-border-radius',
+        'color.primary-text'      => '--nldesign-color-primary-text',
+        'color.on-primary'        => '--nldesign-color-primary-text',
+        'color.primary-hover'     => '--nldesign-color-primary-hover',
+        'color.primary-light'     => '--nldesign-color-primary-light',
+        'color.primary'           => '--nldesign-color-primary',
+        'brand.primary'           => '--nldesign-color-primary',
+        'color.background'        => '--nldesign-color-background',
+        'color.text'              => '--nldesign-color-text',
+        'fontfamily.base'         => '--nldesign-font-family',
+        'typography.font-family'  => '--nldesign-font-family',
+        'border-radius.base'      => '--nldesign-border-radius',
         'dimension.border-radius' => '--nldesign-border-radius',
     ];
 
@@ -108,9 +108,9 @@ class DesignTokensMapper
      * dotted path. Keys beginning with `$` (metadata such as `$type`,
      * `$description`) are not part of the path.
      *
-     * @param mixed                  $node   The current node (array or scalar).
-     * @param string                 $prefix The accumulated dotted path.
-     * @param array<string, string> &$leaves Collected path => value leaves.
+     * @param mixed                 $node   The current node (array or scalar).
+     * @param string                $prefix The accumulated dotted path.
+     * @param array<string, string> $leaves Collected path => value leaves (by reference).
      *
      * @return void
      *
@@ -136,7 +136,11 @@ class DesignTokensMapper
                 continue;
             }
 
-            $path = ($prefix === '' ? (string) $key : $prefix.'.'.$key);
+            $path = $prefix.'.'.$key;
+            if ($prefix === '') {
+                $path = (string) $key;
+            }
+
             $this->flatten(node: $child, prefix: $path, leaves: $leaves);
         }
     }//end flatten()

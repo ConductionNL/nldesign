@@ -31,6 +31,9 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COLLECTION="${SCRIPT_DIR}/nldesign.postman_collection.json"
+# Repo root — multipart formdata file `src` paths in the collection are
+# resolved relative to --working-dir (e.g. tests/integration/fixtures/*.css).
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 BASE_URL="${BASE_URL:-http://localhost:8080}"
 ADMIN_USER="${ADMIN_USER:-admin}"
@@ -62,6 +65,7 @@ fi
   --env-var "adminUser=${ADMIN_USER}" \
   --env-var "adminPass=${ADMIN_PASS}" \
   --ignore-redirects \
+  --working-dir "${REPO_ROOT}" \
   --reporters cli \
   --color on \
   "$@"

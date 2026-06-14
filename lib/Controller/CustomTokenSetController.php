@@ -245,7 +245,7 @@ class CustomTokenSetController extends Controller
     /**
      * Store the accepted declarations and build the upload response.
      *
-     * @param string                                                       $name   The display name.
+     * @param string                                                    $name   The display name.
      * @param array{accepted: array<string, string>, skipped: string[]} $parsed The validated split.
      *
      * @return JSONResponse The upload result or a collision/storage error.
