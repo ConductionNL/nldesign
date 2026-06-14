@@ -6,13 +6,21 @@ sidebar_position: 7
 
 ## Overview
 
-The NL Design app now includes **344 icons** and **6 logos** from the Amsterdam Design System, making them available for use across all Nextcloud apps.
+The NL Design app now includes **344 icons** from the Amsterdam Design System and **23 logos**, making them available for use across all Nextcloud apps.
+
+## Availability and fallbacks
+
+These icon and logo URLs only resolve while the nldesign app is installed **and enabled** on the instance. A consumer app that references `imagePath('nldesign', 'icons/...')` on an instance without nldesign will get a broken image. Consumers MUST either ship a fallback icon or declare a dependency on `nldesign` in their `appinfo/info.xml`.
+
+## Naming stability
+
+Icon and logo filenames are a public API consumed by other apps (they hardcode names like `MagnifyingGlass.svg`). Renaming or removing a bundled icon or logo is a **breaking change**: it MUST be recorded in the changelog naming both the old and new filename, and `img/ICONS.md` MUST be updated in the same change so the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Syncing a newer Amsterdam Design System release is an explicit, reviewed change — never a silent regenerate.
 
 ## Available Icons
 
 View all available icons in the [icon documentation](https://codeberg.org/Conduction/nldesign/src/branch/main/img/ICONS.md) or browse the files in:
 - **Icons:** `img/icons/` (344 SVG files)
-- **Logos:** `img/logos/` (6 SVG files)
+- **Logos:** `img/logos/` (23 SVG files)
 
 ## Usage in Nextcloud Apps
 
@@ -30,7 +38,7 @@ $iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/Bell.sv
 
 ```css
 .my-icon {
-    background-image: url('../../../nldesign/img/icons/MagnifyingGlass.svg');
+    background-image: url('../../../nldesign/img/icons/Search.svg');
     background-size: contain;
     background-repeat: no-repeat;
     width: 24px;
@@ -55,24 +63,29 @@ if (file_exists($iconPath)) {
 The Amsterdam Design System icons are organized into several categories:
 
 ### Common Icons
-- **Navigation:** ArrowForward, ArrowBackward, ArrowUp, ArrowDown, Home, Menu
-- **Actions:** Plus, Minus, Close, Check, Edit, Delete, Save, Download, Upload
-- **Communication:** Bell, Email, Phone, Chat
-- **Interface:** Search (MagnifyingGlass), Filter, Settings, Info, Warning, Error
-- **Media:** Play, Pause, Stop, Volume, Camera, Image
+- **Navigation:** ArrowForward, ArrowBackward, ArrowUp, ArrowDown, House, Menu
+- **Actions:** Plus, Minus, Close, CheckMark, Pencil, Delete, Save, Download, Upload
+- **Communication:** Bell, Mail, Phone, SpeechBalloonEllipsis
+- **Interface:** Search, Filter, Settings, Info, Warning, Error
+- **Media:** Play, Pause, VolumeOn, VolumeOff, Camera, Image
+
+> Filenames follow the upstream Amsterdam Design System exactly (PascalCase). Some names differ from a generic icon vocabulary — e.g. the search icon is `Search.svg`, the home icon is `House.svg`, the edit icon is `Pencil.svg`, and the check icon is `CheckMark.svg`. Always confirm the exact filename in `img/icons/` before referencing it.
 
 ### Filled Variants
 Many icons have 'Fill' variants (e.g., `Bell.svg` and `BellFill.svg`) for different visual weights.
 
 ## Logos
 
-Available Amsterdam-related logos:
+The 23 logos in `img/logos/` cover government and municipal organizations. A representative sample:
 - `amsterdam.svg` - City of Amsterdam logo
 - `ggd-amsterdam.svg` - GGD Amsterdam logo
 - `stadsarchief.svg` - Amsterdam City Archives
 - `stadsbank-van-lening.svg` - Stadsbank van Lening
 - `museum_weesp.svg` - Museum Weesp
 - `vga-verzekeringen.svg` - VGA Verzekeringen
+- `rijkshuisstijl.svg`, `vng.svg`, `provincie-zuid-holland.svg`, and other municipal logos (Utrecht, Rotterdam, Leiden, Nijmegen, Tilburg, Hoorn, Epe, and more)
+
+Browse `img/logos/` for the complete set.
 
 ## Styling Icons
 
@@ -107,7 +120,7 @@ Icons are designed to work with the NL Design System color tokens:
 ```php
 <li>
     <a href="/path">
-        <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/Home.svg')); ?>" 
+        <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/House.svg')); ?>" 
              alt="Home icon" />
         Home
     </a>
@@ -117,7 +130,7 @@ Icons are designed to work with the NL Design System color tokens:
 ### Status Indicator
 ```php
 <div class="status-indicator">
-    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/CheckmarkCircleFill.svg')); ?>" 
+    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/CheckMarkCircleFill.svg')); ?>" 
          alt="Success" class="status-icon status-icon--success" />
     <span>Voltooid</span>
 </div>

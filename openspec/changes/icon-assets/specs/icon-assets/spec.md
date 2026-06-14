@@ -5,7 +5,7 @@ New capability (retrofit — behavior already ships): the Amsterdam Design Syste
 ## ADDED Requirements
 
 ### Requirement: Bundled Icon and Logo Inventory
-The app MUST bundle the Amsterdam Design System icon set as individual SVG files in `img/icons/` (344 icons) and the organization logos in `img/logos/`. Icon filenames MUST follow the upstream Amsterdam Design System PascalCase names (e.g. `MagnifyingGlass.svg`), with filled variants carrying the `Fill` suffix (e.g. `AppleFill.svg`). The documented inventory in `img/ICONS.md` MUST match the filesystem.
+The app MUST bundle the Amsterdam Design System icon set as individual SVG files in `img/icons/` (344 icons) and the organization logos in `img/logos/` (23 logos). Icon filenames MUST follow the upstream Amsterdam Design System PascalCase names (e.g. `Search.svg`), with filled variants carrying the `Fill` suffix (e.g. `AppleFill.svg`). The documented inventory in `img/ICONS.md` MUST match the filesystem.
 
 #### Scenario: Documented icons exist on disk
 @e2e exclude static asset inventory — PHPUnit test compares docs to filesystem
@@ -32,7 +32,7 @@ Other Nextcloud apps MUST be able to consume the icons through Nextcloud's stand
 
 #### Scenario: Icon resolves through the image-path API
 - GIVEN the nldesign app is enabled
-- WHEN a page references the URL produced by `imagePath('nldesign', 'icons/MagnifyingGlass.svg')`
+- WHEN a page references the URL produced by `imagePath('nldesign', 'icons/Search.svg')`
 - THEN the server MUST return the SVG with an image SVG content type and an HTTP 200
 - AND the same MUST hold for logos via `imagePath('nldesign', 'logos/amsterdam.svg')`
 
