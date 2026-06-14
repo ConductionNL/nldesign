@@ -58,7 +58,15 @@
         "Apply selected": "Geselecteerde toepassen",
         "Applying…": "Toepassen…",
         "Token overrides applied.": "Token-overschrijvingen toegepast.",
-        "Failed to apply token set.": "Toepassen van tokenset mislukt."
+        "Failed to apply token set.": "Toepassen van tokenset mislukt.",
+        "Theming per app": "Thema per app",
+        "Choose which apps the NL Design theme applies to. Unchecking an app makes its pages render with stock Nextcloud styling, including the header on those pages.": "Kies op welke apps het NL Design-thema van toepassing is. Door een app uit te vinken worden de pagina's van die app weergegeven met de standaard Nextcloud-stijl, inclusief de koptekst op die pagina's.",
+        "Loading apps…": "Apps laden…",
+        "Save app theming": "App-thema opslaan",
+        "Failed to load apps.": "Laden van apps mislukt.",
+        "No apps available.": "Geen apps beschikbaar.",
+        "App theming saved. Reload an affected app to see changes.": "App-thema opgeslagen. Herlaad een betreffende app om de wijzigingen te zien.",
+        "Failed to save app theming.": "Opslaan van app-thema mislukt."
     },
     "plurals": {}
 }

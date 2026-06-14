@@ -32,6 +32,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
@@ -93,14 +94,22 @@ class SettingsController extends Controller
     private TokenSetPreviewService $previewService;
 
     /**
+     * The per-app theming service.
+     *
+     * @var AppThemingService
+     */
+    private AppThemingService $appThemingService;
+
+    /**
      * Constructor.
      *
-     * @param string                 $appName         The app name.
-     * @param IRequest               $request         The request object.
-     * @param IConfig                $config          The config service.
-     * @param TokenSetService        $tokenSetService The token set service.
-     * @param ThemingService         $themingService  The theming service.
-     * @param TokenSetPreviewService $previewService  The token set preview service.
+     * @param string                 $appName           The app name.
+     * @param IRequest               $request           The request object.
+     * @param IConfig                $config            The config service.
+     * @param TokenSetService        $tokenSetService   The token set service.
+     * @param ThemingService         $themingService    The theming service.
+     * @param TokenSetPreviewService $previewService    The token set preview service.
+     * @param AppThemingService      $appThemingService The per-app theming service.
      */
     public function __construct(
         string $appName,
@@ -108,13 +117,15 @@ class SettingsController extends Controller
         IConfig $config,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
-        TokenSetPreviewService $previewService
+        TokenSetPreviewService $previewService,
+        AppThemingService $appThemingService
     ) {
         parent::__construct(appName: $appName, request: $request);
-        $this->config          = $config;
-        $this->tokenSetService = $tokenSetService;
-        $this->themingService  = $themingService;
-        $this->previewService  = $previewService;
+        $this->config            = $config;
+        $this->tokenSetService   = $tokenSetService;
+        $this->themingService    = $themingService;
+        $this->previewService    = $previewService;
+        $this->appThemingService = $appThemingService;
     }//end __construct()
 
     /**
@@ -320,4 +331,42 @@ class SettingsController extends Controller
 
         return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
     }//end getTokenSetPreview()
+
+    /**
+     * List enabled apps with their per-app theming state.
+     *
+     * @return JSONResponse The list of { id, name, themed } entries.
+     *
+     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getAppTheming(): JSONResponse
+    {
+        return new JSONResponse(['apps' => $this->appThemingService->getThemableApps()]);
+    }//end getAppTheming()
+
+    /**
+     * Replace the per-app theming exclusion list.
+     *
+     * Accepts { disabledApps: string[] }. Unknown and protected ids are dropped
+     * by the service before persisting.
+     *
+     * @param array $disabledApps The app ids to exclude from theming.
+     *
+     * @return JSONResponse The persisted state after validation.
+     *
+     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setAppTheming(array $disabledApps=[]): JSONResponse
+    {
+        $this->appThemingService->setDisabledApps(appIds: $disabledApps);
+
+        return new JSONResponse(
+            [
+                'status'       => 'ok',
+                'disabledApps' => $this->appThemingService->getDisabledApps(),
+            ]
+        );
+    }//end setAppTheming()
 }//end class

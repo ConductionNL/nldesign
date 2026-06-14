@@ -15,6 +15,9 @@ return [
 		['name' => 'settings#setMenuLabelsSetting', 'url' => '/settings/menulabels', 'verb' => 'POST'],
 		['name' => 'settings#getThemingValues', 'url' => '/settings/theming', 'verb' => 'GET'],
 		['name' => 'settings#updateThemingValues', 'url' => '/settings/theming', 'verb' => 'POST'],
+		// Per-app theming exclusion list.
+		['name' => 'settings#getAppTheming', 'url' => '/settings/app-theming', 'verb' => 'GET'],
+		['name' => 'settings#setAppTheming', 'url' => '/settings/app-theming', 'verb' => 'POST'],
 		['name' => 'overrides#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
 		['name' => 'overrides#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
 		// Import/export.

@@ -1003,5 +1003,104 @@ function nldesignAdminMain() {
 	// Initialise token editor on page load.
 	initTokenEditor();
 
+	/* ==========================================================================
+	 * THEMING PER APP — exclude individual apps from nldesign theming
+	 * ========================================================================== */
+
+	// Render the checkbox list (checked = themed) from GET /settings/app-theming.
+	function initAppTheming() {
+		var listEl = document.getElementById('nldesign-app-theming-list');
+		var saveBtn = document.getElementById('nldesign-app-theming-save');
+		if (listEl === null || saveBtn === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/app-theming'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderAppThemingList(listEl, (data && data.apps) || []);
+		})
+		.catch(function(err) {
+			console.error('Error loading app theming:', err);
+			listEl.textContent = t('nldesign', 'Failed to load apps.');
+		});
+
+		saveBtn.addEventListener('click', saveAppTheming);
+	}
+
+	// Build one labelled checkbox per app; checked means "themed".
+	function renderAppThemingList(listEl, apps) {
+		listEl.innerHTML = '';
+		if (apps.length === 0) {
+			listEl.textContent = t('nldesign', 'No apps available.');
+			return;
+		}
+
+		apps.forEach(function(app) {
+			var row = document.createElement('div');
+			row.className = 'nldesign-option';
+
+			var cb = document.createElement('input');
+			cb.type = 'checkbox';
+			cb.className = 'checkbox';
+			cb.id = 'nldesign-app-theming-' + app.id;
+			cb.setAttribute('data-app-id', app.id);
+			cb.checked = (app.themed !== false);
+
+			var label = document.createElement('label');
+			label.setAttribute('for', cb.id);
+			label.textContent = app.name || app.id;
+
+			row.appendChild(cb);
+			row.appendChild(label);
+			listEl.appendChild(row);
+		});
+	}
+
+	// Collect unchecked apps as the exclusion list and POST it.
+	function saveAppTheming() {
+		var listEl = document.getElementById('nldesign-app-theming-list');
+		var feedback = document.getElementById('nldesign-app-theming-feedback');
+		if (listEl === null) {
+			return;
+		}
+
+		var disabledApps = [];
+		listEl.querySelectorAll('input[type="checkbox"][data-app-id]').forEach(function(cb) {
+			if (cb.checked === false) {
+				disabledApps.push(cb.getAttribute('data-app-id'));
+			}
+		});
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/app-theming'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ disabledApps: disabledApps })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			if (data && data.status === 'ok') {
+				if (feedback !== null) {
+					feedback.textContent = t('nldesign', 'App theming saved. Reload an affected app to see changes.');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'App theming saved. Reload an affected app to see changes.'));
+			} else {
+				OC.Notification.showTemporary(t('nldesign', 'Failed to save app theming.'));
+			}
+		})
+		.catch(function(err) {
+			console.error('Error saving app theming:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save app theming.'));
+		});
+	}
+
+	// Initialise the per-app theming panel on page load.
+	initAppTheming();
+
 }
 })();

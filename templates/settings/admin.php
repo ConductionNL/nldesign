@@ -63,6 +63,22 @@ style('nldesign', 'admin');
 		</label>
 	</div>
 
+	<!-- Theming per app — exclude individual apps from nldesign theming -->
+	<div class="nldesign-app-theming" id="nldesign-app-theming" style="margin-top:2em">
+		<h3><?php p($l->t('Theming per app')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Choose which apps the NL Design theme applies to. Unchecking an app makes its pages render with stock Nextcloud styling, including the header on those pages.')); ?>
+		</p>
+		<div id="nldesign-app-theming-list" class="nldesign-app-theming-list" role="group"
+			 aria-label="<?php p($l->t('Theming per app')); ?>">
+			<p class="settings-hint"><?php p($l->t('Loading apps…')); ?></p>
+		</div>
+		<button type="button" id="nldesign-app-theming-save" class="button">
+			<?php p($l->t('Save app theming')); ?>
+		</button>
+		<span id="nldesign-app-theming-feedback" class="nldesign-app-theming-feedback" role="status" aria-live="polite"></span>
+	</div>
+
 	<div class="nldesign-preview" id="nldesign-preview">
 		<h3><?php p($l->t('Preview')); ?></h3>
 		<div class="nldesign-preview-box">

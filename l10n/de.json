@@ -58,7 +58,15 @@
         "Apply selected": "Auswahl anwenden",
         "Applying…": "Wird angewendet…",
         "Token overrides applied.": "Token-Überschreibungen angewendet.",
-        "Failed to apply token set.": "Anwenden des Token-Sets fehlgeschlagen."
+        "Failed to apply token set.": "Anwenden des Token-Sets fehlgeschlagen.",
+        "Theming per app": "Theming pro App",
+        "Choose which apps the NL Design theme applies to. Unchecking an app makes its pages render with stock Nextcloud styling, including the header on those pages.": "Wählen Sie, für welche Apps das NL-Design-Theme gilt. Wird eine App abgewählt, werden ihre Seiten im Standard-Nextcloud-Stil dargestellt, einschließlich der Kopfzeile auf diesen Seiten.",
+        "Loading apps…": "Apps werden geladen…",
+        "Save app theming": "App-Theming speichern",
+        "Failed to load apps.": "Apps konnten nicht geladen werden.",
+        "No apps available.": "Keine Apps verfügbar.",
+        "App theming saved. Reload an affected app to see changes.": "App-Theming gespeichert. Laden Sie eine betroffene App neu, um die Änderungen zu sehen.",
+        "Failed to save app theming.": "App-Theming konnte nicht gespeichert werden."
     },
     "plurals": {}
 }

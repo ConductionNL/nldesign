@@ -51,7 +51,7 @@
 |---|-----|--------|-------------|
 | F-13 | Theming voor alle Conduction-apps | Beschikbaar | OpenRegister, Procest, Pipelinq, etc. |
 | F-14 | Nextcloud-brede theming | Beschikbaar | Alle Nextcloud-pagina's gestyled |
-| F-15 | Toggle per app (aan/uit) | Beschikbaar | Per-app theming activeren |
+| F-15 | Toggle per app (aan/uit) | Beschikbaar | Per-app theming via "Theming per app" in de adminsectie — zie [features/toggles.md](features/toggles.md#theming-per-app) |
 
 ---
 

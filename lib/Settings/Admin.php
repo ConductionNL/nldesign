@@ -173,6 +173,7 @@ class Admin implements IDelegatedSettings
                 '/token_set/',
                 '/hide_slogan/',
                 '/show_menu_labels/',
+                '/disabled_apps/',
                 '/theming_syncs_total/',
             ],
         ];

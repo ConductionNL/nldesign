@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\AppInfo;
 
+use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Themes\NLDesignTheme;
@@ -95,6 +96,14 @@ class Application extends App implements IBootstrap
      */
     private function injectThemeCSS($serverContainer): void
     {
+        // Per-app theming guard: if the app currently being rendered is in the
+        // admin's exclusion list, skip ALL nldesign style injection so its pages
+        // render as stock Nextcloud. Resolution failures (occ/cron, no path info)
+        // fail open to themed — theming is presentation, never security.
+        if ($this->isThemingDisabled(serverContainer: $serverContainer) === true) {
+            return;
+        }
+
         $config         = $serverContainer->getConfig();
         $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
         $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
@@ -131,4 +140,32 @@ class Application extends App implements IBootstrap
             \OCP\Util::addStyle(application: self::APP_ID, file: 'show-menu-labels');
         }
     }//end injectThemeCSS()
+
+    /**
+     * Resolve whether theming must be skipped for the request being rendered.
+     *
+     * Reads the request path, resolves the app id, and consults the exclusion
+     * list. Wrapped in a try/catch so any resolution failure (CLI/occ, cron, an
+     * unavailable request) fails open to themed.
+     *
+     * @param mixed $serverContainer The server container.
+     *
+     * @return bool True when nldesign style injection must be skipped.
+     *
+     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-2.1
+     */
+    private function isThemingDisabled($serverContainer): bool
+    {
+        try {
+            $appTheming = $serverContainer->get(AppThemingService::class);
+            $request    = $serverContainer->get(\OCP\IRequest::class);
+            $appId      = $appTheming->resolveAppIdFromPath(pathInfo: $request->getPathInfo());
+
+            return $appTheming->isThemingDisabledFor(appId: $appId);
+        } catch (\Throwable $e) {
+            // Fail open: presentation, not security — a broken resolve must not
+            // strip theming everywhere, nor crash the boot path.
+            return false;
+        }
+    }//end isThemingDisabled()
 }//end class
