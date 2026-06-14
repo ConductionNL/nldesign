@@ -38,15 +38,24 @@
 	--summer-color-border: #e3e9f0;
 	--summer-color-border-dark: #c7d3e0;
 
-	/* Status — pastel fills with legible text (WCAG AA on white). */
+	/* Status — pastel fills with legible text (WCAG AA on white). Each fill has
+	   a slightly-darker border colour for the docudesk rounded-rect badge look. */
 	--summer-color-success: #2e7d4f;
 	--summer-color-success-light: #e3f4e7;
+	--summer-color-success-border: #b5dcc0;
 	--summer-color-warning: #8a6d00;
 	--summer-color-warning-light: #fbf0cf;
+	--summer-color-warning-border: #efd68b;
 	--summer-color-error: #c0392b;
 	--summer-color-error-light: #fbe7e5;
+	--summer-color-error-border: #f2cac6;
 	--summer-color-info: #1f5fb0;
 	--summer-color-info-light: #e1eefa;
+	--summer-color-info-border: #c3dbf5;
+	--summer-color-primary-badge-border: #c3dbf5;
+
+	/* Status badge geometry — rounded-rect, small text. */
+	--summer-radius-badge: 6px;
 
 	/* Focus. */
 	--summer-color-focus: rgba(40, 116, 209, 0.5);

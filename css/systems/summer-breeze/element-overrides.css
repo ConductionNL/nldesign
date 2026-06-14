@@ -145,11 +145,44 @@ button,
 }
 
 /* ============================================
-   STATUS BADGES — pastel pills
+   STATUS BADGES — pastel rounded-rect with a fill-matched border
+   (the docudesk "Concept" look: 6px corners, 1px border, small text)
    ============================================ */
 
 .cn-status-badge {
-	border-radius: var(--summer-radius-pill) !important;
+	border-radius: var(--summer-radius-badge) !important;
+	border: 1px solid var(--summer-color-border) !important;
+	font-size: 10px !important;
+	font-weight: 500 !important;
+}
+
+.cn-status-badge--primary {
+	border-color: var(--summer-color-primary-badge-border) !important;
+}
+
+.cn-status-badge--warning {
+	border-color: var(--summer-color-warning-border) !important;
+}
+
+.cn-status-badge--success {
+	border-color: var(--summer-color-success-border) !important;
+}
+
+.cn-status-badge--error {
+	border-color: var(--summer-color-error-border) !important;
+}
+
+.cn-status-badge--info {
+	border-color: var(--summer-color-info-border) !important;
+}
+
+/* ============================================
+   TABLE ROWS — compact 50px rows like the docudesk data table
+   ============================================ */
+
+.cn-data-table tbody td {
+	padding-top: 7px !important;
+	padding-bottom: 7px !important;
 }
 
 /* ============================================
