@@ -382,13 +382,15 @@ header#header {
 }
 
 /* App menu — show the app ICONS (not text), inked dark on the white bar.
-   Overrides the global "show menu labels" mode for the Summer Breeze look. */
-#header nav.app-menu .app-menu-entry__label {
+   The leading `body` raises specificity above css/show-menu-labels.css (which
+   uses the same selector and would otherwise win on load order), so Summer
+   Breeze forces icon-mode regardless of the `show_menu_labels` admin setting. */
+body #header nav.app-menu .app-menu-entry__label {
 	display: none !important;
 }
 
-#header nav.app-menu .app-menu-icon,
-#header nav.app-menu .app-menu-entry__icon {
+body #header nav.app-menu .app-menu-icon,
+body #header nav.app-menu .app-menu-entry__icon {
 	display: flex !important;
 	visibility: visible !important;
 	opacity: 1 !important;
@@ -397,7 +399,7 @@ header#header {
 }
 
 /* Active app entry keeps the cobalt accent indicator. */
-#header nav.app-menu .app-menu-entry--active .app-menu-icon,
-#header nav.app-menu .app-menu-entry--active .app-menu-entry__icon {
+body #header nav.app-menu .app-menu-entry--active .app-menu-icon,
+body #header nav.app-menu .app-menu-entry--active .app-menu-entry__icon {
 	filter: none !important;
 }
