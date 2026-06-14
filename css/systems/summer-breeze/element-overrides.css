@@ -180,6 +180,41 @@ button,
 	border: 1px solid var(--summer-color-border) !important;
 }
 
+/* Table header row — white (no grey fill), small UPPERCASE muted labels, like
+   the docudesk data table. The stock NC header row uses --color-background-dark
+   which the theme maps to a pale blue; force it white here. */
+.cn-data-table thead th,
+.cn-data-table thead tr {
+	background: var(--summer-color-surface) !important;
+	background-color: var(--summer-color-surface) !important;
+}
+
+.cn-data-table thead th {
+	color: var(--summer-color-text-muted) !important;
+	text-transform: uppercase !important;
+	font-size: 12px !important;
+	font-weight: 500 !important;
+	border-bottom: 1px solid var(--summer-color-toggle-track) !important;
+}
+
+/* The actions toolbar itself is transparent (no pale rounded box) so the
+   search + toggle sit directly on the page, like the docudesk header. */
+.cn-actions-bar {
+	background: transparent !important;
+	padding-inline: 0 !important;
+}
+
+/* Inline search pill — 40px tall with room for the leading magnifier icon. */
+.cn-actions-bar__search-input {
+	height: 40px !important;
+	padding: 0 16px 0 40px !important;
+	box-shadow: var(--summer-shadow-panel) !important;
+}
+
+.cn-actions-bar__search-icon {
+	left: 14px !important;
+}
+
 /* Segmented view toggle (Cards/Table, Tiles/List) → white thumb on a neutral
    grey track, replacing the stock solid-primary active segment. */
 .cn-actions-bar__view-toggle {
@@ -199,7 +234,8 @@ button,
 	border-radius: var(--summer-radius-pill) !important;
 	color: var(--summer-color-text) !important;
 	box-shadow: none !important;
-	min-height: 32px !important;
+	min-height: 40px !important;
+	padding-inline: 16px !important;
 }
 
 /* The selected segment becomes the white "thumb". */
