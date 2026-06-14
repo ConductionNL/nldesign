@@ -1,11 +1,10 @@
-# Spec delta: Icon Assets (icon-assets)
+# icon-assets Specification
 
-New capability (retrofit — behavior already ships): the Amsterdam Design System icon and logo assets bundled in `img/icons/` and `img/logos/`, their naming-stability contract, the consumption API for other Nextcloud apps, and the MPL-2.0 licensing obligation.
-
-## ADDED Requirements
-
+## Purpose
+TBD - created by archiving change icon-assets. Update Purpose after archive.
+## Requirements
 ### Requirement: Bundled Icon and Logo Inventory
-The app MUST bundle the Amsterdam Design System icon set as individual SVG files in `img/icons/` (344 icons) and the organization logos in `img/logos/`. Icon filenames MUST follow the upstream Amsterdam Design System PascalCase names (e.g. `MagnifyingGlass.svg`), with filled variants carrying the `Fill` suffix (e.g. `AppleFill.svg`). The documented inventory in `img/ICONS.md` MUST match the filesystem.
+The app MUST bundle the Amsterdam Design System icon set as individual SVG files in `img/icons/` (344 icons) and the organization logos in `img/logos/` (23 logos). Icon filenames MUST follow the upstream Amsterdam Design System PascalCase names (e.g. `Search.svg`), with filled variants carrying the `Fill` suffix (e.g. `AppleFill.svg`). The documented inventory in `img/ICONS.md` MUST match the filesystem.
 
 #### Scenario: Documented icons exist on disk
 @e2e exclude static asset inventory — PHPUnit test compares docs to filesystem
@@ -31,8 +30,9 @@ The app MUST bundle the Amsterdam Design System icon set as individual SVG files
 Other Nextcloud apps MUST be able to consume the icons through Nextcloud's standard image-path API — `IURLGenerator::imagePath('nldesign', 'icons/{Name}.svg')` (or `OC.imagePath('nldesign', 'icons/{Name}.svg')` in frontend code) — without any nldesign-specific bootstrap. This URL contract only holds while the nldesign app is enabled; consumer documentation MUST state that consumers need a fallback (or an app dependency) for instances without nldesign.
 
 #### Scenario: Icon resolves through the image-path API
+@e2e exclude server-side image-path contract — static asset served by the NC app-image route, not a UI flow; verified by curl against the dev container and by the inventory regression test (tests/Unit/IconAssetsTest.php)
 - GIVEN the nldesign app is enabled
-- WHEN a page references the URL produced by `imagePath('nldesign', 'icons/MagnifyingGlass.svg')`
+- WHEN a page references the URL produced by `imagePath('nldesign', 'icons/Search.svg')`
 - THEN the server MUST return the SVG with an image SVG content type and an HTTP 200
 - AND the same MUST hold for logos via `imagePath('nldesign', 'logos/amsterdam.svg')`
 
@@ -77,3 +77,4 @@ The README's icon-documentation link MUST resolve to the actual documentation fi
 - GIVEN the icon and logo counts stated in `README.md`, `docs/reference/icons.md`, and `img/ICONS.md`
 - WHEN compared with the filesystem inventory
 - THEN all stated counts MUST match the actual number of files
+

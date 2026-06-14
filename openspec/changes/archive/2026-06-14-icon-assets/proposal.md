@@ -10,7 +10,7 @@ This is a retrofit/reverse-spec change: it specs the feature that already ships,
 
 ## What Changes
 
-- **NEW (spec only, behavior exists)** — `icon-assets` capability spec covering: asset inventory (344 icons, 6 logos), PascalCase naming convention with `Fill` variants matching upstream Amsterdam DS names, the image-path consumption contract for other apps, and graceful-degradation expectations when nldesign is disabled
+- **NEW (spec only, behavior exists)** — `icon-assets` capability spec covering: asset inventory (344 icons, 23 logos), PascalCase naming convention with `Fill` variants matching upstream Amsterdam DS names, the image-path consumption contract for other apps, and graceful-degradation expectations when nldesign is disabled
 - **NEW** — Naming-stability contract: icon/logo filenames are a public API; renames/removals are breaking changes that require a changelog entry and a major-ish version signal
 - **NEW** — Licensing requirement: assets originate from `@amsterdam/design-system-assets` (Mozilla Public License 2.0); the MPL-2.0 notice MUST remain co-located with the assets and named in app docs
 - **NEW** — Inventory regression test (PHPUnit): every icon name documented in `img/ICONS.md` resolves to an existing file; counts match the documented totals

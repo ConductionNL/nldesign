@@ -23,19 +23,21 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 - **No Build Required**: Fonts loaded via CDN, tokens are pre-compiled CSS
 
-- **Amsterdam Design System Icons**: Includes 344 SVG icons and 6 logos from the official Amsterdam Design System for use across all Nextcloud apps
+- **Amsterdam Design System Icons**: Includes 344 SVG icons from the official Amsterdam Design System, plus 23 organization logos, for use across all Nextcloud apps
 
 ## Icons
 
-The app includes **344 icons** and **6 logos** from the Amsterdam Design System:
+The app includes **344 icons** and **23 logos**:
 
-- Search, navigation, and UI icons
+- Search, navigation, and UI icons from the Amsterdam Design System
 - Filled and outline variants
-- Amsterdam municipal logos
+- Government and municipal organization logos
 - SVG format for scalability
 - Accessible via Nextcloud's image path API
 
-**[View Icon Documentation →](ICONS.md)**
+Icon and logo filenames are a public API: other apps reference them by name (e.g. `MagnifyingGlass.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and MPL-2.0 licensing contract.
+
+**[View Icon Documentation →](img/ICONS.md)**
 
 ## Installation
 
@@ -342,4 +344,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Full CSS variable mapping
 - Admin settings panel
 - Background image removal for clean Rijkshuisstijl compliance
-- **Amsterdam Design System Icons**: 344 SVG icons + 6 logos integrated from @amsterdam/design-system-assets
+- **Amsterdam Design System Icons**: 344 SVG icons integrated from @amsterdam/design-system-assets (MPL-2.0), plus 23 organization logos
