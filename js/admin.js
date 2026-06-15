@@ -18,7 +18,17 @@ function nldesignAdminMain() {
 	var settingsEl = document.getElementById('nldesign-settings');
 	var tokenSetSelect = document.getElementById('nldesign-token-set-select');
 	var hideSloganCheckbox = document.getElementById('nldesign-hide-slogan');
-	var previewBox = document.querySelector('.nldesign-preview-box');
+	var previewRoot = document.getElementById('nldesign-preview');
+
+	// Read a live CSS custom property with a fallback. Reads from <body> first
+	// (Nextcloud and the nldesign themes set their token vars there), then :root.
+	function readVar(name, fallback) {
+		var v = (getComputedStyle(document.body).getPropertyValue(name) || '').trim();
+		if (v === '') {
+			v = (getComputedStyle(document.documentElement).getPropertyValue(name) || '').trim();
+		}
+		return v || fallback;
+	}
 
 	// Parse token sets data from the template
 	var tokenSetsData = {};
@@ -63,30 +73,43 @@ function nldesignAdminMain() {
 		return '#' + ('0' + r.toString(16)).slice(-2) + ('0' + g.toString(16)).slice(-2) + ('0' + b.toString(16)).slice(-2);
 	}
 
-	// Update preview when token set changes
+	// Drive the rich preview (app shell + login) from the selected token set and
+	// the live NC token values. Primary comes from the selected set's metadata
+	// (it isn't applied until confirmed); the remaining colours mirror the live
+	// theme, so the token-editor pickers reflect into the preview too.
 	function updatePreview(tokenSet) {
+		if (!previewRoot) { return; }
 		var colors = getPreviewColors(tokenSet);
-		if (!previewBox) return;
+		var s = previewRoot.style;
+		s.setProperty('--prev-primary', colors.primary);
+		s.setProperty('--prev-primary-text', colors.primaryText || readVar('--color-primary-text', '#ffffff'));
+		s.setProperty('--prev-surface', readVar('--color-main-background', '#ffffff'));
+		s.setProperty('--prev-bg', readVar('--color-background-dark', '#f2f4f7'));
+		s.setProperty('--prev-text', readVar('--color-main-text', '#1b2733'));
+		s.setProperty('--prev-muted', readVar('--color-text-maxcontrast', '#6b7785'));
+		s.setProperty('--prev-border', readVar('--color-border', '#e3e9f0'));
+		s.setProperty('--prev-warning', readVar('--color-warning', '#c79a00'));
+		s.setProperty('--prev-error', readVar('--color-error', '#c0392b'));
+		s.setProperty('--prev-info', readVar('--color-info', readVar('--color-primary-element', colors.primary)));
+		s.setProperty('--prev-radius', readVar('--border-radius-element', '8px'));
+		s.setProperty('--prev-login-bg', colors.primary);
+	}
 
-		var header = previewBox.querySelector('.nldesign-preview-header');
-		var primaryButton = previewBox.querySelector('.nldesign-preview-button.primary');
-
-		if (header) {
-			header.style.backgroundColor = colors.primary;
-		}
-
-		if (primaryButton) {
-			primaryButton.style.backgroundColor = colors.primary;
-			primaryButton.style.borderColor = colors.primary;
-			primaryButton.style.color = colors.primaryText;
-
-			primaryButton.onmouseenter = function() {
-				this.style.backgroundColor = colors.primaryHover;
-			};
-			primaryButton.onmouseleave = function() {
-				this.style.backgroundColor = colors.primary;
-			};
-		}
+	// App / Login preview switch.
+	if (previewRoot) {
+		previewRoot.querySelectorAll('.nldesign-preview-switch-btn').forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				var view = btn.getAttribute('data-view');
+				previewRoot.querySelectorAll('.nldesign-preview-switch-btn').forEach(function(b) {
+					var on = b === btn;
+					b.classList.toggle('active', on);
+					b.setAttribute('aria-selected', on ? 'true' : 'false');
+				});
+				previewRoot.querySelectorAll('.nldesign-preview-stage').forEach(function(stage) {
+					stage.hidden = stage.getAttribute('data-view') !== view;
+				});
+			});
+		});
 	}
 
 	// Design system display names (inline fallback for designSystemLabel()).
@@ -667,6 +690,8 @@ function nldesignAdminMain() {
 		} else {
 			document.documentElement.style.setProperty(name, value);
 		}
+		// Reflect the live token edit into the rich preview.
+		updatePreview(tokenSetSelect ? tokenSetSelect.value : '');
 	}
 
 	function markDirty(name, value, container) {
@@ -1032,6 +1057,9 @@ function nldesignAdminMain() {
 	}
 
 	// Build one labelled checkbox per app; checked means "themed".
+	// Compact collapsed dropdown with search. The checkbox data model (one
+	// input[data-app-id] per app, checked === themed) is preserved inside the
+	// panel so saveAppTheming() keeps working unchanged.
 	function renderAppThemingList(listEl, apps) {
 		listEl.innerHTML = '';
 		if (apps.length === 0) {
@@ -1039,9 +1067,40 @@ function nldesignAdminMain() {
 			return;
 		}
 
+		var dropdown = document.createElement('div');
+		dropdown.className = 'nldesign-app-dropdown';
+
+		var trigger = document.createElement('button');
+		trigger.type = 'button';
+		trigger.className = 'nldesign-app-dropdown-trigger';
+		var triggerLabel = document.createElement('span');
+		trigger.appendChild(triggerLabel);
+
+		var panel = document.createElement('div');
+		panel.className = 'nldesign-app-dropdown-panel';
+
+		var searchWrap = document.createElement('div');
+		searchWrap.className = 'nldesign-app-dropdown-search';
+		var search = document.createElement('input');
+		search.type = 'search';
+		search.placeholder = t('nldesign', 'Search apps…');
+		search.setAttribute('aria-label', t('nldesign', 'Search apps'));
+		searchWrap.appendChild(search);
+
+		var optList = document.createElement('div');
+		optList.className = 'nldesign-app-dropdown-list';
+
+		function updateTriggerLabel() {
+			var boxes = optList.querySelectorAll('input[type="checkbox"][data-app-id]');
+			var themed = 0;
+			boxes.forEach(function(b) { if (b.checked) { themed++; } });
+			triggerLabel.textContent = t('nldesign', '{themed} of {total} apps themed', { themed: themed, total: boxes.length });
+		}
+
 		apps.forEach(function(app) {
-			var row = document.createElement('div');
-			row.className = 'nldesign-option';
+			var opt = document.createElement('div');
+			opt.className = 'nldesign-app-option';
+			opt.setAttribute('data-app-name', String(app.name || app.id).toLowerCase());
 
 			var cb = document.createElement('input');
 			cb.type = 'checkbox';
@@ -1049,15 +1108,39 @@ function nldesignAdminMain() {
 			cb.id = 'nldesign-app-theming-' + app.id;
 			cb.setAttribute('data-app-id', app.id);
 			cb.checked = (app.themed !== false);
+			cb.addEventListener('change', updateTriggerLabel);
 
 			var label = document.createElement('label');
 			label.setAttribute('for', cb.id);
 			label.textContent = app.name || app.id;
 
-			row.appendChild(cb);
-			row.appendChild(label);
-			listEl.appendChild(row);
+			opt.appendChild(cb);
+			opt.appendChild(label);
+			optList.appendChild(opt);
 		});
+
+		search.addEventListener('input', function() {
+			var q = search.value.trim().toLowerCase();
+			optList.querySelectorAll('.nldesign-app-option').forEach(function(opt) {
+				opt.hidden = q !== '' && opt.getAttribute('data-app-name').indexOf(q) === -1;
+			});
+		});
+
+		trigger.addEventListener('click', function(e) {
+			e.stopPropagation();
+			dropdown.classList.toggle('open');
+			if (dropdown.classList.contains('open')) { search.focus(); }
+		});
+		document.addEventListener('click', function(e) {
+			if (!dropdown.contains(e.target)) { dropdown.classList.remove('open'); }
+		});
+
+		panel.appendChild(searchWrap);
+		panel.appendChild(optList);
+		dropdown.appendChild(trigger);
+		dropdown.appendChild(panel);
+		listEl.appendChild(dropdown);
+		updateTriggerLabel();
 	}
 
 	// Collect unchecked apps as the exclusion list and POST it.

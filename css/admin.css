@@ -291,3 +291,149 @@
 	margin: 4px 0 0;
 	padding-left: 18px;
 }
+
+/* ==========================================================================
+ * Token editor — name, picker and revert on a single line
+ * ========================================================================== */
+.nldesign-token-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 7px 0;
+	border-bottom: 1px solid var(--color-border);
+}
+.nldesign-token-label-wrap {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	line-height: 1.25;
+}
+.nldesign-token-label { font-weight: 600; }
+.nldesign-token-name {
+	font-size: 11px;
+	color: var(--color-text-maxcontrast);
+	font-family: var(--font-face-monospace, monospace);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.nldesign-color-input-wrap { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.nldesign-color-picker { width: 34px; height: 32px; padding: 0; border: 1px solid var(--color-border); border-radius: var(--border-radius); background: none; cursor: pointer; }
+.nldesign-color-text { width: 104px; }
+.nldesign-text-input { width: 180px; flex: 0 0 auto; }
+.nldesign-reset-btn { flex: 0 0 auto; }
+.nldesign-token-custom-badge { display: inline-block; width: 7px; height: 7px; margin-left: 6px; border-radius: 50%; background: var(--color-primary-element); vertical-align: middle; }
+
+/* ==========================================================================
+ * Theming per app — collapsed dropdown + search (compact multi-select)
+ * ========================================================================== */
+.nldesign-app-dropdown { position: relative; max-width: 520px; }
+.nldesign-app-dropdown-trigger {
+	display: flex; align-items: center; justify-content: space-between; gap: 8px;
+	width: 100%; padding: 8px 12px; cursor: pointer;
+	border: 1px solid var(--color-border); border-radius: var(--border-radius);
+	background: var(--color-main-background); color: var(--color-main-text);
+}
+.nldesign-app-dropdown-trigger::after { content: "▾"; color: var(--color-text-maxcontrast); transition: transform .15s ease; }
+.nldesign-app-dropdown.open .nldesign-app-dropdown-trigger::after { transform: rotate(180deg); }
+.nldesign-app-dropdown-panel {
+	display: none; position: absolute; z-index: 50; left: 0; right: 0; margin-top: 4px;
+	background: var(--color-main-background); border: 1px solid var(--color-border);
+	border-radius: var(--border-radius); box-shadow: 0 4px 16px rgba(0,0,0,.16);
+	max-height: 320px; overflow: hidden;
+}
+.nldesign-app-dropdown.open .nldesign-app-dropdown-panel { display: flex; flex-direction: column; }
+.nldesign-app-dropdown-search { margin: 8px; }
+.nldesign-app-dropdown-search input { width: 100%; box-sizing: border-box; }
+.nldesign-app-dropdown-list { overflow-y: auto; padding: 0 4px 8px; }
+.nldesign-app-option { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: var(--border-radius); }
+.nldesign-app-option:hover { background: var(--color-background-hover); }
+.nldesign-app-option label { cursor: pointer; flex: 1; }
+.nldesign-app-option[hidden] { display: none; }
+
+/* ==========================================================================
+ * Rich preview — app shell + login, switchable. Colours come from --prev-*
+ * custom properties set live by admin.js.
+ * ========================================================================== */
+.nldesign-preview-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.nldesign-preview-head h3 { margin: 0; }
+.nldesign-preview-switch { display: inline-flex; padding: 3px; gap: 2px; background: var(--color-background-dark); border-radius: 999px; }
+.nldesign-preview-switch-btn { border: none; background: none; padding: 4px 14px; border-radius: 999px; cursor: pointer; color: var(--color-text-maxcontrast); font-weight: 500; }
+.nldesign-preview-switch-btn.active { background: var(--color-main-background); color: var(--color-main-text); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.nldesign-preview-stage[hidden] { display: none; }
+
+.nldesign-preview {
+	--prev-primary: #2874d1;
+	--prev-primary-text: #fff;
+	--prev-surface: #fff;
+	--prev-bg: #f2f4f7;
+	--prev-text: #1b2733;
+	--prev-muted: #6b7785;
+	--prev-border: #e3e9f0;
+	--prev-warning: #c79a00;
+	--prev-error: #c0392b;
+	--prev-info: #1f6fd0;
+	--prev-radius: 8px;
+	--prev-login-bg: var(--prev-primary);
+}
+
+/* --- mini app shell --- */
+.nl-mini {
+	position: relative; height: 300px; overflow: hidden;
+	border-radius: var(--border-radius-large); border: 1px solid var(--prev-border);
+	background: var(--prev-bg); display: flex; flex-direction: column;
+	box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+.nl-mini__navbar { height: 30px; flex: 0 0 30px; display: flex; align-items: center; gap: 14px; padding: 0 12px; background: var(--prev-primary); }
+.nl-mini__logo { width: 16px; height: 16px; border-radius: 50%; background: var(--prev-primary-text); opacity: .9; }
+.nl-mini__navitem { width: 26px; height: 6px; border-radius: 3px; background: var(--prev-primary-text); opacity: .45; }
+.nl-mini__navitem--active { opacity: .9; }
+.nl-mini__navspacer { flex: 1; }
+.nl-mini__avatar { width: 16px; height: 16px; border-radius: 50%; background: var(--prev-primary-text); opacity: .9; }
+.nl-mini__body { flex: 1; display: flex; min-height: 0; }
+.nl-mini__menu { flex: 0 0 78px; background: var(--prev-surface); border-right: 1px solid var(--prev-border); padding: 8px 6px; display: flex; flex-direction: column; gap: 4px; }
+.nl-mini__menuitem { font-size: 8px; color: var(--prev-muted); padding: 5px 7px; border-radius: 999px; white-space: nowrap; overflow: hidden; }
+.nl-mini__menuitem--active { background: var(--prev-primary); color: var(--prev-primary-text); }
+.nl-mini__content { flex: 1; padding: 10px; min-width: 0; }
+.nl-mini__widget { background: var(--prev-surface); border: 1px solid var(--prev-border); border-radius: var(--prev-radius); overflow: hidden; height: 100%; }
+.nl-mini__widget-head { font-size: 9px; font-weight: 700; color: var(--prev-text); padding: 7px 9px; }
+.nl-mini__table { width: 100%; border-collapse: collapse; }
+.nl-mini__table th { height: 5px; }
+.nl-mini__table thead th { border-bottom: 1px solid var(--prev-border); }
+.nl-mini__table td { padding: 6px 9px; border-bottom: 1px solid var(--prev-border); }
+.nl-mini__table td::after { content: ""; display: block; height: 5px; border-radius: 3px; background: var(--prev-border); }
+.nl-mini__table td:last-child::after { content: none; }
+.nl-mini__pill { display: inline-block; width: 30px; height: 10px; border-radius: 999px; }
+.nl-mini__pill--primary { background: color-mix(in srgb, var(--prev-primary) 20%, white); border: 1px solid var(--prev-primary); }
+.nl-mini__pill--warning { background: color-mix(in srgb, var(--prev-warning) 22%, white); border: 1px solid var(--prev-warning); }
+.nl-mini__pill--info { background: color-mix(in srgb, var(--prev-info) 22%, white); border: 1px solid var(--prev-info); }
+.nl-mini__sidebar { flex: 0 0 78px; background: var(--prev-surface); border-left: 1px solid var(--prev-border); padding: 10px 8px; display: flex; flex-direction: column; gap: 7px; }
+.nl-mini__sidebar-head { font-size: 8px; font-weight: 700; color: var(--prev-text); }
+.nl-mini__line { display: block; height: 5px; border-radius: 3px; background: var(--prev-border); }
+.nl-mini__line--short { width: 60%; }
+
+/* modal overlay over the shell */
+.nl-mini__modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.32); display: flex; align-items: center; justify-content: center; }
+.nl-mini__modal { width: 78%; background: var(--prev-surface); border-radius: var(--border-radius-large); box-shadow: 0 8px 30px rgba(0,0,0,.3); padding: 12px; }
+.nl-mini__modal-head { font-size: 11px; font-weight: 700; color: var(--prev-text); margin-bottom: 8px; }
+.nl-mini__modal-body { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.nl-mini__modal-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* buttons (shared by modal + login). Scoped under .nldesign-preview (0,2,0) so
+   they beat Nextcloud core's global button chrome (button:not(.button-vue,…) at
+   0,1,1), which would otherwise paint every preview button the same pale tint. */
+.nldesign-preview .nl-btn { font-size: 9px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1px solid transparent; box-shadow: none; cursor: default; color: #fff; min-height: 0; }
+.nldesign-preview .nl-btn--primary { background: var(--prev-primary); border-color: var(--prev-primary); color: var(--prev-primary-text); }
+.nldesign-preview .nl-btn--secondary { background: var(--prev-surface); border-color: var(--prev-border); color: var(--prev-text); }
+.nldesign-preview .nl-btn--warning { background: var(--prev-warning); border-color: var(--prev-warning); }
+.nldesign-preview .nl-btn--error { background: var(--prev-error); border-color: var(--prev-error); }
+.nldesign-preview .nl-btn--info { background: var(--prev-info); border-color: var(--prev-info); }
+
+/* --- mini login --- */
+.nl-login { height: 300px; border-radius: var(--border-radius-large); border: 1px solid var(--prev-border); background: var(--prev-login-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.nl-login__logo { width: 36px; height: 36px; border-radius: 50%; background: var(--prev-primary-text); opacity: .95; }
+.nl-login__card { width: 190px; background: var(--prev-surface); border-radius: var(--border-radius-large); box-shadow: 0 8px 30px rgba(0,0,0,.25); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.nl-login__field { height: 14px; border-radius: 999px; background: var(--prev-bg); border: 1px solid var(--prev-border); }
+.nl-login__submit { align-self: stretch; text-align: center; padding: 7px; }
+.nl-login__slogan { width: 130px; height: 6px; border-radius: 3px; background: var(--prev-primary-text); opacity: .6; }
