@@ -401,8 +401,20 @@ body #header nav.app-menu .app-menu-entry__icon {
 	filter: brightness(0) saturate(100%) !important;
 }
 
-/* Active app entry keeps the cobalt accent indicator. */
+/* The active app entry's icon must darken too — leaving it `filter:none` kept
+   the current app's icon white (NC ships app icons white for the coloured bar),
+   so it vanished on the white navbar while every other icon was dark. The
+   active state is still conveyed by NC's own indicator, not the icon colour. */
 body #header nav.app-menu .app-menu-entry--active .app-menu-icon,
 body #header nav.app-menu .app-menu-entry--active .app-menu-entry__icon {
-	filter: none !important;
+	filter: brightness(0) saturate(100%) !important;
+}
+
+/* App-menu overflow popover (apps that don't fit the bar) — ink those icons
+   dark too, wherever NC renders the popover. */
+body .app-menu-popover .app-menu-icon,
+body .app-menu-popover .app-menu-entry__icon,
+body .app-menu-more__list .app-menu-icon,
+body .app-menu-more__list .app-menu-entry__icon {
+	filter: brightness(0) saturate(100%) !important;
 }
