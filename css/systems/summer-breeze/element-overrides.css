@@ -45,7 +45,10 @@ body,
 	border-radius: var(--summer-radius-panel) !important;
 	box-shadow: var(--summer-shadow-panel) !important;
 	margin: 8px !important;
-	padding: 8px !important;
+	/* More breathing room at the top, tighter on the sides — the entries carry
+	   their own ~8px inset, so an even 8px all round read as too-large side
+	   gaps next to the wide active pill and a cramped top. */
+	padding: 16px 4px 10px 4px !important;
 }
 
 /* The inner Vue nav content sits flush inside the card — repeating the card
