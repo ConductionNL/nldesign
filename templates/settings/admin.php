@@ -103,12 +103,81 @@ style('nldesign', 'admin');
 	</div>
 
 	<div class="nldesign-preview" id="nldesign-preview">
-		<h3><?php p($l->t('Preview')); ?></h3>
-		<div class="nldesign-preview-box">
-			<div class="nldesign-preview-header"></div>
-			<div class="nldesign-preview-content">
-				<button class="nldesign-preview-button primary"><?php p($l->t('Primary button')); ?></button>
-				<button class="nldesign-preview-button"><?php p($l->t('Secondary button')); ?></button>
+		<div class="nldesign-preview-head">
+			<h3><?php p($l->t('Preview')); ?></h3>
+			<div class="nldesign-preview-switch" role="tablist" aria-label="<?php p($l->t('Preview view')); ?>">
+				<button type="button" class="nldesign-preview-switch-btn active" data-view="app" aria-selected="true"><?php p($l->t('App')); ?></button>
+				<button type="button" class="nldesign-preview-switch-btn" data-view="login" aria-selected="false"><?php p($l->t('Login')); ?></button>
+			</div>
+		</div>
+
+		<!-- App-shell preview: navbar, menu, content + table widget, sidebar, open modal -->
+		<div class="nldesign-preview-stage" data-view="app">
+			<div class="nl-mini">
+				<div class="nl-mini__navbar">
+					<span class="nl-mini__logo"></span>
+					<span class="nl-mini__navitem nl-mini__navitem--active"></span>
+					<span class="nl-mini__navitem"></span>
+					<span class="nl-mini__navitem"></span>
+					<span class="nl-mini__navspacer"></span>
+					<span class="nl-mini__avatar"></span>
+				</div>
+				<div class="nl-mini__body">
+					<nav class="nl-mini__menu">
+						<span class="nl-mini__menuitem nl-mini__menuitem--active"><?php p($l->t('Dashboard')); ?></span>
+						<span class="nl-mini__menuitem"><?php p($l->t('Orders')); ?></span>
+						<span class="nl-mini__menuitem"><?php p($l->t('Reports')); ?></span>
+						<span class="nl-mini__menuitem"><?php p($l->t('Settings')); ?></span>
+					</nav>
+					<main class="nl-mini__content">
+						<div class="nl-mini__widget">
+							<div class="nl-mini__widget-head"><?php p($l->t('Orders')); ?></div>
+							<table class="nl-mini__table">
+								<thead><tr><th></th><th></th><th></th></tr></thead>
+								<tbody>
+									<tr><td></td><td></td><td><span class="nl-mini__pill nl-mini__pill--primary"></span></td></tr>
+									<tr><td></td><td></td><td><span class="nl-mini__pill nl-mini__pill--warning"></span></td></tr>
+									<tr><td></td><td></td><td><span class="nl-mini__pill nl-mini__pill--info"></span></td></tr>
+								</tbody>
+							</table>
+						</div>
+					</main>
+					<aside class="nl-mini__sidebar">
+						<div class="nl-mini__sidebar-head"><?php p($l->t('Details')); ?></div>
+						<span class="nl-mini__line"></span>
+						<span class="nl-mini__line nl-mini__line--short"></span>
+						<span class="nl-mini__line"></span>
+					</aside>
+				</div>
+				<div class="nl-mini__modal-overlay">
+					<div class="nl-mini__modal">
+						<div class="nl-mini__modal-head"><?php p($l->t('Dialog')); ?></div>
+						<div class="nl-mini__modal-body">
+							<span class="nl-mini__line"></span>
+							<span class="nl-mini__line nl-mini__line--short"></span>
+						</div>
+						<div class="nl-mini__modal-actions">
+							<button type="button" class="nl-btn nl-btn--primary"><?php p($l->t('Primary')); ?></button>
+							<button type="button" class="nl-btn nl-btn--secondary"><?php p($l->t('Secondary')); ?></button>
+							<button type="button" class="nl-btn nl-btn--warning"><?php p($l->t('Alert')); ?></button>
+							<button type="button" class="nl-btn nl-btn--error"><?php p($l->t('Danger')); ?></button>
+							<button type="button" class="nl-btn nl-btn--info"><?php p($l->t('Info')); ?></button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Login-page preview -->
+		<div class="nldesign-preview-stage" data-view="login" hidden>
+			<div class="nl-login">
+				<div class="nl-login__logo"></div>
+				<div class="nl-login__card">
+					<span class="nl-login__field"></span>
+					<span class="nl-login__field"></span>
+					<button type="button" class="nl-btn nl-btn--primary nl-login__submit"><?php p($l->t('Log in')); ?></button>
+				</div>
+				<div class="nl-login__slogan"></div>
 			</div>
 		</div>
 	</div>
