@@ -14,7 +14,7 @@ Defines how the NL Design app synchronizes design token values with Nextcloud's 
 ## Requirements
 
 ### REQ-SYNC-001: Theming Metadata in Token Sets
-Token sets MAY include a `theming` object in the manifest that defines values suitable for synchronization with Nextcloud's built-in theming system.
+The system MUST support an optional `theming` object in a token set manifest that defines values suitable for synchronization with Nextcloud's built-in theming system.
 
 #### Scenario: Token set with full theming metadata
 - GIVEN the `token-sets.json` entry for `rijkshuisstijl` has a `theming` object
@@ -336,7 +336,7 @@ The theming sync endpoints MUST be registered in the app's route configuration.
 - GIVEN both theming routes
 - THEN both corresponding controller methods MUST have `@AuthorizedAdminSetting` annotations
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - Theming metadata in token sets: `TokenSetService::getAvailableTokenSets()` includes the `theming` object from `token-sets.json` entries when present (`lib/Service/TokenSetService.php` lines 85-87)
@@ -356,7 +356,7 @@ The theming sync endpoints MUST be registered in the app's route configuration.
 - All requirements in this spec are fully implemented.
 - Note: The implementation does not wrap `ThemingDefaults::set()` or `ImageManager::updateImage()` in try/catch -- if these throw, the endpoint will return a 500 error.
 
-### Standards & References
+## Standards & References
 - Nextcloud Theming API: `OCA\Theming\ThemingDefaults::set()` and `OCA\Theming\ImageManager::updateImage()` are internal Nextcloud APIs
 - OWASP Path Traversal Prevention: validated by checking for `..` and `/` prefix, enforcing allowed directories
 - Hex color validation: Standard CSS hex color format (3 or 6 digit)

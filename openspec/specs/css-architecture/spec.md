@@ -349,7 +349,7 @@ Design system CSS files MUST be organized in a `css/systems/{designSystemId}/` d
 - THEN its CSS files MUST be in `css/systems/custom-ds/`
 - AND they MUST NOT conflict with nldesign files
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - Design system driven loading: `Application.php` uses `DesignSystemService` to resolve which design system a token set uses and loads stylesheets from `design-systems.json` in declared order (lines 88-99)
@@ -369,7 +369,7 @@ Design system CSS files MUST be organized in a `css/systems/{designSystemId}/` d
 **Not yet implemented:**
 - All requirements in this spec are fully implemented.
 
-### ADR-CSS-001: Font Application via Body Inheritance (not universal selector)
+## ADR-CSS-001: Font Application via Body Inheritance (not universal selector)
 
 **Decision (2026-05-27):** NL Design font is applied to `body` and key Nextcloud
 containers without `!important`. Form elements (`button`, `input`, `textarea`,
@@ -385,7 +385,7 @@ violates the principle of least surprise.
 
 **References:** Issues #116, #117.
 
-### ADR-CSS-002: !important Usage Restricted to Essential Overrides
+## ADR-CSS-002: !important Usage Restricted to Essential Overrides
 
 **Decision (2026-05-27):** `!important` MUST only be used in two categories:
 
@@ -409,7 +409,7 @@ essential-only allows consuming apps to use normal specificity to customise.
 
 **References:** Issues #116, #117.
 
-### ADR-CSS-003: --color-focus Semi-Transparency is a Deliberate Exception
+## ADR-CSS-003: --color-focus Semi-Transparency is a Deliberate Exception
 
 **Decision (2026-05-27):** `--nldesign-color-focus: rgba(0, 123, 199, 0.5)` uses
 an rgba (semi-transparent) value. This is a DELIBERATE EXCEPTION to the
@@ -424,7 +424,7 @@ or if a contrast audit shows the current value fails on specific backgrounds.
 
 **References:** Issue #131.
 
-### Standards & References
+## Standards & References
 - CSS Custom Properties (CSS Variables) specification: https://www.w3.org/TR/css-variables-1/
 - NL Design System community design tokens: https://nldesignsystem.nl/
 - Rijkshuisstijl (Dutch government visual identity): https://www.rijkshuisstijl.nl/

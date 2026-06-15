@@ -78,7 +78,7 @@ The Docusaurus build SHALL complete without errors after all documentation chang
 - **WHEN** the built site is served
 - **THEN** the sidebar shows sections for Getting Started, Features, and Reference as collapsible groups
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - `docs/intro.md` exists as the documentation entry point
@@ -99,13 +99,13 @@ The Docusaurus build SHALL complete without errors after all documentation chang
 
 **Note:** The `docs/` directory lives at `nldesign/docs/` (not inside `docusaurus/`). Docusaurus is configured to read from the parent `docs/` folder.
 
-### Standards & References
+## Standards & References
 - Docusaurus documentation framework: https://docusaurus.io/
 - NL Design System community: https://nldesignsystem.nl/
 - Rijkshuisstijl brand guidelines: https://www.rijkshuisstijl.nl/
 - WCAG AA accessibility compliance for documentation sites
 
-### Specificity Assessment
+## Specificity Assessment
 - This spec is reasonably specific for documentation content requirements. It defines directory structure, page topics, sidebar ordering, and build requirements.
 - The spec does not prescribe exact `sidebar_position` values for each page -- it references them conceptually.
 - The spec mentions "39 available token sets" on the token sets showcase page -- this should stay in sync with the actual count (currently 39 CSS files in `css/tokens/`).

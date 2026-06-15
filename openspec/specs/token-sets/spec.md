@@ -339,7 +339,7 @@ Token set management endpoints MUST be registered in the route configuration.
 - GIVEN the routes configuration
 - THEN `GET /settings/tokenset-preview/{tokenSetId}` MUST be mapped to `settings#getTokenSetPreview`
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - Filesystem-based discovery: `TokenSetService::getAvailableTokenSets()` scans `css/tokens/` for `.css` files and merges metadata from `token-sets.json` (`lib/Service/TokenSetService.php` lines 62-98)
@@ -361,7 +361,7 @@ Token set management endpoints MUST be registered in the route configuration.
 **Not yet implemented:**
 - All requirements in this spec are fully implemented.
 
-### Standards & References
+## Standards & References
 - NL Design System community design tokens: https://nldesignsystem.nl/
 - W3C Design Tokens community group specification: https://design-tokens.github.io/community-group/format/
 - CSS Custom Properties specification: https://www.w3.org/TR/css-variables-1/
