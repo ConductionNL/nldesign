@@ -53,8 +53,8 @@ The admin settings panel MUST provide an **Upload** button that accepts a CSS fi
 - AND `--color-warning` MUST be removed (import is a full replace, not a merge)
 
 ### Requirement: Import Validation
-@e2e exclude All import-validation scenarios require file upload + server-side parse response assertions — backend validation logic, not testable via DOM; would mutate shared-env custom-overrides.css.
 On upload, the importer MUST validate each CSS custom property against the canonical editable token registry. Only tokens on the editable list MUST be written.
+@e2e exclude All import-validation scenarios require file upload + server-side parse response assertions — backend validation logic, not testable via DOM; would mutate shared-env custom-overrides.css.
 
 #### Scenario: File contains unknown tokens
 - GIVEN an uploaded CSS file contains `--color-primary: #aa0000` (known) and `--my-custom-var: red` (unknown)
@@ -90,8 +90,8 @@ On upload, the importer MUST validate each CSS custom property against the canon
 - AND `custom-overrides.css` MUST remain unchanged
 
 ### Requirement: Import Result Feedback
-@e2e exclude Requires performing a file upload that mutates shared-env custom-overrides.css — not safe to run in shared test environment.
 After a successful import, the UI MUST show a summary of the import result before the admin can continue.
+@e2e exclude Requires performing a file upload that mutates shared-env custom-overrides.css — not safe to run in shared test environment.
 
 #### Scenario: Import summary is shown
 - GIVEN a file with 15 tokens was uploaded, of which 12 were known and 3 were unknown
@@ -101,8 +101,8 @@ After a successful import, the UI MUST show a summary of the import result befor
 - AND the token editor forms MUST immediately reflect the imported values without a page reload
 
 ### Requirement: Upload Endpoint
-@e2e exclude API endpoint assertion (multipart POST, JSON response format) — backend/network-layer, not testable via DOM; upload control presence is covered by token-import-export spec-coverage.
 The import MUST be handled by a dedicated POST endpoint that accepts a multipart file upload.
+@e2e exclude API endpoint assertion (multipart POST, JSON response format) — backend/network-layer, not testable via DOM; upload control presence is covered by token-import-export spec-coverage.
 
 #### Scenario: Upload endpoint receives file
 - GIVEN the admin submits a file via the Upload button

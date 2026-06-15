@@ -239,7 +239,7 @@ The hide slogan setting takes effect at boot time (CSS injection), so changes MU
 - THEN the slogan MUST be hidden
 - AND this confirms the setting is active
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - Configuration storage: `Application.php` reads `hide_slogan` from `IConfig` with default `'0'`, compares with `=== '1'` (line 85)
@@ -254,7 +254,7 @@ The hide slogan setting takes effect at boot time (CSS injection), so changes MU
 **Not yet implemented:**
 - All requirements in this spec are fully implemented.
 
-### Standards & References
+## Standards & References
 - Rijkshuisstijl guidelines: Dutch government login pages should present clean, branded appearance without third-party slogans
 - WCAG 2.1 AA: hiding decorative text with `display: none` correctly removes elements from the accessibility tree (this is acceptable for non-functional slogan text)
 - Nextcloud login page structure: `footer.guest-box` is the standard container for the slogan on guest/login pages

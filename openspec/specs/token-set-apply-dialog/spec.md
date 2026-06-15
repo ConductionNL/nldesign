@@ -70,8 +70,8 @@ Every token row in the dialog MUST have a checkbox. All checkboxes MUST be check
 - THEN all checkboxes MUST be set to checked or unchecked respectively
 
 ### Requirement: Live Preview in Dialog
-@e2e exclude Live preview via inline style injection — requires specific token values to assert; checking/unchecking interactions covered indirectly by checkbox-presence tests.
 Checked rows MUST update the live page preview immediately as the admin checks and unchecks them, so they can see the effect before confirming.
+@e2e exclude Live preview via inline style injection — requires specific token values to assert; checking/unchecking interactions covered indirectly by checkbox-presence tests.
 
 #### Scenario: Admin checks a row
 - GIVEN the dialog is open and `--color-primary` row is checked
@@ -93,8 +93,8 @@ Checked rows MUST update the live page preview immediately as the admin checks a
 - AND the token-set dropdown MUST remain on its previous value
 
 ### Requirement: Apply Action
-@e2e exclude Clicking Apply POSTs to /api/overrides and changes IConfig token_set — mutates shared env custom-overrides.css and active token set.
 Clicking **Apply** MUST write only the checked token values to `custom-overrides.css` and close the dialog.
+@e2e exclude Clicking Apply POSTs to /api/overrides and changes IConfig token_set — mutates shared env custom-overrides.css and active token set.
 
 #### Scenario: Admin applies selected changes
 - GIVEN 8 tokens are shown and 6 are checked
@@ -118,8 +118,8 @@ Clicking **Apply** MUST write only the checked token values to `custom-overrides
 - AND no pre-existing custom override MUST be lost
 
 ### Requirement: Token Set Applied Together With Overrides
-@e2e exclude Requires Apply click and IConfig/filesystem verification — mutates shared env.
-Clicking **Apply** MUST both write the checked token values to `custom-overrides.css` AND save the selected token set as the new active base layer. The NL Design token set CSS file is NOT injected directly by the dialog — it is registered via the normal `token_set` config key and loaded on the next request as part of the standard CSS stack.
+Clicking **Apply** MUST both write the checked token values to `custom-overrides.css` AND save the selected token set as the new active base layer.
+@e2e exclude Requires Apply click and IConfig/filesystem verification — mutates shared env. The NL Design token set CSS file is NOT injected directly by the dialog — it is registered via the normal `token_set` config key and loaded on the next request as part of the standard CSS stack.
 
 #### Scenario: Active token set in config after apply
 - GIVEN the admin was on rijkshuisstijl and applied values from utrecht

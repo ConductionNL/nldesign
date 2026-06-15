@@ -277,7 +277,7 @@ The menu labels and hide slogan features MUST be independently configurable and 
 - THEN the slogan MUST be visible
 - AND after logging in, the header MUST show text labels
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - Configuration storage: `Application.php` reads `show_menu_labels` from `IConfig` with default `'0'`, compares with `=== '1'` (line 86)
@@ -299,7 +299,7 @@ The menu labels and hide slogan features MUST be independently configurable and 
 **Not yet implemented:**
 - All requirements in this spec are fully implemented.
 
-### Standards & References
+## Standards & References
 - WCAG 2.1 AA: Text labels improve discoverability and accessibility (SC 1.3.1 Info and Relationships, SC 3.3.2 Labels or Instructions)
 - NL Design System: Government users may be unfamiliar with Nextcloud icon conventions; text labels align with government UX guidelines for clarity
 - Nextcloud header navigation: `.app-menu-entry`, `.app-menu-entry__icon`, `.app-menu-entry__label` are standard Nextcloud component classes from `AppMenuEntry.vue`

@@ -10,8 +10,8 @@ After an admin selects a different token set in nldesign, offer to automatically
 ## Requirements
 
 ### Requirement: Theming Metadata in Token Sets
+The system MUST support an optional `theming` object on each token set entry in `token-sets.json`, with optional fields: `primary_color`, `background_color`, `logo`, and `background`.
 @e2e exclude API response structure assertion (GET /settings/tokensets) — backend/JSON validation, not testable via browser UI.
-Each token set entry in `token-sets.json` MAY include a `theming` object with optional fields: `primary_color`, `background_color`, `logo`, and `background`.
 
 #### Scenario: Token set with full theming metadata
 - GIVEN a token set entry in `token-sets.json` has a `theming` object with `primary_color`, `background_color`, `logo`, and `background` fields
@@ -30,8 +30,8 @@ Each token set entry in `token-sets.json` MAY include a `theming` object with op
 - AND absent fields SHALL NOT appear (no null values)
 
 ### Requirement: Get Current Theming Values Endpoint
-@e2e exclude API endpoint assertion (GET /settings/theming response structure, 403 for non-admin) — not testable via browser UI.
 The system MUST provide a `GET /settings/theming` endpoint that returns the current Nextcloud theming values for comparison in the dialog.
+@e2e exclude API endpoint assertion (GET /settings/theming response structure, 403 for non-admin) — not testable via browser UI.
 
 #### Scenario: Retrieve current theming values
 - GIVEN the admin is authenticated
@@ -46,8 +46,8 @@ The system MUST provide a `GET /settings/theming` endpoint that returns the curr
 - THEN the response SHALL be a 403 status
 
 ### Requirement: Update Theming Values Endpoint
-@e2e exclude API endpoint assertions (POST /settings/theming, 400/413 error responses, file upload validation) — backend validation, not testable via browser UI; would mutate shared NC theming.
 The system MUST provide a `POST /settings/theming` endpoint that updates Nextcloud's built-in theming values.
+@e2e exclude API endpoint assertions (POST /settings/theming, 400/413 error responses, file upload validation) — backend validation, not testable via browser UI; would mutate shared NC theming.
 
 #### Scenario: Update colors only
 - GIVEN the admin sends `{ "primary_color": "#003865", "background_color": "#003865" }`
@@ -109,8 +109,8 @@ The system MUST display a confirmation dialog after a token set with theming met
 - THEN no dialog SHALL appear
 
 ### Requirement: Dialog Preview Boxes
-@e2e exclude Dialog-internal rendering — only verifiable after triggering the dialog via token-set save, which mutates IConfig and NC theming; safe-to-trigger path not available.
 The confirmation dialog MUST display Nextcloud-style theming preview boxes showing the visual effect of the proposed changes.
+@e2e exclude Dialog-internal rendering — only verifiable after triggering the dialog via token-set save, which mutates IConfig and NC theming; safe-to-trigger path not available.
 
 #### Scenario: Current preview reflects active theming
 - GIVEN the dialog is displayed
@@ -127,8 +127,8 @@ The confirmation dialog MUST display Nextcloud-style theming preview boxes showi
 - AND if the token set has a `logo`, it SHALL be overlaid in the center
 
 ### Requirement: Dialog User Actions
-@e2e exclude Requires dialog to be open — dialog trigger requires token-set save which mutates IConfig; confirm action mutates NC theming. Both are unsafe in shared env.
 The dialog MUST provide Cancel and Update actions.
+@e2e exclude Requires dialog to be open — dialog trigger requires token-set save which mutates IConfig; confirm action mutates NC theming. Both are unsafe in shared env.
 
 #### Scenario: User confirms update
 - GIVEN the dialog is displayed
@@ -144,8 +144,8 @@ The dialog MUST provide Cancel and Update actions.
 - AND the token set CSS change SHALL remain applied (only Nextcloud theming is skipped)
 
 ### Requirement: Bundled Organization Images
-@e2e exclude Filesystem assertions (file existence, valid image type) — not testable via browser UI.
 Organization logos and background images MUST be stored as static files within the nldesign app directory.
+@e2e exclude Filesystem assertions (file existence, valid image type) — not testable via browser UI.
 
 #### Scenario: Logo file stored correctly
 - GIVEN a token set has `"logo": "img/logos/vng.svg"` in its theming metadata

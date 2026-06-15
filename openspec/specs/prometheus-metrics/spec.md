@@ -282,7 +282,7 @@ The MetricsController MUST receive all required dependencies via constructor inj
 - THEN it MUST receive: `LoggerInterface` (for error logging)
 - AND it MAY use `\OCP\Server::get(\OCP\IConfig::class)` for configuration access (stateless pattern)
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - MetricsController at `lib/Controller/MetricsController.php` with `@NoCSRFRequired` annotation
@@ -304,7 +304,7 @@ The MetricsController MUST receive all required dependencies via constructor inj
 - All requirements in this spec are fully implemented.
 - Note: `nldesign_requests_total` and `nldesign_request_duration_seconds` (mentioned in original spec) are NOT implemented -- these require request-level instrumentation middleware which is not present. The implemented metrics focus on configuration state which is appropriate for a CSS-only theming app.
 
-### Standards & References
+## Standards & References
 - Prometheus text exposition format: https://prometheus.io/docs/instrumenting/exposition_formats/
 - OpenMetrics specification: https://openmetrics.io/
 - Nextcloud server monitoring patterns

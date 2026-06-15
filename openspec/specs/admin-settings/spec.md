@@ -35,8 +35,8 @@ The admin settings panel MUST be registered in the Nextcloud Theming section wit
 - AND no nldesign CSS MUST be injected into the page
 
 ### REQ-ASET-002: Template Response and Parameters
-@e2e exclude PHP controller internals (TemplateResponse parameters, default config values) — not testable via browser UI; covered by unit tests.
 The settings form MUST return a `TemplateResponse` with all required parameters for the admin template.
+@e2e exclude PHP controller internals (TemplateResponse parameters, default config values) — not testable via browser UI; covered by unit tests.
 
 #### Scenario: Settings panel loads template with all parameters
 - GIVEN the admin opens the NL Design settings panel
@@ -203,8 +203,8 @@ The settings panel MUST include external links to relevant documentation with pr
 - AND `target="_blank"` MUST open in a new tab/window
 
 ### REQ-ASET-008: Vanilla Implementation (No Vue)
-@e2e exclude Implementation-architecture requirement (template type, build tooling) — verified by code inspection and the fact that the admin page loads correctly; not testable via browser UI.
 The admin settings MUST be implemented using vanilla PHP templates and vanilla JavaScript without Vue, webpack, or any frontend build step.
+@e2e exclude Implementation-architecture requirement (template type, build tooling) — verified by code inspection and the fact that the admin page loads correctly; not testable via browser UI.
 
 #### Scenario: Template is plain PHP
 - GIVEN the settings template at `templates/settings/admin.php`
@@ -319,8 +319,8 @@ The settings panel MUST pass configuration data to JavaScript via HTML data attr
 - AND these values MUST drive the initial state of the dropdown and preview
 
 ### REQ-ASET-013: Localization Support
-@e2e exclude l10n system verification — requires Dutch-language session and translation file inspection; not testable via browser UI in English-only test environment.
 All user-visible text in the settings panel MUST be localizable via Nextcloud's l10n system.
+@e2e exclude l10n system verification — requires Dutch-language session and translation file inspection; not testable via browser UI in English-only test environment.
 
 #### Scenario: All static text uses l10n
 - GIVEN the settings template renders
@@ -339,7 +339,7 @@ All user-visible text in the settings panel MUST be localizable via Nextcloud's 
 - WHEN the settings panel loads
 - THEN all strings MUST fall back to English (the source strings)
 
-### Current Implementation Status
+## Current Implementation Status
 
 **Fully implemented:**
 - Settings panel registration in the `theming` section with priority 50 (`lib/Settings/Admin.php`: `getSection()` returns `'theming'`, `getPriority()` returns `50`)
@@ -362,7 +362,7 @@ All user-visible text in the settings panel MUST be localizable via Nextcloud's 
 **Not yet implemented:**
 - All requirements in this spec are fully implemented.
 
-### Standards & References
+## Standards & References
 - NL Design System community: https://nldesignsystem.nl/
 - Nextcloud `ISettings` interface for admin settings registration
 - Nextcloud `TemplateResponse` for server-side rendered PHP templates
