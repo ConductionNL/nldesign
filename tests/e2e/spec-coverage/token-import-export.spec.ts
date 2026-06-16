@@ -23,7 +23,10 @@ test.describe('token-import-export', () => {
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
 			await page.waitForLoadState('networkidle')
-			const downloadBtn = page.locator('button:has-text("Download")')
+			// The export/download control of the editor panel is the canonical
+			// `#nldesign-export-btn`. Uploaded custom token sets each render their
+			// own per-row "Download" button, so a text-only locator is ambiguous.
+			const downloadBtn = page.locator('#nldesign-export-btn')
 			await expect(downloadBtn).toBeVisible()
 		},
 	)

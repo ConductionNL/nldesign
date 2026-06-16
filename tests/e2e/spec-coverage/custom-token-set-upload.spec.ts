@@ -135,9 +135,15 @@ test.describe('custom-token-set-upload', () => {
 			await expect(row).toBeVisible({ timeout: 10000 })
 			await expect(row.locator('.nldesign-badge--warning')).toBeVisible()
 
-			// Clean up.
-			page.once('dialog', (d) => d.accept())
+			// Clean up. Delete opens an OC.dialogs.confirm in-DOM modal; confirm via
+			// its primary button (not a native dialog event).
 			await row.locator('button:has-text("Delete")').click()
+			// NC32 OC.dialogs.confirm renders an @nextcloud/dialogs Vue dialog whose
+			// confirm action is the primary button (aria-label "Yes").
+			const confirmBtn = page.locator('.dialog__modal[role="dialog"] button.button-vue--primary')
+			await expect(confirmBtn).toBeVisible({ timeout: 10000 })
+			await confirmBtn.click()
+			await expect(row).toBeHidden({ timeout: 10000 })
 		},
 	)
 
@@ -192,9 +198,15 @@ test.describe('custom-token-set-upload', () => {
 			await expect(row.locator('button:has-text("Download")')).toBeVisible()
 			await expect(row.locator('button:has-text("Delete")')).toBeVisible()
 
-			// Delete removes the row.
-			page.once('dialog', (d) => d.accept())
+			// Delete removes the row. The delete button opens an OC.dialogs.confirm
+			// in-DOM modal (NOT a native browser confirm), so confirm by clicking
+			// the dialog's primary button rather than handling a `dialog` event.
 			await row.locator('button:has-text("Delete")').click()
+			// NC32 OC.dialogs.confirm renders an @nextcloud/dialogs Vue dialog whose
+			// confirm action is the primary button (aria-label "Yes").
+			const confirmBtn = page.locator('.dialog__modal[role="dialog"] button.button-vue--primary')
+			await expect(confirmBtn).toBeVisible({ timeout: 10000 })
+			await confirmBtn.click()
 			await expect(row).toBeHidden({ timeout: 10000 })
 		},
 	)

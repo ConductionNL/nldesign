@@ -22,14 +22,49 @@ async function nldesignStyleCount(page): Promise<number> {
 	)
 }
 
+/**
+ * Expand the per-app theming dropdown and filter it to the target app so its
+ * checkbox is visible AND inside the (scrollable) panel viewport. The list is
+ * rendered inside a collapsed `.nldesign-app-dropdown-panel`; every checkbox
+ * exists in the DOM but is hidden until the trigger is clicked, and the panel
+ * scrolls internally, so far-down rows stay outside the click viewport until
+ * the search field filters the list down to a single matching row.
+ */
+async function openAppThemingDropdown(page, appName = TARGET_APP) {
+	const trigger = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-trigger')
+	if (await trigger.count() === 0) {
+		// No dropdown variant (flat list) — nothing to expand.
+		return
+	}
+	if (!(await page.locator('#nldesign-app-theming-list .nldesign-app-dropdown.open').count())) {
+		await trigger.click()
+	}
+	const search = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-search input')
+	await search.waitFor({ state: 'visible' })
+	await search.fill(appName)
+}
+
 /** Set the target app's themed state via the admin panel and save. */
 async function setThemed(page, themed: boolean) {
 	await page.goto(THEMING_URL)
 	await page.waitForLoadState('networkidle')
+	await openAppThemingDropdown(page)
 	const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
-	await box.waitFor({ state: 'visible' })
+	// The raw <input> is visually hidden off-canvas (position:absolute, left:-9999px),
+	// so Playwright cannot click it directly. The actual control is the associated
+	// <label>; clicking it toggles the checkbox. Read state from the input.
+	const id = await box.getAttribute('id')
+	const label = page.locator(`#nldesign-app-theming-list label[for="${id}"]`)
+	await label.waitFor({ state: 'visible' })
 	if ((await box.isChecked()) !== themed) {
-		await box.setChecked(themed)
+		await label.click()
+	}
+	// Collapse the dropdown so its open panel/search field no longer overlaps
+	// (and intercepts pointer events for) the Save button below it.
+	const trigger = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-trigger')
+	if (await trigger.count() > 0) {
+		await trigger.click()
+		await expect(page.locator('#nldesign-app-theming-list .nldesign-app-dropdown.open')).toHaveCount(0)
 	}
 	await page.locator('#nldesign-app-theming-save').click()
 	// Allow the POST to round-trip.
@@ -102,6 +137,7 @@ test.describe('per-app-theming', () => {
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
 			await page.waitForLoadState('networkidle')
+			await openAppThemingDropdown(page)
 			const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
 			await box.waitFor({ state: 'visible' })
 			const id = await box.getAttribute('id')
