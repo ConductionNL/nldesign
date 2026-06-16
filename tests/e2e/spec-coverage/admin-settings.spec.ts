@@ -136,9 +136,12 @@ test.describe('admin-settings', () => {
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
 			await page.waitForLoadState('networkidle')
-			const previewBox = page.locator('.nldesign-preview-box')
+			// Live preview is rendered as `.nldesign-preview` (id #nldesign-preview)
+			// containing app/login `.nldesign-preview-stage` shells. The primary
+			// action is the `.nl-btn--primary` button inside the app-shell stage.
+			const previewBox = page.locator('#nldesign-preview')
 			await expect(previewBox).toBeVisible()
-			const primaryBtn = previewBox.locator('button, .nldesign-preview-button').first()
+			const primaryBtn = previewBox.locator('.nl-btn--primary').first()
 			await expect(primaryBtn).toBeVisible()
 		},
 	)

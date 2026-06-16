@@ -42,7 +42,12 @@ class CssParserService
      */
     public function parseDeclarations(string $content): ?array
     {
-        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $content, $matches, PREG_SET_ORDER);
+        // Match each `--name: value;` custom-property declaration anywhere in the
+        // block. The previous `^…/m` anchor required every declaration to start a
+        // line, which silently dropped all but the first when several share one
+        // line (e.g. a minified `:root { --a: x; --b: y; }`). A `var(--ref)`
+        // inside a value is never captured because it is not followed by `:value;`.
+        preg_match_all('/(--[\w-]+)\s*:\s*([^;]+);/', $content, $matches, PREG_SET_ORDER);
 
         if (empty($matches) === true) {
             return null;
