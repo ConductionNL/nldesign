@@ -295,13 +295,28 @@ button,
 	padding: 16px !important;
 }
 
-/* Self-carded inner content (stat blocks) goes flush inside the card. */
-.cn-dashboard-grid .cn-stats-block {
+/* Self-carded inner content (stat blocks, table/detail cards) goes flush inside
+   the widget — the widget shell IS the card, so an inner container drawing its
+   own rounded border produced rounded-corners-inside-rounded-corners. Scoped to
+   the widget wrapper so it applies in BOTH grid engines (cn-dashboard-grid and
+   the newer cn-widget-grid). */
+.cn-dashboard-grid .cn-stats-block,
+.cn-widget-wrapper .cn-stats-block {
 	background: transparent !important;
 	border: none !important;
 	border-radius: 0 !important;
 	box-shadow: none !important;
 	padding: 0 !important;
+}
+
+.cn-widget-wrapper .cn-table-container,
+.cn-widget-wrapper .cn-table-widget,
+.cn-widget-wrapper .cn-detail-card,
+.cn-widget-wrapper .cn-card-grid {
+	background: transparent !important;
+	border: none !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
 }
 
 /* Dashboard header — keep the action buttons pinned top-right. The header is a
