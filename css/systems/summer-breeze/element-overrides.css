@@ -62,9 +62,14 @@ body,
 	padding: 0 !important;
 }
 
-/* Collapsed navigation keeps no right margin. */
+/* Collapsed navigation slides off-screen. Our floating-card base sets
+   `margin: 8px !important`, whose !important shorthand would otherwise beat
+   NC's own (non-important) collapse rule
+   `margin-inline-start: calc(-1 * min(300px, …))` and pin the card in place —
+   so the fold toggle appeared to do nothing. Re-apply the slide here. */
 #app-navigation.app-navigation--close,
 .app-navigation.app-navigation--close {
+	margin-inline-start: calc(-1 * min(300px, var(--app-navigation-max-width, 300px))) !important;
 	margin-right: 0 !important;
 }
 
