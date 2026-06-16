@@ -209,31 +209,34 @@ The metrics endpoint MUST be resilient to individual metric collection failures 
 - AND both warnings MUST be logged independently
 
 ### REQ-PROM-009: Health Check Endpoint
-The app MUST expose a health check endpoint that returns JSON status for monitoring and load balancers.
+The app MUST expose a public health check endpoint at `GET /api/health` for monitoring and load balancers. The endpoint MUST be served by the OpenRegister AppHost observability engine's `GenericHealthController` (ADR-040), via a thin `OCA\NLDesign\Controller\HealthController` subclass so that the route name (`health#index`) and URL are unchanged. The checks MUST be declared in `src/manifest.json` using only the OpenRegister-independent primitives (`database`, `filesystem`, `appEnabled`) — never `orAvailable` — because nldesign has no OpenRegister dependency.
 
-#### Scenario: Health check returns OK
-- GIVEN the app configuration is accessible
-- AND `IConfig::getAppValue('nldesign', 'token_set', 'rijkshuisstijl')` returns a non-empty string
+#### Scenario: Health check returns the canonical envelope
+- GIVEN the app configuration is accessible and the database and filesystem are healthy
 - WHEN `GET /index.php/apps/nldesign/api/health` is called
-- THEN the response MUST be JSON with `{"status": "ok", "checks": {"configuration": "ok"}}`
+- THEN the response MUST be JSON with the ADR-006 envelope `{"status", "app", "version", "checks"}`
+- AND `status` MUST be `"ok"` with `checks.database`, `checks.filesystem`, and `checks.nldesign` all `"ok"`
 
-#### Scenario: Health check returns degraded
-- GIVEN the token set configuration returns an empty string
-- WHEN the health check runs
-- THEN `status` MUST be `"ok"` (overall)
-- AND `checks.configuration` MUST be `"degraded"`
+#### Scenario: Critical check failure yields 503 under adr006 policy
+- GIVEN a `severity: "critical"` check (database or appEnabled) fails
+- WHEN the health endpoint is called
+- THEN the response MUST be HTTP 503 with `status: "error"` and the failing check value starting with `failed`
 
-#### Scenario: Health check returns error on failure
-- GIVEN the IConfig service throws an exception
-- WHEN the health check runs
-- THEN `status` MUST be `"error"`
-- AND `checks.configuration` MUST be `"error"`
-- AND the error MUST be logged via the logger
+#### Scenario: Degraded filesystem check does not error the overall status
+- GIVEN the `filesystem` check (`severity: "degraded"`) fails while critical checks pass
+- WHEN the health endpoint is called
+- THEN the response MUST be HTTP 200 with `status: "degraded"` and `checks.filesystem` starting with `failed`
 
 #### Scenario: Health endpoint is publicly accessible without CSRF
 - GIVEN a monitoring system calls the health endpoint
 - WHEN the request is made
-- THEN the `@NoCSRFRequired` annotation MUST allow access without a CSRF token
+- THEN the engine's `#[PublicPage]` + `#[NoCSRFRequired]` posture MUST allow access without a session or CSRF token
+
+#### Scenario: Nextcloud boots when OpenRegister is absent
+- GIVEN OpenRegister is disabled or not installed
+- WHEN Nextcloud boots and `Application::register()` runs
+- THEN no OpenRegister class MUST be loaded (the thin `HealthController` subclass autoloads its OpenRegister parent only on route dispatch, never at bootstrap), so nldesign still loads and themes
+- AND only a request to `/api/health` would surface a degraded 5xx
 
 #### Scenario: Route registration
 - GIVEN the app's routes configuration
@@ -277,10 +280,10 @@ The MetricsController MUST receive all required dependencies via constructor inj
 - THEN it MUST use the injected services
 - AND it MUST NOT use `new TokenSetService()` or similar direct instantiation
 
-#### Scenario: Health controller dependencies
-- GIVEN the HealthController is constructed
-- THEN it MUST receive: `LoggerInterface` (for error logging)
-- AND it MAY use `\OCP\Server::get(\OCP\IConfig::class)` for configuration access (stateless pattern)
+#### Scenario: Health controller is engine-owned
+- GIVEN the health endpoint is dispatched
+- THEN it MUST be served by `OCA\OpenRegister\AppHost\Controller\GenericHealthController` (via the thin `OCA\NLDesign\Controller\HealthController` subclass), NOT by a bespoke nldesign health implementation
+- AND nldesign MUST NOT hand-roll the health checks or the response envelope
 
 ## Current Implementation Status
 
@@ -295,8 +298,9 @@ The MetricsController MUST receive all required dependencies via constructor inj
 - Content-Type header: `text/plain; version=0.0.4; charset=utf-8`
 - Error resilience: independent try/catch blocks for token set and override metrics
 - Warning logging on metric collection failures
-- HealthController at `lib/Controller/HealthController.php` with `@NoCSRFRequired`
-- Health check: configuration check with ok/degraded/error status
+- HealthController at `lib/Controller/HealthController.php` is a thin subclass of the OpenRegister AppHost `GenericHealthController` (ADR-040); `index()` delegates to `parent::index()` and re-declares `#[PublicPage]` + `#[NoCSRFRequired]`
+- Health checks are declarative in `src/manifest.json` (`observability.health`): `database` (critical), `filesystem` (degraded), `appEnabled: nldesign` (critical), `adr006` status-code policy — OR-independent primitives only, no `orAvailable`, no OR-object metrics
+- Health response envelope: ADR-006 `{status, app, version, checks}`, engine-owned
 - Routes: `/api/metrics` -> `metrics#index`, `/api/health` -> `health#index`
 - Constructor injection of IConfig, TokenSetService, CustomOverridesService, LoggerInterface (promoted parameters with `private readonly`)
 
