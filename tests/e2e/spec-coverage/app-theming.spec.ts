@@ -1,0 +1,113 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ * SPDX-License-Identifier: EUPL-1.2
+ *
+ * @e2e openspec/specs/per-app-theming/spec.md
+ *
+ * Per-app theming toggle: excluding an app suppresses ALL nldesign CSS on that
+ * app's pages while every other app (and login/settings) stays themed.
+ */
+import { test, expect } from '@playwright/test'
+
+const THEMING_URL = '/settings/admin/theming'
+// An app that is present in the test instance and safe to toggle.
+const TARGET_APP = 'activity'
+
+/** Count nldesign stylesheets present in the page head. */
+async function nldesignStyleCount(page): Promise<number> {
+	return page.evaluate(() =>
+		[...document.querySelectorAll('link[rel=stylesheet]')]
+			.filter((l) => (l as HTMLLinkElement).href.includes('/nldesign/'))
+			.length,
+	)
+}
+
+/** Set the target app's themed state via the admin panel and save. */
+async function setThemed(page, themed: boolean) {
+	await page.goto(THEMING_URL)
+	await page.waitForLoadState('networkidle')
+	const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
+	await box.waitFor({ state: 'visible' })
+	if ((await box.isChecked()) !== themed) {
+		await box.setChecked(themed)
+	}
+	await page.locator('#nldesign-app-theming-save').click()
+	// Allow the POST to round-trip.
+	await page.waitForTimeout(800)
+}
+
+test.describe('per-app-theming', () => {
+	// PHPUnit-covered storage/validation/resolver scenarios — not DOM-testable.
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#fresh-install-upgrade-has-no-exclusions
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#unknown-app-ids-self-heal-on-save
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#index-php-prefixed-urls-resolve-to-the-same-app-id
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#resolution-failure-fails-open-to-themed
+	// Newman/API-contract scenarios — covered by the integration collection.
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#admin-reads-the-per-app-theming-state
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#posting-an-exclusion-for-a-protected-id-is-ignored
+	// @e2e exclude openspec/specs/per-app-theming/spec.md#non-admin-cannot-change-the-exclusion-list
+
+	test.afterAll(async ({ browser }) => {
+		// Always restore theming for the target app so the suite is idempotent.
+		const page = await browser.newPage()
+		await setThemed(page, true).catch(() => {})
+		await page.close()
+	})
+
+	test(
+		// @e2e openspec/specs/per-app-theming/spec.md#admin-excludes-an-app-via-the-panel
+		// @e2e openspec/specs/per-app-theming/spec.md#excluded-app-renders-without-any-nldesign-css
+		// @e2e openspec/specs/per-app-theming/spec.md#non-excluded-app-stays-fully-themed
+		'Excluding an app via the panel strips nldesign CSS from its pages only',
+		async ({ page }) => {
+			await setThemed(page, false)
+
+			await page.goto(`/apps/${TARGET_APP}/`)
+			await page.waitForLoadState('networkidle')
+			expect(await nldesignStyleCount(page)).toBe(0)
+
+			await page.goto('/apps/files/')
+			await page.waitForLoadState('networkidle')
+			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
+		},
+	)
+
+	test(
+		// @e2e openspec/specs/per-app-theming/spec.md#admin-re-enables-theming-for-an-app
+		'Re-enabling an app restores theming on its pages',
+		async ({ page }) => {
+			await setThemed(page, false)
+			await setThemed(page, true)
+
+			await page.goto(`/apps/${TARGET_APP}/`)
+			await page.waitForLoadState('networkidle')
+			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
+		},
+	)
+
+	test(
+		// @e2e openspec/specs/per-app-theming/spec.md#login-and-settings-pages-are-always-themed
+		'Settings pages stay themed even with an active exclusion list',
+		async ({ page }) => {
+			await setThemed(page, false)
+			await page.goto(THEMING_URL)
+			await page.waitForLoadState('networkidle')
+			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
+		},
+	)
+
+	test(
+		// @e2e openspec/specs/per-app-theming/spec.md#checkboxes-are-accessible
+		'Every app row exposes a checkbox associated with a visible label',
+		async ({ page }) => {
+			await page.goto(THEMING_URL)
+			await page.waitForLoadState('networkidle')
+			const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
+			await box.waitFor({ state: 'visible' })
+			const id = await box.getAttribute('id')
+			const label = page.locator(`label[for="${id}"]`)
+			await expect(label).toBeVisible()
+			await expect(label).not.toBeEmpty()
+		},
+	)
+})

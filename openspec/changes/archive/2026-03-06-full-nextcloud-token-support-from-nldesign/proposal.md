@@ -97,7 +97,7 @@ The nldesign app currently maps only a subset of Nextcloud's ~97 CSS variables t
 
 - Depends on the [nl-design-system/themes](https://github.com/nl-design-system/themes) repository for official token values.
 - The `openspec/specs/nl-design/spec.md` shared spec may need updating to reflect expanded token support.
-- Other apps (opencatalogi, mydash, softwarecatalog) will benefit from component tokens but don't need changes for this work.
+- Other apps (opencatalogi, launchpad, softwarecatalog) will benefit from component tokens but don't need changes for this work.
 
 ## Rollback Strategy
 

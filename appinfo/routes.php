@@ -15,12 +15,20 @@ return [
 		['name' => 'settings#setMenuLabelsSetting', 'url' => '/settings/menulabels', 'verb' => 'POST'],
 		['name' => 'settings#getThemingValues', 'url' => '/settings/theming', 'verb' => 'GET'],
 		['name' => 'settings#updateThemingValues', 'url' => '/settings/theming', 'verb' => 'POST'],
-		['name' => 'settings#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
-		['name' => 'settings#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
+		// Per-app theming exclusion list.
+		['name' => 'settings#getAppTheming', 'url' => '/settings/app-theming', 'verb' => 'GET'],
+		['name' => 'settings#setAppTheming', 'url' => '/settings/app-theming', 'verb' => 'POST'],
+		['name' => 'overrides#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
+		['name' => 'overrides#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
 		// Import/export.
 		['name' => 'overrides#exportOverrides', 'url' => '/settings/overrides/export', 'verb' => 'GET'],
 		['name' => 'overrides#importOverrides', 'url' => '/settings/overrides/import', 'verb' => 'POST'],
 		// Token set preview for apply dialog.
 		['name' => 'settings#getTokenSetPreview', 'url' => '/settings/tokenset-preview/{tokenSetId}', 'verb' => 'GET'],
+		// Custom token set upload lifecycle.
+		['name' => 'customTokenSet#upload', 'url' => '/settings/tokensets/upload', 'verb' => 'POST'],
+		['name' => 'customTokenSet#list', 'url' => '/settings/tokensets/custom', 'verb' => 'GET'],
+		['name' => 'customTokenSet#export', 'url' => '/settings/tokensets/custom/{id}/export', 'verb' => 'GET'],
+		['name' => 'customTokenSet#delete', 'url' => '/settings/tokensets/custom/{id}', 'verb' => 'DELETE'],
 	],
 ];

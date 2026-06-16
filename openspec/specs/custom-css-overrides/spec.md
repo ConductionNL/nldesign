@@ -1,9 +1,15 @@
+---
+status: implemented
+---
+
 # Custom CSS Overrides Specification
 
 ## Purpose
-Defines the CSS file persistence layer for user-defined token customizations. `custom-overrides.css` is the single write target for all theme editor output. It is loaded last in the CSS stack so user intent always wins. NL Design token set CSS files are read-only presets and are never modified.
+Defines the CSS file persistence layer for user-defined token customizations.
 
-## ADDED Requirements
+@e2e exclude CSS file persistence / backend spec — scenarios cover file write semantics, CSS cascade order, PHP endpoint internals, and filesystem state; no distinct UI surface beyond the token editor already covered by admin-settings and token-editor-ui tests. `custom-overrides.css` is the single write target for all theme editor output. It is loaded last in the CSS stack so user intent always wins. NL Design token set CSS files are read-only presets and are never modified.
+
+## Requirements
 
 ### Requirement: Custom Overrides File
 The system MUST maintain a `custom-overrides.css` file in the nldesign app's CSS directory. This file MUST be written exclusively by the theme editor backend — no other write path exists.

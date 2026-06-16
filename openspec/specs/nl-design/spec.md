@@ -1,9 +1,15 @@
+---
+status: implemented
+---
+
 # NL Design System Compliance — Delta Spec
 
 ## Purpose
 Updates the existing nl-design shared spec to reflect expanded token set support and component-level tokens.
 
-## MODIFIED Requirements
+@e2e exclude CSS-variable / delta spec — scenarios describe CSS variable usage rules and component-token prefix conventions; no distinct testable UI surface beyond what admin-settings tests cover.
+
+## Requirements
 
 ### Requirement: Supported Token Sets
 The nldesign app MUST support all organization token sets available in the `nl-design-system/themes` repository. Token sets are auto-generated from upstream JSON files and synchronized nightly via GitHub Actions.

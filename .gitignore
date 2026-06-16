@@ -1,27 +1,70 @@
+# IDE
+/.idea/
+/*.iml
+*.Identifier
+.vscode/
+
 # Dependencies
-node_modules/
-vendor/
+/vendor/
+/node_modules/
+
+# Runtime theme state — written by the NL Design theme editor at runtime
+# (CustomOverridesService). ensureExists() recreates an empty :root {} on
+# boot, so it must never be committed (a stray test value here restyles the
+# whole instance the moment the app is activated).
+/css/custom-overrides.css
 
 # Build artifacts
-build/
-dist/
-.docusaurus/
+# admin.js + its extracted pure helpers (js/lib/) are hand-authored SOURCE
+# (no JS bundler in this app — served directly as <script>), so they are
+# tracked; everything else generated under js/ is ignored. Use /js/* (not
+# /js/) so git can still descend into js/lib to honour the negations.
+/js/*
+!/js/admin.js
+!/js/lib/
+/build/
+/dist/
 
-# Quality tool output
-phpmetrics/
-phpqa/
-coverage/
+# Documentation
+/docs/node_modules/
+/docs/build/
+/docs/.docusaurus/
+/website/node_modules/
+/website/.docusaurus/
+
+# Testing & Quality
+/.php-cs-fixer.cache
+/tests/.phpunit.cache
+/.phpunit.cache/
+.phpunit.cache/
+.phpunit.result.cache
+/coverage/
+/coverage-frontend/
+/phpmetrics/
+/quality-reports/
+/phpqa/
 phpcs-output.json
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# Nextcloud
+/custom_apps/
+/config/
+.htaccess
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Nextcloud
-.htaccess
+# SBOM is published as release asset (see SECURITY.md), not stored in repo
+sbom.cdx.json
+bom-php.cdx.json
+bom-npm.cdx.json
+
+# Claude Code
+.claude/worktrees/
+
+# Playwright e2e run artifacts (regenerated every run; never committed)
+tests/e2e/playwright-report/
+tests/e2e/test-results/
+tests/e2e/.auth/
+/coverage-vitest/
+/coverage/

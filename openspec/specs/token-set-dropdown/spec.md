@@ -1,9 +1,15 @@
+---
+status: implemented
+---
+
 # Token Set Dropdown Specification
 
 ## Purpose
 Replace the radio button list for token set selection with a searchable dropdown (`<select>`) that scales to 400+ entries, improving usability as the number of available token sets grows.
 
-## ADDED Requirements
+@e2e exclude Dropdown-UI spec covered by admin-settings tests — all scenarios (dropdown render, alphabetical sort, selection save, preview update) are exercised in admin-settings spec-coverage tests.
+
+## Requirements
 
 ### Requirement: Dropdown Token Set Selector
 The admin settings page MUST use a `<select>` dropdown instead of radio buttons for token set selection.

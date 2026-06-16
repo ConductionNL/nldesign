@@ -3,11 +3,19 @@
 /**
  * NL Design Token Registry.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
  */
 
 declare(strict_types=1);
@@ -28,6 +36,10 @@ namespace OCA\NLDesign\Service;
  *
  * Tabs: login | content | status | typography
  * Types: color | text
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
  */
 class TokenRegistry implements TokenRegistryInterface
 {
@@ -38,149 +50,130 @@ class TokenRegistry implements TokenRegistryInterface
      * Values are arrays with 'tab', 'type', and 'label' keys.
      *
      * @return array<string, array{tab: string, type: string, label: string}> The token registry.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
      */
     public static function getTokens(): array
     {
+        return array_merge(
+            self::getLoginTokens(),
+            self::getContentTokens(),
+            self::getStatusTokens(),
+            self::getTypographyTokens()
+        );
+    }//end getTokens()
+
+    /**
+     * Returns login and branding tab tokens.
+     *
+     * @return array<string, array{tab: string, type: string, label: string}> Login tokens.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+     */
+    private static function getLoginTokens(): array
+    {
         return [
-            // TAB: login — Primary brand colors (login page, buttons, links, highlights).
             '--color-primary'                     => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary color'],
             '--color-primary-text'                => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary text color'],
             '--color-primary-hover'               => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary hover color'],
-            '--color-primary-element'             => [
-                'tab'   => 'login',
-                'type'  => 'color',
-                'label' => 'Primary element color',
-            ],
-            '--color-primary-element-hover'       => [
-                'tab'   => 'login',
-                'type'  => 'color',
-                'label' => 'Primary element hover',
-            ],
-            '--color-primary-element-text'        => [
-                'tab'   => 'login',
-                'type'  => 'color',
-                'label' => 'Primary element text',
-            ],
+            '--color-primary-element'             => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary element color'],
+            '--color-primary-element-hover'       => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary element hover'],
+            '--color-primary-element-text'        => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary element text'],
             '--color-primary-light'               => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary light'],
             '--color-primary-light-hover'         => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary light hover'],
             '--color-primary-light-text'          => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary light text'],
-            '--color-primary-element-light'       => [
-                'tab'   => 'login',
-                'type'  => 'color',
-                'label' => 'Primary element light',
-            ],
-            '--color-primary-element-light-text'  => [
-                'tab'   => 'login',
-                'type'  => 'color',
-                'label' => 'Primary element light text',
-            ],
-            '--color-primary-element-light-hover' => [
-                'tab'   => 'login',
-                'type'  => 'color',
-                'label' => 'Primary element light hover',
-            ],
-
-            // TAB: content — Backgrounds, borders, scrollbar, border radii, animations.
-            '--color-background-hover'            => ['tab' => 'content', 'type' => 'color', 'label' => 'Background hover'],
-            '--color-background-dark'             => ['tab' => 'content', 'type' => 'color', 'label' => 'Background dark'],
-            '--color-background-darker'           => ['tab' => 'content', 'type' => 'color', 'label' => 'Background darker'],
-            '--color-placeholder-light'           => ['tab' => 'content', 'type' => 'color', 'label' => 'Placeholder light'],
-            '--color-placeholder-dark'            => ['tab' => 'content', 'type' => 'color', 'label' => 'Placeholder dark'],
-            '--color-border'                      => ['tab' => 'content', 'type' => 'color', 'label' => 'Border color'],
-            '--color-border-dark'                 => ['tab' => 'content', 'type' => 'color', 'label' => 'Border dark'],
-            '--color-border-maxcontrast'          => [
-                'tab'   => 'content',
-                'type'  => 'color',
-                'label' => 'Border max contrast',
-            ],
-            '--color-scrollbar'                   => ['tab' => 'content', 'type' => 'color', 'label' => 'Scrollbar color'],
-            '--border-radius'                     => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius'],
-            '--border-radius-small'               => [
-                'tab'   => 'content',
-                'type'  => 'text',
-                'label' => 'Border radius small',
-            ],
-            '--border-radius-element'             => [
-                'tab'   => 'content',
-                'type'  => 'text',
-                'label' => 'Border radius element',
-            ],
-            '--border-radius-large'               => [
-                'tab'   => 'content',
-                'type'  => 'text',
-                'label' => 'Border radius large',
-            ],
-            '--border-radius-rounded'             => [
-                'tab'   => 'content',
-                'type'  => 'text',
-                'label' => 'Border radius rounded',
-            ],
-            '--border-radius-pill'                => [
-                'tab'   => 'content',
-                'type'  => 'text',
-                'label' => 'Border radius pill',
-            ],
-            '--body-container-radius'             => [
-                'tab'   => 'content',
-                'type'  => 'text',
-                'label' => 'Body container radius',
-            ],
-            '--animation-quick'                   => ['tab' => 'content', 'type' => 'text',  'label' => 'Animation quick'],
-            '--animation-slow'                    => ['tab' => 'content', 'type' => 'text',  'label' => 'Animation slow'],
-
-            // TAB: status — Error, warning, success, info, and semantic element/border variants.
-            '--color-error'                       => ['tab' => 'status', 'type' => 'color', 'label' => 'Error color'],
-            '--color-error-hover'                 => ['tab' => 'status', 'type' => 'color', 'label' => 'Error hover'],
-            '--color-error-rgb'                   => ['tab' => 'status', 'type' => 'text',  'label' => 'Error color (RGB)'],
-            '--color-element-error'               => ['tab' => 'status', 'type' => 'color', 'label' => 'Element error'],
-            '--color-border-error'                => ['tab' => 'status', 'type' => 'color', 'label' => 'Border error'],
-            '--color-warning'                     => ['tab' => 'status', 'type' => 'color', 'label' => 'Warning color'],
-            '--color-warning-rgb'                 => [
-                'tab'   => 'status',
-                'type'  => 'text',
-                'label' => 'Warning color (RGB)',
-            ],
-            '--color-element-warning'             => ['tab' => 'status', 'type' => 'color', 'label' => 'Element warning'],
-            '--color-success'                     => ['tab' => 'status', 'type' => 'color', 'label' => 'Success color'],
-            '--color-success-rgb'                 => [
-                'tab'   => 'status',
-                'type'  => 'text',
-                'label' => 'Success color (RGB)',
-            ],
-            '--color-element-success'             => ['tab' => 'status', 'type' => 'color', 'label' => 'Element success'],
-            '--color-border-success'              => ['tab' => 'status', 'type' => 'color', 'label' => 'Border success'],
-            '--color-info'                        => ['tab' => 'status', 'type' => 'color', 'label' => 'Info color'],
-            '--color-element-info'                => ['tab' => 'status', 'type' => 'color', 'label' => 'Element info'],
-            '--color-favorite'                    => [
-                'tab'   => 'status',
-                'type'  => 'color',
-                'label' => 'Favorite (star) color',
-            ],
-
-            // TAB: typography — Text colors and font family.
-            '--color-main-text'                   => [
-                'tab'   => 'typography',
-                'type'  => 'color',
-                'label' => 'Main text color',
-            ],
-            '--color-text-maxcontrast'            => [
-                'tab'   => 'typography',
-                'type'  => 'color',
-                'label' => 'Text max contrast',
-            ],
-            '--color-text-light'                  => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text light'],
-            '--color-text-lighter'                => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text lighter'],
-            '--color-text-error'                  => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text error'],
-            '--color-text-success'                => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text success'],
-            '--color-text-warning'                => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text warning'],
-            '--font-face'                         => ['tab' => 'typography', 'type' => 'text',  'label' => 'Font family'],
+            '--color-primary-element-light'       => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary element light'],
+            '--color-primary-element-light-text'  => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary element light text'],
+            '--color-primary-element-light-hover' => ['tab' => 'login', 'type' => 'color', 'label' => 'Primary element light hover'],
         ];
-    }//end getTokens()
+    }//end getLoginTokens()
+
+    /**
+     * Returns content area tab tokens.
+     *
+     * @return array<string, array{tab: string, type: string, label: string}> Content tokens.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+     */
+    private static function getContentTokens(): array
+    {
+        return [
+            '--color-background-hover'   => ['tab' => 'content', 'type' => 'color', 'label' => 'Background hover'],
+            '--color-background-dark'    => ['tab' => 'content', 'type' => 'color', 'label' => 'Background dark'],
+            '--color-background-darker'  => ['tab' => 'content', 'type' => 'color', 'label' => 'Background darker'],
+            '--color-placeholder-light'  => ['tab' => 'content', 'type' => 'color', 'label' => 'Placeholder light'],
+            '--color-placeholder-dark'   => ['tab' => 'content', 'type' => 'color', 'label' => 'Placeholder dark'],
+            '--color-border'             => ['tab' => 'content', 'type' => 'color', 'label' => 'Border color'],
+            '--color-border-dark'        => ['tab' => 'content', 'type' => 'color', 'label' => 'Border dark'],
+            '--color-border-maxcontrast' => ['tab' => 'content', 'type' => 'color', 'label' => 'Border max contrast'],
+            '--color-scrollbar'          => ['tab' => 'content', 'type' => 'color', 'label' => 'Scrollbar color'],
+            '--border-radius'            => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius'],
+            '--border-radius-small'      => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius small'],
+            '--border-radius-element'    => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius element'],
+            '--border-radius-large'      => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius large'],
+            '--border-radius-rounded'    => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius rounded'],
+            '--border-radius-pill'       => ['tab' => 'content', 'type' => 'text',  'label' => 'Border radius pill'],
+            '--body-container-radius'    => ['tab' => 'content', 'type' => 'text',  'label' => 'Body container radius'],
+            '--animation-quick'          => ['tab' => 'content', 'type' => 'text',  'label' => 'Animation quick'],
+            '--animation-slow'           => ['tab' => 'content', 'type' => 'text',  'label' => 'Animation slow'],
+        ];
+    }//end getContentTokens()
+
+    /**
+     * Returns status and feedback tab tokens.
+     *
+     * @return array<string, array{tab: string, type: string, label: string}> Status tokens.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+     */
+    private static function getStatusTokens(): array
+    {
+        return [
+            '--color-error'           => ['tab' => 'status', 'type' => 'color', 'label' => 'Error color'],
+            '--color-error-hover'     => ['tab' => 'status', 'type' => 'color', 'label' => 'Error hover'],
+            '--color-error-rgb'       => ['tab' => 'status', 'type' => 'text',  'label' => 'Error color (RGB)'],
+            '--color-element-error'   => ['tab' => 'status', 'type' => 'color', 'label' => 'Element error'],
+            '--color-border-error'    => ['tab' => 'status', 'type' => 'color', 'label' => 'Border error'],
+            '--color-warning'         => ['tab' => 'status', 'type' => 'color', 'label' => 'Warning color'],
+            '--color-warning-rgb'     => ['tab' => 'status', 'type' => 'text',  'label' => 'Warning color (RGB)'],
+            '--color-element-warning' => ['tab' => 'status', 'type' => 'color', 'label' => 'Element warning'],
+            '--color-success'         => ['tab' => 'status', 'type' => 'color', 'label' => 'Success color'],
+            '--color-success-rgb'     => ['tab' => 'status', 'type' => 'text',  'label' => 'Success color (RGB)'],
+            '--color-element-success' => ['tab' => 'status', 'type' => 'color', 'label' => 'Element success'],
+            '--color-border-success'  => ['tab' => 'status', 'type' => 'color', 'label' => 'Border success'],
+            '--color-info'            => ['tab' => 'status', 'type' => 'color', 'label' => 'Info color'],
+            '--color-element-info'    => ['tab' => 'status', 'type' => 'color', 'label' => 'Element info'],
+            '--color-favorite'        => ['tab' => 'status', 'type' => 'color', 'label' => 'Favorite (star) color'],
+        ];
+    }//end getStatusTokens()
+
+    /**
+     * Returns typography tab tokens.
+     *
+     * @return array<string, array{tab: string, type: string, label: string}> Typography tokens.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
+     */
+    private static function getTypographyTokens(): array
+    {
+        return [
+            '--color-main-text'        => ['tab' => 'typography', 'type' => 'color', 'label' => 'Main text color'],
+            '--color-text-maxcontrast' => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text max contrast'],
+            '--color-text-light'       => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text light'],
+            '--color-text-lighter'     => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text lighter'],
+            '--color-text-error'       => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text error'],
+            '--color-text-success'     => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text success'],
+            '--color-text-warning'     => ['tab' => 'typography', 'type' => 'color', 'label' => 'Text warning'],
+            '--font-face'              => ['tab' => 'typography', 'type' => 'text',  'label' => 'Font family'],
+        ];
+    }//end getTypographyTokens()
 
     /**
      * Returns the display labels for each tab.
      *
      * @return array<string, string> Map of tab id to display label.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
      */
     public static function getTabLabels(): array
     {
@@ -196,6 +189,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Returns the set of all editable token names.
      *
      * @return array<string> List of token names.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
      */
     public static function getTokenNames(): array
     {
@@ -208,6 +203,8 @@ class TokenRegistry implements TokenRegistryInterface
      * @param string $tokenName The CSS custom property name.
      *
      * @return bool True if the token is in the registry.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
      */
     public static function isEditable(string $tokenName): bool
     {
@@ -218,6 +215,8 @@ class TokenRegistry implements TokenRegistryInterface
      * Returns tokens grouped by tab.
      *
      * @return array<string, array<string, array{tab: string, type: string, label: string}>> Tokens grouped by tab id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
      */
     public static function getTokensByTab(): array
     {

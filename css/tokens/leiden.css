@@ -11,7 +11,7 @@
 	/* NL Design tokens */
 	--nldesign-color-primary: #d62410;
 	--nldesign-color-primary-hover: #b81f0e;
-	--nldesign-logo-url: url('../img/logos/leiden.svg');
+	--nldesign-logo-url: url('../../../img/logos/leiden.svg');
 	--nldesign-color-error: #d62410;
 	--nldesign-color-alert-error: #721c24;
 	--nldesign-color-alert-error-background: #f8d7da;
@@ -93,15 +93,15 @@
 	--nldesign-conduction-download-card-border-radius: 0px;
 	--nldesign-conduction-logo-header-inline-size: 80px;
 	--nldesign-conduction-logo-header-block-size: 37px;
-	--nldesign-conduction-logo-header-background-image: url('https://gemeente.leiden.nl/typo3conf/ext/leiden_template/Resources/Public/Images/logo_leiden.svg');
+	--nldesign-conduction-logo-header-background-image: url('../../../img/logos/leiden.svg');
 	--nldesign-conduction-logo-footer-inline-size: 120px;
 	--nldesign-conduction-logo-footer-block-size: 100px;
-	--nldesign-conduction-logo-footer-background-image: url('https://gemeente.leiden.nl/typo3conf/ext/leiden_template/Resources/Public/Images/logo_leiden.svg');
+	--nldesign-conduction-logo-footer-background-image: url('../../../img/logos/leiden.svg');
 	--nldesign-conduction-logo-navbar-inline-size: 80px;
 	--nldesign-conduction-logo-navbar-block-size: 45px;
-	--nldesign-conduction-logo-navbar-background-image: url('https://gemeente.leiden.nl/typo3conf/ext/leiden_template/Resources/Public/Images/logo_leiden.svg');
-	--nldesign-conduction-primary-top-nav-current-box-shadow: inset 0 -4px {leiden.color.white.100};
-	--nldesign-conduction-primary-top-nav-current-mobile-box-shadow: inset 4px 0 {leiden.color.white.100};
+	--nldesign-conduction-logo-navbar-background-image: url('../../../img/logos/leiden.svg');
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-box-shadow: inset 0 -4px {leiden.color.white.100}; */
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-primary-top-nav-current-mobile-box-shadow: inset 4px 0 {leiden.color.white.100}; */
 	--nldesign-conduction-primary-top-nav-item-padding: 18px;
 	--nldesign-conduction-primary-top-nav-padding-inline-end: 16px;
 	--nldesign-conduction-primary-top-nav-padding-inline-start: 16px;
@@ -128,7 +128,7 @@
 	--nldesign-conduction-pagination-current-page-text-decoration: underline;
 	--nldesign-conduction-pagination-page-hover-text-decoration: underline;
 	--nldesign-conduction-pagination-page-hover-text-decoration-thickness: 1px;
-	--nldesign-conduction-input-select-border: 1px solid {utrecht.form-input.border-color};
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-conduction-input-select-border: 1px solid {utrecht.form-input.border-color}; */
 	--nldesign-conduction-input-select-border-focus: unset;
 	--nldesign-conduction-table-wrapper-scroll-button-border-style: solid;
 	--nldesign-conduction-tabs-tab-background-color: transparent;
@@ -150,9 +150,9 @@
 	--nldesign-conduction-tooltip-border-radius: 0px;
 	--nldesign-conduction-tooltip-z-index: 9999;
 	--nldesign-component-badge-counter-border-radius: 50%;
-	--nldesign-component-badge-background-color: {leiden.color.black.0} ;
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-component-badge-background-color: {leiden.color.black.0}; */
 	--nldesign-component-badge-border-radius: 0;
-	--nldesign-component-badge-color: {leiden.color.white.100} ;
+	/* TODO: unresolved Style-Dictionary ref — needs upstream sync: --nldesign-component-badge-color: {leiden.color.white.100}; */
 	--nldesign-component-breadcrumb-nav-font-size: 15px;
 	--nldesign-component-breadcrumb-nav-separator-icon-size: 9px;
 	--nldesign-component-button-font-size: inherit;

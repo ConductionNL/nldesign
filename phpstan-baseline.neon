@@ -1,0 +1,65 @@
+# PHPStan baseline — generated post-canonical-sync (Phase 2 fleet rollout).
+# Cleanup tracked in https://codeberg.org/Conduction/nldesign/issues/98
+# Notable: absorbs OCA\Theming\ImageManager / ThemingDefaults references from
+# lib/Service/ThemingService.php. OCA\Theming is a server-internal namespace
+# (not exposed via OCP); if other apps baseline the same family, consider
+# promoting an OCA\\Theming\\ ignore pattern to canonical phpstan.neon.
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to method getImageUrl\\(\\) on an unknown class OCA\\\\Theming\\\\ImageManager\\.$#"
+			count: 2
+			path: lib/Controller/SettingsController.php
+
+		-
+			message: "#^Call to method hasImage\\(\\) on an unknown class OCA\\\\Theming\\\\ImageManager\\.$#"
+			count: 2
+			path: lib/Controller/SettingsController.php
+
+		-
+			message: "#^Call to method set\\(\\) on an unknown class OCA\\\\Theming\\\\ThemingDefaults\\.$#"
+			count: 1
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Call to method updateImage\\(\\) on an unknown class OCA\\\\Theming\\\\ImageManager\\.$#"
+			count: 1
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Method OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:getImageManager\\(\\) has invalid return type OCA\\\\Theming\\\\ImageManager\\.$#"
+			count: 2
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Parameter \\$imageManager of method OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:__construct\\(\\) has invalid type OCA\\\\Theming\\\\ImageManager\\.$#"
+			count: 2
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Parameter \\$themingDefaults of method OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:__construct\\(\\) has invalid type OCA\\\\Theming\\\\ThemingDefaults\\.$#"
+			count: 2
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Property OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:\\$imageManager has unknown class OCA\\\\Theming\\\\ImageManager as its type\\.$#"
+			count: 2
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Property OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:\\$themingDefaults has unknown class OCA\\\\Theming\\\\ThemingDefaults as its type\\.$#"
+			count: 2
+			path: lib/Service/ThemingService.php
+
+		-
+			message: "#^Property OCA\\\\NLDesign\\\\Settings\\\\Admin\\:\\:\\$l is never read, only written\\.$#"
+			count: 1
+			path: lib/Settings/Admin.php
+
+		# getEnabledApps() exists on the concrete OC\App\AppManager at runtime but
+		# is not declared on the OCP\App\IAppManager stub shipped by nextcloud/ocp.
+		# Valid runtime call; the type gap is a stub limitation, not a real defect.
+		-
+			message: "#^Call to an undefined method OCP\\\\App\\\\IAppManager\\:\\:getEnabledApps\\(\\)\\.$#"
+			count: 1
+			path: lib/Service/AppThemingService.php

@@ -11,29 +11,16 @@
    FONT FORCING
    ============================================ */
 
-html,
-html body,
-html body *,
-#body-user,
-#body-user *,
-#app,
-#app *,
-#content,
-#content *,
-div,
-span,
-p,
-h1, h2, h3, h4, h5, h6,
-a,
+/* Font inheritance is handled in theme.css via body selector without !important.
+ * A targeted set of Nextcloud element types that resist inheritance are listed
+ * here with modest specificity — no universal * selector to avoid clobbering
+ * icon fonts or monospace code editors. */
 button,
 input,
 textarea,
 select,
-label,
-li,
-ul,
-ol {
-	font-family: var(--nldesign-font-family) !important;
+label {
+	font-family: var(--nldesign-font-family);
 }
 
 /* ============================================

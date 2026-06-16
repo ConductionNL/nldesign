@@ -3,11 +3,24 @@
 /**
  * NL Design Custom Overrides Service.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-30
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-31
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-32
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-33
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-34
  */
 
 declare(strict_types=1);
@@ -26,8 +39,18 @@ use RuntimeException;
  * The CSS file format is strictly controlled:
  * - Single :root {} block
  * - One declaration per line
- * - No !important (load order ensures precedence)
+ * - Each declaration carries !important so user overrides win the cascade over
+ *   the nldesign design-system stylesheets and Nextcloud core theming
  * - No selectors other than :root
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-30
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-31
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-32
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-33
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-34
  */
 class CustomOverridesService
 {
@@ -47,13 +70,22 @@ class CustomOverridesService
     private IAppManager $appManager;
 
     /**
+     * The CSS parser service (shared :root-block parsing, avoids duplication).
+     *
+     * @var CssParserService
+     */
+    private CssParserService $cssParser;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager $appManager The app manager.
+     * @param IAppManager      $appManager The app manager.
+     * @param CssParserService $cssParser  CSS parser for :root block extraction.
      */
-    public function __construct(IAppManager $appManager)
+    public function __construct(IAppManager $appManager, CssParserService $cssParser)
     {
         $this->appManager = $appManager;
+        $this->cssParser  = $cssParser;
     }//end __construct()
 
     /**
@@ -73,6 +105,8 @@ class CustomOverridesService
      * Safe to call on every page load (no-op if file already exists).
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-28
      */
     public function ensureExists(): void
     {
@@ -90,6 +124,8 @@ class CustomOverridesService
      * Does not return defaults or resolved values from the full CSS stack.
      *
      * @return array<string, string> Map of token name => value for all overrides in the file.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
      */
     public function read(): array
     {
@@ -117,10 +153,12 @@ class CustomOverridesService
      * @return void
      *
      * @throws RuntimeException When the file cannot be written.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-30
      */
     public function write(array $tokens): void
     {
-        $validated = $this->filterEditable($tokens);
+        $validated = $this->filterEditable(tokens: $tokens);
 
         $this->writeFile(tokens: $validated);
 
@@ -134,6 +172,8 @@ class CustomOverridesService
      * @return array<string, string> Filtered tokens.
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
      */
     private function filterEditable(array $tokens): array
     {
@@ -155,6 +195,8 @@ class CustomOverridesService
      * @return void
      *
      * @throws RuntimeException When the temp file cannot be written or renamed.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-31
      */
     private function writeFile(array $tokens): void
     {
@@ -188,6 +230,8 @@ class CustomOverridesService
      * @param array<string, string> $tokens Token name => value pairs.
      *
      * @return string The CSS file content.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-32
      */
     private function buildCss(array $tokens): string
     {
@@ -197,7 +241,7 @@ class CustomOverridesService
             return $header.':root {}'.PHP_EOL;
         }
 
-        $lines = $this->buildDeclarationLines($tokens);
+        $lines = $this->buildDeclarationLines(tokens: $tokens);
 
         return $header.':root {'.PHP_EOL.implode(PHP_EOL, $lines).PHP_EOL.'}'.PHP_EOL;
     }//end buildCss()
@@ -208,15 +252,35 @@ class CustomOverridesService
      * @param array<string, string> $tokens Token name => value pairs.
      *
      * @return array<string> List of CSS declaration lines.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-33
      */
     private function buildDeclarationLines(array $tokens): array
     {
         $lines = [];
         foreach ($tokens as $name => $value) {
-            $safeValue = str_replace(["\n", "\r", ';'], '', $value);
+            // Reject any value containing CSS injection characters.
+            if (preg_match('/[{};]|\/\*|\*\//', $value) === 1) {
+                continue;
+            }
+
+            $safeValue = str_replace(["\n", "\r", ';', '{', '}', '/*', '*/'], '', $value);
             $safeName  = preg_replace('/[^a-zA-Z0-9\-]/', '', $name);
-            $lines[]   = '  '.$safeName.': '.$safeValue.';';
-        }
+
+            // Strip any pre-existing !important the caller may have included; it is
+            // re-applied uniformly below so the round-trip stays canonical.
+            $safeValue = trim(preg_replace('/\s*!\s*important\s*$/i', '', $safeValue));
+
+            // Emit each user override with !important so it wins the cascade.
+            // The nldesign design-system stylesheets (theme/overrides/element-overrides.css)
+            // re-declare every editable token with !important, and Nextcloud core theming
+            // also overrides tokens like --color-primary. custom-overrides.css loads last,
+            // but without !important it loses the cascade and the saved theme has no visible
+            // effect. !important here is scoped to user-set overrides only (this file only
+            // ever contains tokens the admin explicitly set in the editor), so it does not
+            // blanket-!important the full token registry.
+            $lines[] = '  '.$safeName.': '.$safeValue.' !important;';
+        }//end foreach
 
         return $lines;
     }//end buildDeclarationLines()
@@ -224,34 +288,25 @@ class CustomOverridesService
     /**
      * Parse CSS custom property declarations from a :root {} block.
      *
+     * Delegates to CssParserService to avoid duplicating the parse logic.
+     *
      * @param string $css The raw CSS string.
      *
      * @return array<string, string> Map of token name => value.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-29
      */
     private function parseDeclarations(string $css): array
     {
-        $tokens = [];
-
-        // Extract the :root block.
-        if (preg_match('/:root\s*\{([^}]*)\}/s', $css, $rootMatch) !== 1) {
-            return $tokens;
-        }
-
-        $block = $rootMatch[1];
-
-        // Match each declaration: --name: value.
-        preg_match_all('/^\s*(--[\w-]+)\s*:\s*([^;]+);/m', $block, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $tokens[trim($match[1])] = trim($match[2]);
-        }
-
-        return $tokens;
+        return $this->cssParser->parseRootBlock(css: $css);
     }//end parseDeclarations()
 
     /**
      * Return the raw CSS file content for download.
      *
      * @return string The raw file content, or an empty :root {} if the file does not exist.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-34
      */
     public function getRawContent(): string
     {

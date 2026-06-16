@@ -3,11 +3,15 @@
 /**
  * NL Design Token Registry Interface.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
  */
 
 declare(strict_types=1);
@@ -25,6 +29,8 @@ interface TokenRegistryInterface
      * Returns the full registry of editable tokens.
      *
      * @return array<string, array{tab: string, type: string, label: string}> The token registry.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-45
      */
     public static function getTokens(): array;
 
@@ -32,6 +38,8 @@ interface TokenRegistryInterface
      * Returns the display labels for each tab.
      *
      * @return array<string, string> Map of tab id to display label.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-46
      */
     public static function getTabLabels(): array;
 
@@ -41,6 +49,8 @@ interface TokenRegistryInterface
      * @param string $tokenName The CSS custom property name.
      *
      * @return bool True if the token is in the registry.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-47
      */
     public static function isEditable(string $tokenName): bool;
 }//end interface

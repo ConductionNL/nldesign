@@ -3,11 +3,20 @@
 /**
  * NL Design — Design System Service.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
  */
 
 declare(strict_types=1);
@@ -21,6 +30,11 @@ use OCP\App\IAppManager;
  *
  * Reads design-systems.json and token-sets.json to determine which CSS
  * stylesheets should be loaded for a given token set.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
  */
 class DesignSystemService
 {
@@ -70,6 +84,8 @@ class DesignSystemService
      * Get all available design systems.
      *
      * @return array<string, array{id: string, name: string, description: string, stylesheets: string[]}> Indexed by id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */
     public function getDesignSystems(): array
     {
@@ -78,7 +94,7 @@ class DesignSystemService
         }
 
         $path = $this->getAppPath().'/design-systems.json';
-        $this->designSystems = $this->readJsonManifest($path);
+        $this->designSystems = $this->readJsonManifest(path: $path);
 
         return $this->designSystems;
     }//end getDesignSystems()
@@ -91,6 +107,8 @@ class DesignSystemService
      * @param string $id The design system identifier.
      *
      * @return array{id: string, name: string, description: string, stylesheets: string[]} The design system.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
      */
     public function getDesignSystem(string $id): array
     {
@@ -115,12 +133,14 @@ class DesignSystemService
      * @param string $tokenSetId The token set identifier.
      *
      * @return array The token set metadata from token-sets.json (empty array if not found).
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
      */
     public function getTokenSetMeta(string $tokenSetId): array
     {
         if ($this->tokenSetMeta === null) {
-            $path               = $this->getAppPath().'/token-sets.json';
-            $this->tokenSetMeta = $this->readJsonManifest($path);
+            $path = $this->getAppPath().'/token-sets.json';
+            $this->tokenSetMeta = $this->readJsonManifest(path: $path);
         }
 
         return $this->tokenSetMeta[$tokenSetId] ?? [];
@@ -130,6 +150,8 @@ class DesignSystemService
      * Get all design systems as a flat list (for API responses).
      *
      * @return array<array{id: string, name: string, description: string, stylesheets: string[]}> List of design systems.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */
     public function getDesignSystemsList(): array
     {
@@ -142,6 +164,8 @@ class DesignSystemService
      * @param string $path Absolute path to the JSON file.
      *
      * @return array<string, array> Entries indexed by id.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
      */
     private function readJsonManifest(string $path): array
     {

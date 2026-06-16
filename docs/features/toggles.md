@@ -46,3 +46,25 @@ php occ config:app:set nldesign show_menu_labels --value=1
 # Disable (set back to 0)
 php occ config:app:set nldesign hide_slogan --value=0
 ```
+
+## Theming per App
+
+**Setting:** `nldesign:disabled_apps` (JSON array of app ids, default `[]`)
+
+By default the NL Design theme applies to every Nextcloud app. The **Theming per app** section in the admin panel lists each enabled app with a checkbox (checked = themed). Unchecking an app and saving adds it to an exclusion list: that app's pages then render with **stock Nextcloud styling**.
+
+**Why use it:**
+- Roll a municipal huisstijl out incrementally instead of all-or-nothing
+- Quarantine a complex third-party app (or one mid-migration) that breaks or looks wrong under the theme, without losing theming everywhere else
+
+**How it works:** On every page render, NL Design resolves the app id from the request path (`/apps/{appid}`) and, if that app is excluded, skips **all** style injection for the request — design-system stylesheets, the token set, `custom-overrides.css`, and both toggles above.
+
+**Trade-off (by design):** suppression is request-scoped, so on an excluded app's pages the global header and navigation also render unthemed — that app's pages are fully stock Nextcloud. The login page, settings pages, and share links are never affected by the exclusion list and always stay themed. The ids `nldesign`, `settings`, and `theming` can never be excluded.
+
+```bash
+# Exclude the Calendar app from theming
+php occ config:app:set nldesign disabled_apps --value='["calendar"]'
+
+# Back to theming every app
+php occ config:app:set nldesign disabled_apps --value='[]'
+```

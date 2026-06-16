@@ -3,11 +3,17 @@
 /**
  * NL Design CSS Parser Service.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
  */
 
 declare(strict_types=1);
@@ -18,6 +24,8 @@ namespace OCA\NLDesign\Service;
  * Service for parsing CSS custom property declarations.
  *
  * Extracts --token-name: value pairs from raw CSS strings.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
  */
 class CssParserService
 {
@@ -29,6 +37,8 @@ class CssParserService
      * @param string $content The raw CSS content.
      *
      * @return array<string, string>|null Parsed token map, or null if none found.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
      */
     public function parseDeclarations(string $content): ?array
     {
@@ -40,7 +50,14 @@ class CssParserService
 
         $parsed = [];
         foreach ($matches as $match) {
-            $parsed[trim($match[1])] = trim($match[2]);
+            $value = trim($match[2]);
+
+            // Strip a trailing !important so persisted overrides (which are written
+            // with !important to win the cascade) round-trip back to the editor as
+            // the clean value the admin entered.
+            $value = trim(preg_replace('/\s*!\s*important\s*$/i', '', $value));
+
+            $parsed[trim($match[1])] = $value;
         }
 
         return $parsed;
@@ -52,6 +69,8 @@ class CssParserService
      * @param string $css The raw CSS string containing a :root {} block.
      *
      * @return array<string, string> Map of token name => value.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-27
      */
     public function parseRootBlock(string $css): array
     {
@@ -59,7 +78,7 @@ class CssParserService
             return [];
         }
 
-        $result = $this->parseDeclarations($rootMatch[1]);
+        $result = $this->parseDeclarations(content: $rootMatch[1]);
 
         if ($result !== null) {
             return $result;

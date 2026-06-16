@@ -10,20 +10,26 @@
 		"design-tokens",
 		"theming"
 	],
-	"homepage": "https://github.com/ConductionNL/nldesign",
+	"homepage": "https://codeberg.org/Conduction/nldesign",
 	"license": "AGPL-3.0-or-later",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ConductionNL/nldesign.git"
+		"url": "https://codeberg.org/Conduction/nldesign.git"
 	},
 	"scripts": {
+		"test:l10n": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js",
+		"test:l10n:write": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js --write",
 		"build": "npm run build:fonts && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
 		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
 		"stylelint": "stylelint 'css/**/*.css'",
 		"stylelint:fix": "stylelint 'css/**/*.css' --fix",
-		"test": "echo 'No tests yet'"
+		"test": "echo 'No tests yet'",
+		"test:unit": "vitest run",
+		"test:coverage": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json-summary --coverage.reporter=text-summary --coverage.include=js/** --coverage.reportsDirectory=coverage-vitest",
+		"test:coverage-ratchet": "npm run test:coverage && bash tests/coverage-ratchet.sh vitest coverage-vitest/coverage-summary.json",
+		"test:unit:watch": "vitest"
 	},
 	"dependencies": {
 		"@amsterdam/design-system-assets": "latest",
@@ -32,7 +38,11 @@
 	},
 	"devDependencies": {
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
+		"@playwright/test": "^1.60.0",
 		"stylelint": "^17.4.0",
-		"stylelint-config-standard": "^40.0.0"
+		"stylelint-config-standard": "^40.0.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^6.0.3",
+		"vitest": "^1.6.1"
 	}
 }

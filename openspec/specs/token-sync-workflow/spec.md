@@ -1,9 +1,15 @@
+---
+status: implemented
+---
+
 # Token Sync Workflow Specification
 
 ## Purpose
 Automates the synchronization of NL Design System token sets from the upstream `nl-design-system/themes` repository via a nightly GitHub Actions workflow that generates CSS token files and opens PRs when changes are detected.
 
-## ADDED Requirements
+@e2e exclude GitHub Actions / CI workflow spec — all scenarios describe scheduled workflow execution, PR creation, and token generation scripts; no Nextcloud admin UI surface.
+
+## Requirements
 
 ### Requirement: Nightly Schedule
 The sync workflow MUST run automatically every night to check for upstream token changes.

@@ -10,6 +10,16 @@
 		}
 	},
 	{
+		"id": "summer-breeze",
+		"name": "Summer Breeze",
+		"description": "Soft, airy light-blue theme — Inter, rounded surfaces, soft shadows, pastel status colours and a pale-blue gradient navigation. Gentle on the eyes.",
+		"design_system": "summer-breeze",
+		"theming": {
+			"primary_color": "#2874D1",
+			"background_color": "#EAF2FB"
+		}
+	},
+	{
 		"id": "rijkshuisstijl",
 		"name": "Rijkshuisstijl",
 		"description": "Official Dutch national government design system (Rijksoverheid)",
@@ -203,7 +213,8 @@
 		"theming": {
 			"primary_color": "#4376fc",
 			"background_color": "#FFFFFF"
-		}
+		},
+		"note": "primary_color #4376fc is legacy Conduction cobalt (retired 2026-05-13) — verify with municipality upstream"
 	},
 	{
 		"id": "noordoostpolder",

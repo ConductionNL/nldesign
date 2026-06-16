@@ -29,7 +29,7 @@
 	--amsterdam-color-info-blue: #009de6;
 
 	/* Logo image */
-	--nldesign-logo-url: url('../img/logos/amsterdam.svg');
+	--nldesign-logo-url: url('../../../img/logos/amsterdam.svg');
 
 	/* Background colors - for hover states and dark variants. */
 	/* Main background managed by Nextcloud theming system. */

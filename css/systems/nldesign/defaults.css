@@ -6,6 +6,21 @@
  * Incomplete token sets simply won't override all tokens, so the defaults fill in the gaps.
  *
  * Load order: fonts → defaults → tokens/{org} → utrecht-bridge → theme → overrides
+ *
+ * TOKEN CONSUMPTION STATUS
+ * ========================
+ * All --nldesign-* tokens in this file fall into one of two categories:
+ *
+ *   CONSUMED   — actively read by theme.css / element-overrides.css / utrecht-bridge.css.
+ *   RESERVED   — defined for API completeness and future component stylesheets.
+ *                They have no effect today but MUST NOT be removed: token sets (e.g. xxllnc)
+ *                may set them, and removing the default would silently break theming once a
+ *                consuming stylesheet is added.
+ *
+ * Tokens marked /* reserved below are currently not consumed by any stylesheet in this
+ * repository. Wire them to component CSS before removing this marker.
+ *
+ * For issue tracking see: https://codeberg.org/Conduction/nldesign/issues/127
  */
 
 :root {
@@ -77,6 +92,15 @@
 	 * FOCUS
 	 * =================================================================== */
 
+	/* DELIBERATE EXCEPTION to the solid-colours brand rule (#131):
+	 * --nldesign-color-focus uses rgba (semi-transparent) intentionally.
+	 * Focus outlines must remain visible on ANY background colour —
+	 * a translucent value composites against the element's background,
+	 * making the ring visible on both light and dark surfaces without
+	 * requiring separate light/dark variants. This is standard
+	 * accessibility practice (WCAG 2.4.11 / 2.4.7) and is not a brand
+	 * shape colour. If a solid equivalent is ever preferred, use
+	 * outline-offset with a contrasting solid colour instead. */
 	--nldesign-color-focus: rgba(0, 123, 199, 0.5);
 	--nldesign-color-focus-rgb: 0, 123, 199;
 
@@ -138,41 +162,41 @@
 	 * Defaults reference brand tokens for consistency.
 	 * =================================================================== */
 
-	/* Button — base */
-	--nldesign-component-button-background-color: transparent;
-	--nldesign-component-button-color: var(--nldesign-color-primary);
+	/* Button — base (reserved: not yet consumed; used by utrecht-bridge as fallback only) */
+	--nldesign-component-button-background-color: transparent; /* reserved */
+	--nldesign-component-button-color: var(--nldesign-color-primary); /* reserved */
 	--nldesign-component-button-border-radius: var(--nldesign-border-radius);
 	--nldesign-component-button-border-width: 1px;
-	--nldesign-component-button-border-color: var(--nldesign-color-primary);
+	--nldesign-component-button-border-color: var(--nldesign-color-primary); /* reserved */
 	--nldesign-component-button-font-family: var(--nldesign-font-family);
-	--nldesign-component-button-font-size: 1rem;
+	--nldesign-component-button-font-size: 1rem; /* reserved */
 	--nldesign-component-button-font-weight: 700;
-	--nldesign-component-button-padding-block: 0.5rem;
-	--nldesign-component-button-padding-inline: 1rem;
+	--nldesign-component-button-padding-block: 0.5rem; /* reserved */
+	--nldesign-component-button-padding-inline: 1rem; /* reserved */
 
-	/* Button — hover */
-	--nldesign-component-button-hover-background-color: var(--nldesign-color-primary-light);
-	--nldesign-component-button-hover-color: var(--nldesign-color-primary);
-	--nldesign-component-button-hover-border-color: var(--nldesign-color-primary-hover);
+	/* Button — hover (reserved: not yet consumed by component stylesheets) */
+	--nldesign-component-button-hover-background-color: var(--nldesign-color-primary-light); /* reserved */
+	--nldesign-component-button-hover-color: var(--nldesign-color-primary); /* reserved */
+	--nldesign-component-button-hover-border-color: var(--nldesign-color-primary-hover); /* reserved */
 
-	/* Button — active */
-	--nldesign-component-button-active-background-color: var(--nldesign-color-primary-light-hover);
-	--nldesign-component-button-active-color: var(--nldesign-color-primary);
+	/* Button — active (reserved: not yet consumed by component stylesheets) */
+	--nldesign-component-button-active-background-color: var(--nldesign-color-primary-light-hover); /* reserved */
+	--nldesign-component-button-active-color: var(--nldesign-color-primary); /* reserved */
 
 	/* Button — disabled */
 	--nldesign-component-button-disabled-background-color: #e5e5e5;
 	--nldesign-component-button-disabled-color: #696969;
 	--nldesign-component-button-disabled-border-color: #b4b4b4;
 
-	/* Button — focus */
-	--nldesign-component-button-focus-border-color: var(--nldesign-color-focus);
+	/* Button — focus (reserved: not yet consumed by component stylesheets) */
+	--nldesign-component-button-focus-border-color: var(--nldesign-color-focus); /* reserved */
 
 	/* Button — primary-action */
 	--nldesign-component-button-primary-action-background-color: var(--nldesign-color-primary);
 	--nldesign-component-button-primary-action-color: var(--nldesign-color-primary-text);
 	--nldesign-component-button-primary-action-border-color: var(--nldesign-color-primary);
 	--nldesign-component-button-primary-action-hover-background-color: var(--nldesign-color-primary-hover);
-	--nldesign-component-button-primary-action-hover-color: var(--nldesign-color-primary-text);
+	--nldesign-component-button-primary-action-hover-color: var(--nldesign-color-primary-text); /* reserved */
 
 	/* Button — secondary-action */
 	--nldesign-component-button-secondary-action-background-color: transparent;
@@ -191,8 +215,8 @@
 	--nldesign-component-textbox-border-radius: var(--nldesign-border-radius);
 	--nldesign-component-textbox-font-family: var(--nldesign-font-family);
 	--nldesign-component-textbox-font-size: 1rem;
-	--nldesign-component-textbox-padding-block: 0.5rem;
-	--nldesign-component-textbox-padding-inline: 0.75rem;
+	--nldesign-component-textbox-padding-block: 0.5rem; /* reserved */
+	--nldesign-component-textbox-padding-inline: 0.75rem; /* reserved */
 
 	/* Textbox — states */
 	--nldesign-component-textbox-focus-border-color: var(--nldesign-color-info);
@@ -212,8 +236,8 @@
 	--nldesign-component-form-select-border-radius: var(--nldesign-border-radius);
 	--nldesign-component-form-select-focus-border-color: var(--nldesign-color-info);
 
-	--nldesign-component-form-fieldset-border-color: var(--nldesign-color-border);
-	--nldesign-component-form-fieldset-border-width: 1px;
+	--nldesign-component-form-fieldset-border-color: var(--nldesign-color-border); /* reserved */
+	--nldesign-component-form-fieldset-border-width: 1px; /* reserved */
 
 	/* ===================================================================
 	 * COMPONENT TOKENS — Typography: Headings
@@ -270,7 +294,7 @@
 	--nldesign-component-link-color: var(--nldesign-color-link);
 	--nldesign-component-link-hover-color: var(--nldesign-color-link-hover);
 	--nldesign-component-link-visited-color: var(--nldesign-color-link-visited);
-	--nldesign-component-link-font-weight: 400;
+	--nldesign-component-link-font-weight: 400; /* reserved */
 	--nldesign-component-link-text-decoration: underline;
 
 	/* ===================================================================
@@ -282,26 +306,28 @@
 	--nldesign-component-table-header-background-color: var(--nldesign-color-background-dark);
 	--nldesign-component-table-header-color: var(--nldesign-color-text);
 	--nldesign-component-table-header-font-weight: 700;
-	--nldesign-component-table-cell-padding-block: 0.5rem;
-	--nldesign-component-table-cell-padding-inline: 0.75rem;
+	--nldesign-component-table-cell-padding-block: 0.5rem; /* reserved */
+	--nldesign-component-table-cell-padding-inline: 0.75rem; /* reserved */
 	--nldesign-component-table-row-hover-background-color: var(--nldesign-color-background-hover);
 
 	/* ===================================================================
 	 * COMPONENT TOKENS — Badge
+	 * reserved: not yet consumed by component stylesheets (#127)
 	 * =================================================================== */
 
-	--nldesign-component-badge-background-color: var(--nldesign-color-primary);
-	--nldesign-component-badge-color: var(--nldesign-color-primary-text);
-	--nldesign-component-badge-border-radius: var(--nldesign-border-radius-pill);
-	--nldesign-component-badge-font-size: 0.875rem;
-	--nldesign-component-badge-font-weight: 700;
-	--nldesign-component-badge-padding-block: 0.125rem;
-	--nldesign-component-badge-padding-inline: 0.5rem;
+	--nldesign-component-badge-background-color: var(--nldesign-color-primary); /* reserved */
+	--nldesign-component-badge-color: var(--nldesign-color-primary-text); /* reserved */
+	--nldesign-component-badge-border-radius: var(--nldesign-border-radius-pill); /* reserved */
+	--nldesign-component-badge-font-size: 0.875rem; /* reserved */
+	--nldesign-component-badge-font-weight: 700; /* reserved */
+	--nldesign-component-badge-padding-block: 0.125rem; /* reserved */
+	--nldesign-component-badge-padding-inline: 0.5rem; /* reserved */
 
 	/* ===================================================================
 	 * COMPONENT TOKENS — Separator
 	 * =================================================================== */
 
+	/* separator tokens are consumed by theme.css hr selector */
 	--nldesign-component-separator-border-color: var(--nldesign-color-border);
 	--nldesign-component-separator-border-width: 1px;
 
@@ -309,11 +335,11 @@
 	 * COMPONENT TOKENS — Ordered List & Unordered List
 	 * =================================================================== */
 
-	--nldesign-component-ordered-list-color: var(--nldesign-color-text);
-	--nldesign-component-ordered-list-font-size: 1rem;
-	--nldesign-component-ordered-list-line-height: 1.5;
+	--nldesign-component-ordered-list-color: var(--nldesign-color-text); /* reserved */
+	--nldesign-component-ordered-list-font-size: 1rem; /* reserved */
+	--nldesign-component-ordered-list-line-height: 1.5; /* reserved */
 
-	--nldesign-component-unordered-list-color: var(--nldesign-color-text);
-	--nldesign-component-unordered-list-font-size: 1rem;
-	--nldesign-component-unordered-list-line-height: 1.5;
+	--nldesign-component-unordered-list-color: var(--nldesign-color-text); /* reserved */
+	--nldesign-component-unordered-list-font-size: 1rem; /* reserved */
+	--nldesign-component-unordered-list-line-height: 1.5; /* reserved */
 }

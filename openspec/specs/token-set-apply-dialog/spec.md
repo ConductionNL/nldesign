@@ -1,9 +1,13 @@
+---
+status: implemented
+---
+
 # Token-Set Apply Dialog Specification
 
 ## Purpose
 Defines the modal dialog shown when an admin selects a new NL Design token set. The dialog shows which Nextcloud CSS variable values would change (resolved current value vs the value from the new token set), lets the admin check or uncheck individual changes, and writes only the checked values to `custom-overrides.css`. The NL Design token set CSS file itself is never applied directly.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Dialog Trigger
 Selecting a different NL Design token set from the selector MUST open the apply dialog instead of immediately switching themes.
@@ -15,6 +19,7 @@ Selecting a different NL Design token set from the selector MUST open the apply 
 - AND the dropdown MUST NOT visually change to "utrecht" until the admin confirms or cancels
 
 #### Scenario: Admin selects the same token set that is already active
+@e2e exclude Browser <select> onChange does not fire when the same option is re-selected — the behaviour is inherent to the browser and does not require a UI assertion.
 - GIVEN the current token set is "utrecht"
 - WHEN the admin selects "utrecht" again
 - THEN the apply dialog MUST NOT open
@@ -30,6 +35,7 @@ The dialog MUST compare the resolved current values — what the browser is actu
 - AND the 36 unchanged tokens MUST NOT appear in the dialog
 
 #### Scenario: Current value is from custom-overrides.css
+@e2e exclude Requires known custom-overrides.css content — environment state not guaranteed.
 - GIVEN `custom-overrides.css` sets `--color-primary: #AA0000`
 - AND the new token set (utrecht) would contribute `--color-primary: #CC0000` (via the --nldesign-* mapping chain)
 - WHEN the dialog opens
@@ -37,6 +43,7 @@ The dialog MUST compare the resolved current values — what the browser is actu
 - AND the new column MUST show `#CC0000`
 
 #### Scenario: Resolved value is obtained from CSS custom property API
+@e2e exclude Internal JS implementation detail (getComputedStyle) — not testable via DOM.
 - GIVEN the admin has the settings page open
 - WHEN the dialog opens
 - THEN the "current" values MUST be read using `getComputedStyle(document.documentElement).getPropertyValue('--color-X')`
@@ -51,6 +58,7 @@ Every token row in the dialog MUST have a checkbox. All checkboxes MUST be check
 - THEN all 8 checkboxes MUST be checked
 
 #### Scenario: Admin unchecks a row
+@e2e exclude Requires dialog + live preview interaction and verifying custom-overrides.css content — covered by dialog-cancel flow in token-set-apply-dialog spec-coverage.
 - GIVEN the dialog is open
 - WHEN the admin unchecks the row for `--color-primary`
 - THEN `--color-primary` MUST be excluded from the values written to `custom-overrides.css`
@@ -63,6 +71,7 @@ Every token row in the dialog MUST have a checkbox. All checkboxes MUST be check
 
 ### Requirement: Live Preview in Dialog
 Checked rows MUST update the live page preview immediately as the admin checks and unchecks them, so they can see the effect before confirming.
+@e2e exclude Live preview via inline style injection — requires specific token values to assert; checking/unchecking interactions covered indirectly by checkbox-presence tests.
 
 #### Scenario: Admin checks a row
 - GIVEN the dialog is open and `--color-primary` row is checked
@@ -85,6 +94,7 @@ Checked rows MUST update the live page preview immediately as the admin checks a
 
 ### Requirement: Apply Action
 Clicking **Apply** MUST write only the checked token values to `custom-overrides.css` and close the dialog.
+@e2e exclude Clicking Apply POSTs to /api/overrides and changes IConfig token_set — mutates shared env custom-overrides.css and active token set.
 
 #### Scenario: Admin applies selected changes
 - GIVEN 8 tokens are shown and 6 are checked
@@ -108,7 +118,8 @@ Clicking **Apply** MUST write only the checked token values to `custom-overrides
 - AND no pre-existing custom override MUST be lost
 
 ### Requirement: Token Set Applied Together With Overrides
-Clicking **Apply** MUST both write the checked token values to `custom-overrides.css` AND save the selected token set as the new active base layer. The NL Design token set CSS file is NOT injected directly by the dialog — it is registered via the normal `token_set` config key and loaded on the next request as part of the standard CSS stack.
+Clicking **Apply** MUST both write the checked token values to `custom-overrides.css` AND save the selected token set as the new active base layer.
+@e2e exclude Requires Apply click and IConfig/filesystem verification — mutates shared env. The NL Design token set CSS file is NOT injected directly by the dialog — it is registered via the normal `token_set` config key and loaded on the next request as part of the standard CSS stack.
 
 #### Scenario: Active token set in config after apply
 - GIVEN the admin was on rijkshuisstijl and applied values from utrecht

@@ -3,11 +3,23 @@
 /**
  * NL Design Overrides Controller.
  *
- * @category Controller
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Controller
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
  */
 
 declare(strict_types=1);
@@ -17,7 +29,9 @@ namespace OCA\NLDesign\Controller;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\TokenRegistry;
+use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
@@ -26,6 +40,14 @@ use OCP\IRequest;
  * Controller for managing custom CSS token overrides.
  *
  * Handles CRUD, import, and export of custom-overrides.css.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
  */
 class OverridesController extends Controller
 {
@@ -58,7 +80,7 @@ class OverridesController extends Controller
         CustomOverridesService $overridesService,
         CssParserService $cssParser
     ) {
-        parent::__construct($appName, $request);
+        parent::__construct(appName: $appName, request: $request);
         $this->overridesService = $overridesService;
         $this->cssParser        = $cssParser;
     }//end __construct()
@@ -71,10 +93,11 @@ class OverridesController extends Controller
      *
      * @return JSONResponse The overrides and token registry.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-7
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function getOverrides(): JSONResponse
     {
         $overrides = $this->overridesService->read();
@@ -98,8 +121,9 @@ class OverridesController extends Controller
      *
      * @return JSONResponse Status and count of written tokens.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function setOverrides(): JSONResponse
     {
         $params    = $this->request->getParams();
@@ -123,8 +147,9 @@ class OverridesController extends Controller
      *
      * @return DataDownloadResponse The CSS file as a download.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-9
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function exportOverrides(): DataDownloadResponse
     {
         $content = $this->overridesService->getRawContent();
@@ -145,8 +170,9 @@ class OverridesController extends Controller
      *
      * @return JSONResponse Import result with 'imported' and 'skipped' counts.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-10
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function importOverrides(): JSONResponse
     {
         $validationError = $this->validateUploadedFile();
@@ -167,13 +193,15 @@ class OverridesController extends Controller
             );
         }
 
-        return $this->writeImportedTokens($parsed);
+        return $this->writeImportedTokens(parsed: $parsed);
     }//end importOverrides()
 
     /**
      * Validate the uploaded file for the import endpoint.
      *
      * @return JSONResponse|null An error response, or null if the file is valid.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
      */
     private function validateUploadedFile(): ?JSONResponse
     {
@@ -188,6 +216,23 @@ class OverridesController extends Controller
             return new JSONResponse(['error' => 'File exceeds the 256 KB size limit'], 413);
         }
 
+        // Validate file extension.
+        $originalName = $file['name'] ?? '';
+        $extension    = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        if ($extension !== 'css') {
+            return new JSONResponse(['error' => 'Only .css files are accepted'], 415);
+        }
+
+        // Validate MIME type via server-side detection (ignore client-provided type).
+        $tmpName  = $file['tmp_name'];
+        $mimeType = mime_content_type($tmpName);
+        // Accept text/css, text/plain (editors often send this for .css), and
+        // application/octet-stream (generic fallback from some browsers).
+        $allowedMimes = ['text/css', 'text/plain', 'application/octet-stream'];
+        if (in_array($mimeType, $allowedMimes, true) === false) {
+            return new JSONResponse(['error' => 'File does not appear to be a CSS file'], 415);
+        }
+
         return null;
     }//end validateUploadedFile()
 
@@ -195,6 +240,8 @@ class OverridesController extends Controller
      * Read the content of the uploaded file.
      *
      * @return string|null The file content, or null on failure.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
      */
     private function readUploadedContent(): ?string
     {
@@ -216,6 +263,8 @@ class OverridesController extends Controller
      * @return JSONResponse The import result response.
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
      */
     private function writeImportedTokens(array $parsed): JSONResponse
     {

@@ -1,9 +1,15 @@
+---
+status: implemented
+---
+
 # Nextcloud Variable Mapping Specification
 
 ## Purpose
 Provides a complete, audited mapping between all Nextcloud CSS custom properties and `--nldesign-*` design tokens, with comprehensive documentation and a defaults layer that ensures all tokens always have a value.
 
-## ADDED Requirements
+@e2e exclude CSS-variable mapping / documentation spec — all scenarios describe CSS file content, variable mapping tables, and cascade ordering; no testable UI surface in the admin settings page.
+
+## Requirements
 
 ### Requirement: Complete Nextcloud Variable Audit
 The system MUST include a mapping for every CSS custom property defined by Nextcloud's theming system (DefaultTheme.php, CommonThemeTrait.php, and core SCSS files).

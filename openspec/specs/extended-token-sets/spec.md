@@ -1,9 +1,15 @@
+---
+status: implemented
+---
+
 # Extended Token Sets Specification
 
 ## Purpose
 Expands the nldesign app from 5 manually maintained token sets to all available NL Design System organization token sets (48+), using auto-generation from official upstream JSON token files.
 
-## ADDED Requirements
+@e2e exclude Token generation / filesystem / backend spec — scenarios describe auto-generation scripts, nightly sync, manifest updates, and filesystem discovery; the admin dropdown rendering is covered by admin-settings tests.
+
+## Requirements
 
 ### Requirement: Support All Available Token Sets
 The system MUST support all organization token sets available in the `nl-design-system/themes` repository.

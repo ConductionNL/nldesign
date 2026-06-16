@@ -3,11 +3,17 @@
 /**
  * NL Design Login Token Definitions.
  *
- * @category Service
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Service
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-39
  */
 
 declare(strict_types=1);
@@ -19,6 +25,8 @@ namespace OCA\NLDesign\Service;
  *
  * Primary brand colors that drive login page buttons, links,
  * navigation accents, and interactive highlights.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-39
  */
 class LoginTokens
 {
@@ -26,6 +34,8 @@ class LoginTokens
      * Returns the login and branding tab tokens.
      *
      * @return array<string, array{tab: string, type: string, label: string}> Login tokens.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-39
      */
     public static function getTokens(): array
     {

@@ -3,11 +3,28 @@
 /**
  * NL Design Settings Controller.
  *
- * @category Controller
- * @package  OCA\NLDesign
- * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
- * @link     https://github.com/ConductionNL/nldesign
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @category  Controller
+ * @package   OCA\NLDesign
+ * @author    Conduction <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ * @link      https://codeberg.org/Conduction/nldesign
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-20
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-21
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
  */
 
 declare(strict_types=1);
@@ -15,13 +32,13 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\CustomOverridesService;
+use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\ThemingService;
-use OCA\NLDesign\Service\TokenRegistry;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
-use OCP\App\IAppManager;
+use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -31,6 +48,19 @@ use OCP\IRequest;
  *
  * Handles API requests for managing token sets, theming, and display settings.
  * Override-related endpoints are handled by OverridesController.
+ *
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-20
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-21
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
+ * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
  */
 class SettingsController extends Controller
 {
@@ -41,13 +71,6 @@ class SettingsController extends Controller
      * @var IConfig
      */
     private IConfig $config;
-
-    /**
-     * The app manager.
-     *
-     * @var IAppManager
-     */
-    private IAppManager $appManager;
 
     /**
      * The token set service.
@@ -71,31 +94,38 @@ class SettingsController extends Controller
     private TokenSetPreviewService $previewService;
 
     /**
+     * The per-app theming service.
+     *
+     * @var AppThemingService
+     */
+    private AppThemingService $appThemingService;
+
+    /**
      * Constructor.
      *
-     * @param string                 $appName         The app name.
-     * @param IRequest               $request         The request object.
-     * @param IConfig                $config          The config service.
-     * @param IAppManager            $appManager      The app manager.
-     * @param TokenSetService        $tokenSetService The token set service.
-     * @param ThemingService         $themingService  The theming service.
-     * @param TokenSetPreviewService $previewService  The token set preview service.
+     * @param string                 $appName           The app name.
+     * @param IRequest               $request           The request object.
+     * @param IConfig                $config            The config service.
+     * @param TokenSetService        $tokenSetService   The token set service.
+     * @param ThemingService         $themingService    The theming service.
+     * @param TokenSetPreviewService $previewService    The token set preview service.
+     * @param AppThemingService      $appThemingService The per-app theming service.
      */
     public function __construct(
         string $appName,
         IRequest $request,
         IConfig $config,
-        IAppManager $appManager,
         TokenSetService $tokenSetService,
         ThemingService $themingService,
-        TokenSetPreviewService $previewService
+        TokenSetPreviewService $previewService,
+        AppThemingService $appThemingService
     ) {
         parent::__construct(appName: $appName, request: $request);
-        $this->config          = $config;
-        $this->appManager      = $appManager;
-        $this->tokenSetService = $tokenSetService;
-        $this->themingService  = $themingService;
-        $this->previewService  = $previewService;
+        $this->config            = $config;
+        $this->tokenSetService   = $tokenSetService;
+        $this->themingService    = $themingService;
+        $this->previewService    = $previewService;
+        $this->appThemingService = $appThemingService;
     }//end __construct()
 
     /**
@@ -105,12 +135,12 @@ class SettingsController extends Controller
      *
      * @return JSONResponse The response with status and selected token set.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function setTokenSet(string $tokenSet): JSONResponse
     {
-        $tokenSetService = new TokenSetService(appManager: $this->appManager);
-        if ($tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
+        if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
@@ -122,10 +152,11 @@ class SettingsController extends Controller
     /**
      * Get the currently active design token set.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     *
      * @return JSONResponse The response with the current token set.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function getTokenSet(): JSONResponse
     {
         $tokenSet = $this->config->getAppValue(
@@ -142,8 +173,9 @@ class SettingsController extends Controller
      *
      * @return JSONResponse The list of available token sets.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function getAvailableTokenSets(): JSONResponse
     {
         $tokenSets = $this->tokenSetService->getAvailableTokenSets();
@@ -158,6 +190,8 @@ class SettingsController extends Controller
      * @param bool   $value The boolean value.
      *
      * @return void
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
      */
     private function saveBooleanSetting(string $key, bool $value): void
     {
@@ -176,8 +210,9 @@ class SettingsController extends Controller
      *
      * @return JSONResponse The response with the status.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
         $this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
@@ -192,8 +227,9 @@ class SettingsController extends Controller
      *
      * @return JSONResponse The response with the status.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
         $this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
@@ -202,48 +238,13 @@ class SettingsController extends Controller
     }//end setMenuLabelsSetting()
 
     /**
-     * Get the token overrides (registry, tabs, and saved overrides).
-     *
-     * @return JSONResponse The token editor data.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     */
-    public function getOverrides(): JSONResponse
-    {
-        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
-        $customOverridesService->ensureExists();
-
-        return new JSONResponse([
-            'registry'  => TokenRegistry::getTokens(),
-            'tabs'      => TokenRegistry::getTabLabels(),
-            'overrides' => $customOverridesService->read(),
-        ]);
-    }//end getOverrides()
-
-    /**
-     * Save token overrides.
-     *
-     * @param array $overrides The token overrides to save.
-     *
-     * @return JSONResponse The response with the status.
-     *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
-     */
-    public function setOverrides(array $overrides): JSONResponse
-    {
-        $customOverridesService = new CustomOverridesService(appManager: $this->appManager);
-        $customOverridesService->write(tokens: $overrides);
-
-        return new JSONResponse(['status' => 'ok']);
-    }//end setOverrides()
-
-    /**
      * Update Nextcloud theming values from NL Design tokens.
      *
      * @return JSONResponse The response with updated fields.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function updateThemingValues(): JSONResponse
     {
         $params = $this->request->getParams();
@@ -262,6 +263,12 @@ class SettingsController extends Controller
         $updatedImages = $this->themingService->applyImages(params: $params);
         $updated       = array_merge($updatedColors, $updatedImages);
 
+        // Increment the theming sync counter exposed by MetricsController as
+        // nldesign_theming_syncs_total. Only counted on success (after both
+        // apply* calls completed without throwing).
+        $current = (int) $this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
+        $this->config->setAppValue(Application::APP_ID, 'theming_syncs_total', (string) ($current + 1));
+
         return new JSONResponse(['status' => 'ok', 'updated' => $updated]);
     }//end updateThemingValues()
 
@@ -270,8 +277,9 @@ class SettingsController extends Controller
      *
      * @return JSONResponse The current theming values.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function getThemingValues(): JSONResponse
     {
         $values = $this->buildThemingSnapshot();
@@ -283,6 +291,8 @@ class SettingsController extends Controller
      * Build a snapshot of the current theming state.
      *
      * @return array<string, mixed> The theming snapshot.
+     *
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
      */
     private function buildThemingSnapshot(): array
     {
@@ -308,8 +318,9 @@ class SettingsController extends Controller
      *
      * @return JSONResponse The resolved color map.
      *
-     * @AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)
+     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
      */
+    #[AuthorizedAdminSetting(Admin::class)]
     public function getTokenSetPreview(string $tokenSetId): JSONResponse
     {
         if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSetId) === false) {
@@ -320,4 +331,42 @@ class SettingsController extends Controller
 
         return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
     }//end getTokenSetPreview()
+
+    /**
+     * List enabled apps with their per-app theming state.
+     *
+     * @return JSONResponse The list of { id, name, themed } entries.
+     *
+     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getAppTheming(): JSONResponse
+    {
+        return new JSONResponse(['apps' => $this->appThemingService->getThemableApps()]);
+    }//end getAppTheming()
+
+    /**
+     * Replace the per-app theming exclusion list.
+     *
+     * Accepts { disabledApps: string[] }. Unknown and protected ids are dropped
+     * by the service before persisting.
+     *
+     * @param array $disabledApps The app ids to exclude from theming.
+     *
+     * @return JSONResponse The persisted state after validation.
+     *
+     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setAppTheming(array $disabledApps=[]): JSONResponse
+    {
+        $this->appThemingService->setDisabledApps(appIds: $disabledApps);
+
+        return new JSONResponse(
+            [
+                'status'       => 'ok',
+                'disabledApps' => $this->appThemingService->getDisabledApps(),
+            ]
+        );
+    }//end setAppTheming()
 }//end class
