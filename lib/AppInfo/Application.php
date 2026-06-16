@@ -29,6 +29,7 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use Psr\Container\ContainerInterface;
 
 /**
  * Main application class for NL Design.
@@ -43,6 +44,16 @@ class Application extends App implements IBootstrap
     public const APP_ID = 'nldesign';
 
     /**
+     * Fully-qualified OpenRegister AppHost engine class names, kept as plain
+     * strings so referencing this map never autoloads an OpenRegister class.
+     * They are resolved through the container only inside the health-controller
+     * closure below, i.e. when the `/api/health` route is actually dispatched.
+     */
+    private const GENERIC_HEALTH_CONTROLLER     = 'OCA\\OpenRegister\\AppHost\\Controller\\GenericHealthController';
+    private const OBSERVABILITY_MANIFEST_LOADER = 'OCA\\OpenRegister\\AppHost\\Observability\\ManifestLoader';
+    private const OBSERVABILITY_EXECUTOR        = 'OCA\\OpenRegister\\AppHost\\Observability\\HealthCheckExecutor';
+
+    /**
      * Constructor.
      */
     public function __construct()
@@ -53,17 +64,43 @@ class Application extends App implements IBootstrap
     /**
      * Register services and providers.
      *
+     * Adopts the OpenRegister AppHost observability engine (ADR-040) for the
+     * `/api/health` endpoint only. nldesign is a pure NL Design theme app with
+     * NO OpenRegister dependency, so OpenRegister is a SOFT/optional dependency
+     * here: the engine class names are referenced only as strings inside the
+     * closure, which the leaf DI container executes lazily on route dispatch.
+     * Therefore, when OpenRegister is disabled or absent, this method (and
+     * Nextcloud bootstrap) complete without loading a single OpenRegister class;
+     * the first request to `/api/health` would surface a degraded 5xx instead
+     * of fatalling the app. The declarative checks live in `src/manifest.json`
+     * and use only the OR-independent primitives (database, filesystem,
+     * appEnabled) — never orAvailable, and no OR-object metrics.
+     *
      * @param IRegistrationContext $context The registration context.
      *
      * @return void
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
+     * @spec openspec/changes/adopt-apphost-2026-06-16/tasks.md#task-2
      */
     public function register(IRegistrationContext $context): void
     {
-        // Register the theme.
+        // Lazily alias nldesign's HealthController service name to the AppHost
+        // GenericHealthController. The route name in appinfo/routes.php
+        // (health#index) and the URL (/api/health) are unchanged; only the
+        // resolved class changes. Auth posture (#[PublicPage]) and the ADR-006
+        // {status, app, version, checks} contract are owned by the engine.
+        $context->registerService(
+            'OCA\\NLDesign\\Controller\\HealthController',
+            static function (ContainerInterface $c): object {
+                $class = self::GENERIC_HEALTH_CONTROLLER;
+                return new $class(
+                    appName: self::APP_ID,
+                    request: $c->get('OCP\\IRequest'),
+                    manifestLoader: $c->get(self::OBSERVABILITY_MANIFEST_LOADER),
+                    executor: $c->get(self::OBSERVABILITY_EXECUTOR)
+                );
+            }
+        );
     }//end register()
 
     /**
