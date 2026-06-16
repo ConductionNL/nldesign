@@ -53,17 +53,29 @@ class Application extends App implements IBootstrap
     /**
      * Register services and providers.
      *
+     * No bootstrap-time service registration is required: the `/api/health`
+     * endpoint is served by the thin `Controller\HealthController` subclass of
+     * the OpenRegister AppHost engine's GenericHealthController (ADR-040). The
+     * subclass is autoloaded only when the route is dispatched, never at
+     * bootstrap, so OpenRegister is a SOFT/optional dependency for health only
+     * — Nextcloud still boots and nldesign still themes when OpenRegister is
+     * absent (a request to /api/health would then degrade rather than fatal
+     * the app). The declarative checks live in `src/manifest.json` and use only
+     * the OR-independent primitives (database, filesystem, appEnabled) — never
+     * orAvailable, and no OR-object metrics.
+     *
      * @param IRegistrationContext $context The registration context.
      *
      * @return void
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
      *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
+     * @spec openspec/changes/adopt-apphost-2026-06-16/tasks.md#task-2
      */
     public function register(IRegistrationContext $context): void
     {
-        // Register the theme.
+        // Health endpoint served by the thin Controller\HealthController
+        // subclass of the AppHost engine — no explicit registration needed.
     }//end register()
 
     /**

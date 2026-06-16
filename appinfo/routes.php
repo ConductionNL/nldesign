@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 return [
 	'routes' => [
-		// Metrics and health.
+		// Metrics — served by nldesign's own MetricsController (domain theme
+		// metrics: token sets, custom overrides, theming syncs). Public.
 		['name' => 'metrics#index', 'url' => '/api/metrics', 'verb' => 'GET'],
+		// Health — the `health#index` route name and `/api/health` URL are
+		// unchanged, but the leaf HealthController service name is aliased to
+		// the OpenRegister AppHost engine's GenericHealthController in
+		// Application::register() (ADR-040). The engine reads the
+		// observability.health block of src/manifest.json and owns the auth
+		// posture (#[PublicPage] + #[NoCSRFRequired]) and the
+		// {status, app, version, checks} contract.
 		['name' => 'health#index', 'url' => '/api/health', 'verb' => 'GET'],
 
 		['name' => 'settings#getAvailableTokenSets', 'url' => '/settings/tokensets', 'verb' => 'GET'],
