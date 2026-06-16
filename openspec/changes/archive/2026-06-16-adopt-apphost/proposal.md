@@ -7,12 +7,11 @@ nldesign ships a ~92-LOC bespoke `HealthController` (`lib/Controller/HealthContr
 nldesign is a pure NL Design token-injection / per-app CSS theming layer. It has no OpenRegister objects, no register, and no hard dependency on OpenRegister (`info.xml` declares no `<openregister>` dependency). Therefore:
 
 - The adopted health block uses ONLY the OR-independent check primitives: `database`, `filesystem`, `appEnabled`. It does NOT use `orAvailable` and does NOT declare any OR-object metrics.
-- The engine lives in OpenRegister, so it becomes a SOFT/optional dependency for the health endpoint. It is wired lazily: the engine class names are referenced only as strings inside a closure registered via `IRegistrationContext::registerService()`. The closure runs only when `/api/health` is dispatched, so when OpenRegister is disabled/absent Nextcloud still boots and nldesign still themes — only the health endpoint would degrade.
+- The engine lives in OpenRegister, so it becomes a SOFT/optional dependency for the health endpoint. It is wired through a thin subclass that `extends` the engine controller; that subclass is autoloaded only when `/api/health` is dispatched, never at Nextcloud bootstrap. So when OpenRegister is disabled/absent Nextcloud still boots and nldesign still themes — only the health endpoint would degrade.
 
 ## Proposed Solution
 - Add an `observability.health` block to `src/manifest.json` with `database` (critical) + `filesystem` (degraded) + `appEnabled: nldesign` (critical) checks under the `adr006` status-code policy.
-- Lazily alias the leaf `OCA\NLDesign\Controller\HealthController` service name to `OCA\OpenRegister\AppHost\Controller\GenericHealthController` in `Application::register()`. The route name (`health#index`) and URL (`/api/health`) are unchanged; auth posture (`#[PublicPage]`, ADR-006) and the response contract are owned by the engine.
-- Delete the bespoke `lib/Controller/HealthController.php`.
+- Replace the bespoke `lib/Controller/HealthController.php` with a thin subclass of `OCA\OpenRegister\AppHost\Controller\GenericHealthController` whose `index()` delegates to `parent::index()` and re-declares the public auth posture so it stays statically visible at nldesign's route. The route name (`health#index`) and URL (`/api/health`) are unchanged; the response contract is owned by the engine.
 - KEEP nldesign's domain untouched: the bespoke `MetricsController` (`/api/metrics`) is NOT adopted because it exposes nldesign's own theme metrics (token sets, custom overrides, theming syncs) — domain value, not boilerplate — and the engine's metrics endpoint is admin-only, which would change the public auth posture.
 
 ## Scope

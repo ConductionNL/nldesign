@@ -3,11 +3,11 @@
 ## 1. Declarative manifest
 - [x] 1.1 Add `src/manifest.json` with an `observability.health` block using only `database`, `filesystem`, `appEnabled` checks (no `orAvailable`, no OR-object metrics).
 
-## 2. Lazy engine wiring
-- [x] 2.1 In `Application::register()`, register a lazy service alias from `OCA\NLDesign\Controller\HealthController` to the AppHost `GenericHealthController`, referencing engine class names only as strings inside the closure so Nextcloud boots when OpenRegister is absent.
+## 2. Engine wiring (soft/optional dependency)
+- [x] 2.1 No bootstrap-time registration: `Application::register()` stays empty for health. OpenRegister is a soft dependency wired only through the thin subclass, which autoloads on route dispatch — never at bootstrap — so Nextcloud boots when OpenRegister is absent.
 
-## 3. Remove boilerplate
-- [x] 3.1 Delete the bespoke `lib/Controller/HealthController.php`.
+## 3. Replace boilerplate with a thin subclass
+- [x] 3.1 Replace the ~92-LOC bespoke `lib/Controller/HealthController.php` with a thin subclass of the AppHost `GenericHealthController` whose `index()` delegates to `parent::index()` and re-declares `#[PublicPage]` + `#[NoCSRFRequired]`.
 - [x] 3.2 Keep the `health#index` route and `/api/health` URL unchanged.
 
 ## 4. Preserve domain

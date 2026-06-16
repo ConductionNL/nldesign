@@ -29,7 +29,7 @@ The app MUST expose a public health check endpoint at `GET /api/health` for moni
 #### Scenario: Nextcloud boots when OpenRegister is absent
 - GIVEN OpenRegister is disabled or not installed
 - WHEN Nextcloud boots and `Application::register()` runs
-- THEN no OpenRegister class MUST be loaded (engine names are referenced only as strings inside the lazy closure), so nldesign still loads and themes
+- THEN no OpenRegister class MUST be loaded (the thin `HealthController` subclass autoloads its OpenRegister parent only on route dispatch, never at bootstrap), so nldesign still loads and themes
 - AND only a request to `/api/health` would surface a degraded 5xx
 
 #### Scenario: Route registration
