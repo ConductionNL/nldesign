@@ -1,5 +1,5 @@
 ---
-status: implemented
+status: done
 ---
 
 # Theming Sync Dialog Specification

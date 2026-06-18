@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # per-app-theming Specification
 
 ## Purpose

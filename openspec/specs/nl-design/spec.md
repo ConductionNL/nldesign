@@ -1,5 +1,5 @@
 ---
-status: implemented
+status: done
 ---
 
 # NL Design System Compliance — Delta Spec

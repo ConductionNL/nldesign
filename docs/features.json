@@ -1,8 +1,140 @@
 [
   {
+    "slug": "admin-settings",
+    "title": "Admin Settings",
+    "summary": "Defines the admin settings panel for the NL Design app. The settings panel is located in Nextcloud's administration area under the Theming section. It provides controls for selecting the active token set, toggling the hide slogan feature, toggling show menu labels, and previewing the selected theme. The UI is built with vanilla PHP templates and vanilla JavaScript (no Vue or webpack). Additionally, the panel hosts the token editor for customizing individual Nextcloud CSS tokens, and triggers the theming sync dialog when a token set with theming metadata is selected.",
+    "docsUrl": "openspec/specs/admin-settings/spec.md"
+  },
+  {
+    "slug": "component-tokens",
+    "title": "Component Tokens",
+    "summary": "Introduces component-level NL Design System tokens using the `--nldesign-component-*` prefix, with a temporary bridge file that maps the current `--utrecht-*` component tokens to the nldesign namespace.",
+    "docsUrl": "openspec/specs/component-tokens/spec.md"
+  },
+  {
+    "slug": "css-architecture",
+    "title": "CSS Architecture",
+    "summary": "Defines the layered CSS architecture that transforms NL Design System tokens into Nextcloud-compatible theming.",
+    "docsUrl": "openspec/specs/css-architecture/spec.md"
+  },
+  {
+    "slug": "custom-css-overrides",
+    "title": "Custom CSS Overrides",
+    "summary": "Defines the CSS file persistence layer for user-defined token customizations.",
+    "docsUrl": "openspec/specs/custom-css-overrides/spec.md"
+  },
+  {
+    "slug": "custom-token-sets",
+    "title": "Custom Token Sets",
+    "summary": "Admins upload, validate, manage, and activate their own organization token sets (\"eigen huisstijl\"), in the app native `--nldesign-*` CSS format or the W3C Design Tokens JSON format. Backs GOVERNMENT-FEATURES F-04.",
+    "docsUrl": "openspec/specs/custom-token-sets/spec.md"
+  },
+  {
     "slug": "docs-content",
     "title": "docs-content",
     "summary": "Documentation site content and structure specification.",
     "docsUrl": "openspec/specs/docs-content/spec.md"
+  },
+  {
+    "slug": "extended-token-sets",
+    "title": "Extended Token Sets",
+    "summary": "Expands the nldesign app from 5 manually maintained token sets to all available NL Design System organization token sets (48+), using auto-generation from official upstream JSON token files.",
+    "docsUrl": "openspec/specs/extended-token-sets/spec.md"
+  },
+  {
+    "slug": "hide-slogan",
+    "title": "Hide Slogan",
+    "summary": "Defines the \"Hide Slogan\" feature that removes the Nextcloud slogan/payoff text from the login page.",
+    "docsUrl": "openspec/specs/hide-slogan/spec.md"
+  },
+  {
+    "slug": "icon-assets",
+    "title": "icon-assets",
+    "summary": "Bundles the Amsterdam Design System icon set (344 SVG icons) and organization logos (23) inside the nldesign app and exposes them to every other Nextcloud app through the standard `IURLGenerator::imagePath('nldesign', 'icons/{Name}.svg')` contract, with no nldesign-specific bootstrap required. Filenames are treated as a public API: an inventory in `img/ICONS.md` is kept in sync with the filesystem, renames are breaking changes, and the upstream MPL-2.0 license notice travels with the assets.",
+    "docsUrl": "openspec/specs/icon-assets/spec.md"
+  },
+  {
+    "slug": "menu-labels",
+    "title": "Show Menu Labels",
+    "summary": "Defines the \"Show Menu Labels\" feature that replaces app menu icons in the Nextcloud header with text labels.",
+    "docsUrl": "openspec/specs/menu-labels/spec.md"
+  },
+  {
+    "slug": "nextcloud-variable-mapping",
+    "title": "Nextcloud Variable Mapping",
+    "summary": "Provides a complete, audited mapping between all Nextcloud CSS custom properties and `--nldesign-*` design tokens, with comprehensive documentation and a defaults layer that ensures all tokens always have a value.",
+    "docsUrl": "openspec/specs/nextcloud-variable-mapping/spec.md"
+  },
+  {
+    "slug": "nl-design",
+    "title": "NL Design System Compliance — Delta Spec",
+    "summary": "Updates the existing nl-design shared spec to reflect expanded token set support and component-level tokens.",
+    "docsUrl": "openspec/specs/nl-design/spec.md"
+  },
+  {
+    "slug": "per-app-theming",
+    "title": "per-app-theming",
+    "summary": "Let an administrator exclude individual Nextcloud apps from NL Design theming. Requests rendering an excluded app's pages receive no nldesign CSS at all (stock Nextcloud styling, header included), while everything else — login, settings, and every non-excluded app — stays themed. Theming stays on by default (empty exclusion list reproduces global injection); admins opt specific apps out to roll a municipal huisstijl out incrementally or quarantine an app that breaks under theming. Backs GOVERNMENT-FEATURES F-15.",
+    "docsUrl": "openspec/specs/per-app-theming/spec.md"
+  },
+  {
+    "slug": "prometheus-metrics",
+    "title": "Prometheus Metrics Endpoint",
+    "summary": "Expose application metrics in Prometheus text exposition format at `GET /api/metrics` for monitoring, alerting, and operational dashboards.",
+    "docsUrl": "openspec/specs/prometheus-metrics/spec.md"
+  },
+  {
+    "slug": "theming-sync",
+    "title": "Theming Sync",
+    "summary": "Defines how the NL Design app synchronizes design token values with Nextcloud's built-in theming system.",
+    "docsUrl": "openspec/specs/theming-sync/spec.md"
+  },
+  {
+    "slug": "theming-sync-dialog",
+    "title": "Theming Sync Dialog",
+    "summary": "After an admin selects a different token set in nldesign, offer to automatically update Nextcloud's built-in theming values (primary color, background color, logo, background image) to match the selected token set, preventing a split-brain theming state where CSS tokens and Nextcloud theming are out of sync.",
+    "docsUrl": "openspec/specs/theming-sync-dialog/spec.md"
+  },
+  {
+    "slug": "token-editor-ui",
+    "title": "Token Editor UI",
+    "summary": "Provides a tabbed admin settings panel for browsing and editing all editable Nextcloud CSS custom properties (`--color-*`) with live preview and per-token reset controls. Changes are previewed in the browser before being committed to `custom-overrides.css`.",
+    "docsUrl": "openspec/specs/token-editor-ui/spec.md"
+  },
+  {
+    "slug": "token-import-export",
+    "title": "Token Import/Export",
+    "summary": "Allows admins to download the current `custom-overrides.css` as a portable file and upload a previously saved file to restore or share a token configuration. Only known, editable Nextcloud `--color-*` tokens are accepted on import — unknown variables are silently rejected and their count is reported.",
+    "docsUrl": "openspec/specs/token-import-export/spec.md"
+  },
+  {
+    "slug": "token-set-apply-dialog",
+    "title": "Token-Set Apply Dialog",
+    "summary": "Defines the modal dialog shown when an admin selects a new NL Design token set. The dialog shows which Nextcloud CSS variable values would change (resolved current value vs the value from the new token set), lets the admin check or uncheck individual changes, and writes only the checked values to `custom-overrides.css`. The NL Design token set CSS file itself is never applied directly.",
+    "docsUrl": "openspec/specs/token-set-apply-dialog/spec.md"
+  },
+  {
+    "slug": "token-set-dropdown",
+    "title": "Token Set Dropdown",
+    "summary": "Replace the radio button list for token set selection with a searchable dropdown (`<select>`) that scales to 400+ entries, improving usability as the number of available token sets grows.",
+    "docsUrl": "openspec/specs/token-set-dropdown/spec.md"
+  },
+  {
+    "slug": "token-sets",
+    "title": "Token Sets",
+    "summary": "Defines how the NL Design app discovers, validates, stores, and serves design token sets.",
+    "docsUrl": "openspec/specs/token-sets/spec.md"
+  },
+  {
+    "slug": "token-sync-workflow",
+    "title": "Token Sync Workflow",
+    "summary": "Automates the synchronization of NL Design System token sets from the upstream `nl-design-system/themes` repository via a nightly GitHub Actions workflow that generates CSS token files and opens PRs when changes are detected.",
+    "docsUrl": "openspec/specs/token-sync-workflow/spec.md"
+  },
+  {
+    "slug": "vng-token-set",
+    "title": "VNG Token Set",
+    "summary": "Define requirements for adding VNG (Vereniging Nederlandse Gemeenten) as a selectable design token set in the nldesign Nextcloud app.",
+    "docsUrl": "openspec/specs/vng-token-set/spec.md"
   }
 ]
