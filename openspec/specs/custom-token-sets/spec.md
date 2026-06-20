@@ -109,6 +109,7 @@ The server MUST compute WCAG 2.1 relative-luminance contrast ratios for the fixe
 - AND the admin panel MUST display the warning with a localized explanation referencing WCAG 2.1 AA
 
 #### Scenario: Contrast warning resurfaces when applying the set
+@e2e exclude theme-config scenario; covered by themer integration, no standalone e2e
 - GIVEN a stored custom set with a persisted contrast warning
 - WHEN the admin selects it in the token set dropdown and the apply dialog opens
 - THEN the dialog MUST display the persisted contrast warning above the change list
@@ -124,6 +125,7 @@ The server MUST compute WCAG 2.1 relative-luminance contrast ratios for the fixe
 Custom-set metadata (display name, description, `theming.primary_color`, `theming.background_color`) MUST be stored in the `nldesign` appconfig key `custom_token_sets` as a JSON object indexed by set id. `theming.primary_color` and `theming.background_color` MUST be derived from the uploaded `--nldesign-color-primary` / `--nldesign-color-background` values when present so the theming-sync dialog works for custom sets exactly as for shipped sets.
 
 #### Scenario: Uploaded set participates in theming sync
+@e2e exclude theme-config scenario; covered by themer integration, no standalone e2e
 - GIVEN a custom set uploaded with `--nldesign-color-primary: #007bc7`
 - WHEN the admin selects the custom set and the theming sync dialog opens
 - THEN the dialog MUST offer to sync `#007bc7` as the Nextcloud primary color
@@ -152,6 +154,7 @@ The admin panel MUST list uploaded sets with their contrast status and provide d
 - AND the set MUST disappear from the dropdown and the custom-set list
 
 #### Scenario: Deleting the active set falls back to nextcloud
+@e2e exclude theme-config scenario; covered by themer integration, no standalone e2e
 - GIVEN `custom-gemeente-voorbeeld` is the active token set
 - WHEN the admin deletes it
 - THEN the active token set MUST be reset to `nextcloud`
