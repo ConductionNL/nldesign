@@ -42,7 +42,7 @@ use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;
 
 /**
- * nldesign health endpoint — engine-owned, declarative.
+ * NlDesign health endpoint — engine-owned, declarative.
  *
  * @psalm-suppress UndefinedClass — OpenRegister is a soft dependency; the
  *   parent class autoloads only on route dispatch, not at bootstrap.
