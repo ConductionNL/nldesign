@@ -1,5 +1,5 @@
 ---
-status: implemented
+status: done
 ---
 
 # Token Sync Workflow Specification
