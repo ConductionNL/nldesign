@@ -1,7 +1,11 @@
+---
+status: done
+---
+
 # icon-assets Specification
 
 ## Purpose
-TBD - created by archiving change icon-assets. Update Purpose after archive.
+Bundles the Amsterdam Design System icon set (344 SVG icons) and organization logos (23) inside the nldesign app and exposes them to every other Nextcloud app through the standard `IURLGenerator::imagePath('nldesign', 'icons/{Name}.svg')` contract, with no nldesign-specific bootstrap required. Filenames are treated as a public API: an inventory in `img/ICONS.md` is kept in sync with the filesystem, renames are breaking changes, and the upstream MPL-2.0 license notice travels with the assets.
 ## Requirements
 ### Requirement: Bundled Icon and Logo Inventory
 The app MUST bundle the Amsterdam Design System icon set as individual SVG files in `img/icons/` (344 icons) and the organization logos in `img/logos/` (23 logos). Icon filenames MUST follow the upstream Amsterdam Design System PascalCase names (e.g. `Search.svg`), with filled variants carrying the `Fill` suffix (e.g. `AppleFill.svg`). The documented inventory in `img/ICONS.md` MUST match the filesystem.

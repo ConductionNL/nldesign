@@ -14,19 +14,25 @@
   {
     "slug": "css-architecture",
     "title": "CSS Architecture",
-    "summary": "Defines the layered CSS architecture that transforms NL Design System tokens into Nextcloud-compatible theming. The architecture uses a design-system-driven approach: `design-systems.json` declares ordered stylesheet bundles, and `Application::boot()` loads the correct bundle for the active token set. Organization-specific tokens cascade correctly, incomplete token sets fall back gracefully, and NL Design System component tokens (using the `--utrecht-*` prefix) are bridged to the `--nldesign-*` namespace. The load order is critical: each layer builds on the previous one.",
+    "summary": "Defines the layered CSS architecture that transforms NL Design System tokens into Nextcloud-compatible theming.",
     "docsUrl": "openspec/specs/css-architecture/spec.md"
   },
   {
     "slug": "custom-css-overrides",
     "title": "Custom CSS Overrides",
-    "summary": "Defines the CSS file persistence layer for user-defined token customizations. `custom-overrides.css` is the single write target for all theme editor output. It is loaded last in the CSS stack so user intent always wins. NL Design token set CSS files are read-only presets and are never modified.",
+    "summary": "Defines the CSS file persistence layer for user-defined token customizations.",
     "docsUrl": "openspec/specs/custom-css-overrides/spec.md"
+  },
+  {
+    "slug": "custom-token-sets",
+    "title": "Custom Token Sets",
+    "summary": "Admins upload, validate, manage, and activate their own organization token sets (\"eigen huisstijl\"), in the app native `--nldesign-*` CSS format or the W3C Design Tokens JSON format. Backs GOVERNMENT-FEATURES F-04.",
+    "docsUrl": "openspec/specs/custom-token-sets/spec.md"
   },
   {
     "slug": "docs-content",
     "title": "docs-content",
-    "summary": "",
+    "summary": "Documentation site content and structure specification.",
     "docsUrl": "openspec/specs/docs-content/spec.md"
   },
   {
@@ -38,13 +44,19 @@
   {
     "slug": "hide-slogan",
     "title": "Hide Slogan",
-    "summary": "Defines the \"Hide Slogan\" feature that removes the Nextcloud slogan/payoff text from the login page. Dutch government organizations typically need to present a clean, branded login page without Nextcloud's default slogan (\"a safe home for all your data\"). When enabled, the footer element on the login page that contains this slogan is completely hidden via a conditionally loaded CSS file.",
+    "summary": "Defines the \"Hide Slogan\" feature that removes the Nextcloud slogan/payoff text from the login page.",
     "docsUrl": "openspec/specs/hide-slogan/spec.md"
+  },
+  {
+    "slug": "icon-assets",
+    "title": "icon-assets",
+    "summary": "Bundles the Amsterdam Design System icon set (344 SVG icons) and organization logos (23) inside the nldesign app and exposes them to every other Nextcloud app through the standard `IURLGenerator::imagePath('nldesign', 'icons/{Name}.svg')` contract, with no nldesign-specific bootstrap required. Filenames are treated as a public API: an inventory in `img/ICONS.md` is kept in sync with the filesystem, renames are breaking changes, and the upstream MPL-2.0 license notice travels with the assets.",
+    "docsUrl": "openspec/specs/icon-assets/spec.md"
   },
   {
     "slug": "menu-labels",
     "title": "Show Menu Labels",
-    "summary": "Defines the \"Show Menu Labels\" feature that replaces app menu icons in the Nextcloud header with text labels. When enabled, the header navigation displays application names (e.g. \"Files\", \"Mail\", \"Calendar\") instead of icons, improving discoverability and accessibility for users unfamiliar with Nextcloud's icon-based navigation. This feature aligns with Dutch government UX guidelines that prioritize clarity and readability over icon recognition.",
+    "summary": "Defines the \"Show Menu Labels\" feature that replaces app menu icons in the Nextcloud header with text labels.",
     "docsUrl": "openspec/specs/menu-labels/spec.md"
   },
   {
@@ -60,15 +72,21 @@
     "docsUrl": "openspec/specs/nl-design/spec.md"
   },
   {
+    "slug": "per-app-theming",
+    "title": "per-app-theming",
+    "summary": "Let an administrator exclude individual Nextcloud apps from NL Design theming. Requests rendering an excluded app's pages receive no nldesign CSS at all (stock Nextcloud styling, header included), while everything else — login, settings, and every non-excluded app — stays themed. Theming stays on by default (empty exclusion list reproduces global injection); admins opt specific apps out to roll a municipal huisstijl out incrementally or quarantine an app that breaks under theming. Backs GOVERNMENT-FEATURES F-15.",
+    "docsUrl": "openspec/specs/per-app-theming/spec.md"
+  },
+  {
     "slug": "prometheus-metrics",
     "title": "Prometheus Metrics Endpoint",
-    "summary": "Expose application metrics in Prometheus text exposition format at `GET /api/metrics` for monitoring, alerting, and operational dashboards. The nldesign app is a CSS-only theming layer with no database tables, so metrics focus on configuration state (active token set, custom overrides count, theming sync operations) and standard application health signals.",
+    "summary": "Expose application metrics in Prometheus text exposition format at `GET /api/metrics` for monitoring, alerting, and operational dashboards.",
     "docsUrl": "openspec/specs/prometheus-metrics/spec.md"
   },
   {
     "slug": "theming-sync",
     "title": "Theming Sync",
-    "summary": "Defines how the NL Design app synchronizes design token values with Nextcloud's built-in theming system. When a token set includes theming metadata (primary color, background color, logo, background image), the app can update Nextcloud's `ThemingDefaults` and `ImageManager` to ensure consistency between the NL Design CSS layer and Nextcloud's core theming (which controls background images, server branding, and email templates). This prevents a split-brain state where CSS tokens show one color scheme but Nextcloud's internal theming references another.",
+    "summary": "Defines how the NL Design app synchronizes design token values with Nextcloud's built-in theming system.",
     "docsUrl": "openspec/specs/theming-sync/spec.md"
   },
   {
@@ -104,7 +122,7 @@
   {
     "slug": "token-sets",
     "title": "Token Sets",
-    "summary": "Defines how the NL Design app discovers, validates, stores, and serves design token sets. Token sets are organization-specific CSS files that override default Rijkshuisstijl design tokens, enabling Dutch government organizations to apply their own visual identity to Nextcloud. The system uses filesystem-based discovery combined with a JSON manifest for metadata, and supports multiple design systems via a `design_system` field that determines which CSS stack is loaded.",
+    "summary": "Defines how the NL Design app discovers, validates, stores, and serves design token sets.",
     "docsUrl": "openspec/specs/token-sets/spec.md"
   },
   {
@@ -116,7 +134,7 @@
   {
     "slug": "vng-token-set",
     "title": "VNG Token Set",
-    "summary": "Define requirements for adding VNG (Vereniging Nederlandse Gemeenten) as a selectable design token set in the nldesign Nextcloud app. VNG tokens are manually converted from the tilburg-woo-ui project since they are not available in the upstream nl-design-system/themes repository.",
+    "summary": "Define requirements for adding VNG (Vereniging Nederlandse Gemeenten) as a selectable design token set in the nldesign Nextcloud app.",
     "docsUrl": "openspec/specs/vng-token-set/spec.md"
   }
 ]

@@ -116,7 +116,7 @@ class Application extends App implements IBootstrap
             return;
         }
 
-        $config         = $serverContainer->getConfig();
+        $config         = $serverContainer->get(\OCP\IConfig::class);
         $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
         $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
