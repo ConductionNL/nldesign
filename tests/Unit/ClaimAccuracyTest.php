@@ -1,0 +1,337 @@
+<?php
+
+/**
+ * Claim-accuracy inventory regression test.
+ *
+ * Guards the claim-accuracy capability contract: the app's public claim surfaces
+ * (manifest metadata, README, government feature checklist, compliance and audit
+ * docs) MUST agree with the shipped code. Each claim is pinned to a filesystem
+ * source of truth — the LICENSE file, css/fonts.css, and token-sets.json — so a
+ * future edit that re-introduces "AGPL", a CDN font URL, a wrong token-set count,
+ * or an over-broad audit verdict fails this test rather than shipping misleading
+ * metadata to procuring organizations. Mirrors the tests/Unit/IconAssetsTest.php
+ * static-inventory pattern (no Nextcloud runtime required).
+ *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.1
+ * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.2
+ * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.3
+ * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.4
+ * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.5
+ */
+
+declare(strict_types=1);
+
+namespace OCA\NLDesign\Tests\Unit;
+
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Static claim-accuracy inventory regression test (no Nextcloud runtime required).
+ */
+class ClaimAccuracyTest extends TestCase
+{
+    /**
+     * Repository root, derived from this test file's location.
+     */
+    private function repoRoot(): string
+    {
+        return \dirname(__DIR__, 2);
+    }
+
+    /**
+     * Read a file from the repository root.
+     */
+    private function readFile(string $relativePath): string
+    {
+        $path = $this->repoRoot() . '/' . $relativePath;
+        $this->assertFileExists($path, "Expected file to exist: {$relativePath}");
+        $contents = file_get_contents($path);
+        $this->assertIsString($contents, "Could not read {$relativePath}");
+        return $contents;
+    }
+
+    /**
+     * The number of token sets shipped, derived from token-sets.json.
+     */
+    private function tokenSetCount(): int
+    {
+        $json = json_decode($this->readFile('token-sets.json'), true);
+        $this->assertIsArray($json, 'token-sets.json must decode to an array.');
+        return \count($json);
+    }
+
+    /**
+     * The manifest licence equals the bundled licence (EUPL-1.2), never AGPL.
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.1
+     */
+    public function testManifestLicenceMatchesBundledLicence(): void
+    {
+        $info = $this->readFile('appinfo/info.xml');
+
+        $this->assertMatchesRegularExpression(
+            '#<licence>\s*eupl\s*</licence>#i',
+            $info,
+            'appinfo/info.xml <licence> must declare "eupl" (EUPL-1.2).'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '#<licence>\s*agpl\s*</licence>#i',
+            $info,
+            'appinfo/info.xml must not declare AGPL.'
+        );
+
+        // The manifest description must state the EUPL licence in prose.
+        $this->assertMatchesRegularExpression(
+            '/EUPL[\s-]?1\.2/i',
+            $info,
+            'appinfo/info.xml <description> must mention the EUPL-1.2 licence.'
+        );
+
+        // The bundled LICENSE file must be the European Union Public Licence.
+        $license      = $this->readFile('LICENSE');
+        $firstLine    = strtok($license, "\n");
+        $this->assertIsString($firstLine, 'LICENSE must have a first line.');
+        $this->assertStringContainsStringIgnoringCase(
+            'EUROPEAN UNION PUBLIC LICENCE',
+            $firstLine,
+            'The first line of LICENSE must name the European Union Public Licence.'
+        );
+    }
+
+    /**
+     * Every PHP file under lib/ carries SPDX-License-Identifier: EUPL-1.2 and none declares AGPL.
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.2
+     */
+    public function testSpdxHeadersAgreeWithManifest(): void
+    {
+        $libDir = $this->repoRoot() . '/lib';
+        $this->assertDirectoryExists($libDir);
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($libDir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        $checked = 0;
+        foreach ($iterator as $file) {
+            /** @var \SplFileInfo $file */
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $rel      = str_replace($this->repoRoot() . '/', '', $file->getPathname());
+            $contents = file_get_contents($file->getPathname());
+            $this->assertIsString($contents, "Could not read {$rel}");
+
+            $this->assertMatchesRegularExpression(
+                '/SPDX-License-Identifier:\s*EUPL-1\.2/',
+                $contents,
+                "{$rel} must carry SPDX-License-Identifier: EUPL-1.2"
+            );
+            $this->assertDoesNotMatchRegularExpression(
+                '/SPDX-License-Identifier:\s*AGPL/i',
+                $contents,
+                "{$rel} must not declare an AGPL SPDX identifier."
+            );
+            $checked++;
+        }
+
+        $this->assertGreaterThan(0, $checked, 'No PHP files were scanned under lib/.');
+    }
+
+    /**
+     * The government checklist states the real licence (EUPL-1.2) and host (Codeberg).
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-1.4
+     */
+    public function testGovernmentChecklistStatesRealLicenceAndHost(): void
+    {
+        $doc = $this->readFile('docs/GOVERNMENT-FEATURES.md');
+
+        $this->assertMatchesRegularExpression(
+            '/EUPL[\s-]?1\.2/i',
+            $doc,
+            'GOVERNMENT-FEATURES.md must state the EUPL-1.2 licence.'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/\bAGPL\b/i',
+            $doc,
+            'GOVERNMENT-FEATURES.md must not state AGPL.'
+        );
+
+        // The open-source technical row must reference Codeberg, never GitHub.
+        $this->assertStringContainsString(
+            'Codeberg',
+            $doc,
+            'GOVERNMENT-FEATURES.md must reference the Codeberg source host.'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/\bGitHub\b/i',
+            $doc,
+            'GOVERNMENT-FEATURES.md must not reference GitHub as the canonical source host.'
+        );
+    }
+
+    /**
+     * css/fonts.css uses only bundled, self-hosted fonts — no external CDN URL — and
+     * every referenced woff2/woff file exists on disk.
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.3
+     */
+    public function testStylesheetUsesOnlyBundledFonts(): void
+    {
+        $css = $this->readFile('css/fonts.css');
+
+        // No url() reference may use an http(s):// scheme.
+        preg_match_all('/url\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)/i', $css, $matches);
+        $this->assertNotEmpty($matches[1], 'css/fonts.css must contain at least one url() reference.');
+
+        foreach ($matches[1] as $ref) {
+            $ref = trim($ref);
+            $this->assertDoesNotMatchRegularExpression(
+                '#^https?://#i',
+                $ref,
+                "css/fonts.css must not load fonts from an external URL: {$ref}"
+            );
+
+            // Every font-file reference must resolve on disk (relative to css/).
+            if (preg_match('/\.(woff2?|ttf|otf)$/i', $ref) === 1) {
+                $path = $this->repoRoot() . '/css/' . $ref;
+                $this->assertFileExists(
+                    $path,
+                    "css/fonts.css references a missing font file: css/{$ref}"
+                );
+            }
+        }
+
+        $this->assertStringNotContainsStringIgnoringCase(
+            'jsdelivr',
+            $css,
+            'css/fonts.css must not reference the jsdelivr CDN.'
+        );
+    }
+
+    /**
+     * The README and compliance docs describe the real self-hosted delivery and make
+     * no false CDN / "not loaded" claim.
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-2.1
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-2.3
+     */
+    public function testFontDocumentationMatchesBundledDelivery(): void
+    {
+        $readme = $this->readFile('README.md');
+
+        $this->assertStringNotContainsStringIgnoringCase(
+            'jsdelivr',
+            $readme,
+            'README.md must not claim fonts load from the jsdelivr CDN.'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/Loaded via CDN|CDN-based font/i',
+            $readme,
+            'README.md must not describe CDN-based font delivery.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/self-hosted|bundled/i',
+            $readme,
+            'README.md must describe the self-hosted, bundled font delivery.'
+        );
+
+        $compliance = $this->readFile('docs/reference/compliance.md');
+        $this->assertDoesNotMatchRegularExpression(
+            '/Font declared but not loaded|files not loaded/i',
+            $compliance,
+            'compliance.md must not claim the bundled font is "not loaded".'
+        );
+    }
+
+    /**
+     * The token-set count stated in README.md equals the token-sets.json inventory,
+     * and project.md does not state a different total.
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.4
+     */
+    public function testReadmeCountEqualsInventory(): void
+    {
+        $count  = $this->tokenSetCount();
+        $readme = $this->readFile('README.md');
+
+        // Canonical bold count in the Features section: "**41 token sets**".
+        $this->assertMatchesRegularExpression(
+            '/\*\*(\d+) token sets\*\*/',
+            $readme,
+            'README.md must state a bold canonical token-set count (e.g. "**41 token sets**").'
+        );
+        preg_match('/\*\*(\d+) token sets\*\*/', $readme, $m);
+        $this->assertSame(
+            $count,
+            (int) $m[1],
+            'The token-set count stated in README.md must equal the token-sets.json inventory.'
+        );
+
+        // project.md must state the same total, both in prose and in the section heading.
+        $project = $this->readFile('project.md');
+        $this->assertMatchesRegularExpression(
+            '/provides ' . $count . ' token sets/',
+            $project,
+            'project.md must state the real token-set total in its overview.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/## Token Sets \(' . $count . '\)/',
+            $project,
+            'project.md "Token Sets" heading must state the real total.'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/provides 39 token sets|## Token Sets \(39\)/',
+            $project,
+            'project.md must not retain the stale "39 token sets" total.'
+        );
+    }
+
+    /**
+     * token-audit.md scopes its verdict to the reviewed sets and never asserts a
+     * blanket production verdict over the unaudited community sets.
+     *
+     * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.5
+     */
+    public function testTokenAuditScopeStatedHonestly(): void
+    {
+        $doc = $this->readFile('docs/reference/token-audit.md');
+
+        // Must name the five manually-reviewed sets.
+        foreach (['Rijkshuisstijl', 'Utrecht', 'Amsterdam', 'Den Haag', 'Rotterdam'] as $name) {
+            $this->assertStringContainsString(
+                $name,
+                $doc,
+                "token-audit.md must name the reviewed set: {$name}"
+            );
+        }
+
+        // Must mark the remaining sets as not individually audited.
+        $this->assertMatchesRegularExpression(
+            '/not (been )?individually audited|not individually reviewed/i',
+            $doc,
+            'token-audit.md must mark the remaining sets as not individually audited.'
+        );
+
+        // Must not carry a blanket "APPROVED FOR PRODUCTION" verdict covering all sets.
+        $this->assertDoesNotMatchRegularExpression(
+            '/^\**Status\**:.*APPROVED FOR PRODUCTION\s*$/im',
+            $doc,
+            'token-audit.md must not carry a blanket APPROVED FOR PRODUCTION verdict.'
+        );
+
+        // Any surviving "APPROVED FOR PRODUCTION" mention must sit in a five-sets-scoped line.
+        if (preg_match('/APPROVED FOR PRODUCTION/i', $doc) === 1) {
+            $this->assertMatchesRegularExpression(
+                '/(five|5) .{0,80}APPROVED FOR PRODUCTION|APPROVED FOR PRODUCTION.{0,120}(five|5)/is',
+                $doc,
+                'Any remaining APPROVED FOR PRODUCTION mention must be scoped to the five reviewed sets.'
+            );
+        }
+    }
+}

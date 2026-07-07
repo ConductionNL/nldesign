@@ -5,7 +5,7 @@
 
 **Product:** NL Design
 **Categorie:** Overheidstheming & NL Design System integratie
-**Licentie:** AGPL (vrije open source)
+**Licentie:** EUPL-1.2 (vrije open source)
 **Leverancier:** Conduction B.V.
 **Platform:** Nextcloud (self-hosted / on-premise / cloud)
 
@@ -60,7 +60,7 @@
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
 | T-01 | On-premise / self-hosted | Beschikbaar | Nextcloud-app |
-| T-02 | Open source | Beschikbaar | AGPL, GitHub |
+| T-02 | Open source | Beschikbaar | EUPL-1.2, Codeberg |
 | T-03 | CSS Custom Properties | Beschikbaar | Standaard W3C-mechanisme |
 | T-04 | NL Design System community-tokens | Beschikbaar | Officiële community-tokens |
 | T-05 | Geen JavaScript-overhead | Beschikbaar | Pure CSS-theming |
@@ -119,7 +119,7 @@
 | BO-02 | Automatische updates | Beschikbaar | Via Nextcloud app-updater |
 | BO-03 | Admin settings pagina | Beschikbaar | Token set selectie en configuratie |
 | BO-04 | Documentatie | Beschikbaar | Feature docs beschikbaar |
-| BO-05 | Open source community | Beschikbaar | GitHub Issues |
+| BO-05 | Open source community | Beschikbaar | Codeberg Issues |
 | BO-06 | Professionele ondersteuning (SLA) | Op aanvraag | Via Conduction B.V. |
 
 ---
