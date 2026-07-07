@@ -28,7 +28,9 @@ Gratis en open source onder de EUPL-1.2 licentie.
 	<bugs>https://codeberg.org/Conduction/nldesign/issues</bugs>
 	<repository type="git">https://codeberg.org/Conduction/nldesign.git</repository>
 
-	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/master/img/screenshot.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/main/img/screenshot-themes.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/main/img/screenshot-themed-login.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/main/img/screenshot-admin-settings.png</screenshot>
 
 	<dependencies>
 		<php min-version="8.3"/>
