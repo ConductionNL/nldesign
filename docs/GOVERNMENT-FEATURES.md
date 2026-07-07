@@ -40,7 +40,7 @@
 
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
-| F-09 | WCAG 2.1 AA-conforme kleuren | Beschikbaar | Contrastverhouding gegarandeerd |
+| F-09 | WCAG 2.1 AA-conforme kleuren | Beschikbaar | Contrastverhouding automatisch geverifieerd — zie [contrast-report](reference/contrast-report.md) |
 | F-10 | Focusindicatoren | Beschikbaar | Zichtbare focus-states via tokens |
 | F-11 | Responsief ontwerp | Beschikbaar | Mobile-first via design tokens |
 | F-12 | Lettertypeconfiguratie | Beschikbaar | Font-tokens per organisatie |
@@ -90,8 +90,8 @@
 |---|-----|--------|-------------|
 | A-01 | WCAG 2.1 AA | Beschikbaar | Kern-functionaliteit van NL Design |
 | A-02 | EN 301 549 | Beschikbaar | Via WCAG AA |
-| A-03 | Contrastverhouding minimaal 4.5:1 (tekst) | Beschikbaar | Via design tokens afgedwongen |
-| A-04 | Contrastverhouding minimaal 3:1 (grote tekst/UI) | Beschikbaar | Via design tokens afgedwongen |
+| A-03 | Contrastverhouding minimaal 4.5:1 (tekst) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
+| A-04 | Contrastverhouding minimaal 3:1 (grote tekst/UI) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
 | A-05 | Zichtbare focusindicatoren | Beschikbaar | Focus-tokens voor alle interactieve elementen |
 | A-06 | Responsief ontwerp (320px – 2560px) | Beschikbaar | Via responsive tokens |
 | A-07 | Aanpasbare lettergrootte | Beschikbaar | Font-size tokens |
