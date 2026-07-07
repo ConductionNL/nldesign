@@ -95,7 +95,7 @@
 | A-05 | Zichtbare focusindicatoren | Beschikbaar | Focus-tokens voor alle interactieve elementen |
 | A-06 | Responsief ontwerp (320px – 2560px) | Beschikbaar | Via responsive tokens |
 | A-07 | Aanpasbare lettergrootte | Beschikbaar | Font-size tokens |
-| A-08 | Hoog contrast modus | Gepland | High-contrast token set |
+| A-08 | Hoog contrast modus | Beschikbaar | "Hoog contrast (WCAG AAA)" token set — 21:1, geverifieerd in [contrast-report](reference/contrast-report.md); prefers-contrast / forced-colors (EN 301 549) |
 
 ---
 

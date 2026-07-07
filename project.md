@@ -2,7 +2,7 @@
 
 ## Overview
 
-NL Design is a Nextcloud theming app that applies Dutch government design standards (NL Design System) to the Nextcloud interface. It provides 41 token sets covering national government (Rijkshuisstijl), municipalities, and organizations. Admins select a token set via a settings panel, and the app injects a 7-layer CSS architecture that overrides Nextcloud's default styling with the selected organization's brand identity.
+NL Design is a Nextcloud theming app that applies Dutch government design standards (NL Design System) to the Nextcloud interface. It provides 42 token sets covering national government (Rijkshuisstijl), municipalities, and organizations. Admins select a token set via a settings panel, and the app injects a 7-layer CSS architecture that overrides Nextcloud's default styling with the selected organization's brand identity.
 
 ## Architecture
 
@@ -34,7 +34,7 @@ NL Design is a Nextcloud theming app that applies Dutch government design standa
 | 6 | `css/overrides.css` | Maps Nextcloud `--color-*` vars to `--nldesign-*` |
 | 7 | `css/element-overrides.css` | Low-level element styling (fonts, containers) |
 
-## Token Sets (41)
+## Token Sets (42)
 
 - **National**: Rijkshuisstijl (default)
 - **Major cities**: Amsterdam, Utrecht, Rotterdam, Den Haag
@@ -71,7 +71,7 @@ NL Design is a Nextcloud theming app that applies Dutch government design standa
 nldesign/
 ├── appinfo/          # App manifest and routes
 ├── lib/              # PHP backend (controllers, services, settings)
-├── css/              # 7-layer CSS + 41 token files
+├── css/              # 7-layer CSS + 42 token files
 │   └── tokens/       # Organization-specific CSS token files
 ├── js/               # Vanilla admin JS
 ├── img/              # SVG logos (17 organizations)

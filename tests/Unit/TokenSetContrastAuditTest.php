@@ -191,6 +191,43 @@ class TokenSetContrastAuditTest extends TestCase
     }
 
     /**
+     * A set tagged high-contrast must meet WCAG AAA (>= 7:1 text, >= 4.5:1 UI).
+     *
+     * @spec openspec/changes/high-contrast-token-set/tasks.md#task-4.1
+     */
+    public function testHighContrastSetMeetsAaa(): void
+    {
+        $manifest = array_column($this->auditableManifest(), null, 'id');
+        if (isset($manifest['hoog-contrast']) === false) {
+            $this->markTestSkipped('hoog-contrast set not present.');
+        }
+
+        $this->assertSame(
+            'high-contrast',
+            $manifest['hoog-contrast']['design_system'] ?? null,
+            'hoog-contrast must be bound to the high-contrast design system.'
+        );
+
+        // auditAll applies the AAA thresholds automatically for high-contrast sets.
+        $rows = array_column($this->service()->auditAll($this->repoRoot()), null, 'id');
+        $row  = $rows['hoog-contrast'];
+
+        $this->assertSame(7.0, $row['textThreshold'], 'hoog-contrast must be audited at the AAA text threshold.');
+        $this->assertSame(4.5, $row['uiThreshold'], 'hoog-contrast must be audited at the AAA UI threshold.');
+        $this->assertSame(
+            'pass',
+            $row['verdict'],
+            sprintf(
+                'hoog-contrast must meet AAA: primary/text %s (>= 7), primary/bg %s (>= 4.5).',
+                (string) ($row['textRatio'] ?? 'unevaluated'),
+                (string) ($row['uiRatio'] ?? 'unevaluated')
+            )
+        );
+        $this->assertGreaterThanOrEqual(7.0, $row['textRatio'], 'hoog-contrast primary/text must be >= 7:1.');
+        $this->assertGreaterThanOrEqual(4.5, $row['uiRatio'], 'hoog-contrast primary/background must be >= 4.5:1.');
+    }
+
+    /**
      * The generated report is byte-identical on regeneration and covers every set.
      *
      * @spec openspec/changes/shipped-token-set-contrast-audit/tasks.md#task-3.1
