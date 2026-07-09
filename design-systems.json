@@ -27,5 +27,15 @@
 			"systems/summer-breeze/theme",
 			"systems/summer-breeze/element-overrides"
 		]
+	},
+	{
+		"id": "high-contrast",
+		"name": "High contrast (WCAG AAA)",
+		"description": "Maximum-legibility black-on-white theme — pure black interactive/foreground on white, heavy borders, thick focus rings, bundled Fira Sans. Cooperates with OS high-contrast via prefers-contrast and forced-colors (EN 301 549).",
+		"stylesheets": [
+			"systems/high-contrast/fonts",
+			"systems/high-contrast/theme",
+			"systems/high-contrast/element-overrides"
+		]
 	}
 ]

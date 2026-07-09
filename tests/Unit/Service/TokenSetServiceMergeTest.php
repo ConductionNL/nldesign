@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\Tests\Unit\Service;
 
+use OCA\NLDesign\Service\ContrastService;
+use OCA\NLDesign\Service\CssParserService;
+use OCA\NLDesign\Service\ShippedTokenSetAuditService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\App\IAppManager;
 use OCP\IConfig;
@@ -67,7 +70,8 @@ class TokenSetServiceMergeTest extends TestCase
             fn (string $app, string $key, $default='') => ($key === 'custom_token_sets' ? $this->customManifest : $default)
         );
 
-        $this->service = new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class));
+        $audit         = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
+        $this->service = new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit);
     }//end setUp()
 
     /**

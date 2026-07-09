@@ -1,0 +1,149 @@
+/**
+ * High contrast (WCAG AAA) — Nextcloud core variable mapping.
+ *
+ * Remaps Nextcloud's own --color-* custom properties onto the maximum-contrast
+ * --nldesign-* values from css/tokens/hoog-contrast.css, so the black-on-white
+ * theme cascades through core and every Cn* component without touching source.
+ *
+ * Load order: fonts -> theme -> element-overrides, then tokens/hoog-contrast.
+ *
+ * The @media blocks add EN 301 549 cooperation: prefers-contrast:more strengthens
+ * the theme, and forced-colors:active hands control to the OS (Windows High
+ * Contrast Mode) using CSS system-color keywords rather than hardcoded values.
+ */
+
+/* Page background — pure white. */
+body,
+#body-user,
+#body-login {
+	background-color: var(--nldesign-color-background) !important;
+}
+
+/* Remap Nextcloud's variables at the body level for high specificity. */
+body[data-themes],
+body {
+	/* Primary palette. */
+	--color-primary: var(--nldesign-color-primary) !important;
+	--color-primary-text: var(--nldesign-color-primary-text) !important;
+	--color-primary-hover: var(--nldesign-color-primary-hover) !important;
+	--color-primary-light: var(--nldesign-color-primary-light) !important;
+	--color-primary-element: var(--nldesign-color-primary) !important;
+	--color-primary-element-text: var(--nldesign-color-primary-text) !important;
+	--color-primary-element-hover: var(--nldesign-color-primary-hover) !important;
+	--color-primary-element-light: var(--nldesign-color-primary-light) !important;
+	--color-primary-element-light-text: var(--nldesign-color-primary) !important;
+	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover) !important;
+
+	/* Surfaces. */
+	--color-main-background: var(--nldesign-color-background) !important;
+	--color-background-hover: var(--nldesign-color-background-hover) !important;
+	--color-background-dark: var(--nldesign-color-background-dark) !important;
+	--color-background-darker: var(--nldesign-color-background-darker) !important;
+
+	/* Text — black body text, dark "muted". */
+	--color-main-text: var(--nldesign-color-text) !important;
+	--color-text-maxcontrast: var(--nldesign-color-text-muted) !important;
+	--color-text-light: var(--nldesign-color-text-light) !important;
+
+	/* Status — darkened so each stays >= 4.5:1 on white. */
+	--color-error: var(--nldesign-color-error) !important;
+	--color-warning: var(--nldesign-color-warning) !important;
+	--color-success: var(--nldesign-color-success) !important;
+	--color-info: var(--nldesign-color-info) !important;
+
+	/* Borders — heavy and always visible. */
+	--color-border: var(--nldesign-color-border) !important;
+	--color-border-dark: var(--nldesign-color-border-dark) !important;
+	--color-border-maxcontrast: var(--nldesign-color-border-dark) !important;
+
+	/* Sharp corners. */
+	--border-radius: var(--nldesign-border-radius) !important;
+	--border-radius-small: var(--nldesign-border-radius-small) !important;
+	--border-radius-large: var(--nldesign-border-radius-large) !important;
+	--border-radius-element: var(--nldesign-border-radius) !important;
+	--border-radius-rounded: var(--nldesign-border-radius-rounded) !important;
+	--border-radius-pill: var(--nldesign-border-radius-pill) !important;
+}
+
+/* Inverted header. */
+#header,
+header#header {
+	background: var(--nldesign-color-header-background) !important;
+	background-color: var(--nldesign-color-header-background) !important;
+}
+
+#header *,
+#header a,
+#header a:hover,
+#header a:visited {
+	color: var(--nldesign-color-header-text) !important;
+}
+
+/* Body links — black and always underlined (never colour alone). */
+a {
+	color: var(--nldesign-color-text) !important;
+	text-decoration: underline !important;
+}
+
+a:hover {
+	color: var(--nldesign-color-text) !important;
+	text-decoration: underline !important;
+}
+
+/* Font. */
+body,
+#body-user,
+#body-login,
+#body-public,
+#app,
+#content,
+.app-content {
+	font-family: var(--nldesign-font-family);
+}
+
+/* Focus — thick black ring. */
+*:focus-visible {
+	outline: 3px solid var(--nldesign-color-focus) !important;
+	outline-offset: 2px !important;
+}
+
+/* prefers-contrast:more — strengthen focus and borders further. */
+@media (prefers-contrast: more) {
+	body[data-themes],
+	body {
+		--color-border: #000000 !important;
+		--color-border-dark: #000000 !important;
+		--color-text-maxcontrast: #000000 !important;
+	}
+
+	*:focus-visible {
+		outline-width: 4px !important;
+	}
+}
+
+/* forced-colors:active — cooperate with Windows High Contrast Mode. Use CSS
+ * system-color keywords and preserve focus/borders/links rather than hardcoding
+ * colours the OS overrides. Do NOT set forced-color-adjust:none here. */
+@media (forced-colors: active) {
+	*:focus-visible {
+		outline: 3px solid CanvasText !important;
+		outline-offset: 2px !important;
+	}
+
+	a,
+	a:hover,
+	a:visited {
+		color: LinkText !important;
+		text-decoration: underline !important;
+	}
+
+	#header,
+	header#header {
+		background-color: Canvas !important;
+	}
+
+	#header *,
+	#header a {
+		color: CanvasText !important;
+	}
+}

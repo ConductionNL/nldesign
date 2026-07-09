@@ -13,10 +13,7 @@
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  * @link      https://codeberg.org/Conduction/nldesign
  *
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
+ * @spec openspec/specs/token-sets/spec.md
  */
 
 declare(strict_types=1);
@@ -35,11 +32,8 @@ use Psr\Log\LoggerInterface;
  * metadata from token-sets.json (shipped sets) and the custom_token_sets
  * appconfig manifest (admin-uploaded custom-* sets).
  *
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
- * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
- * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.3
+ * @spec openspec/specs/token-sets/spec.md
+ * @spec openspec/specs/custom-token-sets/spec.md
  */
 class TokenSetService
 {
@@ -66,17 +60,30 @@ class TokenSetService
     private LoggerInterface $logger;
 
     /**
+     * The shipped-set contrast audit service (runtime warning surface).
+     *
+     * @var ShippedTokenSetAuditService
+     */
+    private ShippedTokenSetAuditService $audit;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager     $appManager The app manager for resolving paths.
-     * @param IConfig         $config     The config service.
-     * @param LoggerInterface $logger     The logger.
+     * @param IAppManager                 $appManager The app manager for resolving paths.
+     * @param IConfig                     $config     The config service.
+     * @param LoggerInterface             $logger     The logger.
+     * @param ShippedTokenSetAuditService $audit      The shipped-set contrast audit service.
      */
-    public function __construct(IAppManager $appManager, IConfig $config, LoggerInterface $logger)
-    {
+    public function __construct(
+        IAppManager $appManager,
+        IConfig $config,
+        LoggerInterface $logger,
+        ShippedTokenSetAuditService $audit
+    ) {
         $this->appManager = $appManager;
         $this->config     = $config;
         $this->logger     = $logger;
+        $this->audit      = $audit;
     }//end __construct()
 
     /**
@@ -96,7 +103,7 @@ class TokenSetService
      *
      * @return array<array{id: string, name: string, description: string}> The available token sets.
      *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-50
+     * @spec openspec/specs/token-sets/spec.md
      */
     public function getAvailableTokenSets(): array
     {
@@ -146,6 +153,19 @@ class TokenSetService
                         if (isset($meta['warnings']) === true && is_array($meta['warnings']) === true) {
                             $tokenSet['warnings'] = $meta['warnings'];
                         }
+                    } else {
+                        // Shipped set: surface the same non-blocking WCAG contrast
+                        // warning the apply dialog raises for a custom upload, so a
+                        // sub-AA or unevaluated shipped set is not silently applied.
+                        $warnings = $this->audit->warningsFor(
+                            appPath: $appPath,
+                            id: $id,
+                            designSystem: $tokenSet['design_system'],
+                            theming: ($tokenSet['theming'] ?? [])
+                        );
+                        if (empty($warnings) === false) {
+                            $tokenSet['warnings'] = $warnings;
+                        }
                     }
 
                     $tokenSets[] = $tokenSet;
@@ -166,7 +186,7 @@ class TokenSetService
      *
      * @return bool True if the CSS file exists.
      *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-51
+     * @spec openspec/specs/token-sets/spec.md
      */
     public function isValidTokenSet(string $tokenSetId): bool
     {
@@ -188,7 +208,7 @@ class TokenSetService
      *
      * @return array<string, array<string, mixed>> Metadata indexed by id.
      *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-52
+     * @spec openspec/specs/token-sets/spec.md
      */
     private function readManifest(string $manifestPath): array
     {
@@ -225,7 +245,7 @@ class TokenSetService
      *
      * @return array<string, array<string, mixed>> Custom metadata indexed by id.
      *
-     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.3
+     * @spec openspec/specs/custom-token-sets/spec.md
      */
     private function readCustomManifest(): array
     {
@@ -246,7 +266,7 @@ class TokenSetService
      *
      * @return string The formatted display name.
      *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-53
+     * @spec openspec/specs/token-sets/spec.md
      */
     private function formatName(string $id): string
     {

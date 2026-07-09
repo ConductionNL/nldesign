@@ -2,45 +2,24 @@
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
 	<id>nldesign</id>
-	<name lang="en">NL Design System Theme</name>
-	<name lang="nl">NL Design System-thema</name>
-	<summary lang="en">Apply NL Design System government design tokens and custom token sets to Nextcloud</summary>
-	<summary lang="nl">Pas NL Design System-overheidshuisstijlen en eigen tokensets toe op Nextcloud</summary>
-	<description lang="en"><![CDATA[
-NL Design brings the official NL Design System (NLDS) token specification into Nextcloud as a drop-in theme. Pick your organisation's house style from 39 pre-built Dutch government token sets — Rijkshuisstijl, provinces, and municipalities including Utrecht, Amsterdam, Den Haag, and Rotterdam — or start from stock Nextcloud or the bundled Summer Breeze alternative.
+	<name>NL Design System Theme</name>
+	<summary>Apply Dutch government design tokens (NL Design System) to Nextcloud</summary>
+	<description><![CDATA[
+This app allows you to apply NL Design System design tokens to your Nextcloud instance.
 
-**Key features**
+It ships 42 token sets covering the Dutch national government (Rijkshuisstijl), the
+large-city design systems (Utrecht, Amsterdam, Den Haag, Rotterdam) and a broad set of
+community-maintained municipality and organization brands. Configure which token set to
+use in the admin settings.
 
-- **39 pre-built government token sets** — Rijkshuisstijl, VNG, provinces, and Dutch municipalities, generated from the official upstream NL Design System token files
-- **Token editor** — fine-tune individual colours and CSS tokens from the admin settings without touching code
-- **Custom token sets** — upload your own organisation's house style ("eigen huisstijl") as CSS overrides or W3C Design Tokens JSON, validated and versioned per instance
-- **Import & export** — download your token overrides as a CSS file and share them across Nextcloud instances
-- **Theming sync** — automatically aligns Nextcloud's built-in theming (primary colour, background, logo) with the selected token set
-- **Per-app theming** — exclude individual apps from the theme so they keep stock Nextcloud styling
-- **Icon & logo assets** — bundles the Amsterdam Design System icon set and Dutch government organisation logos for reuse by other apps
-- **WCAG 2.1 AA colour contrast** — verified contrast ratios on every shipped token set
-- 🆓 Free and open source under the EUPL license
+Fira Sans (SIL Open Font License 1.1) is bundled and self-hosted — no external CDN — so
+the theme works inside Nextcloud's default Content-Security-Policy and on air-gapped
+government instances.
 
-Configure which token set to use in the admin settings under Theming.
+Free and open source under the EUPL-1.2 license.
+Gratis en open source onder de EUPL-1.2 licentie.
 	]]></description>
-	<description lang="nl"><![CDATA[
-NL Design brengt de officiële NL Design System (NLDS) tokenspecificatie naar Nextcloud als drop-in thema. Kies de huisstijl van je organisatie uit 39 kant-en-klare overheidstokensets — Rijkshuisstijl, provincies en gemeenten zoals Utrecht, Amsterdam, Den Haag en Rotterdam — of begin met standaard Nextcloud of het meegeleverde Summer Breeze-alternatief.
-
-**Belangrijkste functies**
-
-- **39 kant-en-klare overheidstokensets** — Rijkshuisstijl, VNG, provincies en Nederlandse gemeenten, gegenereerd uit de officiële NL Design System-tokenbestanden
-- **Token-editor** — pas individuele kleuren en CSS-tokens aan in de beheerdersinstellingen, zonder code
-- **Eigen tokensets** — upload de huisstijl van je eigen organisatie als CSS-overrides of W3C Design Tokens JSON, gevalideerd en per instantie beheerd
-- **Import & export** — download je token-aanpassingen als CSS-bestand en deel ze tussen Nextcloud-instanties
-- **Theming-synchronisatie** — houdt de ingebouwde Nextcloud-theming (primaire kleur, achtergrond, logo) automatisch gelijk met de gekozen tokenset
-- **Theming per app** — sluit individuele apps uit van het thema zodat ze de standaard Nextcloud-stijl behouden
-- **Icoon- en logobestanden** — bevat de Amsterdam Design System-iconenset en logo's van Nederlandse overheidsorganisaties voor hergebruik door andere apps
-- **WCAG 2.1 AA-kleurcontrast** — geverifieerde contrastverhoudingen op elke meegeleverde tokenset
-- 🆓 Gratis en open source onder de EUPL-licentie
-
-Stel de te gebruiken tokenset in via de beheerdersinstellingen onder Theming.
-	]]></description>
-	<version>0.1.3-unstable.11</version>
+	<version>0.1.3-unstable.13</version>
 	<licence>eupl</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
@@ -49,7 +28,9 @@ Stel de te gebruiken tokenset in via de beheerdersinstellingen onder Theming.
 	<bugs>https://codeberg.org/Conduction/nldesign/issues</bugs>
 	<repository type="git">https://codeberg.org/Conduction/nldesign.git</repository>
 
-	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/master/img/screenshot.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/main/img/screenshot-themes.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/main/img/screenshot-themed-login.png</screenshot>
+	<screenshot>https://codeberg.org/Conduction/nldesign/raw/branch/main/img/screenshot-admin-settings.png</screenshot>
 
 	<dependencies>
 		<php min-version="8.3"/>

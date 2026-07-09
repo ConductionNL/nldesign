@@ -8,12 +8,13 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 ## Features
 
-- **Multiple Token Sets**: Choose from various Dutch government design systems:
+- **42 token sets**: Choose from Dutch government design systems, including:
   - Rijkshuisstijl (Dutch national government)
   - Gemeente Utrecht
   - Gemeente Amsterdam
   - Gemeente Den Haag
   - Gemeente Rotterdam
+  - …and a broad set of community-maintained municipality and organization brands
 
 - **Open Source Fonts**: Uses **Fira Sans** from `@fontsource/fira-sans` as a professional alternative to proprietary government fonts
 
@@ -21,7 +22,7 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 - **CSS Variables**: Uses CSS custom properties for flexible theming that integrates with Nextcloud's existing theme system
 
-- **No Build Required**: Fonts loaded via CDN, tokens are pre-compiled CSS
+- **No Build Required**: Tokens are pre-compiled CSS and fonts are bundled and self-hosted (no external CDN)
 
 - **Amsterdam Design System Icons**: Includes 344 SVG icons from the official Amsterdam Design System, plus 23 organization logos, for use across all Nextcloud apps
 
@@ -113,10 +114,10 @@ By delegating background color management to Nextcloud's theming system, organiz
 
 This app uses **Fira Sans** as an open-source alternative to the proprietary government fonts:
 
-- **Source**: `@fontsource/fira-sans` npm package
+- **Source**: `@fontsource/fira-sans` npm package (woff2/woff committed under `css/fonts/`)
 - **License**: SIL Open Font License 1.1 (free to use)
 - **Weights**: Regular (400) and Bold (700), plus italic variants
-- **Delivery**: Loaded via CDN from jsdelivr.net
+- **Delivery**: Bundled and self-hosted — loaded from app-relative paths in `css/fonts.css`, never from an external CDN. Self-hosting keeps the fonts inside Nextcloud's default Content-Security-Policy and works on the air-gapped instances typical of Dutch government.
 - **No permission needed**: Unlike RijksoverheidSansWebText, Fira Sans is freely available
 
 ### Why Fira Sans?
@@ -181,11 +182,13 @@ nldesign/
    }
    ```
 
-3. **Font Loading**: The `fonts.css` file loads Fira Sans from CDN:
+3. **Font Loading**: The `fonts.css` file loads Fira Sans from bundled, self-hosted files (app-relative `url()`, no external CDN):
    ```css
    @font-face {
        font-family: 'Fira Sans';
-       src: url('https://cdn.jsdelivr.net/npm/@fontsource/fira-sans@5.0.0/...');
+       src: local('Fira Sans'),
+            url('fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
+            url('fonts/fira-sans-latin-400-normal.woff') format('woff');
    }
    ```
 
@@ -214,14 +217,14 @@ npm install
 
 ### Updating Fonts
 
-The fonts are loaded from CDN, so no build step is required. However, if you want to download fonts locally:
+The fonts are bundled and self-hosted (committed under `css/systems/nldesign/fonts/`), so no build step and no network access are required at runtime. To refresh them from the npm package:
 
 ```bash
 # Fonts are in node_modules/@fontsource/fira-sans/files/
 cp node_modules/@fontsource/fira-sans/files/*.woff2 css/fonts/
 ```
 
-Then update `css/fonts.css` to use local paths instead of CDN.
+Keep the `url()` references in `css/fonts.css` app-relative — never point them at an external CDN, which Nextcloud's Content-Security-Policy blocks and which fails on air-gapped instances.
 
 ### Creating New Token Sets
 
@@ -340,7 +343,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Initial release
 - Support for 5 token sets (Rijkshuisstijl, Utrecht, Amsterdam, Den Haag, Rotterdam)
 - Fira Sans font integration via @fontsource
-- CDN-based font loading
+- Bundled, self-hosted font loading (no external CDN)
 - Full CSS variable mapping
 - Admin settings panel
 - Background image removal for clean Rijkshuisstijl compliance

@@ -5,7 +5,7 @@
 
 **Product:** NL Design
 **Categorie:** Overheidstheming & NL Design System integratie
-**Licentie:** AGPL (vrije open source)
+**Licentie:** EUPL-1.2 (vrije open source)
 **Leverancier:** Conduction B.V.
 **Platform:** Nextcloud (self-hosted / on-premise / cloud)
 
@@ -40,7 +40,7 @@
 
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
-| F-09 | WCAG 2.1 AA-conforme kleuren | Beschikbaar | Contrastverhouding gegarandeerd |
+| F-09 | WCAG 2.1 AA-conforme kleuren | Beschikbaar | Contrastverhouding automatisch geverifieerd — zie [contrast-report](reference/contrast-report.md) |
 | F-10 | Focusindicatoren | Beschikbaar | Zichtbare focus-states via tokens |
 | F-11 | Responsief ontwerp | Beschikbaar | Mobile-first via design tokens |
 | F-12 | Lettertypeconfiguratie | Beschikbaar | Font-tokens per organisatie |
@@ -60,7 +60,7 @@
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
 | T-01 | On-premise / self-hosted | Beschikbaar | Nextcloud-app |
-| T-02 | Open source | Beschikbaar | AGPL, GitHub |
+| T-02 | Open source | Beschikbaar | EUPL-1.2, Codeberg |
 | T-03 | CSS Custom Properties | Beschikbaar | Standaard W3C-mechanisme |
 | T-04 | NL Design System community-tokens | Beschikbaar | Officiële community-tokens |
 | T-05 | Geen JavaScript-overhead | Beschikbaar | Pure CSS-theming |
@@ -90,12 +90,12 @@
 |---|-----|--------|-------------|
 | A-01 | WCAG 2.1 AA | Beschikbaar | Kern-functionaliteit van NL Design |
 | A-02 | EN 301 549 | Beschikbaar | Via WCAG AA |
-| A-03 | Contrastverhouding minimaal 4.5:1 (tekst) | Beschikbaar | Via design tokens afgedwongen |
-| A-04 | Contrastverhouding minimaal 3:1 (grote tekst/UI) | Beschikbaar | Via design tokens afgedwongen |
+| A-03 | Contrastverhouding minimaal 4.5:1 (tekst) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
+| A-04 | Contrastverhouding minimaal 3:1 (grote tekst/UI) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
 | A-05 | Zichtbare focusindicatoren | Beschikbaar | Focus-tokens voor alle interactieve elementen |
 | A-06 | Responsief ontwerp (320px – 2560px) | Beschikbaar | Via responsive tokens |
 | A-07 | Aanpasbare lettergrootte | Beschikbaar | Font-size tokens |
-| A-08 | Hoog contrast modus | Gepland | High-contrast token set |
+| A-08 | Hoog contrast modus | Beschikbaar | "Hoog contrast (WCAG AAA)" token set — 21:1, geverifieerd in [contrast-report](reference/contrast-report.md); prefers-contrast / forced-colors (EN 301 549) |
 
 ---
 
@@ -119,7 +119,7 @@
 | BO-02 | Automatische updates | Beschikbaar | Via Nextcloud app-updater |
 | BO-03 | Admin settings pagina | Beschikbaar | Token set selectie en configuratie |
 | BO-04 | Documentatie | Beschikbaar | Feature docs beschikbaar |
-| BO-05 | Open source community | Beschikbaar | GitHub Issues |
+| BO-05 | Open source community | Beschikbaar | Codeberg Issues |
 | BO-06 | Professionele ondersteuning (SLA) | Op aanvraag | Via Conduction B.V. |
 
 ---

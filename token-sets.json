@@ -385,5 +385,15 @@
 			"primary_color": "#3A4F93",
 			"background_color": "#FFFFFF"
 		}
+	},
+	{
+		"id": "hoog-contrast",
+		"name": "Hoog contrast (WCAG AAA)",
+		"description": "Maximaal contrast — zwart op wit voor optimale leesbaarheid. Voldoet aan WCAG 2.2 AAA (>= 7:1) en werkt samen met OS hoog-contrast (prefers-contrast / forced-colors, EN 301 549).",
+		"design_system": "high-contrast",
+		"theming": {
+			"primary_color": "#000000",
+			"background_color": "#FFFFFF"
+		}
 	}
 ]
