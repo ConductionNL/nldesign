@@ -136,6 +136,10 @@ class Application extends App implements IBootstrap
         // 3. Load token values (only when a design system reads --nldesign-* vars).
         if ($designSystemId !== 'none') {
             \OCP\Util::addStyle(application: self::APP_ID, file: 'tokens/'.$tokenSet);
+            // Functional contrast fix shared by all design systems: app icons
+            // that carry their white fill on <path> vanish on light surfaces
+            // in the NC 34 app-management list (see css/icon-contrast.css).
+            \OCP\Util::addStyle(application: self::APP_ID, file: 'icon-contrast');
         }
 
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
