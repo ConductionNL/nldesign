@@ -64,6 +64,13 @@ body {
 	/* Soft shadow colour for components that expose --color-box-shadow. */
 	--color-box-shadow: rgba(20, 60, 110, 0.10) !important;
 
+	/* Header contrast. Summer Breeze paints the top bar white, but Nextcloud
+	   derives these two variables from the (dark) theming background colour
+	   and would render the header foreground white-on-white: the waffle,
+	   current-app icon, search, notifications and logo all key off them. */
+	--color-background-plain-text: var(--summer-color-text) !important;
+	--background-image-invert-if-bright: invert(100%) !important;
+
 	/* Radii — generous and soft. */
 	--border-radius: var(--summer-radius) !important;
 	--border-radius-small: var(--summer-radius-small) !important;
