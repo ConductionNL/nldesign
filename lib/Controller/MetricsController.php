@@ -26,7 +26,6 @@ use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Controller;
-use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\TextPlainResponse;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -66,13 +65,21 @@ class MetricsController extends Controller
     /**
      * Expose Prometheus metrics.
      *
+     * Deliberately NOT a #[PublicPage]: the metrics body exposes internal
+     * operational detail (token set name, override/theming-sync counts,
+     * exact PHP/Nextcloud versions) that should not be reachable by
+     * unauthenticated/anonymous requests. Without an explicit auth
+     * attribute the Nextcloud SecurityMiddleware default applies —
+     * admin-only — so a Prometheus scraper must authenticate as an admin
+     * (e.g. via an app password) to reach this endpoint.
+     *
      * @return TextPlainResponse Plain text response with Prometheus metrics.
      *
      * @NoCSRFRequired
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
+     * @spec openspec/changes/metrics-endpoint-admin-auth/tasks.md#task-1
      */
-    #[PublicPage]
     public function index(): TextPlainResponse
     {
         $lines = [];

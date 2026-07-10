@@ -314,15 +314,17 @@ function nldesignAdminMain() {
 
 		var overlay = document.getElementById('nldesign-theming-dialog-overlay');
 
+		makeDialogAccessible(overlay, function() { closeDialogOverlay(overlay); });
+
 		// Cancel button
 		overlay.querySelector('.nldesign-dialog-cancel').addEventListener('click', function() {
-			overlay.remove();
+			closeDialogOverlay(overlay);
 		});
 
 		// Close on overlay click
 		overlay.addEventListener('click', function(e) {
 			if (e.target === overlay) {
-				overlay.remove();
+				closeDialogOverlay(overlay);
 			}
 		});
 
@@ -354,7 +356,7 @@ function nldesignAdminMain() {
 			})
 			.then(function(response) { return response.json(); })
 			.then(function(data) {
-				overlay.remove();
+				closeDialogOverlay(overlay);
 				if (data.status === 'ok') {
 					OC.Notification.showTemporary(t('nldesign', 'Nextcloud theming updated successfully. reloading page...'));
 					setTimeout(function() {
@@ -365,7 +367,7 @@ function nldesignAdminMain() {
 				}
 			})
 			.catch(function(error) {
-				overlay.remove();
+				closeDialogOverlay(overlay);
 				console.error('Error updating theming:', error);
 				OC.Notification.showTemporary(t('nldesign', 'Failed to update Nextcloud theming.'));
 			});
@@ -377,6 +379,125 @@ function nldesignAdminMain() {
 		var div = document.createElement('div');
 		div.textContent = text;
 		return div.innerHTML;
+	}
+
+	/* ==========================================================================
+	 * DIALOG KEYBOARD ACCESSIBILITY
+	 *
+	 * The custom overlay dialogs (theming sync, token-set apply) are hand-rolled
+	 * markup, not <dialog> elements, so none of the WAI-ARIA Dialog (Modal)
+	 * pattern behaviour comes for free. Without this, keyboard-only users could
+	 * not close a dialog without a mouse (no Escape handling), Tab could leave
+	 * focus behind the overlay (no focus trap — WCAG 2.4.3 Focus Order), and
+	 * focus was never moved into the dialog on open or restored to the
+	 * triggering control on close (WCAG 2.1.1 Keyboard / 2.4.3).
+	 * ========================================================================== */
+
+	/**
+	 * Return the currently visible, non-disabled focusable elements inside a
+	 * container, in DOM order.
+	 *
+	 * Visibility is checked via computed `display`/`visibility` rather than
+	 * `offsetParent` — `offsetParent` is also null for `position: fixed`
+	 * elements even when they are visible, which would wrongly exclude a
+	 * fixed-position dialog's own controls from the focus trap.
+	 */
+	function getFocusableElements(container) {
+		var candidates = container.querySelectorAll(
+			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+		);
+		return Array.prototype.filter.call(candidates, function(el) {
+			if (el.disabled === true) {
+				return false;
+			}
+			var style = window.getComputedStyle(el);
+			return style.display !== 'none' && style.visibility !== 'hidden';
+		});
+	}
+
+	/**
+	 * Wire a hand-rolled overlay dialog for keyboard use: WAI-ARIA `dialog`
+	 * role, focus moved to the first focusable control on open, Tab/Shift+Tab
+	 * trapped within the dialog, Escape invoking the caller's close handler,
+	 * and focus restored to the element that had focus before the dialog
+	 * opened once it closes.
+	 *
+	 * @param {HTMLElement} overlay The `.nldesign-dialog-overlay` element already inserted into the DOM.
+	 * @param {Function}    closeFn Called when Escape is pressed; must remove the overlay (e.g. via closeDialogOverlay()).
+	 */
+	function makeDialogAccessible(overlay, closeFn) {
+		var dialogEl = overlay.querySelector('.nldesign-dialog');
+		if (dialogEl === null) {
+			return;
+		}
+
+		var titleEl = dialogEl.querySelector('h3');
+		if (titleEl !== null) {
+			if (!titleEl.id) {
+				titleEl.id = 'nldesign-dialog-title-' + Math.random().toString(36).slice(2);
+			}
+			dialogEl.setAttribute('aria-labelledby', titleEl.id);
+		}
+		dialogEl.setAttribute('role', 'dialog');
+		dialogEl.setAttribute('aria-modal', 'true');
+		if (!dialogEl.hasAttribute('tabindex')) {
+			dialogEl.setAttribute('tabindex', '-1');
+		}
+
+		var previouslyFocused = document.activeElement;
+		var initialFocusable  = getFocusableElements(dialogEl);
+		(initialFocusable[0] || dialogEl).focus();
+
+		function keydownHandler(e) {
+			if (e.key === 'Escape' || e.keyCode === 27) {
+				e.preventDefault();
+				closeFn();
+				return;
+			}
+			if (e.key === 'Tab' || e.keyCode === 9) {
+				var items = getFocusableElements(dialogEl);
+				if (items.length === 0) {
+					return;
+				}
+				var first = items[0];
+				var last  = items[items.length - 1];
+				if (e.shiftKey && document.activeElement === first) {
+					e.preventDefault();
+					last.focus();
+				} else if (!e.shiftKey && document.activeElement === last) {
+					e.preventDefault();
+					first.focus();
+				}
+			}
+		}
+
+		overlay.addEventListener('keydown', keydownHandler);
+
+		// Teardown hook consumed by closeDialogOverlay() so every dialog-close
+		// path (Cancel, Escape, click-outside, successful submit) restores
+		// focus consistently.
+		overlay.nldesignA11yCleanup = function() {
+			overlay.removeEventListener('keydown', keydownHandler);
+			if (previouslyFocused !== null && typeof previouslyFocused.focus === 'function') {
+				previouslyFocused.focus();
+			}
+		};
+	}
+
+	/**
+	 * Remove a hand-rolled overlay dialog from the DOM, running its
+	 * accessibility cleanup (focus restore) first. Safe to call more than
+	 * once or with an already-detached overlay.
+	 */
+	function closeDialogOverlay(overlay) {
+		if (overlay === null || overlay === undefined) {
+			return;
+		}
+		if (typeof overlay.nldesignA11yCleanup === 'function') {
+			overlay.nldesignA11yCleanup();
+			overlay.nldesignA11yCleanup = null;
+		}
+		overlay.remove();
 	}
 
 	// Handle hide slogan checkbox
@@ -609,7 +730,7 @@ function nldesignAdminMain() {
 			+   '<span class="nldesign-token-name">' + escapeHtml(name) + '</span>'
 			+ '</div>'
 			+ inputHtml
-			+ '<button class="nldesign-btn nldesign-btn--small nldesign-reset-btn" data-token="' + escapeHtml(name) + '" title="' + escapeHtml(t('nldesign', 'Reset to default')) + '">↺</button>'
+			+ '<button class="nldesign-btn nldesign-btn--small nldesign-reset-btn" data-token="' + escapeHtml(name) + '" title="' + escapeHtml(t('nldesign', 'Reset to default')) + '" aria-label="' + escapeHtml(t('nldesign', 'Reset {label} to default', { label: meta.label || name })) + '">↺</button>'
 			+ '</div>';
 	}
 
@@ -889,6 +1010,8 @@ function nldesignAdminMain() {
 		document.body.insertAdjacentHTML('beforeend', html);
 		var overlay = document.getElementById('nldesign-apply-dialog-overlay');
 
+		makeDialogAccessible(overlay, function() { cancelDialog(); });
+
 		function updateApplyPreview() {
 			changes.forEach(function(change) {
 				var cb = overlay.querySelector('.nldesign-apply-check[data-token="' + change.name + '"]');
@@ -921,7 +1044,7 @@ function nldesignAdminMain() {
 				tokenSetSelect.dataset.previousValue = prevTokenSetId;
 				updatePreview(prevTokenSetId);
 			}
-			overlay.remove();
+			closeDialogOverlay(overlay);
 		}
 
 		overlay.querySelector('.nldesign-dialog-cancel').addEventListener('click', cancelDialog);
@@ -971,7 +1094,7 @@ function nldesignAdminMain() {
 			})
 			.then(function(r) { return r.json(); })
 			.then(function(tsData) {
-				overlay.remove();
+				closeDialogOverlay(overlay);
 				if (tsData.status === 'ok' && tokenSetSelect !== null) {
 					tokenSetSelect.dataset.previousValue = newTokenSetId;
 				}
@@ -1073,6 +1196,8 @@ function nldesignAdminMain() {
 		var trigger = document.createElement('button');
 		trigger.type = 'button';
 		trigger.className = 'nldesign-app-dropdown-trigger';
+		trigger.setAttribute('aria-haspopup', 'true');
+		trigger.setAttribute('aria-expanded', 'false');
 		var triggerLabel = document.createElement('span');
 		trigger.appendChild(triggerLabel);
 
@@ -1126,13 +1251,40 @@ function nldesignAdminMain() {
 			});
 		});
 
+		function openDropdown() {
+			dropdown.classList.add('open');
+			trigger.setAttribute('aria-expanded', 'true');
+			search.focus();
+		}
+
+		function closeDropdown(restoreFocus) {
+			dropdown.classList.remove('open');
+			trigger.setAttribute('aria-expanded', 'false');
+			if (restoreFocus === true) {
+				trigger.focus();
+			}
+		}
+
 		trigger.addEventListener('click', function(e) {
 			e.stopPropagation();
-			dropdown.classList.toggle('open');
-			if (dropdown.classList.contains('open')) { search.focus(); }
+			if (dropdown.classList.contains('open')) {
+				closeDropdown(false);
+			} else {
+				openDropdown();
+			}
 		});
 		document.addEventListener('click', function(e) {
-			if (!dropdown.contains(e.target)) { dropdown.classList.remove('open'); }
+			if (!dropdown.contains(e.target)) { closeDropdown(false); }
+		});
+
+		// Keyboard users need a way to dismiss the panel without a mouse click
+		// outside it; Escape closes it and returns focus to the trigger (WCAG
+		// 2.1.1 Keyboard).
+		dropdown.addEventListener('keydown', function(e) {
+			if ((e.key === 'Escape' || e.keyCode === 27) && dropdown.classList.contains('open')) {
+				e.preventDefault();
+				closeDropdown(true);
+			}
 		});
 
 		panel.appendChild(searchWrap);

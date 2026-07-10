@@ -90,7 +90,11 @@
         "Token set name": "Naam token set",
         "e.g. Gemeente Voorbeeld": "bijv. Gemeente Voorbeeld",
         "Choose file and upload": "Bestand kiezen en uploaden",
-        "Loading custom token sets…": "Aangepaste token sets laden…"
+        "Loading custom token sets…": "Aangepaste token sets laden…",
+        "{themed} of {total} apps themed": "{themed} of {total} apps themed",
+        "Search apps": "Search apps",
+        "Search apps…": "Search apps…",
+        "Reset {label} to default": "Reset {label} to default"
     },
     "plurals": {}
 }

@@ -5,7 +5,10 @@ declare(strict_types=1);
 return [
 	'routes' => [
 		// Metrics — served by nldesign's own MetricsController (domain theme
-		// metrics: token sets, custom overrides, theming syncs). Public.
+		// metrics: token sets, custom overrides, theming syncs). Admin-only:
+		// no #[PublicPage]/#[NoAdminRequired], so the SecurityMiddleware
+		// default (admin session required) applies. A Prometheus scraper
+		// must authenticate as an admin (e.g. an app password).
 		['name' => 'metrics#index', 'url' => '/api/metrics', 'verb' => 'GET'],
 		// Health — the `health#index` route name and `/api/health` URL are
 		// unchanged, but the leaf HealthController service name is aliased to
