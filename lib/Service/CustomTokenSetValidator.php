@@ -158,15 +158,27 @@ class CustomTokenSetValidator
     /**
      * Determine whether a single declaration value is forbidden.
      *
-     * Rejects: @import, expression(, javascript:, raw markup (`<`), and url()
-     * with a scheme or host. Relative url('../../img/…') and data:image/svg+xml
-     * URIs are permitted, matching bundled logo usage.
+     * Rejects: @import, expression(, javascript:, raw markup (`<`), CSS
+     * injection characters (`;`, `{`, `}`) outside of a url(...) payload,
+     * CSS comment delimiters (`/*`, `*​/`) outside of a url(...) payload,
+     * and url() with a scheme or host. Relative url('../../img/…') and
+     * data:image/svg+xml URIs (which legitimately contain a `;` in their
+     * `data:image/svg+xml;base64,` mime prefix) are permitted, matching
+     * bundled logo usage.
+     *
+     * The `;` and comment-delimiter guard mirrors
+     * {@see CustomOverridesService::buildDeclarationLines()} — without it a
+     * value such as `red; --nldesign-evil: url(javascript:alert(1))` or
+     * `red } /* to close the block early` could smuggle an extra
+     * declaration or unbalanced comment past the whitelist and into the
+     * generated :root block.
      *
      * @param string $value The declaration value.
      *
      * @return bool True when the value must be rejected.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-1
      */
     public function isForbiddenValue(string $value): bool
     {
@@ -176,8 +188,21 @@ class CustomTokenSetValidator
             || str_contains($lower, 'expression(') === true
             || str_contains($lower, 'javascript:') === true
             || str_contains($value, '<') === true
-            || str_contains($value, '{') === true
-            || str_contains($value, '}') === true
+        ) {
+            return true;
+        }
+
+        // Injection characters are checked with every url(...) payload
+        // stripped out first, since a legitimate data:image/svg+xml;base64,…
+        // URI legitimately contains a `;` that is not a declaration
+        // terminator.
+        $withoutUrlPayloads = preg_replace('/url\(\s*([\'"]?).*?\1\s*\)/i', '', $value);
+
+        if (str_contains($withoutUrlPayloads, '{') === true
+            || str_contains($withoutUrlPayloads, '}') === true
+            || str_contains($withoutUrlPayloads, ';') === true
+            || str_contains($withoutUrlPayloads, '/*') === true
+            || str_contains($withoutUrlPayloads, '*/') === true
         ) {
             return true;
         }

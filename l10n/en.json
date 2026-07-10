@@ -93,7 +93,8 @@
         "Loading custom token sets…": "Loading custom token sets…",
         "{themed} of {total} apps themed": "{themed} of {total} apps themed",
         "Search apps": "Search apps",
-        "Search apps…": "Search apps…"
+        "Search apps…": "Search apps…",
+        "Reset {label} to default": "Reset {label} to default"
     },
     "plurals": {}
 }

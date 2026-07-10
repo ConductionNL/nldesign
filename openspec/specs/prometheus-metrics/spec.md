@@ -22,11 +22,12 @@ The app MUST expose a Prometheus-compatible metrics endpoint that returns all ap
 - THEN the response MUST have content type `text/plain; version=0.0.4; charset=utf-8`
 - AND the response body MUST contain valid Prometheus text exposition format
 
-#### Scenario: Metrics endpoint is publicly accessible without CSRF
-- GIVEN a monitoring system (e.g. Prometheus scraper) calls the metrics endpoint
-- WHEN the request is made
-- THEN the `@NoCSRFRequired` annotation MUST allow access without a CSRF token
-- AND this allows automated scraping from external monitoring tools
+#### Scenario: Metrics endpoint requires an authenticated admin session
+- GIVEN the response body exposes internal operational detail (active token set name, override/theming-sync counts, exact PHP/Nextcloud versions)
+- WHEN `MetricsController::index()` carries no `#[PublicPage]` or `#[NoAdminRequired]` attribute
+- THEN the Nextcloud `SecurityMiddleware` default applies and the request MUST be rejected unless it carries an authenticated admin session
+- AND a monitoring system (e.g. a Prometheus scraper) MUST authenticate as an admin (e.g. via an app password) to reach the endpoint
+- AND the `@NoCSRFRequired` annotation still allows the authenticated GET request without a CSRF token (CSRF protection is orthogonal to the admin-auth requirement)
 
 #### Scenario: Metrics endpoint returns all metric families
 - GIVEN the metrics endpoint is called

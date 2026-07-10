@@ -12,8 +12,12 @@
 #                     so this needs no service container.
 #   • l10n-check    — HARD GATE. tests/l10n/check-l10n.js asserts every
 #                     t('<app>', '...') / n(...) source string is present in
-#                     l10n/en.json (the i18n-extraction-drift guard). Pure
-#                     Node, no NC.
+#                     l10n/en.json (the i18n-extraction-drift guard). Also runs
+#                     tests/l10n/check-l10n-completeness.js, which asserts every
+#                     en.json key is present (as a key — untranslated is fine,
+#                     MISSING is not) in every other l10n/*.json locale file,
+#                     so a locale can never silently drift behind en.json.
+#                     Pure Node, no NC.
 #   • e2e-deep      — SCAFFOLDED (non-gating). Playwright tests/e2e/workflows/
 #                     need a live, seeded NC. See the TODO in that job.
 #   • newman        — SCAFFOLDED (non-gating). tests/integration Postman
@@ -104,6 +108,9 @@ jobs:
 
       - name: Assert every t() source string is in l10n/en.json
         run: node tests/l10n/check-l10n.js
+
+      - name: Assert every l10n/*.json locale has every en.json key
+        run: node tests/l10n/check-l10n-completeness.js
 
   # ---------------------------------------------------------------------------
   # HARD GATE 3 — frontend unit suite (Vitest, OFFLINE; no NC needed).

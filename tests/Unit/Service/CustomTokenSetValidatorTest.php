@@ -6,6 +6,9 @@
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
+ * @author  Conduction <info@conduction.nl>
+ * @license EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-5.1
  */
 
@@ -35,6 +38,8 @@ class CustomTokenSetValidatorTest extends TestCase
 
     /**
      * Set up the validator before each test.
+     *
+     * @return void
      */
     protected function setUp(): void
     {
@@ -44,6 +49,8 @@ class CustomTokenSetValidatorTest extends TestCase
 
     /**
      * Only --nldesign-* and --{slug}-* declarations are accepted; others are skipped.
+     *
+     * @return void
      */
     public function testWhitelistSplitsAcceptedAndSkipped(): void
     {
@@ -57,17 +64,19 @@ class CustomTokenSetValidatorTest extends TestCase
 
         $split = $this->validator->validateDeclarations(declarations: $declarations, slug: 'gemeente');
 
-        $this->assertNotNull($split);
-        $this->assertArrayHasKey('--nldesign-color-primary', $split['accepted']);
-        $this->assertArrayHasKey('--gemeente-color-accent', $split['accepted'], 'org-palette extras must be accepted');
-        $this->assertContains('--color-primary', $split['skipped']);
-        $this->assertContains('--v-some-other', $split['skipped']);
-        $this->assertCount(3, $split['accepted']);
-        $this->assertCount(2, $split['skipped']);
+        $this->assertNotNull(actual: $split);
+        $this->assertArrayHasKey(key: '--nldesign-color-primary', array: $split['accepted']);
+        $this->assertArrayHasKey(key: '--gemeente-color-accent', array: $split['accepted'], message: 'org-palette extras must be accepted');
+        $this->assertContains(needle: '--color-primary', haystack: $split['skipped']);
+        $this->assertContains(needle: '--v-some-other', haystack: $split['skipped']);
+        $this->assertCount(expectedCount: 3, haystack: $split['accepted']);
+        $this->assertCount(expectedCount: 2, haystack: $split['skipped']);
     }//end testWhitelistSplitsAcceptedAndSkipped()
 
     /**
      * A forbidden value (external url) is a hard failure with HTTP 422.
+     *
+     * @return void
      */
     public function testExternalUrlValueIsRejected(): void
     {
@@ -76,54 +85,96 @@ class CustomTokenSetValidatorTest extends TestCase
             slug: 'x'
         );
 
-        $this->assertNull($split);
+        $this->assertNull(actual: $split);
         $error = $this->validator->getLastError();
-        $this->assertSame(422, $error['status']);
-        $this->assertSame('--nldesign-logo-url', $error['property']);
+        $this->assertSame(expected: 422, actual: $error['status']);
+        $this->assertSame(expected: '--nldesign-logo-url', actual: $error['property']);
     }//end testExternalUrlValueIsRejected()
 
     /**
      * Relative url() and data: URIs are permitted.
+     *
+     * @return void
      */
     public function testRelativeAndDataUrlsAreAccepted(): void
     {
-        $this->assertFalse($this->validator->isForbiddenValue(value: "url('../../img/logos/custom.svg')"));
-        $this->assertFalse($this->validator->isForbiddenValue(value: 'url(data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=)'));
+        $this->assertFalse(condition: $this->validator->isForbiddenValue(value: "url('../../img/logos/custom.svg')"));
+        $this->assertFalse(condition: $this->validator->isForbiddenValue(value: 'url(data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=)'));
     }//end testRelativeAndDataUrlsAreAccepted()
 
     /**
-     * @import, expression(), javascript:, and raw markup are all forbidden.
+     * The @import, expression(), javascript:, and raw-markup values are all forbidden.
+     *
+     * @return void
      */
     public function testDangerousValuesAreForbidden(): void
     {
-        $this->assertTrue($this->validator->isForbiddenValue(value: '@import url(x.css)'));
-        $this->assertTrue($this->validator->isForbiddenValue(value: 'expression(alert(1))'));
-        $this->assertTrue($this->validator->isForbiddenValue(value: 'javascript:alert(1)'));
-        $this->assertTrue($this->validator->isForbiddenValue(value: '</style><script>x</script>'));
-        $this->assertTrue($this->validator->isForbiddenValue(value: 'url(//evil.example/x.png)'));
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: '@import url(x.css)'));
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'expression(alert(1))'));
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'javascript:alert(1)'));
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: '</style><script>x</script>'));
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'url(//evil.example/x.png)'));
     }//end testDangerousValuesAreForbidden()
 
     /**
+     * A `;` in a value can smuggle a second declaration past the whitelist
+     * (e.g. injecting an arbitrary property name/value into the generated
+     * :root block) and must be rejected, matching the guard already applied
+     * by CustomOverridesService::buildDeclarationLines().
+     *
+     * @return void
+     */
+    public function testSemicolonSmugglingIsForbidden(): void
+    {
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'red; --nldesign-evil: url(javascript:alert(1))'));
+    }//end testSemicolonSmugglingIsForbidden()
+
+    /**
+     * CSS comment delimiters can be used to close the :root block early or
+     * comment out the trailing brace, so both `/*` and `*​/` must be rejected.
+     *
+     * @return void
+     */
+    public function testCommentDelimitersAreForbidden(): void
+    {
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'red } /* injected'));
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'red */ .evil { color: red'));
+    }//end testCommentDelimitersAreForbidden()
+
+    /**
      * Any selector other than :root (or any at-rule) is rejected pre-parse.
+     *
+     * @return void
      */
     public function testDisallowedSelectorIsDetected(): void
     {
-        $this->assertTrue($this->validator->hasDisallowedSelector(css: ':root { --nldesign-color-primary: #007bc7; } .header { color: red; }'));
-        $this->assertTrue($this->validator->hasDisallowedSelector(css: '@import url(x.css); :root { --nldesign-color-primary: #007bc7; }'));
-        $this->assertTrue($this->validator->hasDisallowedSelector(css: '@font-face { font-family: X; } :root {}'));
+        $smuggledSelector = $this->validator->hasDisallowedSelector(
+            css: ':root { --nldesign-color-primary: #007bc7; } .header { color: red; }'
+        );
+        $smuggledImport   = $this->validator->hasDisallowedSelector(
+            css: '@import url(x.css); :root { --nldesign-color-primary: #007bc7; }'
+        );
+
+        $this->assertTrue(condition: $smuggledSelector);
+        $this->assertTrue(condition: $smuggledImport);
+        $this->assertTrue(condition: $this->validator->hasDisallowedSelector(css: '@font-face { font-family: X; } :root {}'));
     }//end testDisallowedSelectorIsDetected()
 
     /**
      * A clean single-:root block (with comments) passes the selector guard.
+     *
+     * @return void
      */
     public function testCleanRootBlockPassesSelectorGuard(): void
     {
         $css = "/* comment with .fake-selector { } inside */\n:root {\n  --nldesign-color-primary: #007bc7;\n}";
-        $this->assertFalse($this->validator->hasDisallowedSelector(css: $css));
+        $this->assertFalse(condition: $this->validator->hasDisallowedSelector(css: $css));
     }//end testCleanRootBlockPassesSelectorGuard()
 
     /**
      * An upload with no --nldesign-* declarations is a hard failure.
+     *
+     * @return void
      */
     public function testEmptyAcceptedSetIsRejected(): void
     {
@@ -132,12 +183,14 @@ class CustomTokenSetValidatorTest extends TestCase
             slug: 'x'
         );
 
-        $this->assertNull($split);
-        $this->assertSame(422, $this->validator->getLastError()['status']);
+        $this->assertNull(actual: $split);
+        $this->assertSame(expected: 422, actual: $this->validator->getLastError()['status']);
     }//end testEmptyAcceptedSetIsRejected()
 
     /**
      * Serialization is generated from declarations only, in a single :root block.
+     *
+     * @return void
      */
     public function testSerializeProducesCanonicalRootBlock(): void
     {
@@ -148,19 +201,21 @@ class CustomTokenSetValidatorTest extends TestCase
             ]
         );
 
-        $this->assertStringContainsString(':root {', $css);
-        $this->assertStringContainsString('--nldesign-color-primary: #007bc7;', $css);
-        $this->assertStringContainsString('--nldesign-color-primary-text: #ffffff;', $css);
-        $this->assertStringEndsWith("}\n", $css);
+        $this->assertStringContainsString(needle: ':root {', haystack: $css);
+        $this->assertStringContainsString(needle: '--nldesign-color-primary: #007bc7;', haystack: $css);
+        $this->assertStringContainsString(needle: '--nldesign-color-primary-text: #ffffff;', haystack: $css);
+        $this->assertStringEndsWith(suffix: "}\n", string: $css);
         // No selector smuggling can survive serialisation.
-        $this->assertStringNotContainsString('.header', $css);
+        $this->assertStringNotContainsString(needle: '.header', haystack: $css);
     }//end testSerializeProducesCanonicalRootBlock()
 
     /**
      * The maximum size constant matches the specced 512 KB cap.
+     *
+     * @return void
      */
     public function testMaxSizeIs512Kb(): void
     {
-        $this->assertSame((512 * 1024), CustomTokenSetValidator::MAX_SIZE);
+        $this->assertSame(expected: (512 * 1024), actual: CustomTokenSetValidator::MAX_SIZE);
     }//end testMaxSizeIs512Kb()
 }//end class
