@@ -430,6 +430,14 @@ body #header nav.app-menu .app-menu-entry--active .app-menu-entry__icon {
 	filter: brightness(0) saturate(100%) !important;
 }
 
+/* NC 34 compact app menu: core hardcodes the current-app icon white when the
+   current app is Settings (filter: brightness(0) invert(1)), bypassing the
+   --background-image-invert-if-bright variable every other icon respects.
+   Ink it dark for the white bar. */
+#header .app-menu__current-app-icon--settings {
+	filter: brightness(0) saturate(100%) !important;
+}
+
 /* App-menu overflow popover (apps that don't fit the bar) — ink those icons
    dark too, wherever NC renders the popover. */
 body .app-menu-popover .app-menu-icon,
@@ -437,4 +445,25 @@ body .app-menu-popover .app-menu-entry__icon,
 body .app-menu-more__list .app-menu-icon,
 body .app-menu-more__list .app-menu-entry__icon {
 	filter: brightness(0) saturate(100%) !important;
+}
+
+/* NC 34 waffle popover — the app grid ships as legacy cobalt orbs (solid
+   primary circle, white glyph). Restyle to Summer Breeze tonal tiles:
+   pastel-primary rounded square with the icon inked dark. */
+body .app-item__circle {
+	background-color: var(--summer-color-primary-light) !important;
+	border: 1px solid var(--summer-color-border) !important;
+	border-radius: var(--summer-radius) !important;
+	box-shadow: none !important;
+}
+
+body .app-item__icon {
+	filter: brightness(0) saturate(100%) !important;
+	opacity: 0.85;
+}
+
+body .app-item:hover .app-item__circle,
+body .app-item:focus-visible .app-item__circle,
+body .app-item.active .app-item__circle {
+	background-color: var(--summer-color-primary-light-hover) !important;
 }
