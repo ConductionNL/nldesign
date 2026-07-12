@@ -324,17 +324,6 @@ button,
 	box-shadow: none !important;
 }
 
-/* Dashboard header — keep the action buttons pinned top-right. The header is a
-   wrapping flex row; without this, a wide action set (e.g. shillinq's four
-   buttons) wraps left-aligned below the title instead of staying on the right. */
-.cn-dashboard-page__header {
-	justify-content: space-between !important;
-}
-
-.cn-dashboard-page__header-actions {
-	margin-left: auto !important;
-}
-
 /* The actions toolbar itself is transparent (no pale rounded box) so the
    search + toggle sit directly on the page, like the docudesk header. */
 .cn-actions-bar {
