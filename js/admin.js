@@ -1540,6 +1540,111 @@ function nldesignAdminMain() {
 	initCustomTokenSets();
 
 	/* ==========================================================================
+	 * THEMING AUDIT LOG
+	 *
+	 * Read-only panel: fetches the most recent entries on page load and wires
+	 * the full-log download button. All entry values are rendered via
+	 * textContent (DOM text nodes), never innerHTML — audit entries can carry
+	 * admin-supplied names (custom token set names) so must be treated as
+	 * untrusted content.
+	 * ========================================================================== */
+
+	function initAuditLog() {
+		var tableBody   = document.getElementById('nldesign-audit-table-body');
+		var downloadBtn = document.getElementById('nldesign-audit-download-btn');
+		if (tableBody === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/audit?limit=20'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderAuditTable(tableBody, (data && data.entries) || []);
+		})
+		.catch(function(err) {
+			console.error('Error loading audit log:', err);
+			renderAuditMessage(tableBody, t('nldesign', 'Failed to load the audit log.'));
+		});
+
+		if (downloadBtn !== null) {
+			downloadBtn.addEventListener('click', function() {
+				window.location = OC.generateUrl('/apps/nldesign/settings/audit/export');
+			});
+		}
+	}
+
+	function renderAuditMessage(tableBody, message) {
+		tableBody.innerHTML = '';
+		var row = document.createElement('tr');
+		var cell = document.createElement('td');
+		cell.colSpan = 4;
+		cell.className = 'settings-hint';
+		cell.textContent = message;
+		row.appendChild(cell);
+		tableBody.appendChild(row);
+	}
+
+	function renderAuditTable(tableBody, entries) {
+		tableBody.innerHTML = '';
+
+		if (entries.length === 0) {
+			renderAuditMessage(tableBody, t('nldesign', 'No theming changes have been recorded yet.'));
+			return;
+		}
+
+		entries.forEach(function(entry) {
+			var row = document.createElement('tr');
+
+			var tsCell = document.createElement('td');
+			tsCell.textContent = entry.ts || '';
+			row.appendChild(tsCell);
+
+			var actorCell = document.createElement('td');
+			actorCell.textContent = entry.actor || '';
+			row.appendChild(actorCell);
+
+			var actionCell = document.createElement('td');
+			actionCell.textContent = entry.action || '';
+			row.appendChild(actionCell);
+
+			var detailsCell = document.createElement('td');
+			detailsCell.textContent = formatAuditDetails(entry);
+			row.appendChild(detailsCell);
+
+			tableBody.appendChild(row);
+		});
+	}
+
+	function formatAuditValue(value) {
+		if (value === null || value === undefined) {
+			return '';
+		}
+		if (typeof value === 'object') {
+			try {
+				return JSON.stringify(value);
+			} catch (e) {
+				return String(value);
+			}
+		}
+		return String(value);
+	}
+
+	function formatAuditDetails(entry) {
+		var parts = [];
+		if (entry.old !== undefined && entry.old !== null) {
+			parts.push(t('nldesign', 'from {value}').replace('{value}', formatAuditValue(entry.old)));
+		}
+		if (entry.new !== undefined && entry.new !== null) {
+			parts.push(t('nldesign', 'to {value}').replace('{value}', formatAuditValue(entry.new)));
+		}
+		return parts.join(' ');
+	}
+
+	initAuditLog();
+
+	/* ==========================================================================
 	 * EMAIL TEMPLATE THEMING — mail_template_class toggle + compliance footer
 	 * ========================================================================== */
 

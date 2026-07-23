@@ -25,6 +25,7 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
 declare(strict_types=1);
@@ -37,6 +38,7 @@ use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
 use OCA\NLDesign\Service\Exception\FooterValidationException;
 use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
@@ -105,6 +107,13 @@ class SettingsController extends Controller
     private AppThemingService $appThemingService;
 
     /**
+     * The theming audit trail service.
+     *
+     * @var ThemingAuditService
+     */
+    private ThemingAuditService $auditService;
+
+    /**
      * The email theming service.
      *
      * @var EmailThemingService
@@ -121,6 +130,7 @@ class SettingsController extends Controller
      * @param ThemingService         $themingService      The theming service.
      * @param TokenSetPreviewService $previewService      The token set preview service.
      * @param AppThemingService      $appThemingService   The per-app theming service.
+     * @param ThemingAuditService    $auditService        The theming audit trail service.
      * @param EmailThemingService    $emailThemingService The email theming service.
      */
     public function __construct(
@@ -131,6 +141,7 @@ class SettingsController extends Controller
         ThemingService $themingService,
         TokenSetPreviewService $previewService,
         AppThemingService $appThemingService,
+        ThemingAuditService $auditService,
         EmailThemingService $emailThemingService
     ) {
         parent::__construct(appName: $appName, request: $request);
@@ -139,6 +150,7 @@ class SettingsController extends Controller
         $this->themingService    = $themingService;
         $this->previewService    = $previewService;
         $this->appThemingService = $appThemingService;
+        $this->auditService      = $auditService;
         $this->emailThemingService = $emailThemingService;
     }//end __construct()
 
@@ -150,6 +162,7 @@ class SettingsController extends Controller
      * @return JSONResponse The response with status and selected token set.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setTokenSet(string $tokenSet): JSONResponse
@@ -158,7 +171,16 @@ class SettingsController extends Controller
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
+        $previous = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
         $this->config->setAppValue(Application::APP_ID, 'token_set', $tokenSet);
+
+        $this->auditService->log(
+            action: 'token_set_changed',
+            context: [
+                'old' => $previous,
+                'new' => $tokenSet,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'tokenSet' => $tokenSet]);
     }//end setTokenSet()
@@ -225,11 +247,22 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'hide_slogan', '0') === '1');
         $this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'hide_slogan',
+                'old' => $previous,
+                'new' => $hideSlogan,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
     }//end setSloganSetting()
@@ -242,11 +275,22 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'show_menu_labels', '0') === '1');
         $this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'show_menu_labels',
+                'old' => $previous,
+                'new' => $showMenuLabels,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
     }//end setMenuLabelsSetting()
@@ -257,6 +301,7 @@ class SettingsController extends Controller
      * @return JSONResponse The response with updated fields.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function updateThemingValues(): JSONResponse
@@ -273,6 +318,8 @@ class SettingsController extends Controller
             return new JSONResponse(['error' => $imageError], 400);
         }
 
+        $before = $this->buildThemingSnapshot();
+
         $updatedColors = $this->themingService->applyColors(params: $params);
         $updatedImages = $this->themingService->applyImages(params: $params);
         $updated       = array_merge($updatedColors, $updatedImages);
@@ -282,6 +329,14 @@ class SettingsController extends Controller
         // apply* calls completed without throwing).
         $current = (int) $this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
         $this->config->setAppValue(Application::APP_ID, 'theming_syncs_total', (string) ($current + 1));
+
+        $this->auditService->log(
+            action: 'theming_sync_applied',
+            context: [
+                'old' => $before,
+                'new' => $updated,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'updated' => $updated]);
     }//end updateThemingValues()
@@ -370,16 +425,27 @@ class SettingsController extends Controller
      * @return JSONResponse The persisted state after validation.
      *
      * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setAppTheming(array $disabledApps=[]): JSONResponse
     {
+        $before = $this->appThemingService->getDisabledApps();
         $this->appThemingService->setDisabledApps(appIds: $disabledApps);
+        $after = $this->appThemingService->getDisabledApps();
+
+        $this->auditService->log(
+            action: 'app_exclusions_changed',
+            context: [
+                'old' => $before,
+                'new' => $after,
+            ]
+        );
 
         return new JSONResponse(
             [
                 'status'       => 'ok',
-                'disabledApps' => $this->appThemingService->getDisabledApps(),
+                'disabledApps' => $after,
             ]
         );
     }//end setAppTheming()

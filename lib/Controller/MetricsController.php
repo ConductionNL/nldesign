@@ -110,6 +110,15 @@ class MetricsController extends Controller
         $lines[]    = '# TYPE nldesign_theming_syncs_total counter';
         $lines[]    = 'nldesign_theming_syncs_total '.$syncsTotal;
 
+        // Theming audit entries counter — sourced from the same monotonic
+        // IConfig app value ThemingAuditService::log() increments, NOT from
+        // counting audit.jsonl lines, so log rotation can never make this
+        // metric decrease.
+        $auditTotal = (int) $this->config->getAppValue(Application::APP_ID, 'audit_entries_total', '0');
+        $lines[]    = '# HELP nldesign_audit_entries_total Total theming audit entries written';
+        $lines[]    = '# TYPE nldesign_audit_entries_total counter';
+        $lines[]    = 'nldesign_audit_entries_total '.$auditTotal;
+
         $body     = implode("\n", $lines)."\n";
         $response = new TextPlainResponse($body);
         $response->addHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');

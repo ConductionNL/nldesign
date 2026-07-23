@@ -23,6 +23,16 @@ parameters:
         - lib/Mail/NLDesignEMailTemplate.php
         # Apps that ship a verbatim template snapshot under lib/Resources/template/ (e.g. openbuild).
         - lib/Resources/template
+        # HealthController extends the OpenRegister AppHost engine's
+        # GenericHealthController (ADR-040) — a SOFT/optional dependency
+        # autoloaded only on route dispatch, never at bootstrap, so
+        # OpenRegister is genuinely absent during static analysis. PHPStan's
+        # "extends unknown class" / "calls parent:: but does not extend any
+        # class" errors are structural (class-hierarchy) errors that cannot
+        # be suppressed via ignoreErrors — excludePaths is the tool's own
+        # recommended fix. Mirrors the file's existing @psalm-suppress
+        # UndefinedClass rationale.
+        - lib/Controller/HealthController.php
     scanDirectories:
         - vendor/nextcloud/ocp
     reportUnmatchedIgnoredErrors: false

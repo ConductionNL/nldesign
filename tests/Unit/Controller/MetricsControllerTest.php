@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Unit tests for MetricsController's admin-only auth posture.
+ * Unit tests for MetricsController: admin-only auth posture and the
+ * theming-audit counter metric.
  *
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
@@ -20,29 +21,34 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\TextPlainResponse;
 use OCP\IConfig;
+use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 
 /**
- * Verifies `metrics#index` falls through to the Nextcloud
- * `SecurityMiddleware` admin-only default (ADR-006), per
- * `openspec/specs/prometheus-metrics/spec.md` REQ-PROM-001
- * "Metrics endpoint requires an authenticated admin session".
+ * Two concerns share this suite:
  *
- * There is no real `SecurityMiddleware`/route-dispatch layer available in
- * this standalone PHPUnit harness (no live Nextcloud server), so a live
- * 401-on-unauthenticated-request assertion is not possible here — that is
- * covered by the deferred manual curl check in tasks.md#task-4.2. What IS
- * statically verifiable and regression-proof in this harness is the
- * precondition the admin-only default depends on: `index()` must carry
- * neither `#[PublicPage]` nor `#[NoAdminRequired]`. If either attribute is
- * ever (re)added, Nextcloud's `SecurityMiddleware` would bypass the
- * admin-only check entirely — so asserting their absence is the correct,
- * fast-failing proxy for the auth posture.
+ * 1. Auth posture (ADR-006 / REQ "Metrics endpoint requires an authenticated
+ *    admin session"): there is no real `SecurityMiddleware`/route-dispatch
+ *    layer in this standalone harness, so a live 401 assertion is impossible
+ *    here — that is covered by the post-merge live curl check. What IS
+ *    statically verifiable and regression-proof is the precondition the
+ *    admin-only default depends on: `index()` must carry neither
+ *    `#[PublicPage]` nor `#[NoAdminRequired]`.
+ * 2. The `nldesign_audit_entries_total` counter emitted from the
+ *    `audit_entries_total` app value (cast to int, default '0'), additive to
+ *    the pre-existing metric families.
  */
 class MetricsControllerTest extends TestCase
 {
+
+    /**
+     * In-memory appconfig store: key => value.
+     *
+     * @var array<string, string>
+     */
+    private array $appConfig = [];
 
     /**
      * The controller under test.
@@ -59,8 +65,10 @@ class MetricsControllerTest extends TestCase
         parent::setUp();
 
         $config = $this->createMock(IConfig::class);
-        $config->method('getAppValue')->willReturn('0');
-        $config->method('getSystemValueString')->willReturn('29.0.0');
+        $config->method('getAppValue')->willReturnCallback(
+            fn (string $app, string $key, $default='') => ($this->appConfig[$key] ?? $default)
+        );
+        $config->method('getSystemValueString')->willReturn('34.0.0');
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         $tokenSetService->method('getAvailableTokenSets')->willReturn([]);
@@ -70,7 +78,7 @@ class MetricsControllerTest extends TestCase
 
         $this->controller = new MetricsController(
             'nldesign',
-            $this->createMock(\OCP\IRequest::class),
+            $this->createMock(IRequest::class),
             $config,
             $tokenSetService,
             $overridesService,
@@ -81,7 +89,7 @@ class MetricsControllerTest extends TestCase
     /**
      * `index()` MUST NOT carry `#[PublicPage]` — its presence would make the
      * endpoint reachable by any unauthenticated caller, defeating the
-     * admin-auth requirement (ADR-006 / REQ-PROM-001).
+     * admin-auth requirement (ADR-006).
      */
     public function testIndexHasNoPublicPageAttribute(): void
     {
@@ -97,7 +105,7 @@ class MetricsControllerTest extends TestCase
     /**
      * `index()` MUST NOT carry `#[NoAdminRequired]` — its presence would
      * allow any authenticated (non-admin) user through, still short of the
-     * admin-only requirement (ADR-006 / REQ-PROM-001).
+     * admin-only requirement (ADR-006).
      */
     public function testIndexHasNoNoAdminRequiredAttribute(): void
     {
@@ -127,10 +135,9 @@ class MetricsControllerTest extends TestCase
     }//end testIndexDeclaresNoCsrfRequired()
 
     /**
-     * Sanity/regression check: removing `#[PublicPage]` only changes the
-     * auth posture enforced by middleware, never invoked when calling the
-     * method directly — the metrics body itself must still be produced
-     * unchanged.
+     * Sanity/regression check: the auth posture is enforced by middleware,
+     * never invoked when calling the method directly — the metrics body
+     * itself must still be produced unchanged.
      */
     public function testIndexStillReturnsMetricsBody(): void
     {
@@ -139,4 +146,46 @@ class MetricsControllerTest extends TestCase
         $this->assertInstanceOf(TextPlainResponse::class, $response);
         $this->assertStringContainsString('nldesign_up 1', $response->render());
     }//end testIndexStillReturnsMetricsBody()
+
+    /**
+     * The audit counter defaults to zero when no entry has ever been
+     * written (fresh install / unset app value).
+     */
+    public function testAuditCounterDefaultsToZero(): void
+    {
+        $body = $this->controller->index()->render();
+
+        $this->assertStringContainsString(
+            '# HELP nldesign_audit_entries_total Total theming audit entries written',
+            $body
+        );
+        $this->assertStringContainsString('# TYPE nldesign_audit_entries_total counter', $body);
+        $this->assertStringContainsString('nldesign_audit_entries_total 0', $body);
+    }//end testAuditCounterDefaultsToZero()
+
+    /**
+     * The audit counter reflects the current `audit_entries_total` app
+     * value (cast to int).
+     */
+    public function testAuditCounterReflectsAppValue(): void
+    {
+        $this->appConfig['audit_entries_total'] = '12';
+
+        $body = $this->controller->index()->render();
+
+        $this->assertStringContainsString('nldesign_audit_entries_total 12', $body);
+    }//end testAuditCounterReflectsAppValue()
+
+    /**
+     * The new counter is additive — pre-existing metric families still
+     * appear in the same response.
+     */
+    public function testAuditCounterIsAdditiveToExistingFamilies(): void
+    {
+        $body = $this->controller->index()->render();
+
+        $this->assertStringContainsString('nldesign_info{', $body);
+        $this->assertStringContainsString('nldesign_up 1', $body);
+        $this->assertStringContainsString('# TYPE nldesign_theming_syncs_total counter', $body);
+    }//end testAuditCounterIsAdditiveToExistingFamilies()
 }//end class

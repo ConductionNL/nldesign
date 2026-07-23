@@ -16,21 +16,25 @@
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.2
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
 declare(strict_types=1);
 
 namespace OCA\NLDesign\Controller;
 
+use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomTokenSetService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
 use OCA\NLDesign\Service\DesignTokensMapper;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use RuntimeException;
@@ -44,6 +48,7 @@ use RuntimeException;
  * the served file is always re-serialised from parsed declarations.
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 class CustomTokenSetController extends Controller
 {
@@ -84,15 +89,32 @@ class CustomTokenSetController extends Controller
     private IL10N $l;
 
     /**
+     * The theming audit trail service.
+     *
+     * @var ThemingAuditService
+     */
+    private ThemingAuditService $auditService;
+
+    /**
+     * The application configuration service (active token set lookup, for
+     * detecting whether a delete resets the active set).
+     *
+     * @var IConfig
+     */
+    private IConfig $config;
+
+    /**
      * Constructor.
      *
-     * @param string                  $appName   The app name.
-     * @param IRequest                $request   The request object.
-     * @param CustomTokenSetService   $service   The storage/lifecycle service.
-     * @param CustomTokenSetValidator $validator The CSS validator.
-     * @param CssParserService        $cssParser The CSS parser service.
-     * @param DesignTokensMapper      $mapper    The DTCG mapper.
-     * @param IL10N                   $l         The localization service.
+     * @param string                  $appName      The app name.
+     * @param IRequest                $request      The request object.
+     * @param CustomTokenSetService   $service      The storage/lifecycle service.
+     * @param CustomTokenSetValidator $validator    The CSS validator.
+     * @param CssParserService        $cssParser    The CSS parser service.
+     * @param DesignTokensMapper      $mapper       The DTCG mapper.
+     * @param IL10N                   $l            The localization service.
+     * @param ThemingAuditService     $auditService The theming audit trail service.
+     * @param IConfig                 $config       The config service.
      */
     public function __construct(
         string $appName,
@@ -101,14 +123,18 @@ class CustomTokenSetController extends Controller
         CustomTokenSetValidator $validator,
         CssParserService $cssParser,
         DesignTokensMapper $mapper,
-        IL10N $l
+        IL10N $l,
+        ThemingAuditService $auditService,
+        IConfig $config
     ) {
         parent::__construct(appName: $appName, request: $request);
-        $this->service   = $service;
-        $this->validator = $validator;
-        $this->cssParser = $cssParser;
-        $this->mapper    = $mapper;
-        $this->l         = $l;
+        $this->service      = $service;
+        $this->validator    = $validator;
+        $this->cssParser    = $cssParser;
+        $this->mapper       = $mapper;
+        $this->l            = $l;
+        $this->auditService = $auditService;
+        $this->config       = $config;
     }//end __construct()
 
     /**
@@ -286,6 +312,7 @@ class CustomTokenSetController extends Controller
      * @return JSONResponse The upload result or a collision/storage error.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     private function persist(string $name, array $parsed): JSONResponse
     {
@@ -303,6 +330,22 @@ class CustomTokenSetController extends Controller
 
             return new JSONResponse(['error' => $e->getMessage()], $code);
         }
+
+        $servedCss   = $this->service->getRawContent(id: $result['id']);
+        $contentHash = null;
+        if ($servedCss !== null) {
+            $contentHash = 'sha256:'.substr(hash(algo: 'sha256', data: $servedCss), 0, 12);
+        }
+
+        $this->auditService->log(
+            action: 'custom_set_uploaded',
+            context: [
+                'id'               => $result['id'],
+                'name'             => $name,
+                'declarationCount' => count($parsed['accepted']),
+                'contentHash'      => $contentHash,
+            ]
+        );
 
         return new JSONResponse(
             [
@@ -359,6 +402,7 @@ class CustomTokenSetController extends Controller
      * @return JSONResponse The deletion result.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function delete(string $id): JSONResponse
@@ -367,9 +411,26 @@ class CustomTokenSetController extends Controller
             return new JSONResponse(['error' => $this->l->t('Only custom token sets can be deleted.')], 400);
         }
 
+        $activeBefore = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
+        $servedCss    = $this->service->getRawContent(id: $id);
+
         if ($this->service->delete(id: $id) === false) {
             return new JSONResponse(['error' => $this->l->t('Token set not found.')], 404);
         }
+
+        $contentHash = null;
+        if ($servedCss !== null) {
+            $contentHash = 'sha256:'.substr(hash(algo: 'sha256', data: $servedCss), 0, 12);
+        }
+
+        $this->auditService->log(
+            action: 'custom_set_deleted',
+            context: [
+                'id'          => $id,
+                'activeReset' => ($activeBefore === $id),
+                'contentHash' => $contentHash,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok']);
     }//end delete()

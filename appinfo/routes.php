@@ -41,6 +41,10 @@ return [
 		['name' => 'customTokenSet#list', 'url' => '/settings/tokensets/custom', 'verb' => 'GET'],
 		['name' => 'customTokenSet#export', 'url' => '/settings/tokensets/custom/{id}/export', 'verb' => 'GET'],
 		['name' => 'customTokenSet#delete', 'url' => '/settings/tokensets/custom/{id}', 'verb' => 'DELETE'],
+		// Theming audit trail — admin-only (AuthorizedAdminSetting), no
+		// #[PublicPage]/#[NoAdminRequired].
+		['name' => 'audit#list', 'url' => '/settings/audit', 'verb' => 'GET'],
+		['name' => 'audit#export', 'url' => '/settings/audit/export', 'verb' => 'GET'],
 		// Email template theming — admin toggle + compliance footer config.
 		['name' => 'settings#getEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'GET'],
 		['name' => 'settings#setEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'POST'],
