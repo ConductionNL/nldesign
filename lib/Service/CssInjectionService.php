@@ -294,7 +294,7 @@ class CssInjectionService
             );
         } catch (\Throwable $e) {
             return;
-        }
+        }//end try
     }//end injectPreviewBanner()
 
     /**
