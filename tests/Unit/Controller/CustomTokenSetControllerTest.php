@@ -21,6 +21,8 @@ use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomTokenSetService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
 use OCA\NLDesign\Service\DesignTokensMapper;
+use OCA\NLDesign\Service\ThemingAuditService;
+use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
@@ -113,7 +115,9 @@ class CustomTokenSetControllerTest extends TestCase
             validator: new CustomTokenSetValidator(),
             cssParser: new CssParserService(),
             mapper: new DesignTokensMapper(),
-            l: $l
+            l: $l,
+            auditService: $this->createMock(ThemingAuditService::class),
+            config: $this->createMock(IConfig::class)
         );
     }//end buildControllerWithJsonUpload()
 

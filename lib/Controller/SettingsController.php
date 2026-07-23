@@ -67,6 +67,11 @@ use OCP\IRequest;
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects) - This controller aggregates every settings
+ * endpoint of the app (token set, toggles, theming sync, per-app theming, audit trail, email
+ * theming); each dependency is one endpoint's service. Splitting it is tracked implicitly by
+ * the per-feature OpenSpec changes, not worth a synthetic split today.
  */
 class SettingsController extends Controller
 {
