@@ -19,6 +19,7 @@ use OCA\NLDesign\Service\ContrastService;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\CustomTokenSetService;
+use OCA\NLDesign\Service\DarkPaletteService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
 use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\FontService;
@@ -129,7 +130,13 @@ class ConfigBundleServiceTest extends TestCase
         $logger                  = $this->createMock(LoggerInterface::class);
 
         $this->overridesService      = new CustomOverridesService($appManager, $cssParser);
-        $this->customTokenSetService = new CustomTokenSetService($appManager, $config, $customTokenSetValidator, $contrast);
+        $this->customTokenSetService = new CustomTokenSetService(
+            $appManager,
+            $config,
+            $customTokenSetValidator,
+            $contrast,
+            new DarkPaletteService($contrast, $cssParser, $appManager, $logger)
+        );
         $this->tokenSetService       = new TokenSetService(
             $appManager,
             $config,
