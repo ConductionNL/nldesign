@@ -199,9 +199,12 @@ describe('admin.js group theming section', () => {
 		const rows = document.querySelectorAll('.nldesign-group-theming-row')
 		expect(rows[0].querySelector('[data-field="group"]').value).toBe('gemeente-b')
 		expect(rows[1].querySelector('[data-field="group"]').value).toBe('gemeente-a')
-		// Focus MUST remain on the moved row's move-up button (WCAG 2.1.1,
-		// no keyboard trap) — the row is now first (index 0).
-		expect(document.activeElement).toBe(rows[0].querySelector('.nldesign-group-theming-move-up'))
+		// Focus MUST stay on the row the user just moved (WCAG 2.1.1 Keyboard /
+		// 2.4.3 Focus Order — focus must never fall back to <body>). The row is
+		// now first, so its move-up button is disabled and cannot hold focus;
+		// the nearest operable control on the same row takes it instead.
+		expect(rows[0].contains(document.activeElement)).toBe(true)
+		expect(document.activeElement).toBe(rows[0].querySelector('.nldesign-group-theming-move-down'))
 	})
 
 	it('disables move-up on the first row and move-down on the last row', async () => {

@@ -1484,8 +1484,16 @@ function nldesignAdminMain() {
 			var focusRows = listEl.querySelectorAll('.nldesign-group-theming-row');
 			var target = focusRows[focusMoveButtonIndex];
 			if (target) {
+				// A row moved to a boundary has its corresponding move button
+				// disabled, and a disabled control cannot hold focus — focus
+				// would fall back to <body>, losing the user's place. Focus the
+				// nearest still-operable control on the moved row instead, so
+				// keyboard users always land on the row they just moved.
 				var btn = target.querySelector('.nldesign-group-theming-move-up');
-				if (btn) { btn.focus(); }
+				if (btn === null || btn.disabled === true) {
+					btn = target.querySelector('.nldesign-group-theming-move-down');
+				}
+				if (btn !== null && btn.disabled === false) { btn.focus(); }
 			}
 		}
 	}
