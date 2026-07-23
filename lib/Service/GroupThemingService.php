@@ -410,7 +410,7 @@ class GroupThemingService
                 activeTokenSet: $this->getDefaultTokenSet()
             );
 
-            if (($preview['previewActive'] ?? false) === true) {
+            if ($preview['previewActive'] === true) {
                 return $preview['tokenSet'];
             }
         } catch (\Throwable $e) {

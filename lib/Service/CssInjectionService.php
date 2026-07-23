@@ -279,7 +279,7 @@ class CssInjectionService
                 activeTokenSet: $tokenSet
             );
 
-            if (($effective['previewActive'] ?? false) !== true) {
+            if ($effective['previewActive'] !== true) {
                 return;
             }
 
@@ -294,7 +294,7 @@ class CssInjectionService
             );
         } catch (\Throwable $e) {
             return;
-        }
+        }//end try
     }//end injectPreviewBanner()
 
     /**
