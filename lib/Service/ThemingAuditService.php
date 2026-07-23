@@ -101,6 +101,9 @@ class ThemingAuditService
     /**
      * The closed action vocabulary. Extending it requires a spec change.
      *
+     * `group_theming_changed` added by `openspec/specs/per-group-theming/spec.md`
+     * (the group→token-set mapping save).
+     *
      * @var array<int, string>
      */
     private const VOCABULARY = [
@@ -114,6 +117,7 @@ class ThemingAuditService
         'theming_sync_applied',
         'config_imported',
         'preview_published',
+        'group_theming_changed',
     ];
 
     /**

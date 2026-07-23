@@ -64,5 +64,8 @@ return [
 		// Email template theming — admin toggle + compliance footer config.
 		['name' => 'settings#getEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'GET'],
 		['name' => 'settings#setEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'POST'],
+		// Group theming — group-to-token-set mapping (multi-tenant huisstijl).
+		['name' => 'settings#getGroupTheming', 'url' => '/settings/group-theming', 'verb' => 'GET'],
+		['name' => 'settings#setGroupTheming', 'url' => '/settings/group-theming', 'verb' => 'POST'],
 	],
 ];

@@ -26,6 +26,7 @@ use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\FontService;
+use OCA\NLDesign\Service\GroupThemingService;
 use OCA\NLDesign\Themes\NLDesignTheme;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
@@ -40,6 +41,13 @@ use OCP\IURLGenerator;
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
+ * @spec openspec/specs/per-group-theming/spec.md
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects) - injectThemeCSS() is the single boot-time CSS
+ * injection pipeline (per-app exclusion guard, per-group/default token-set resolution, design
+ * system + font + custom-overrides layering, OCP framework types); splitting it would scatter one
+ * cohesive, well-tested code path across multiple classes without reducing the real collaborator
+ * count.
  */
 class Application extends App implements IBootstrap
 {
@@ -113,19 +121,24 @@ class Application extends App implements IBootstrap
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
      * @spec openspec/specs/custom-fonts/spec.md
+     * @spec openspec/specs/per-group-theming/spec.md
      */
     private function injectThemeCSS($serverContainer): void
     {
         // Per-app theming guard: if the app currently being rendered is in the
         // admin's exclusion list, skip ALL nldesign style injection so its pages
         // render as stock Nextcloud. Resolution failures (occ/cron, no path info)
-        // fail open to themed — theming is presentation, never security.
+        // fail open to themed — theming is presentation, never security. This
+        // check stays FIRST and orthogonal to group-mapping resolution below:
+        // exclusion decides WHETHER injection happens, group mapping decides
+        // WHICH set is injected.
         if ($this->isThemingDisabled(serverContainer: $serverContainer) === true) {
             return;
         }
 
         $config         = $serverContainer->get(\OCP\IConfig::class);
-        $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
+        $groupTheming   = $serverContainer->get(GroupThemingService::class);
+        $tokenSet       = $groupTheming->resolveTokenSetForRequest();
         $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
 
