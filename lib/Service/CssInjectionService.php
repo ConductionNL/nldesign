@@ -216,6 +216,11 @@ class CssInjectionService
         // 3. Load token values (only when a design system reads --nldesign-* vars).
         if ($designSystemId !== 'none') {
             $this->emitStyle(file: 'tokens/'.$tokenSet);
+            // 3b. Generated dark-mode variant, directly after the light layer
+            // so its media-query/attribute-scoped rules override it — only
+            // when the toggle is on AND a generated file exists for this set.
+            // A disabled toggle or a set without a variant adds nothing.
+            $this->injectDarkVariantStyle(tokenSet: $tokenSet);
             // Functional contrast fix shared by all design systems: app icons
             // that carry their white fill on <path> vanish on light surfaces
             // in the NC 34 app-management list (see css/icon-contrast.css).
@@ -314,6 +319,32 @@ class CssInjectionService
         \OCP\Util::addScript(application: Application::APP_ID, file: 'preview-banner');
         \OCP\Util::addStyle(application: Application::APP_ID, file: 'preview-banner');
     }//end emitPreviewAssets()
+
+    /**
+     * Add the generated dark-mode stylesheet, when ALL of: the `dark_variants`
+     * app config is enabled, and a generated `css/tokens/dark/{set}.css` file
+     * exists for the active set. A missing file or a disabled toggle simply
+     * adds nothing — never an error.
+     *
+     * @param string $tokenSet The active token set id.
+     *
+     * @return void
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    private function injectDarkVariantStyle(string $tokenSet): void
+    {
+        $darkVariantsEnabled = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+        if ($darkVariantsEnabled === false) {
+            return;
+        }
+
+        if ($this->designSystemService->hasGeneratedDarkVariant(tokenSetId: $tokenSet) === false) {
+            return;
+        }
+
+        $this->emitStyle(file: 'tokens/dark/'.$tokenSet);
+    }//end injectDarkVariantStyle()
 
     /**
      * Whether a render context must receive nldesign CSS.

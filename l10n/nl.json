@@ -196,7 +196,11 @@
         "Publish": "Publiceren",
         "Theme published instance-wide. Reload the page to see changes.": "Thema instantiebreed gepubliceerd. Herlaad de pagina om de wijzigingen te zien.",
         "Preview in my session": "Voorbeeld bekijken in mijn sessie",
-        "Previewing \"{name}\" in your session only.": "U bekijkt een voorbeeld van \"{name}\", alleen zichtbaar voor u."
+        "Previewing \"{name}\" in your session only.": "U bekijkt een voorbeeld van \"{name}\", alleen zichtbaar voor u.",
+        "Dark logo": "Donker logo",
+        "This token set also ships a dark-surface logo. Nextcloud core has no dark logo slot, so it is applied by nldesign's own dark-mode stylesheet, not synced to Nextcloud theming.": "Deze tokenset bevat ook een logo voor een donkere ondergrond. Nextcloud zelf heeft geen apart logo-slot voor donkere modus, dus dit logo wordt toegepast via nldesign's eigen donkeremodus-stylesheet, niet gesynchroniseerd naar Nextcloud-theming.",
+        "Enable dark mode variants for the active token set": "Donkeremodusvarianten inschakelen voor de actieve tokenset",
+        "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.": "Indien ingeschakeld volgt een gegenereerd donkeremodus-stylesheet het licht-, donker- of systeemthema dat Nextcloud al gebruikt — het wijzigt nooit uw Nextcloud-themakeuze zelf."
     },
     "plurals": {}
 }

@@ -64,6 +64,9 @@ return [
 		// Email template theming — admin toggle + compliance footer config.
 		['name' => 'settings#getEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'GET'],
 		['name' => 'settings#setEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'POST'],
+		// Dark-mode variants — instance-wide admin toggle (openspec/specs/dark-mode/spec.md).
+		['name' => 'settings#getDarkVariants', 'url' => '/settings/dark-variants', 'verb' => 'GET'],
+		['name' => 'settings#setDarkVariants', 'url' => '/settings/dark-variants', 'verb' => 'POST'],
 		// Complete configuration bundle (config-portability) — OTAP promotion
 		// download/upload, admin-only (AuthorizedAdminSetting).
 		['name' => 'configBundle#export', 'url' => '/settings/config/export', 'verb' => 'GET'],

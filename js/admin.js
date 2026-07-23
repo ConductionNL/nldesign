@@ -374,6 +374,22 @@ function nldesignAdminMain() {
 		var currentLogoUrl = currentTheming.logo_url || '';
 		var proposedLogoPath = proposed.logo ? OC.linkTo('nldesign', proposed.logo) : '';
 
+		// Dark logo row — informational only. logo_dark is never sent to
+		// Nextcloud core theming (core has a single logo slot — the open
+		// upstream request is nextcloud/server#47357); nldesign's own
+		// generated dark stylesheet applies it via --nldesign-logo-url.
+		var darkLogoRow = '';
+		if (proposed.logo_dark) {
+			var darkLogoPath = OC.linkTo('nldesign', proposed.logo_dark);
+			darkLogoRow = ''
+				+ '    <div class="nldesign-dialog-dark-logo-row">'
+				+ '      <div class="nldesign-dialog-preview-box nldesign-dialog-preview-box--dark">'
+				+ '        <img class="nldesign-dialog-preview-logo" src="' + escapeHtml(darkLogoPath) + '" alt="' + escapeHtml(t('nldesign', 'Dark logo')) + '">'
+				+ '      </div>'
+				+ '      <p class="nldesign-dialog-hint">' + escapeHtml(t('nldesign', 'This token set also ships a dark-surface logo. Nextcloud core has no dark logo slot, so it is applied by nldesign\'s own dark-mode stylesheet, not synced to Nextcloud theming.')) + '</p>'
+				+ '    </div>';
+		}
+
 		var dialogHtml = ''
 			+ '<div id="nldesign-theming-dialog-overlay" class="nldesign-dialog-overlay">'
 			+ '  <div class="nldesign-dialog">'
@@ -397,6 +413,7 @@ function nldesignAdminMain() {
 			+ '      <tbody>' + rows + '</tbody>'
 			+ '    </table>'
 			+ '    <p class="nldesign-dialog-hint">' + escapeHtml(t('nldesign', 'Only values that differ are shown. items without a proposed value are left unchanged.')) + '</p>'
+			+ darkLogoRow
 			+ '    <div class="nldesign-dialog-actions">'
 			+ '      <button class="nldesign-dialog-cancel">' + escapeHtml(t('nldesign', 'Cancel')) + '</button>'
 			+ '      <button class="nldesign-dialog-confirm">' + escapeHtml(t('nldesign', 'Update theming')) + '</button>'
@@ -608,6 +625,41 @@ function nldesignAdminMain() {
 		showMenuLabelsCheckbox.addEventListener('change', function() {
 			var showMenuLabels = this.checked;
 			saveMenuLabelsSetting(showMenuLabels);
+		});
+	}
+
+	// Handle dark mode variants checkbox — instance-wide toggle only; never
+	// touches the Nextcloud theme choice itself (openspec/specs/dark-mode/spec.md).
+	var darkVariantsCheckbox = document.getElementById('nldesign-dark-variants');
+	if (darkVariantsCheckbox) {
+		darkVariantsCheckbox.addEventListener('change', function() {
+			saveDarkVariantsSetting(this.checked);
+		});
+	}
+
+	// Save dark-mode variants toggle to server
+	function saveDarkVariantsSetting(enabled) {
+		var url = OC.generateUrl('/apps/nldesign/settings/dark-variants');
+
+		fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ enabled: enabled })
+		})
+		.then(function(response) { return response.json(); })
+		.then(function(data) {
+			if (data.status === 'ok') {
+				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
+			} else {
+				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+			}
+		})
+		.catch(function(error) {
+			console.error('Error saving dark variants setting:', error);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
 		});
 	}
 

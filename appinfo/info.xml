@@ -46,9 +46,19 @@ Gratis en open source onder de EUPL-1.2 licentie.
 
 	<commands>
 		<command>OCA\NLDesign\Command\ComplianceReport</command>
+		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
 		<command>OCA\NLDesign\Command\ConfigExport</command>
 		<command>OCA\NLDesign\Command\ConfigImport</command>
 	</commands>
+	<repair-steps>
+		<post-migration>
+			<!-- Dark-mode token variants (openspec/specs/dark-mode/spec.md):
+			     regenerate missing/stale css/tokens/dark/{id}.css on
+			     install/upgrade. Degrades to a logged warning (never fatal)
+			     when the app directory is read-only. -->
+			<step>OCA\NLDesign\Migration\GenerateDarkVariantsRepairStep</step>
+		</post-migration>
+	</repair-steps>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
 		<admin-section>theming</admin-section>
