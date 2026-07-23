@@ -1644,5 +1644,143 @@ function nldesignAdminMain() {
 
 	initAuditLog();
 
+	/* ==========================================================================
+	 * EMAIL TEMPLATE THEMING — mail_template_class toggle + compliance footer
+	 * ========================================================================== */
+
+	// Re-render the panel from a { state, footer } payload (shared by the
+	// initial GET and every subsequent POST response).
+	function renderEmailTheming(state, footer) {
+		var root = document.getElementById('nldesign-email-theming');
+		var checkbox = document.getElementById('nldesign-email-theming-enabled');
+		var occHint = document.getElementById('nldesign-email-occ-hint');
+		if (root === null || checkbox === null) {
+			return;
+		}
+
+		if (state) {
+			root.setAttribute('data-state', state.state || 'disabled');
+			root.setAttribute('data-config-read-only', state.configReadOnly ? '1' : '0');
+			root.setAttribute('data-foreign-class', state.foreignClass || '');
+			checkbox.checked = state.state === 'enabled';
+			checkbox.disabled = state.state === 'foreign';
+		}
+
+		if (footer) {
+			var orgInput = document.getElementById('nldesign-email-footer-org-name');
+			var a11yInput = document.getElementById('nldesign-email-footer-accessibility-url');
+			var privacyInput = document.getElementById('nldesign-email-footer-privacy-url');
+			if (orgInput !== null) { orgInput.value = footer.orgName || ''; }
+			if (a11yInput !== null) { a11yInput.value = footer.accessibilityUrl || ''; }
+			if (privacyInput !== null) { privacyInput.value = footer.privacyUrl || ''; }
+		}
+
+		if (occHint !== null) {
+			occHint.style.display = 'none';
+		}
+	}
+
+	function initEmailTheming() {
+		var root = document.getElementById('nldesign-email-theming');
+		var saveBtn = document.getElementById('nldesign-email-theming-save');
+		if (root === null || saveBtn === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/email-theming'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderEmailTheming(data && data.state, data && data.footer);
+		})
+		.catch(function(err) {
+			console.error('Error loading email theming:', err);
+		});
+
+		saveBtn.addEventListener('click', saveEmailTheming);
+	}
+
+	function saveEmailTheming() {
+		var checkbox = document.getElementById('nldesign-email-theming-enabled');
+		var orgInput = document.getElementById('nldesign-email-footer-org-name');
+		var a11yInput = document.getElementById('nldesign-email-footer-accessibility-url');
+		var privacyInput = document.getElementById('nldesign-email-footer-privacy-url');
+		var feedback = document.getElementById('nldesign-email-theming-feedback');
+		var occHint = document.getElementById('nldesign-email-occ-hint');
+		var foreignNote = document.querySelector('.nldesign-email-foreign-note');
+		if (checkbox === null) {
+			return;
+		}
+
+		var payload = {
+			enabled: checkbox.checked,
+			orgName: orgInput !== null ? orgInput.value : '',
+			accessibilityUrl: a11yInput !== null ? a11yInput.value : '',
+			privacyUrl: privacyInput !== null ? privacyInput.value : ''
+		};
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/email-theming'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify(payload)
+		})
+		.then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+		.then(function(result) {
+			var data = result.data;
+
+			if (result.ok === true && data && data.status === 'ok') {
+				renderEmailTheming(data.state, data.footer);
+				if (feedback !== null) {
+					feedback.textContent = t('nldesign', 'Email template settings saved.');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Email template settings saved.'));
+				return;
+			}
+
+			if (data && data.error === 'config_read_only') {
+				checkbox.checked = false;
+				renderEmailTheming(null, data.footer);
+				if (occHint !== null) {
+					occHint.style.display = '';
+					var enableCode = document.getElementById('nldesign-email-occ-enable');
+					var disableCode = document.getElementById('nldesign-email-occ-disable');
+					if (enableCode !== null && data.occEnable) { enableCode.textContent = data.occEnable; }
+					if (disableCode !== null && data.occDisable) { disableCode.textContent = data.occDisable; }
+				}
+				OC.Notification.showTemporary(t('nldesign', 'config.php is read-only; run the shown occ command manually.'));
+				return;
+			}
+
+			if (data && data.error === 'foreign_mail_template_class') {
+				checkbox.checked = false;
+				checkbox.disabled = true;
+				renderEmailTheming(null, data.footer);
+				if (foreignNote !== null) {
+					foreignNote.textContent = t('nldesign', 'A different mail template class is already configured ({class}); nldesign will not overwrite it.', { class: data.class });
+				}
+				OC.Notification.showTemporary(t('nldesign', 'A different mail template class is already configured.'));
+				return;
+			}
+
+			if (data && data.error === 'invalid_footer') {
+				OC.Notification.showTemporary(t('nldesign', 'Invalid footer URL — use an http:// or https:// address.'));
+				return;
+			}
+
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save email template settings.'));
+		})
+		.catch(function(err) {
+			console.error('Error saving email theming:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save email template settings.'));
+		});
+	}
+
+	// Initialise the email theming panel on page load.
+	initEmailTheming();
+
 }
 })();

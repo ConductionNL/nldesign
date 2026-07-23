@@ -45,5 +45,8 @@ return [
 		// #[PublicPage]/#[NoAdminRequired].
 		['name' => 'audit#list', 'url' => '/settings/audit', 'verb' => 'GET'],
 		['name' => 'audit#export', 'url' => '/settings/audit/export', 'verb' => 'GET'],
+		// Email template theming — admin toggle + compliance footer config.
+		['name' => 'settings#getEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'GET'],
+		['name' => 'settings#setEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'POST'],
 	],
 ];

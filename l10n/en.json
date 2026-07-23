@@ -106,7 +106,23 @@
         "Action": "Action",
         "Details": "Details",
         "Loading audit log…": "Loading audit log…",
-        "Download full log": "Download full log"
+        "Download full log": "Download full log",
+        "Email template": "Email template",
+        "Brand password-reset, share-notification, and other system emails with the active token set's color and logo. If nldesign is later disabled, Nextcloud automatically falls back to the stock email template — mail is never blocked by this setting.": "Brand password-reset, share-notification, and other system emails with the active token set's color and logo. If nldesign is later disabled, Nextcloud automatically falls back to the stock email template — mail is never blocked by this setting.",
+        "A different mail template class is already configured ({class}); nldesign will not overwrite it.": "A different mail template class is already configured ({class}); nldesign will not overwrite it.",
+        "Use NL Design email template": "Use NL Design email template",
+        "Organization name": "Organization name",
+        "Accessibility statement URL": "Accessibility statement URL",
+        "Privacy statement URL": "Privacy statement URL",
+        "Save email template settings": "Save email template settings",
+        "config.php is read-only. Run one of the following commands manually to enable or disable the email template:": "config.php is read-only. Run one of the following commands manually to enable or disable the email template:",
+        "Email template settings saved.": "Email template settings saved.",
+        "config.php is read-only; run the shown occ command manually.": "config.php is read-only; run the shown occ command manually.",
+        "A different mail template class is already configured.": "A different mail template class is already configured.",
+        "Invalid footer URL — use an http:// or https:// address.": "Invalid footer URL — use an http:// or https:// address.",
+        "Failed to save email template settings.": "Failed to save email template settings.",
+        "Accessibility statement": "Accessibility statement",
+        "Privacy statement": "Privacy statement"
     },
     "plurals": {}
 }

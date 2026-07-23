@@ -106,7 +106,23 @@
         "Action": "Actie",
         "Details": "Details",
         "Loading audit log…": "Auditlog laden…",
-        "Download full log": "Volledig log downloaden"
+        "Download full log": "Volledig log downloaden",
+        "Email template": "E-mailsjabloon",
+        "Brand password-reset, share-notification, and other system emails with the active token set's color and logo. If nldesign is later disabled, Nextcloud automatically falls back to the stock email template — mail is never blocked by this setting.": "Voorzie wachtwoord-reset, deelmeldingen en andere systeem-e-mails van de kleur en het logo van de actieve tokenset. Als nldesign later wordt uitgeschakeld, valt Nextcloud automatisch terug op het standaard e-mailsjabloon — e-mail wordt door deze instelling nooit geblokkeerd.",
+        "A different mail template class is already configured ({class}); nldesign will not overwrite it.": "Er is al een andere e-mailsjabloonklasse geconfigureerd ({class}); nldesign overschrijft deze niet.",
+        "Use NL Design email template": "NL Design e-mailsjabloon gebruiken",
+        "Organization name": "Organisatienaam",
+        "Accessibility statement URL": "URL toegankelijkheidsverklaring",
+        "Privacy statement URL": "URL privacyverklaring",
+        "Save email template settings": "E-mailsjabloon-instellingen opslaan",
+        "config.php is read-only. Run one of the following commands manually to enable or disable the email template:": "config.php is alleen-lezen. Voer een van de volgende commando's handmatig uit om het e-mailsjabloon in of uit te schakelen:",
+        "Email template settings saved.": "E-mailsjabloon-instellingen opgeslagen.",
+        "config.php is read-only; run the shown occ command manually.": "config.php is alleen-lezen; voer het getoonde occ-commando handmatig uit.",
+        "A different mail template class is already configured.": "Er is al een andere e-mailsjabloonklasse geconfigureerd.",
+        "Invalid footer URL — use an http:// or https:// address.": "Ongeldige URL in de voettekst — gebruik een http:// of https://-adres.",
+        "Failed to save email template settings.": "Opslaan van e-mailsjabloon-instellingen mislukt.",
+        "Accessibility statement": "Toegankelijkheidsverklaring",
+        "Privacy statement": "Privacyverklaring"
     },
     "plurals": {}
 }

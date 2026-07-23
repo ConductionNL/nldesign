@@ -127,32 +127,32 @@ class ShippedTokenSetAuditService
      * @param string               $appPath The app root path.
      * @param string               $id      The token set id.
      * @param array<string, mixed> $theming The set's theming block.
-     * @param bool                 $aaa     Whether to apply AAA thresholds (7:1 / 4.5:1).
+     * @param string               $level   The WCAG threshold profile: 'AA' (default) or 'AAA' (7:1 / 4.5:1).
      *
      * @return array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}
      *     The per-set audit result.
      *
      * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-automated-contrast-audit-over-all-shipped-token-sets
      */
-    public function auditSet(string $appPath, string $id, array $theming, bool $aaa=false): array
+    public function auditSet(string $appPath, string $id, array $theming, string $level='AA'): array
     {
         $declarations  = $this->resolveDeclarations(appPath: $appPath, id: $id, theming: $theming);
         $textThreshold = self::AA_TEXT;
         $uiThreshold   = self::AA_UI;
-        if ($aaa === true) {
+        if ($level === 'AAA') {
             $textThreshold = self::AAA_TEXT;
             $uiThreshold   = self::AAA_UI;
         }
 
         $textRatio = $this->pairRatio(
             declarations: $declarations,
-            fg: '--nldesign-color-primary-text',
-            bg: '--nldesign-color-primary'
+            foreground: '--nldesign-color-primary-text',
+            background: '--nldesign-color-primary'
         );
         $uiRatio   = $this->pairRatio(
             declarations: $declarations,
-            fg: '--nldesign-color-primary',
-            bg: '--nldesign-color-background'
+            foreground: '--nldesign-color-primary',
+            background: '--nldesign-color-background'
         );
 
         $verdict = $this->classify(
@@ -190,7 +190,7 @@ class ShippedTokenSetAuditService
                 appPath: $appPath,
                 id: $set['id'],
                 theming: ($set['theming'] ?? []),
-                aaa: $this->requiresAaa(set: $set)
+                level: $this->requiredLevel(set: $set)
             );
         }
 
@@ -282,7 +282,12 @@ class ShippedTokenSetAuditService
      */
     private function auditableSets(string $appPath): array
     {
-        $manifest = json_decode((string) @file_get_contents($appPath.'/token-sets.json'), true);
+        $manifestPath = $appPath.'/token-sets.json';
+        if (is_readable($manifestPath) === false) {
+            return [];
+        }
+
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
         if (is_array($manifest) === false) {
             return [];
         }
@@ -309,13 +314,18 @@ class ShippedTokenSetAuditService
      *
      * @param array<string, mixed> $set The set metadata.
      *
-     * @return bool True when the set is a high-contrast set.
+     * @return string 'AAA' when the set is a high-contrast set, 'AA' otherwise.
      */
-    private function requiresAaa(array $set): bool
+    private function requiredLevel(array $set): string
     {
-        return (($set['design_system'] ?? '') === 'high-contrast')
+        $isHighContrast = (($set['design_system'] ?? '') === 'high-contrast')
             || (($set['contrast_level'] ?? '') === 'AAA');
-    }//end requiresAaa()
+        if ($isHighContrast === true) {
+            return 'AAA';
+        }
+
+        return 'AA';
+    }//end requiredLevel()
 
     /**
      * Parse a CSS file into a --token => value map (empty when absent).
@@ -342,15 +352,15 @@ class ShippedTokenSetAuditService
      * Compute the WCAG ratio for one foreground/background token pair.
      *
      * @param array<string, string> $declarations The resolved declarations.
-     * @param string                $fg           The foreground token name.
-     * @param string                $bg           The background token name.
+     * @param string                $foreground   The foreground token name.
+     * @param string                $background   The background token name.
      *
      * @return float|null The ratio rounded to 2 decimals, or null when unevaluated.
      */
-    private function pairRatio(array $declarations, string $fg, string $bg): ?float
+    private function pairRatio(array $declarations, string $foreground, string $background): ?float
     {
-        $fgValue = ($declarations[$fg] ?? null);
-        $bgValue = ($declarations[$bg] ?? null);
+        $fgValue = ($declarations[$foreground] ?? null);
+        $bgValue = ($declarations[$background] ?? null);
         if ($fgValue === null || $bgValue === null) {
             return null;
         }

@@ -13,7 +13,7 @@ Defines the layered CSS architecture that transforms NL Design System tokens int
 
 ## Requirements
 
-### REQ-CSS-001: Design System Driven Stylesheet Loading
+### Requirement: Design System Driven Stylesheet Loading
 The app MUST resolve which design system a token set belongs to and load the corresponding stylesheet bundle in declared order.
 
 #### Scenario: Standard CSS load order for nldesign design system
@@ -58,7 +58,7 @@ The app MUST resolve which design system a token set belongs to and load the cor
 - THEN `hide-slogan` CSS MUST be loaded after all core and custom-override layers
 - AND if show_menu_labels is also enabled, `show-menu-labels` CSS MUST also be loaded
 
-### REQ-CSS-002: Layer 1 -- Font Declarations
+### Requirement: Layer 1 -- Font Declarations
 The fonts layer MUST declare Fira Sans @font-face rules for all required weights and styles.
 
 #### Scenario: Fira Sans font faces registered
@@ -84,7 +84,7 @@ The fonts layer MUST declare Fira Sans @font-face rules for all required weights
 - THEN it MUST comply with the SIL Open Font License 1.1
 - AND the font MUST be a suitable open-source alternative to RijksoverheidSansWebText
 
-### REQ-CSS-003: Layer 2 -- Default Token Definitions
+### Requirement: Layer 2 -- Default Token Definitions
 The defaults layer MUST define ALL `--nldesign-*` tokens on `:root` with Rijkshuisstijl-based values as the foundation for all theming.
 
 #### Scenario: Brand color tokens defined
@@ -117,7 +117,7 @@ The defaults layer MUST define ALL `--nldesign-*` tokens on `:root` with Rijkshu
 - THEN it MUST resolve to the Rijkshuisstijl default `#d52b1e` from Layer 2
 - AND no visual errors or missing styles MUST occur
 
-### REQ-CSS-004: Layer 3 -- Organization Token Overrides
+### Requirement: Layer 3 -- Organization Token Overrides
 Token set CSS files MUST override `--nldesign-*` variables on `:root` for organization-specific values.
 
 #### Scenario: Organization colors applied
@@ -146,7 +146,7 @@ Token set CSS files MUST override `--nldesign-*` variables on `:root` for organi
 - AND no element-level selectors MUST be present in token set files
 - AND this ensures clean override semantics with Layer 2
 
-### REQ-CSS-005: Layer 4 -- Utrecht Bridge Mapping
+### Requirement: Layer 4 -- Utrecht Bridge Mapping
 The Utrecht bridge MUST map `--utrecht-*` component tokens to `--nldesign-component-*` tokens with fallback to Layer 2 defaults.
 
 #### Scenario: Utrecht token present in token set
@@ -175,7 +175,7 @@ The Utrecht bridge MUST map `--utrecht-*` component tokens to `--nldesign-compon
 - THEN the bridge MUST be removable without affecting other layers
 - AND components MUST natively use `--nldesign-component-*` tokens after alignment
 
-### REQ-CSS-006: Layer 5 -- Theme Element Mapping
+### Requirement: Layer 5 -- Theme Element Mapping
 The theme layer MUST apply `--nldesign-*` tokens to Nextcloud element selectors and override Nextcloud CSS variables at high specificity.
 
 #### Scenario: Nextcloud CSS variables overridden on body
@@ -208,7 +208,7 @@ The theme layer MUST apply `--nldesign-*` tokens to Nextcloud element selectors 
 - AND the outline offset MUST be 2px
 - AND this MUST satisfy WCAG 2.1 AA SC 2.4.7 (Focus Visible)
 
-### REQ-CSS-007: Layer 6 -- Nextcloud Variable Overrides
+### Requirement: Layer 6 -- Nextcloud Variable Overrides
 The overrides layer MUST map Nextcloud `--color-*` CSS variables to `--nldesign-*` tokens on `:root`, while preserving dark mode compatibility.
 
 #### Scenario: Primary color variables mapped
@@ -237,7 +237,7 @@ The overrides layer MUST map Nextcloud `--color-*` CSS variables to `--nldesign-
 - THEN `--font-face` MUST be mapped to `var(--nldesign-font-family) !important`
 - AND the Fira Sans font from Layer 1 MUST be the resolved value
 
-### REQ-CSS-008: Layer 7 -- Element-Level Overrides
+### Requirement: Layer 7 -- Element-Level Overrides
 The element-overrides layer MUST apply NL Design styling to specific HTML elements and Nextcloud components.
 
 #### Scenario: Font family forced on all elements
@@ -267,7 +267,7 @@ The element-overrides layer MUST apply NL Design styling to specific HTML elemen
 - AND the LaunchPad container MUST have transparent background
 - AND these exclusions MUST prevent breaking app-specific layouts
 
-### REQ-CSS-009: Custom Overrides Layer (Layer 8)
+### Requirement: Custom Overrides Layer (Layer 8)
 An 8th layer MUST load admin-defined CSS overrides that always win over all design system and token layers.
 
 #### Scenario: Custom overrides file loaded
@@ -289,7 +289,7 @@ An 8th layer MUST load admin-defined CSS overrides that always win over all desi
 - THEN the file MUST contain valid CSS (possibly just a comment)
 - AND it MUST not affect any styling
 
-### REQ-CSS-010: WCAG AA Contrast Requirements
+### Requirement: WCAG AA Contrast Requirements
 All color token combinations used for text-on-background MUST meet WCAG 2.1 AA minimum contrast ratios.
 
 #### Scenario: Primary text on primary background
@@ -313,7 +313,7 @@ All color token combinations used for text-on-background MUST meet WCAG 2.1 AA m
 - WHEN a focus outline appears on any background
 - THEN the outline MUST have at least 3:1 contrast against the adjacent background
 
-### REQ-CSS-011: Design System Resolution
+### Requirement: Design System Resolution
 The app MUST support multiple design systems and resolve the correct one for each token set.
 
 #### Scenario: Design system resolved from token set metadata
@@ -334,7 +334,7 @@ The app MUST support multiple design systems and resolve the correct one for eac
 - WHEN the second call is made
 - THEN the cached result MUST be returned without re-reading `design-systems.json`
 
-### REQ-CSS-012: CSS Files in Systems Directory Structure
+### Requirement: CSS Files in Systems Directory Structure
 Design system CSS files MUST be organized in a `css/systems/{designSystemId}/` directory structure.
 
 #### Scenario: NL Design system files in correct directory

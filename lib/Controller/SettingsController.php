@@ -34,6 +34,10 @@ namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\AppThemingService;
+use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
+use OCA\NLDesign\Service\Exception\FooterValidationException;
+use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
@@ -110,16 +114,24 @@ class SettingsController extends Controller
     private ThemingAuditService $auditService;
 
     /**
+     * The email theming service.
+     *
+     * @var EmailThemingService
+     */
+    private EmailThemingService $emailThemingService;
+
+    /**
      * Constructor.
      *
-     * @param string                 $appName           The app name.
-     * @param IRequest               $request           The request object.
-     * @param IConfig                $config            The config service.
-     * @param TokenSetService        $tokenSetService   The token set service.
-     * @param ThemingService         $themingService    The theming service.
-     * @param TokenSetPreviewService $previewService    The token set preview service.
-     * @param AppThemingService      $appThemingService The per-app theming service.
-     * @param ThemingAuditService    $auditService      The theming audit trail service.
+     * @param string                 $appName             The app name.
+     * @param IRequest               $request             The request object.
+     * @param IConfig                $config              The config service.
+     * @param TokenSetService        $tokenSetService     The token set service.
+     * @param ThemingService         $themingService      The theming service.
+     * @param TokenSetPreviewService $previewService      The token set preview service.
+     * @param AppThemingService      $appThemingService   The per-app theming service.
+     * @param ThemingAuditService    $auditService        The theming audit trail service.
+     * @param EmailThemingService    $emailThemingService The email theming service.
      */
     public function __construct(
         string $appName,
@@ -129,7 +141,8 @@ class SettingsController extends Controller
         ThemingService $themingService,
         TokenSetPreviewService $previewService,
         AppThemingService $appThemingService,
-        ThemingAuditService $auditService
+        ThemingAuditService $auditService,
+        EmailThemingService $emailThemingService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->config            = $config;
@@ -138,6 +151,7 @@ class SettingsController extends Controller
         $this->previewService    = $previewService;
         $this->appThemingService = $appThemingService;
         $this->auditService      = $auditService;
+        $this->emailThemingService = $emailThemingService;
     }//end __construct()
 
     /**
@@ -435,4 +449,99 @@ class SettingsController extends Controller
             ]
         );
     }//end setAppTheming()
+
+    /**
+     * Get the email template toggle state and compliance footer config.
+     *
+     * @return JSONResponse The state, footer config, and manual occ commands.
+     *
+     * @spec openspec/specs/email-theming/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getEmailTheming(): JSONResponse
+    {
+        return new JSONResponse(
+            [
+                'state'      => $this->emailThemingService->getState(),
+                'footer'     => $this->emailThemingService->getFooterConfig(),
+                'occEnable'  => EmailThemingService::OCC_ENABLE_COMMAND,
+                'occDisable' => EmailThemingService::OCC_DISABLE_COMMAND,
+            ]
+        );
+    }//end getEmailTheming()
+
+    /**
+     * Save the compliance footer config and toggle the email template.
+     *
+     * The footer config is always applied first (app config, always
+     * writable) and independently reported, so it saves successfully even
+     * when the system-config toggle write fails (read-only config.php or a
+     * foreign `mail_template_class`).
+     *
+     * @param bool   $enabled          Whether the branded template should be enabled.
+     * @param string $orgName          The organization name.
+     * @param string $accessibilityUrl The toegankelijkheidsverklaring URL.
+     * @param string $privacyUrl       The privacy statement URL.
+     *
+     * @return JSONResponse The result, or a structured 409/422 error.
+     *
+     * @spec openspec/specs/email-theming/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setEmailTheming(
+        bool $enabled,
+        string $orgName='',
+        string $accessibilityUrl='',
+        string $privacyUrl=''
+    ): JSONResponse {
+        try {
+            $this->emailThemingService->setFooterConfig($orgName, $accessibilityUrl, $privacyUrl);
+        } catch (FooterValidationException $e) {
+            return new JSONResponse(
+                [
+                    'error'   => 'invalid_footer',
+                    'field'   => $e->getField(),
+                    'message' => $e->getMessage(),
+                ],
+                422
+            );
+        }
+
+        try {
+            if ($enabled === true) {
+                $this->emailThemingService->enable();
+            }
+
+            if ($enabled === false) {
+                $this->emailThemingService->disable();
+            }
+        } catch (ConfigReadOnlyException $e) {
+            return new JSONResponse(
+                [
+                    'error'      => 'config_read_only',
+                    'occEnable'  => $e->getOccEnableCommand(),
+                    'occDisable' => $e->getOccDisableCommand(),
+                    'footer'     => $this->emailThemingService->getFooterConfig(),
+                ],
+                409
+            );
+        } catch (ForeignMailTemplateClassException $e) {
+            return new JSONResponse(
+                [
+                    'error'  => 'foreign_mail_template_class',
+                    'class'  => $e->getForeignClass(),
+                    'footer' => $this->emailThemingService->getFooterConfig(),
+                ],
+                409
+            );
+        }//end try
+
+        return new JSONResponse(
+            [
+                'status' => 'ok',
+                'state'  => $this->emailThemingService->getState(),
+                'footer' => $this->emailThemingService->getFooterConfig(),
+            ]
+        );
+    }//end setEmailTheming()
 }//end class

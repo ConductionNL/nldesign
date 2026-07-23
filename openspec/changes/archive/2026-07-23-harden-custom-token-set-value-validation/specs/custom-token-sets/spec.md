@@ -5,7 +5,7 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Custom Token Set Value Whitelist
+### Requirement: CSS Validation Whitelist
 
 The server MUST reject, as a hard upload failure, any accepted declaration (`--nldesign-*` or
 `--{slug}-*` name) whose value contains a semicolon (`;`) or a CSS comment marker (`/*` or `*/`),

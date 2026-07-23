@@ -88,6 +88,13 @@
                 <!-- Nextcloud Theming app peer-app classes (theming app is always enabled in NC) -->
                 <referencedClass name="OCA\Theming\ImageManager"/>
                 <referencedClass name="OCA\Theming\ThemingDefaults"/>
+                <!-- Server-internal (private-namespace) mail classes. Extending
+                     OC\Mail\EMailTemplate is the platform's own sanctioned
+                     mail_template_class hook (OC\Mail\Mailer::makeTemplate()) —
+                     not stubbed in nextcloud/ocp because OC\ is intentionally
+                     private API, mirroring the OCA\Theming precedent above. -->
+                <referencedClass name="OC\Mail\EMailTemplate"/>
+                <referencedClass name="OC\Mail\Mailer"/>
                 <!-- NLDesign own Settings class (loaded at runtime, not in Psalm analysis path) -->
                 <referencedClass name="OCA\NLDesign\Settings\Admin"/>
                 <!-- GuzzleHttp (loaded via composer at runtime) -->

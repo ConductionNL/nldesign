@@ -78,8 +78,7 @@ class MetricsController extends Controller
      * @NoCSRFRequired
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-4
-     * @spec openspec/changes/metrics-endpoint-admin-auth/tasks.md#task-1
-     * @spec openspec/specs/prometheus-metrics/spec.md#requirement-audit-entries-counter-metric
+     * @spec openspec/specs/prometheus-metrics/spec.md
      */
     public function index(): TextPlainResponse
     {
