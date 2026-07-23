@@ -37,5 +37,16 @@
 			"systems/high-contrast/theme",
 			"systems/high-contrast/element-overrides"
 		]
+	},
+	{
+		"id": "lasuite",
+		"name": "La Suite numérique",
+		"description": "Pixel-adjacent match to La Suite numérique's Cunningham design system (MIT) — the Docs/Meet/Chat suite behind MinBZK/mijn-bureau — so a Nextcloud core in a sovereign-workplace (EDIC) bundle shows no visual seam. Self-hosted Inter (SIL OFL 1.1) with Marianne resolved only via local() install; no Marianne files, no La Suite/state logos shipped.",
+		"stylesheets": [
+			"systems/lasuite/fonts",
+			"systems/lasuite/defaults",
+			"systems/lasuite/bridge",
+			"systems/lasuite/element-overrides"
+		]
 	}
 ]

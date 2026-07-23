@@ -21,14 +21,17 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\AppInfo;
 
+use OCA\NLDesign\Capabilities;
 use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
+use OCA\NLDesign\Service\FontService;
 use OCA\NLDesign\Themes\NLDesignTheme;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\IURLGenerator;
 
 /**
  * Main application class for NL Design.
@@ -53,29 +56,33 @@ class Application extends App implements IBootstrap
     /**
      * Register services and providers.
      *
-     * No bootstrap-time service registration is required: the `/api/health`
-     * endpoint is served by the thin `Controller\HealthController` subclass of
-     * the OpenRegister AppHost engine's GenericHealthController (ADR-040). The
-     * subclass is autoloaded only when the route is dispatched, never at
-     * bootstrap, so OpenRegister is a SOFT/optional dependency for health only
-     * — Nextcloud still boots and nldesign still themes when OpenRegister is
-     * absent (a request to /api/health would then degrade rather than fatal
-     * the app). The declarative checks live in `src/manifest.json` and use only
-     * the OR-independent primitives (database, filesystem, appEnabled) — never
-     * orAvailable, and no OR-object metrics.
+     * No bootstrap-time service registration is required for health: the
+     * `/api/health` endpoint is served by the thin `Controller\HealthController`
+     * subclass of the OpenRegister AppHost engine's GenericHealthController
+     * (ADR-040). The subclass is autoloaded only when the route is dispatched,
+     * never at bootstrap, so OpenRegister is a SOFT/optional dependency for
+     * health only — Nextcloud still boots and nldesign still themes when
+     * OpenRegister is absent (a request to /api/health would then degrade
+     * rather than fatal the app). The declarative checks live in
+     * `src/manifest.json` and use only the OR-independent primitives
+     * (database, filesystem, appEnabled) — never orAvailable, and no OR-object
+     * metrics. The `Capabilities` class IS registered here — it is the app's
+     * first real `register()`-time registration — so the huisstijl is exposed
+     * on every capabilities document without any request-time cost.
      *
      * @param IRegistrationContext $context The registration context.
      *
      * @return void
      *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
-     *
      * @spec openspec/changes/adopt-apphost-2026-06-16/tasks.md#task-2
+     * @spec openspec/specs/theming-capability/spec.md
      */
     public function register(IRegistrationContext $context): void
     {
         // Health endpoint served by the thin Controller\HealthController
         // subclass of the AppHost engine — no explicit registration needed.
+        // Public huisstijl capability — see lib/Capabilities.php.
+        $context->registerCapability(Capabilities::class);
     }//end register()
 
     /**
@@ -105,6 +112,7 @@ class Application extends App implements IBootstrap
      * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
+     * @spec openspec/specs/custom-fonts/spec.md
      */
     private function injectThemeCSS($serverContainer): void
     {
@@ -151,6 +159,27 @@ class Application extends App implements IBootstrap
         $customOverridesSvc = $serverContainer->get(CustomOverridesService::class);
         $customOverridesSvc->ensureExists();
         \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
+
+        // 4.5 Custom fonts — admin-uploaded, self-hosted webfonts. Injected as
+        // a <link rel="stylesheet"> (not \OCP\Util::addStyle(), because the
+        // CSS is generated dynamically by FontController::css(), not a static
+        // file under css/) AFTER the token-set styles so the font tokens win
+        // the cascade, and only when at least one font is configured, so a
+        // themed instance with zero uploaded fonts issues no extra request.
+        if ($designSystemId !== 'none') {
+            $fontService = $serverContainer->get(FontService::class);
+            if ($fontService->hasFonts() === true) {
+                $urlGenerator = $serverContainer->get(IURLGenerator::class);
+                $cssUrl       = $urlGenerator->linkToRoute('nldesign.font.css').'?v='.$fontService->getRevision();
+                \OCP\Util::addHeader(
+                    tag: 'link',
+                    attributes: [
+                        'rel'  => 'stylesheet',
+                        'href' => $cssUrl,
+                    ]
+                );
+            }
+        }
 
         // 5. Conditional stylesheets.
         if ($hideSlogan === true) {

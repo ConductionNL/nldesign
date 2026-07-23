@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
@@ -64,17 +65,30 @@ class Admin implements IDelegatedSettings
     private TokenSetService $tokenSetService;
 
     /**
+     * The email theming service.
+     *
+     * @var EmailThemingService
+     */
+    private EmailThemingService $emailThemingService;
+
+    /**
      * Constructor.
      *
-     * @param IConfig         $config          The config service.
-     * @param IL10N           $l               The localization service.
-     * @param TokenSetService $tokenSetService The token set service.
+     * @param IConfig             $config              The config service.
+     * @param IL10N               $l                   The localization service.
+     * @param TokenSetService     $tokenSetService     The token set service.
+     * @param EmailThemingService $emailThemingService The email theming service.
      */
-    public function __construct(IConfig $config, IL10N $l, TokenSetService $tokenSetService)
-    {
+    public function __construct(
+        IConfig $config,
+        IL10N $l,
+        TokenSetService $tokenSetService,
+        EmailThemingService $emailThemingService
+    ) {
         $this->config = $config;
         $this->l      = $l;
-        $this->tokenSetService = $tokenSetService;
+        $this->tokenSetService     = $tokenSetService;
+        $this->emailThemingService = $emailThemingService;
     }//end __construct()
 
     /**
@@ -106,14 +120,21 @@ class Admin implements IDelegatedSettings
             '0'
         ) === '1';
 
+        $emailThemingState = $this->emailThemingService->getState();
+        $emailFooterConfig = $this->emailThemingService->getFooterConfig();
+
         return new TemplateResponse(
             Application::APP_ID,
                 'settings/admin',
                 [
-                    'tokenSets'       => $tokenSets,
-                    'currentTokenSet' => $currentTokenSet,
-                    'hideSlogan'      => $hideSlogan,
-                    'showMenuLabels'  => $showMenuLabels,
+                    'tokenSets'         => $tokenSets,
+                    'currentTokenSet'   => $currentTokenSet,
+                    'hideSlogan'        => $hideSlogan,
+                    'showMenuLabels'    => $showMenuLabels,
+                    'emailThemingState' => $emailThemingState,
+                    'emailFooterConfig' => $emailFooterConfig,
+                    'occEnableCommand'  => EmailThemingService::OCC_ENABLE_COMMAND,
+                    'occDisableCommand' => EmailThemingService::OCC_DISABLE_COMMAND,
                 ]
         );
     }//end getForm()
@@ -182,6 +203,9 @@ class Admin implements IDelegatedSettings
                 // written through this delegated-admin surface.
                 '/upstream_freshness_enabled/',
                 '/upstream_freshness_dismissed/',
+                '/email_footer_org_name/',
+                '/email_footer_accessibility_url/',
+                '/email_footer_privacy_url/',
             ],
         ];
     }//end getAuthorizedAppConfig()

@@ -115,10 +115,41 @@
 		return names[dsId] || dsId
 	}
 
+	/**
+	 * Group a flat list of DTCG import diagnostics (`{path, reason, detail?}`,
+	 * the shape a custom-token-set upload response's `skipped`/`errors` arrays
+	 * carry) by `reason`, sorted alphabetically by reason so rendering is
+	 * stable. Framework-free and i18n-free — the caller (admin.js) turns each
+	 * `reason` code into a localised label; this only groups.
+	 *
+	 * @param {Array<{path: string, reason: string, detail?: string}>} entries Diagnostic entries.
+	 * @return {Array<{reason: string, items: Array<{path: string, reason: string, detail?: string}>}>}
+	 *   One group per distinct reason, alphabetically ordered.
+	 */
+	function groupDiagnosticsByReason(entries) {
+		if (!Array.isArray(entries) || entries.length === 0) {
+			return []
+		}
+
+		var byReason = {}
+		entries.forEach(function(entry) {
+			var reason = (entry && entry.reason) || 'unknown'
+			if (byReason[reason] === undefined) {
+				byReason[reason] = []
+			}
+			byReason[reason].push(entry)
+		})
+
+		return Object.keys(byReason).sort().map(function(reason) {
+			return { reason: reason, items: byReason[reason] }
+		})
+	}
+
 	return {
 		darkenHex: darkenHex,
 		getPreviewColors: getPreviewColors,
 		normaliseColorForPicker: normaliseColorForPicker,
 		designSystemLabel: designSystemLabel,
+		groupDiagnosticsByReason: groupDiagnosticsByReason,
 	}
 }))

@@ -13,7 +13,7 @@ Defines how the NL Design app discovers, validates, stores, and serves design to
 
 ## Requirements
 
-### REQ-TSET-001: Filesystem-Based Discovery
+### Requirement: Filesystem-Based Discovery
 The app MUST discover available token sets by scanning the `css/tokens/` directory for CSS files and merging metadata from `token-sets.json` for shipped sets and from the `custom_token_sets` appconfig manifest for uploaded sets (files matching `custom-*.css`).
 
 #### Scenario: Token sets discovered from filesystem
@@ -69,7 +69,7 @@ The app MUST discover available token sets by scanning the `css/tokens/` directo
 - WHEN the list is returned
 - THEN the token sets MUST be sorted alphabetically by `name` (case-insensitive via `strcasecmp`) across both groups
 
-### REQ-TSET-002: Token Set Manifest Structure
+### Requirement: Token Set Manifest Structure
 The `token-sets.json` manifest MUST follow a defined schema for each entry.
 
 #### Scenario: Manifest entry with full metadata
@@ -106,7 +106,7 @@ The `token-sets.json` manifest MUST follow a defined schema for each entry.
 - THEN entries MUST be indexed by their `id` field
 - AND entries without an `id` field MUST be skipped
 
-### REQ-TSET-003: Active Token Set Storage
+### Requirement: Active Token Set Storage
 The active token set MUST be stored in Nextcloud's `IConfig` and default to `nextcloud`.
 
 #### Scenario: No token set configured (fresh install)
@@ -131,7 +131,7 @@ The active token set MUST be stored in Nextcloud's `IConfig` and default to `nex
 - THEN `$config->getAppValue('nldesign', 'token_set', 'nextcloud')` MUST return `'amsterdam'`
 - AND `tokens/amsterdam` MUST be loaded as Layer 3 in the CSS stack
 
-### REQ-TSET-004: Token Set Validation
+### Requirement: Token Set Validation
 The app MUST validate that a token set is valid (exists on filesystem, no path traversal) before accepting it as the active set.
 
 #### Scenario: Valid token set selected
@@ -165,7 +165,7 @@ The app MUST validate that a token set is valid (exists on filesystem, no path t
 - THEN it MUST construct the path `{appPath}/css/tokens/{tokenSetId}.css`
 - AND it MUST verify the file exists via `file_exists()`
 
-### REQ-TSET-005: Token Set CSS Structure
+### Requirement: Token Set CSS Structure
 Each token set CSS file MUST define organization-specific `--nldesign-*` variables on `:root`.
 
 #### Scenario: Complete token set
@@ -200,7 +200,7 @@ Each token set CSS file MUST define organization-specific `--nldesign-*` variabl
 - THEN the contrast ratio MUST be at least 4.5:1 for normal text
 - AND token set authors MUST ensure their color combinations meet WCAG AA
 
-### REQ-TSET-006: Token Sets API Endpoints
+### Requirement: Token Sets API Endpoints
 The app MUST expose admin-only API endpoints for listing, getting, and setting token sets.
 
 #### Scenario: List all available token sets
@@ -234,7 +234,7 @@ The app MUST expose admin-only API endpoints for listing, getting, and setting t
 - WHEN any `/settings/tokenset` or `/settings/tokensets` endpoint is called
 - THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
 
-### REQ-TSET-007: Token Set Count and Coverage
+### Requirement: Token Set Count and Coverage
 The app MUST support at minimum the documented set of Dutch government organizations as token sets.
 
 #### Scenario: All required token sets present
@@ -254,7 +254,7 @@ The app MUST support at minimum the documented set of Dutch government organizat
 - THEN they MUST include: amsterdam, rotterdam, denhaag, utrecht, groningen, nijmegen, leiden, tilburg, zwolle, haarlem
 - AND they MUST include government organizations: rijkshuisstijl, duo, vng
 
-### REQ-TSET-008: Design System Association
+### Requirement: Design System Association
 Each token set MUST be associated with a design system that determines which CSS layers are loaded.
 
 #### Scenario: Token set with nldesign design system
@@ -276,7 +276,7 @@ Each token set MUST be associated with a design system that determines which CSS
 - THEN `design_system` MUST default to `"nldesign"`
 - AND the full nldesign CSS stack MUST be loaded when this set is activated
 
-### REQ-TSET-009: Token Set Preview
+### Requirement: Token Set Preview
 The app MUST provide an endpoint for previewing the resolved CSS values of a token set without applying it.
 
 #### Scenario: Valid token set preview
@@ -299,7 +299,7 @@ The app MUST provide an endpoint for previewing the resolved CSS values of a tok
 - AND it MUST compare these against the current custom overrides
 - AND it MUST display the differences for the admin to review
 
-### REQ-TSET-010: Token Set Service Architecture
+### Requirement: Token Set Service Architecture
 The `TokenSetService` MUST be a clean service class with `IAppManager` as its only dependency.
 
 #### Scenario: Constructor dependency
@@ -320,7 +320,7 @@ The `TokenSetService` MUST be a clean service class with `IAppManager` as its on
 - AND `SettingsController::setTokenSet()` also creates a new instance
 - AND the `SettingsController` also receives an injected instance via constructor for `getAvailableTokenSets()`
 
-### REQ-TSET-011: Route Configuration
+### Requirement: Route Configuration
 Token set management endpoints MUST be registered in the route configuration.
 
 #### Scenario: List token sets route

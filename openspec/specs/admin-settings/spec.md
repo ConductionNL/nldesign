@@ -11,7 +11,7 @@ Defines the admin settings panel for the NL Design app. The settings panel is lo
 
 ## Requirements
 
-### REQ-ASET-001: Settings Panel Registration
+### Requirement: Settings Panel Registration
 The admin settings panel MUST be registered in the Nextcloud Theming section with a defined priority.
 
 #### Scenario: Settings panel appears in admin area
@@ -34,7 +34,7 @@ The admin settings panel MUST be registered in the Nextcloud Theming section wit
 - THEN the "NL Design System Theme" section MUST NOT appear
 - AND no nldesign CSS MUST be injected into the page
 
-### REQ-ASET-002: Template Response and Parameters
+### Requirement: Template Response and Parameters
 The settings form MUST return a `TemplateResponse` with all required parameters for the admin template.
 @e2e exclude PHP controller internals (TemplateResponse parameters, default config values) — not testable via browser UI; covered by unit tests.
 
@@ -60,7 +60,7 @@ The settings form MUST return a `TemplateResponse` with all required parameters 
 - AND `hideSlogan` MUST be `false`
 - AND `showMenuLabels` MUST be `false`
 
-### REQ-ASET-003: Token Set Selector Dropdown
+### Requirement: Token Set Selector Dropdown
 The settings panel MUST provide a searchable dropdown for selecting the active design token set from all available sets.
 
 #### Scenario: Dropdown populated with token sets
@@ -100,7 +100,7 @@ The settings panel MUST provide a searchable dropdown for selecting the active d
 - WHEN the dropdown change event fires
 - THEN the `#nldesign-design-system-badge` element MUST update to show the design system name
 
-### REQ-ASET-004: Live Preview Box
+### Requirement: Live Preview Box
 The settings panel MUST include a preview box that shows the visual effect of the selected token set.
 
 #### Scenario: Preview box renders with token set colors
@@ -124,7 +124,7 @@ The settings panel MUST include a preview box that shows the visual effect of th
 - WHEN the preview renders
 - THEN it MUST fall back to Rijkshuisstijl default colors (#154273 primary, #ffffff text)
 
-### REQ-ASET-005: Hide Slogan Checkbox
+### Requirement: Hide Slogan Checkbox
 The settings panel MUST include a checkbox to toggle the hide slogan feature.
 
 #### Scenario: Checkbox reflects enabled state
@@ -152,7 +152,7 @@ The settings panel MUST include a checkbox to toggle the hide slogan feature.
 - THEN JavaScript MUST call `POST /apps/nldesign/settings/slogan` with `hideSlogan` as a boolean
 - AND the response MUST be checked for success before confirming the change
 
-### REQ-ASET-006: Show Menu Labels Checkbox
+### Requirement: Show Menu Labels Checkbox
 The settings panel MUST include a checkbox to toggle the show menu labels feature.
 
 #### Scenario: Checkbox reflects enabled state
@@ -177,7 +177,7 @@ The settings panel MUST include a checkbox to toggle the show menu labels featur
 - WHEN the change event fires
 - THEN JavaScript MUST call `POST /apps/nldesign/settings/menulabels` with `showMenuLabels` as a boolean
 
-### REQ-ASET-007: External Documentation Links
+### Requirement: External Documentation Links
 The settings panel MUST include external links to relevant documentation with proper security attributes.
 
 #### Scenario: Documentation link rendered
@@ -202,7 +202,7 @@ The settings panel MUST include external links to relevant documentation with pr
 - THEN `rel="noopener noreferrer"` MUST prevent the opened page from accessing `window.opener`
 - AND `target="_blank"` MUST open in a new tab/window
 
-### REQ-ASET-008: Vanilla Implementation (No Vue)
+### Requirement: Vanilla Implementation (No Vue)
 The admin settings MUST be implemented using vanilla PHP templates and vanilla JavaScript without Vue, webpack, or any frontend build step.
 @e2e exclude Implementation-architecture requirement (template type, build tooling) — verified by code inspection and the fact that the admin page loads correctly; not testable via browser UI.
 
@@ -227,7 +227,7 @@ The admin settings MUST be implemented using vanilla PHP templates and vanilla J
 - THEN the changes MUST take effect immediately without running any build command
 - AND no `node_modules/`, `package.json`, or webpack config MUST be required for the admin UI
 
-### REQ-ASET-009: Admin-Only Access Control
+### Requirement: Admin-Only Access Control
 All settings endpoints and the settings panel MUST be restricted to administrators.
 
 #### Scenario: Settings panel restricted to admin
@@ -249,7 +249,7 @@ All settings endpoints and the settings panel MUST be restricted to administrato
 - THEN the request MUST be processed normally
 - AND the response MUST include the expected data
 
-### REQ-ASET-010: Token Editor Panel Integration
+### Requirement: Token Editor Panel Integration
 The settings panel MUST include a mount point for the token editor that allows customizing individual Nextcloud CSS tokens.
 
 #### Scenario: Token editor mount point rendered
@@ -273,7 +273,7 @@ The settings panel MUST include a mount point for the token editor that allows c
 - THEN it MUST call `POST /apps/nldesign/settings/overrides` with the updated overrides map
 - AND the response MUST confirm success before applying changes
 
-### REQ-ASET-011: Settings Hint Text
+### Requirement: Settings Hint Text
 The settings panel MUST include instructional text explaining the purpose of the controls.
 
 #### Scenario: Settings hint rendered
@@ -295,7 +295,7 @@ The settings panel MUST include instructional text explaining the purpose of the
 - THEN they MUST understand that they can either select a preset token set OR customize individual tokens
 - AND the two-action guidance prevents confusion about the panel's dual purpose
 
-### REQ-ASET-012: Data Attributes for JavaScript Initialization
+### Requirement: Data Attributes for JavaScript Initialization
 The settings panel MUST pass configuration data to JavaScript via HTML data attributes.
 
 #### Scenario: Token sets data attribute
@@ -318,7 +318,7 @@ The settings panel MUST pass configuration data to JavaScript via HTML data attr
 - AND it MUST read the current token set from `data-current-token-set`
 - AND these values MUST drive the initial state of the dropdown and preview
 
-### REQ-ASET-013: Localization Support
+### Requirement: Localization Support
 All user-visible text in the settings panel MUST be localizable via Nextcloud's l10n system.
 @e2e exclude l10n system verification — requires Dutch-language session and translation file inspection; not testable via browser UI in English-only test environment.
 

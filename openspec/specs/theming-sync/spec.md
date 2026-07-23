@@ -13,7 +13,7 @@ Defines how the NL Design app synchronizes design token values with Nextcloud's 
 
 ## Requirements
 
-### REQ-SYNC-001: Theming Metadata in Token Sets
+### Requirement: Theming Metadata in Token Sets
 The system MUST support an optional `theming` object in a token set manifest that defines values suitable for synchronization with Nextcloud's built-in theming system.
 
 #### Scenario: Token set with full theming metadata
@@ -48,7 +48,7 @@ The system MUST support an optional `theming` object in a token set manifest tha
 - THEN only the `primary_color` MUST be available for syncing
 - AND missing fields MUST NOT cause errors
 
-### REQ-SYNC-002: Get Current Theming Values
+### Requirement: Get Current Theming Values
 The app MUST provide an API endpoint to retrieve current Nextcloud theming values for comparison with token set metadata.
 
 #### Scenario: Retrieve theming values
@@ -78,7 +78,7 @@ The app MUST provide an API endpoint to retrieve current Nextcloud theming value
 - THEN `buildThemingSnapshot()` MUST read `primary_color` and `background_color` from `IConfig::getAppValue('theming', ...)`
 - AND it MUST read logo and background image state from `ThemingService::getImageManager()`
 
-### REQ-SYNC-003: Color Validation
+### Requirement: Color Validation
 All color values submitted to the theming sync API MUST be validated as valid hex color strings before being applied.
 
 #### Scenario: Valid 6-digit hex color accepted
@@ -110,7 +110,7 @@ All color values submitted to the theming sync API MUST be validated as valid he
 - AND the hex regex MUST be `/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/`
 - AND validation MUST iterate over both fields, returning the first error found
 
-### REQ-SYNC-004: Image Path Validation
+### Requirement: Image Path Validation
 All image paths submitted to the theming sync API MUST be validated against path traversal attacks, allowed directories, and file existence.
 
 #### Scenario: Valid logo path accepted
@@ -149,7 +149,7 @@ All image paths submitted to the theming sync API MUST be validated against path
 - AND paths MUST start with either `img/logos/` or `img/backgrounds/`
 - AND validation MUST return the first error found
 
-### REQ-SYNC-005: Apply Colors to Nextcloud Theming
+### Requirement: Apply Colors to Nextcloud Theming
 The app MUST apply validated color values to Nextcloud's `ThemingDefaults` service.
 
 #### Scenario: Primary color applied
@@ -176,7 +176,7 @@ The app MUST apply validated color values to Nextcloud's `ThemingDefaults` servi
 - THEN `ThemingDefaults::set()` MUST NOT be called for `primary_color`
 - AND `"primary_color"` MUST NOT appear in the updated list
 
-### REQ-SYNC-006: Apply Images to Nextcloud Theming
+### Requirement: Apply Images to Nextcloud Theming
 The app MUST apply validated image paths to Nextcloud's `ImageManager` service using full filesystem paths.
 
 #### Scenario: Logo image applied
@@ -204,7 +204,7 @@ The app MUST apply validated image paths to Nextcloud's `ImageManager` service u
 - THEN `IAppManager::getAppPath('nldesign')` MUST be used to resolve the base directory
 - AND the relative path MUST be appended to get the full filesystem path
 
-### REQ-SYNC-007: Update Theming API Endpoint
+### Requirement: Update Theming API Endpoint
 The app MUST provide an admin-only API endpoint that validates and applies theming changes in a defined order.
 
 #### Scenario: Successful theming update
@@ -243,7 +243,7 @@ The app MUST provide an admin-only API endpoint that validates and applies themi
 - THEN validation MUST pass (no fields to validate)
 - AND the response MUST be `{"status": "ok", "updated": []}`
 
-### REQ-SYNC-008: Theming Dependencies
+### Requirement: Theming Dependencies
 The theming sync feature MUST depend on the Nextcloud `theming` app for `ThemingDefaults` and `ImageManager`, injected via constructor.
 
 #### Scenario: ThemingService dependencies injected
@@ -264,7 +264,7 @@ The theming sync feature MUST depend on the Nextcloud `theming` app for `Theming
 - THEN Nextcloud's DI container MUST handle the missing dependency
 - AND the nldesign app SHOULD declare `theming` as a dependency in `info.xml`
 
-### REQ-SYNC-009: Validation Order
+### Requirement: Validation Order
 The theming sync endpoint MUST validate all inputs before applying any changes, ensuring atomicity of the validation phase.
 
 #### Scenario: Colors validated before images
@@ -287,7 +287,7 @@ The theming sync endpoint MUST validate all inputs before applying any changes, 
 - THEN `$this->request->getParams()` MUST be used to get all parameters
 - AND these params MUST be passed to both validation and apply methods
 
-### REQ-SYNC-010: Theming Sync Dialog (Frontend)
+### Requirement: Theming Sync Dialog (Frontend)
 The admin JavaScript MUST show a confirmation dialog when switching to a token set that has theming metadata, allowing the admin to review and approve theming changes.
 
 #### Scenario: Dialog shown for token set with theming metadata
@@ -321,7 +321,7 @@ The admin JavaScript MUST show a confirmation dialog when switching to a token s
 - AND no theming changes MUST be applied
 - AND the token set selection MUST still take effect (CSS tokens change, but Nextcloud core theming remains unchanged)
 
-### REQ-SYNC-011: Route Configuration
+### Requirement: Route Configuration
 The theming sync endpoints MUST be registered in the app's route configuration.
 
 #### Scenario: GET theming route
