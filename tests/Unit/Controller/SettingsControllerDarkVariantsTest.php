@@ -17,6 +17,7 @@ use OCA\NLDesign\Controller\SettingsController;
 use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\ComplianceReportService;
 use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\GroupThemingService;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
@@ -75,7 +76,8 @@ class SettingsControllerDarkVariantsTest extends TestCase
             $this->createMock(ComplianceReportService::class),
             $this->createMock(ThemingAuditService::class),
             $this->createMock(EmailThemingService::class),
-            $this->createMock(UpstreamFreshnessService::class)
+            $this->createMock(UpstreamFreshnessService::class),
+            $this->createMock(GroupThemingService::class)
         );
     }//end makeController()
 
