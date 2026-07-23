@@ -32,6 +32,29 @@ use Psr\Log\LoggerInterface;
  * metadata from token-sets.json (shipped sets) and the custom_token_sets
  * appconfig manifest (admin-uploaded custom-* sets).
  *
+ * @phpstan-type TokenSetEntry array{
+ *     id: string,
+ *     name: string,
+ *     description: string,
+ *     design_system: string,
+ *     theming?: array<string, mixed>,
+ *     custom?: bool,
+ *     warnings?: array<int, array<string, mixed>>,
+ *     upstreamVersion?: string,
+ *     upstreamRef?: string
+ * }
+ * @psalm-type   TokenSetEntry array{
+ *     id: string,
+ *     name: string,
+ *     description: string,
+ *     design_system: string,
+ *     theming?: array<string, mixed>,
+ *     custom?: bool,
+ *     warnings?: array<int, array<string, mixed>>,
+ *     upstreamVersion?: string,
+ *     upstreamRef?: string
+ * }
+ *
  * @spec openspec/specs/token-sets/spec.md
  * @spec openspec/specs/custom-token-sets/spec.md
  */
@@ -100,10 +123,14 @@ class TokenSetService
      * Get all available token sets with metadata.
      *
      * Scans css/tokens/ for CSS files and merges metadata from token-sets.json.
+     * Entries carry an optional upstreamVersion/upstreamRef pass-through when
+     * present in the manifest — inert for every consumer except the
+     * upstream-freshness comparison.
      *
-     * @return array<array{id: string, name: string, description: string}> The available token sets.
+     * @return array<int, TokenSetEntry> The available token sets.
      *
      * @spec openspec/specs/token-sets/spec.md
+     * @spec openspec/specs/upstream-freshness/spec.md
      */
     public function getAvailableTokenSets(): array
     {
@@ -129,15 +156,8 @@ class TokenSetService
                     // Shipped manifest takes precedence on an (impossible) id
                     // collision; log it so the operator can investigate.
                     $shippedMeta = $metadata[$id] ?? null;
-                    $customMeta  = $customMetadata[$id] ?? null;
-                    if ($shippedMeta !== null && $customMeta !== null) {
-                        $this->logger->warning(
-                            'NL Design token set id "'.$id.'" exists in both the shipped and custom manifests; using the shipped metadata.'
-                        );
-                        $customMeta = null;
-                    }
+                    $meta        = $this->resolveMeta(id: $id, shippedMeta: $shippedMeta, customMeta: ($customMetadata[$id] ?? null));
 
-                    $meta     = ($shippedMeta ?? $customMeta);
                     $tokenSet = [
                         'id'            => $id,
                         'name'          => $meta['name'] ?? $this->formatName(id: $id),
@@ -148,25 +168,14 @@ class TokenSetService
                         $tokenSet['theming'] = $meta['theming'];
                     }
 
-                    if ($isCustom === true && $shippedMeta === null) {
-                        $tokenSet['custom'] = true;
-                        if (isset($meta['warnings']) === true && is_array($meta['warnings']) === true) {
-                            $tokenSet['warnings'] = $meta['warnings'];
-                        }
-                    } else {
-                        // Shipped set: surface the same non-blocking WCAG contrast
-                        // warning the apply dialog raises for a custom upload, so a
-                        // sub-AA or unevaluated shipped set is not silently applied.
-                        $warnings = $this->audit->warningsFor(
-                            appPath: $appPath,
-                            id: $id,
-                            designSystem: $tokenSet['design_system'],
-                            theming: ($tokenSet['theming'] ?? [])
-                        );
-                        if (empty($warnings) === false) {
-                            $tokenSet['warnings'] = $warnings;
-                        }
-                    }
+                    $tokenSet = $this->applyProvenance(tokenSet: $tokenSet, meta: ($meta ?? []));
+                    $tokenSet = $this->applyWarnings(
+                        tokenSet: $tokenSet,
+                        meta: ($meta ?? []),
+                        appPath: $appPath,
+                        id: $id,
+                        isCustom: ($isCustom === true && $shippedMeta === null)
+                    );
 
                     $tokenSets[] = $tokenSet;
                 }//end if
@@ -178,6 +187,101 @@ class TokenSetService
 
         return $tokenSets;
     }//end getAvailableTokenSets()
+
+    /**
+     * Apply optional upstream provenance fields (upstream-freshness spec)
+     * onto a token set entry. Passed through unmodified when present in the
+     * manifest; absence never affects discovery, validation, activation, or
+     * rendering — only the freshness comparison ever interprets them.
+     *
+     * @param array<string, mixed> $tokenSet The token set entry being built.
+     * @param array<string, mixed> $meta     The merged manifest metadata for this id.
+     *
+     * @return array<string, mixed> The token set entry with provenance applied.
+     *
+     * @spec openspec/specs/upstream-freshness/spec.md
+     */
+    private function applyProvenance(array $tokenSet, array $meta): array
+    {
+        if (isset($meta['upstreamVersion']) === true) {
+            $tokenSet['upstreamVersion'] = $meta['upstreamVersion'];
+        }
+
+        if (isset($meta['upstreamRef']) === true) {
+            $tokenSet['upstreamRef'] = $meta['upstreamRef'];
+        }
+
+        return $tokenSet;
+    }//end applyProvenance()
+
+    /**
+     * Resolve the merged metadata for one discovered id, logging (and
+     * dropping) the custom-manifest side on an (impossible) id collision so
+     * the shipped manifest always takes precedence.
+     *
+     * @param string                    $id          The token set id.
+     * @param array<string, mixed>|null $shippedMeta The shipped manifest entry, if any.
+     * @param array<string, mixed>|null $customMeta  The custom manifest entry, if any.
+     *
+     * @return array<string, mixed>|null The resolved metadata, or null when neither manifest has an entry.
+     *
+     * @spec openspec/specs/token-sets/spec.md
+     */
+    private function resolveMeta(string $id, ?array $shippedMeta, ?array $customMeta): ?array
+    {
+        if ($shippedMeta !== null && $customMeta !== null) {
+            $this->logger->warning(
+                'NL Design token set id "'.$id.'" exists in both the shipped and custom manifests; using the shipped metadata.'
+            );
+
+            return $shippedMeta;
+        }
+
+        return ($shippedMeta ?? $customMeta);
+    }//end resolveMeta()
+
+    /**
+     * Resolve the WCAG contrast warnings for a token set entry: the
+     * uploader-supplied warnings for a genuine custom set, or a live audit
+     * against the shared ContrastService for a shipped set (or a custom id
+     * shadowed by a shipped manifest entry).
+     *
+     * @param array<string, mixed> $tokenSet The token set entry being built.
+     * @param array<string, mixed> $meta     The merged manifest metadata for this id.
+     * @param string               $appPath  The app directory path.
+     * @param string               $id       The token set id.
+     * @param bool                 $isCustom Whether this is a genuine (unshadowed) custom upload.
+     *
+     * @return array<string, mixed> The token set entry with warnings applied, if any.
+     *
+     * @spec openspec/specs/token-sets/spec.md
+     */
+    private function applyWarnings(array $tokenSet, array $meta, string $appPath, string $id, bool $isCustom): array
+    {
+        if ($isCustom === true) {
+            $tokenSet['custom'] = true;
+            if (isset($meta['warnings']) === true && is_array($meta['warnings']) === true) {
+                $tokenSet['warnings'] = $meta['warnings'];
+            }
+
+            return $tokenSet;
+        }
+
+        // Shipped set: surface the same non-blocking WCAG contrast warning
+        // the apply dialog raises for a custom upload, so a sub-AA or
+        // unevaluated shipped set is not silently applied.
+        $warnings = $this->audit->warningsFor(
+            appPath: $appPath,
+            id: $id,
+            designSystem: $tokenSet['design_system'],
+            theming: ($tokenSet['theming'] ?? [])
+        );
+        if (empty($warnings) === false) {
+            $tokenSet['warnings'] = $warnings;
+        }
+
+        return $tokenSet;
+    }//end applyWarnings()
 
     /**
      * Check if a token set exists on the filesystem.

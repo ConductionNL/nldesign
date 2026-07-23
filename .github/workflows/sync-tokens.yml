@@ -23,12 +23,14 @@ jobs:
           node-version: '20'
 
       - name: Clone NL Design System themes
+        id: clone_themes
         run: |
           git clone --depth 1 https://github.com/nl-design-system/themes.git /tmp/themes
+          echo "sha=$(git -C /tmp/themes rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run token generation script
         run: |
-          node scripts/generate-tokens.mjs /tmp/themes
+          node scripts/generate-tokens.mjs /tmp/themes ${{ steps.clone_themes.outputs.sha }}
 
       - name: Check for changes
         id: changes

@@ -19,7 +19,7 @@ government instances.
 Free and open source under the EUPL-1.2 license.
 Gratis en open source onder de EUPL-1.2 licentie.
 	]]></description>
-	<version>0.1.3-unstable.13</version>
+	<version>0.1.3-unstable.14</version>
 	<licence>EUPL-1.2</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
@@ -36,6 +36,13 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		<php min-version="8.3"/>
 		<nextcloud min-version="28" max-version="34"/>
 	</dependencies>
+
+	<!-- Upstream token freshness check (openspec/specs/upstream-freshness/spec.md):
+	     daily, time-insensitive, disabled by default (admin opt-in toggle). -->
+	<background-jobs>
+		<job>OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob</job>
+	</background-jobs>
+
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
 		<admin-section>theming</admin-section>

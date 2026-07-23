@@ -36,6 +36,7 @@ use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
+use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
@@ -101,15 +102,23 @@ class SettingsController extends Controller
     private AppThemingService $appThemingService;
 
     /**
+     * The upstream token freshness service.
+     *
+     * @var UpstreamFreshnessService
+     */
+    private UpstreamFreshnessService $freshnessService;
+
+    /**
      * Constructor.
      *
-     * @param string                 $appName           The app name.
-     * @param IRequest               $request           The request object.
-     * @param IConfig                $config            The config service.
-     * @param TokenSetService        $tokenSetService   The token set service.
-     * @param ThemingService         $themingService    The theming service.
-     * @param TokenSetPreviewService $previewService    The token set preview service.
-     * @param AppThemingService      $appThemingService The per-app theming service.
+     * @param string                   $appName           The app name.
+     * @param IRequest                 $request           The request object.
+     * @param IConfig                  $config            The config service.
+     * @param TokenSetService          $tokenSetService   The token set service.
+     * @param ThemingService           $themingService    The theming service.
+     * @param TokenSetPreviewService   $previewService    The token set preview service.
+     * @param AppThemingService        $appThemingService The per-app theming service.
+     * @param UpstreamFreshnessService $freshnessService  The upstream token freshness service.
      */
     public function __construct(
         string $appName,
@@ -118,7 +127,8 @@ class SettingsController extends Controller
         TokenSetService $tokenSetService,
         ThemingService $themingService,
         TokenSetPreviewService $previewService,
-        AppThemingService $appThemingService
+        AppThemingService $appThemingService,
+        UpstreamFreshnessService $freshnessService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->config            = $config;
@@ -126,6 +136,7 @@ class SettingsController extends Controller
         $this->themingService    = $themingService;
         $this->previewService    = $previewService;
         $this->appThemingService = $appThemingService;
+        $this->freshnessService  = $freshnessService;
     }//end __construct()
 
     /**
@@ -369,4 +380,58 @@ class SettingsController extends Controller
             ]
         );
     }//end setAppTheming()
+
+    /**
+     * Get the upstream token freshness status: whether the opt-in check is
+     * enabled, the last-checked timestamp, and any notices still visible
+     * after dismissal filtering.
+     *
+     * @return JSONResponse The status payload.
+     *
+     * @spec openspec/specs/upstream-freshness/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getUpstreamFreshness(): JSONResponse
+    {
+        return new JSONResponse($this->freshnessService->getStatus());
+    }//end getUpstreamFreshness()
+
+    /**
+     * Enable or disable the upstream token freshness check. This is the
+     * app's first outbound network egress and defaults to disabled — enabling
+     * it takes effect on the next daily background job run.
+     *
+     * @param bool $enabled Whether the check should be enabled.
+     *
+     * @return JSONResponse The response with the persisted state.
+     *
+     * @spec openspec/specs/upstream-freshness/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setUpstreamFreshness(bool $enabled): JSONResponse
+    {
+        $this->freshnessService->setEnabled(enabled: $enabled);
+
+        return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+    }//end setUpstreamFreshness()
+
+    /**
+     * Dismiss an upstream freshness notice for a set at a specific
+     * version/SHA marker. A later detection carrying a different marker for
+     * the same set re-surfaces regardless of this dismissal.
+     *
+     * @param string $setId   The token set id, or the generic notice key.
+     * @param string $version The version (or SHA) marker being dismissed.
+     *
+     * @return JSONResponse The response with the status.
+     *
+     * @spec openspec/specs/upstream-freshness/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function dismissUpstreamNotice(string $setId, string $version): JSONResponse
+    {
+        $this->freshnessService->dismiss(setId: $setId, versionOrSha: $version);
+
+        return new JSONResponse(['status' => 'ok']);
+    }//end dismissUpstreamNotice()
 }//end class

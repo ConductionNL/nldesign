@@ -29,6 +29,10 @@ return [
 		// Per-app theming exclusion list.
 		['name' => 'settings#getAppTheming', 'url' => '/settings/app-theming', 'verb' => 'GET'],
 		['name' => 'settings#setAppTheming', 'url' => '/settings/app-theming', 'verb' => 'POST'],
+		// Upstream token freshness (opt-in daily background job status + dismissal).
+		['name' => 'settings#getUpstreamFreshness', 'url' => '/settings/upstream-freshness', 'verb' => 'GET'],
+		['name' => 'settings#setUpstreamFreshness', 'url' => '/settings/upstream-freshness', 'verb' => 'POST'],
+		['name' => 'settings#dismissUpstreamNotice', 'url' => '/settings/upstream-freshness/dismiss', 'verb' => 'POST'],
 		['name' => 'overrides#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
 		['name' => 'overrides#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
 		// Import/export.

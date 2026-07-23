@@ -94,7 +94,17 @@
         "{themed} of {total} apps themed": "{themed} of {total} apps themed",
         "Search apps": "Search apps",
         "Search apps…": "Search apps…",
-        "Reset {label} to default": "Reset {label} to default"
+        "Reset {label} to default": "Reset {label} to default",
+        "Upstream token updates": "Upstream token updates",
+        "Optionally check once a day whether the upstream NL Design System themes have new tokens. This is the only outbound network request this app makes; it contacts api.github.com and never applies anything automatically — you always review and apply updates yourself.": "Optionally check once a day whether the upstream NL Design System themes have new tokens. This is the only outbound network request this app makes; it contacts api.github.com and never applies anything automatically — you always review and apply updates yourself.",
+        "Check daily for upstream token updates (contacts api.github.com)": "Check daily for upstream token updates (contacts api.github.com)",
+        "Last checked: {when}": "Last checked: {when}",
+        "Not checked yet.": "Not checked yet.",
+        "Token set {name} has upstream update {version} — review & apply": "Token set {name} has upstream update {version} — review & apply",
+        "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets have updates ({version}) — review & apply",
+        "Dismiss": "Dismiss",
+        "Upstream token update checks enabled.": "Upstream token update checks enabled.",
+        "Upstream token update checks disabled.": "Upstream token update checks disabled."
     },
     "plurals": {}
 }
