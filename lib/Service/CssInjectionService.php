@@ -116,6 +116,7 @@ class CssInjectionService
      * @param CustomOverridesService $overridesService    The custom overrides file service.
      * @param FontService            $fontService         The custom font resolver.
      * @param IURLGenerator          $urlGenerator        The URL generator.
+     * @param GroupThemingService    $groupThemingService The per-group token-set resolver.
      */
     public function __construct(
         IConfig $config,
