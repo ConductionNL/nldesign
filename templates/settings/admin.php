@@ -137,6 +137,31 @@ style('nldesign', 'admin');
 		<span id="nldesign-app-theming-feedback" class="nldesign-app-theming-feedback" role="status" aria-live="polite"></span>
 	</div>
 
+	<!-- Group theming — map Nextcloud groups to token sets for shared-instance
+	     multi-tenant huisstijl (openspec/specs/per-group-theming/spec.md).
+	     Row order IS priority order; keyboard-operable move-up/move-down
+	     buttons instead of drag-and-drop. -->
+	<div class="nldesign-group-theming" id="nldesign-group-theming" style="margin-top:2em">
+		<h3><?php p($l->t('Group theming')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Map Nextcloud groups to token sets so different gemeenten sharing one instance each see their own house style. Row order is priority order: for a user in multiple mapped groups, the first matching row wins.')); ?>
+		</p>
+		<p class="settings-hint">
+			<?php p($l->t('Logo, mail templates, and other Nextcloud core branding always follow the instance default token set above — they are not per-group. Only this token-set stylesheet layer differs per group.')); ?>
+		</p>
+		<div id="nldesign-group-theming-list" class="nldesign-group-theming-list" role="group"
+			 aria-label="<?php p($l->t('Group theming')); ?>">
+			<p class="settings-hint"><?php p($l->t('Loading group mappings…')); ?></p>
+		</div>
+		<button type="button" id="nldesign-group-theming-add" class="button">
+			<?php p($l->t('Add mapping')); ?>
+		</button>
+		<button type="button" id="nldesign-group-theming-save" class="button primary">
+			<?php p($l->t('Save group theming')); ?>
+		</button>
+		<span id="nldesign-group-theming-feedback" class="nldesign-group-theming-feedback" role="status" aria-live="polite"></span>
+	</div>
+
 	<!-- Email template theming — mail_template_class toggle + compliance footer -->
 	<div class="nldesign-email-theming" id="nldesign-email-theming" style="margin-top:2em"
 		 data-state="<?php p($_['emailThemingState']['state']); ?>"

@@ -17,6 +17,7 @@ use OCA\NLDesign\Service\CssInjectionService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\FontService;
+use OCA\NLDesign\Service\GroupThemingService;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -70,6 +71,13 @@ class CssInjectionServiceTest extends TestCase
     private $urlGenerator;
 
     /**
+     * The per-group theming service mock (resolves the effective token set).
+     *
+     * @var GroupThemingService&MockObject
+     */
+    private $groupThemingService;
+
+    /**
      * Set up mocks before each test.
      */
     protected function setUp(): void
@@ -80,6 +88,13 @@ class CssInjectionServiceTest extends TestCase
         $this->customOverridesService = $this->createMock(CustomOverridesService::class);
         $this->fontService            = $this->createMock(FontService::class);
         $this->urlGenerator           = $this->createMock(IURLGenerator::class);
+        $this->groupThemingService    = $this->createMock(GroupThemingService::class);
+
+        // Default: no group mapping configured, so the resolver returns the
+        // plain appconfig token set — byte-identical to pre-per-group behaviour.
+        $this->groupThemingService->method('resolveTokenSetForRequest')->willReturnCallback(
+            fn () => $this->config->getAppValue('nldesign', 'token_set', 'nextcloud')
+        );
 
         // No blanket `hasFonts()` default here: PHPUnit's InvocationMocker
         // resolves overlapping unconstrained stubs in REGISTRATION order (the
@@ -110,6 +125,7 @@ class CssInjectionServiceTest extends TestCase
                     $this->customOverridesService,
                     $this->fontService,
                     $this->urlGenerator,
+                    $this->groupThemingService,
                 ]
             )
             ->onlyMethods(['emitStyle', 'emitFontLink'])

@@ -68,5 +68,8 @@ return [
 		// download/upload, admin-only (AuthorizedAdminSetting).
 		['name' => 'configBundle#export', 'url' => '/settings/config/export', 'verb' => 'GET'],
 		['name' => 'configBundle#import', 'url' => '/settings/config/import', 'verb' => 'POST'],
+		// Group theming — group-to-token-set mapping (multi-tenant huisstijl).
+		['name' => 'settings#getGroupTheming', 'url' => '/settings/group-theming', 'verb' => 'GET'],
+		['name' => 'settings#setGroupTheming', 'url' => '/settings/group-theming', 'verb' => 'POST'],
 	],
 ];

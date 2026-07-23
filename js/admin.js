@@ -1339,6 +1339,236 @@ function nldesignAdminMain() {
 	initAppTheming();
 
 	/* ==========================================================================
+	 * GROUP THEMING — map Nextcloud groups to token sets (multi-tenant huisstijl)
+	 * openspec/specs/per-group-theming/spec.md
+	 * ========================================================================== */
+
+	// In-memory ordered mapping rows: [{ group: string, tokenSet: string }, ...].
+	// Array order IS priority order — mirrors the server's storage shape
+	// exactly so there is nothing extra to keep in sync.
+	var groupThemingRows = [];
+	var groupThemingGroups = [];
+	var groupThemingTokenSets = [];
+
+	function initGroupTheming() {
+		var listEl = document.getElementById('nldesign-group-theming-list');
+		var addBtn = document.getElementById('nldesign-group-theming-add');
+		var saveBtn = document.getElementById('nldesign-group-theming-save');
+		if (listEl === null || addBtn === null || saveBtn === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/group-theming'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			groupThemingGroups = (data && data.groups) || [];
+			groupThemingTokenSets = (data && data.tokenSets) || [];
+			groupThemingRows = ((data && data.mapping) || []).map(function(entry) {
+				return { group: entry.group, tokenSet: entry.tokenSet };
+			});
+			renderGroupThemingList();
+		})
+		.catch(function(err) {
+			console.error('Error loading group theming:', err);
+			listEl.textContent = t('nldesign', 'Failed to load group mappings.');
+		});
+
+		addBtn.addEventListener('click', function() {
+			var defaultGroup = groupThemingGroups.length > 0 ? groupThemingGroups[0].id : '';
+			var defaultTokenSet = groupThemingTokenSets.length > 0 ? groupThemingTokenSets[0].id : '';
+			groupThemingRows.push({ group: defaultGroup, tokenSet: defaultTokenSet });
+			renderGroupThemingList();
+
+			// Move focus to the newly added row's group select.
+			var rows = listEl.querySelectorAll('.nldesign-group-theming-row');
+			var last = rows[rows.length - 1];
+			if (last) {
+				var groupSelect = last.querySelector('[data-field="group"]');
+				if (groupSelect) { groupSelect.focus(); }
+			}
+		});
+
+		saveBtn.addEventListener('click', saveGroupTheming);
+	}
+
+	// Render one row per mapping entry: group select, token-set select,
+	// move-up / move-down (keyboard-operable, no drag-and-drop), remove.
+	function renderGroupThemingList(focusMoveButtonIndex) {
+		var listEl = document.getElementById('nldesign-group-theming-list');
+		if (listEl === null) {
+			return;
+		}
+
+		listEl.innerHTML = '';
+
+		if (groupThemingRows.length === 0) {
+			var empty = document.createElement('p');
+			empty.className = 'settings-hint';
+			empty.textContent = t('nldesign', 'No group mappings configured.');
+			listEl.appendChild(empty);
+			return;
+		}
+
+		groupThemingRows.forEach(function(row, index) {
+			var rowEl = document.createElement('div');
+			rowEl.className = 'nldesign-group-theming-row';
+
+			var groupSelect = document.createElement('select');
+			groupSelect.setAttribute('data-field', 'group');
+			groupSelect.setAttribute('aria-label', t('nldesign', 'Group'));
+			groupThemingGroups.forEach(function(g) {
+				var opt = document.createElement('option');
+				opt.value = g.id;
+				opt.textContent = g.displayName || g.id;
+				if (g.id === row.group) { opt.selected = true; }
+				groupSelect.appendChild(opt);
+			});
+			groupSelect.addEventListener('change', function() {
+				groupThemingRows[index].group = groupSelect.value;
+			});
+
+			var tokenSetSelect = document.createElement('select');
+			tokenSetSelect.setAttribute('data-field', 'tokenSet');
+			tokenSetSelect.setAttribute('aria-label', t('nldesign', 'Token set'));
+			groupThemingTokenSets.forEach(function(ts) {
+				var opt = document.createElement('option');
+				opt.value = ts.id;
+				opt.textContent = ts.name || ts.id;
+				if (ts.id === row.tokenSet) { opt.selected = true; }
+				tokenSetSelect.appendChild(opt);
+			});
+			tokenSetSelect.addEventListener('change', function() {
+				groupThemingRows[index].tokenSet = tokenSetSelect.value;
+			});
+
+			var moveUpBtn = document.createElement('button');
+			moveUpBtn.type = 'button';
+			moveUpBtn.className = 'nldesign-group-theming-move-up';
+			moveUpBtn.setAttribute('aria-label', t('nldesign', 'Move mapping up'));
+			moveUpBtn.textContent = '▲';
+			moveUpBtn.disabled = (index === 0);
+			moveUpBtn.addEventListener('click', function() { moveGroupThemingRow(index, -1); });
+
+			var moveDownBtn = document.createElement('button');
+			moveDownBtn.type = 'button';
+			moveDownBtn.className = 'nldesign-group-theming-move-down';
+			moveDownBtn.setAttribute('aria-label', t('nldesign', 'Move mapping down'));
+			moveDownBtn.textContent = '▼';
+			moveDownBtn.disabled = (index === groupThemingRows.length - 1);
+			moveDownBtn.addEventListener('click', function() { moveGroupThemingRow(index, 1); });
+
+			var removeBtn = document.createElement('button');
+			removeBtn.type = 'button';
+			removeBtn.className = 'nldesign-group-theming-remove';
+			removeBtn.setAttribute('aria-label', t('nldesign', 'Remove mapping'));
+			removeBtn.textContent = '×';
+			removeBtn.addEventListener('click', function() {
+				groupThemingRows.splice(index, 1);
+				renderGroupThemingList();
+			});
+
+			rowEl.appendChild(groupSelect);
+			rowEl.appendChild(tokenSetSelect);
+			rowEl.appendChild(moveUpBtn);
+			rowEl.appendChild(moveDownBtn);
+			rowEl.appendChild(removeBtn);
+			listEl.appendChild(rowEl);
+		});
+
+		// Restore focus to the moved row's move-up button after a reorder
+		// (WCAG 2.1.1 Keyboard / 2.4.3 Focus Order — no keyboard trap, no
+		// lost focus on re-render).
+		if (typeof focusMoveButtonIndex === 'number') {
+			var focusRows = listEl.querySelectorAll('.nldesign-group-theming-row');
+			var target = focusRows[focusMoveButtonIndex];
+			if (target) {
+				var btn = target.querySelector('.nldesign-group-theming-move-up');
+				if (btn) { btn.focus(); }
+			}
+		}
+	}
+
+	// Swap row at `index` with its neighbour `index + direction` (direction
+	// is -1 for up, +1 for down) and keep focus on the moved row's move-up
+	// button at its new position.
+	function moveGroupThemingRow(index, direction) {
+		var target = index + direction;
+		if (target < 0 || target >= groupThemingRows.length) {
+			return;
+		}
+
+		var tmp = groupThemingRows[index];
+		groupThemingRows[index] = groupThemingRows[target];
+		groupThemingRows[target] = tmp;
+
+		renderGroupThemingList(target);
+	}
+
+	// POST the full ordered mapping and surface success/validation feedback.
+	function saveGroupTheming() {
+		var feedback = document.getElementById('nldesign-group-theming-feedback');
+		var payload = groupThemingRows.map(function(row) {
+			return { group: row.group, tokenSet: row.tokenSet };
+		});
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/group-theming'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ mapping: payload })
+		})
+		.then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+		.then(function(result) {
+			var data = result.data;
+
+			if (result.ok === true && data && data.status === 'ok') {
+				groupThemingRows = (data.mapping || []).map(function(entry) {
+					return { group: entry.group, tokenSet: entry.tokenSet };
+				});
+				renderGroupThemingList();
+				if (feedback !== null) {
+					feedback.textContent = t('nldesign', 'Group theming saved.');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Group theming saved.'));
+				return;
+			}
+
+			if (data && data.error === 'invalid_mapping') {
+				var entryGroup = (data.entry && data.entry.group) || '?';
+				var entryTokenSet = (data.entry && data.entry.tokenSet) || '?';
+				var message = t(
+					'nldesign',
+					'Could not save mapping for group "{group}" → "{tokenSet}": {reason}',
+					{ group: entryGroup, tokenSet: entryTokenSet, reason: (data.reason || '') }
+				);
+				if (feedback !== null) {
+					feedback.textContent = message;
+				}
+				OC.Notification.showTemporary(message);
+				// Rows are left exactly as the admin edited them — no silent
+				// state reset — so the offending entry stays editable.
+				return;
+			}
+
+			if (feedback !== null) {
+				feedback.textContent = t('nldesign', 'Failed to save group theming.');
+			}
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save group theming.'));
+		})
+		.catch(function(err) {
+			console.error('Error saving group theming:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save group theming.'));
+		});
+	}
+
+	// Initialise the group theming panel on page load.
+	initGroupTheming();
+
+	/* ==========================================================================
 	 * CUSTOM TOKEN SETS — upload / list / download / delete (eigen huisstijl)
 	 * ========================================================================== */
 
