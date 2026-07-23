@@ -13,7 +13,7 @@ Defines the "Show Menu Labels" feature that replaces app menu icons in the Nextc
 
 ## Requirements
 
-### REQ-MLBL-001: Configuration Storage
+### Requirement: Configuration Storage
 The show menu labels setting MUST be stored in Nextcloud's `IConfig` as a string value with clear on/off semantics.
 
 #### Scenario: Setting stored as enabled
@@ -41,7 +41,7 @@ The show menu labels setting MUST be stored in Nextcloud's `IConfig` as a string
 - THEN the setting MUST remain `'1'` in IConfig
 - AND menu labels MUST continue to display on all pages
 
-### REQ-MLBL-002: Conditional CSS Loading
+### Requirement: Conditional CSS Loading
 The show-menu-labels CSS file MUST only be loaded when the feature is enabled.
 
 #### Scenario: Feature enabled loads CSS
@@ -62,7 +62,7 @@ The show-menu-labels CSS file MUST only be loaded when the feature is enabled.
 - THEN hide-slogan MUST be loaded before show-menu-labels (matching the code order in `Application.php`)
 - AND both MUST load after the custom-overrides layer
 
-### REQ-MLBL-003: Icon Hiding
+### Requirement: Icon Hiding
 When the feature is enabled, app menu icons MUST be hidden from both visual display and layout.
 
 #### Scenario: App menu icons hidden
@@ -86,7 +86,7 @@ When the feature is enabled, app menu icons MUST be hidden from both visual disp
 - THEN the overflow trigger button MUST still function
 - AND the dropdown menu MUST still be accessible
 
-### REQ-MLBL-004: Label Display and Typography
+### Requirement: Label Display and Typography
 When the feature is enabled, app menu labels MUST be visible and properly styled for readability.
 
 #### Scenario: Labels made visible
@@ -125,7 +125,7 @@ When the feature is enabled, app menu labels MUST be visible and properly styled
 - THEN the font-family MUST inherit from `--nldesign-font-family` (Fira Sans) via the element-overrides layer
 - AND labels MUST match the overall application typography
 
-### REQ-MLBL-005: Menu Entry Layout
+### Requirement: Menu Entry Layout
 When labels are shown, menu entries MUST be properly sized and laid out to accommodate text.
 
 #### Scenario: Menu entry dimensions
@@ -149,7 +149,7 @@ When labels are shown, menu entries MUST be properly sized and laid out to accom
 - THEN each entry MUST auto-size to its label width (minimum 80px)
 - AND the flex container MUST not compress entries below their min-width
 
-### REQ-MLBL-006: Active Item Indicator
+### Requirement: Active Item Indicator
 When labels are shown, the active item MUST be indicated by bold text weight rather than the default Nextcloud indicator.
 
 #### Scenario: Default active indicator removed
@@ -173,7 +173,7 @@ When labels are shown, the active item MUST be indicated by bold text weight rat
 - THEN the font-weight difference MUST be perceivable regardless of background color
 - AND the text color MUST be inherited from the header text color token
 
-### REQ-MLBL-007: API Endpoint
+### Requirement: API Endpoint
 The app MUST expose an admin-only API endpoint for toggling the show menu labels setting.
 
 #### Scenario: Toggle menu labels on
@@ -199,7 +199,7 @@ The app MUST expose an admin-only API endpoint for toggling the show menu labels
 - WHEN routes are loaded from `appinfo/routes.php`
 - THEN a POST route for `/settings/menulabels` MUST be mapped to `settings#setMenuLabelsSetting`
 
-### REQ-MLBL-008: Admin Settings Panel Integration
+### Requirement: Admin Settings Panel Integration
 The settings panel MUST include a checkbox that reflects and controls the menu labels setting.
 
 #### Scenario: Checkbox reflects current state on load
@@ -217,7 +217,7 @@ The settings panel MUST include a checkbox that reflects and controls the menu l
 - THEN the checkbox label MUST read "Show text labels in app menu (hide icons)" (via `$l->t()`)
 - AND the label MUST have `for="nldesign-show-menu-labels"` for accessibility
 
-### REQ-MLBL-009: Accessibility Improvement
+### Requirement: Accessibility Improvement
 The menu labels feature MUST improve accessibility by providing text-based navigation alternatives.
 
 #### Scenario: Screen reader improvement
@@ -238,7 +238,7 @@ The menu labels feature MUST improve accessibility by providing text-based navig
 - THEN visible labels MUST satisfy WCAG 2.1 AA SC 1.3.1 (Info and Relationships) by providing explicit text
 - AND labels MUST satisfy SC 3.3.2 (Labels or Instructions) by making navigation items self-describing
 
-### REQ-MLBL-010: Responsive Behavior
+### Requirement: Responsive Behavior
 The menu labels feature MUST handle varying header widths without breaking the layout.
 
 #### Scenario: Labels on wide viewport
@@ -261,7 +261,7 @@ The menu labels feature MUST handle varying header widths without breaking the l
 - THEN `white-space: nowrap` MUST prevent the text from wrapping to a second line
 - AND the entry MUST expand horizontally to fit the full text
 
-### REQ-MLBL-011: Interaction with Hide Slogan Feature
+### Requirement: Interaction with Hide Slogan Feature
 The menu labels and hide slogan features MUST be independently configurable and MUST NOT interfere with each other.
 
 #### Scenario: Both features enabled simultaneously
