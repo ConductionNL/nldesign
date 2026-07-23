@@ -94,7 +94,17 @@
         "{themed} of {total} apps themed": "{themed} of {total} apps themed",
         "Search apps": "Search apps",
         "Search apps…": "Search apps…",
-        "Reset {label} to default": "Reset {label} to default"
+        "Reset {label} to default": "Reset {label} to default",
+        "Alias chain too deep (more than 10 hops)": "Alias-keten te diep (meer dan 10 stappen)",
+        "Alias cycle detected": "Alias-cyclus gedetecteerd",
+        "Alias target does not exist": "Alias-doel bestaat niet",
+        "Another token already maps to this target": "Een ander token verwijst al naar dit doel",
+        "No $type could be resolved (never guessed)": "Geen $type kon worden bepaald (nooit geraden)",
+        "Not part of the --nldesign-* vocabulary": "Geen onderdeel van de --nldesign-* woordenschat",
+        "Package version: {version}": "Pakketversie: {version}",
+        "Unsupported color space": "Niet-ondersteunde kleurruimte",
+        "Unsupported value shape": "Niet-ondersteunde waardevorm",
+        "v{version}": "v{version}"
     },
     "plurals": {}
 }
