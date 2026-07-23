@@ -250,6 +250,7 @@ class Admin implements IDelegatedSettings
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
      * @spec openspec/specs/upstream-freshness/spec.md
+     * @spec openspec/specs/per-group-theming/spec.md
      */
     public function getAuthorizedAppConfig(): array
     {
@@ -260,6 +261,11 @@ class Admin implements IDelegatedSettings
                 '/show_menu_labels/',
                 '/disabled_apps/',
                 '/theming_syncs_total/',
+                // Per-group theming mapping (openspec/specs/per-group-theming/spec.md):
+                // the ordered group->token-set mapping and its cache-invalidation
+                // generation counter.
+                '/group_token_sets/',
+                '/group_token_sets_generation/',
                 // Upstream token freshness — only the two admin-initiated
                 // config keys (the opt-in toggle and dismissal state); the
                 // job-internal ETag/head-SHA/checked-at/notices keys are never

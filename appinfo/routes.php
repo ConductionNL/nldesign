@@ -70,5 +70,8 @@ return [
 		['name' => 'preview#start', 'url' => '/settings/preview', 'verb' => 'POST'],
 		['name' => 'preview#discard', 'url' => '/settings/preview', 'verb' => 'DELETE'],
 		['name' => 'preview#publish', 'url' => '/settings/preview/publish', 'verb' => 'POST'],
+		// Group theming — group-to-token-set mapping (multi-tenant huisstijl).
+		['name' => 'settings#getGroupTheming', 'url' => '/settings/group-theming', 'verb' => 'GET'],
+		['name' => 'settings#setGroupTheming', 'url' => '/settings/group-theming', 'verb' => 'POST'],
 	],
 ];
