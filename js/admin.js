@@ -41,6 +41,16 @@ function nldesignAdminMain() {
 		console.error('Failed to parse token sets data:', e);
 	}
 
+	// Parse the requesting admin's active theme preview ("proefdraaien"), if
+	// any — server-rendered by lib/Settings/Admin.php, same data-attribute
+	// convention as data-token-sets/data-current-token-set above.
+	var activePreview = null;
+	try {
+		activePreview = JSON.parse(settingsEl.getAttribute('data-active-preview') || 'null');
+	} catch (e) {
+		console.error('Failed to parse active preview data:', e);
+	}
+
 	/**
 	 * Derive preview colors dynamically from the token set's theming metadata
 	 * (primary_color field in token-sets.json, already passed in data-token-sets).
@@ -154,22 +164,106 @@ function nldesignAdminMain() {
 		tokenSetSelect.dataset.previousValue = tokenSetSelect.value;
 	}
 
-	// Save token set to server
-	function saveTokenSet(tokenSet) {
-		var url = OC.generateUrl('/apps/nldesign/settings/tokenset');
+	/* ==========================================================================
+	 * THEME PREVIEW ("proefdraaien") — trial a token set in the admin's own
+	 * session before publishing it instance-wide.
+	 * ========================================================================== */
 
-		fetch(url, {
+	var previewBtn        = document.getElementById('nldesign-preview-btn');
+	var previewPublishBtn = document.getElementById('nldesign-preview-publish-btn');
+	var previewDiscardBtn = document.getElementById('nldesign-preview-discard-btn');
+	var currentTokenSetId = settingsEl ? settingsEl.getAttribute('data-current-token-set') : '';
+
+	// Start a preview of the currently selected token set — session-only,
+	// instance-wide token_set is left untouched.
+	if (previewBtn !== null && tokenSetSelect !== null) {
+		previewBtn.addEventListener('click', function() {
+			previewBtn.disabled = true;
+			fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'requesttoken': OC.requestToken
+				},
+				body: JSON.stringify({ tokenSet: tokenSetSelect.value })
+			})
+			.then(function(response) { return response.json(); })
+			.then(function(data) {
+				if (data.status === 'ok') {
+					window.location.reload();
+				} else {
+					previewBtn.disabled = false;
+					OC.Notification.showTemporary(t('nldesign', 'Failed to start theme preview.'));
+				}
+			})
+			.catch(function(error) {
+				previewBtn.disabled = false;
+				console.error('Error starting theme preview:', error);
+				OC.Notification.showTemporary(t('nldesign', 'Failed to start theme preview.'));
+			});
+		});
+	}
+
+	// Discard the active preview — clears the session-only state; the panel
+	// (and the banner on every other page) reverts to the active set.
+	if (previewDiscardBtn !== null) {
+		previewDiscardBtn.addEventListener('click', function() {
+			previewDiscardBtn.disabled = true;
+			fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+				method: 'DELETE',
+				headers: { 'requesttoken': OC.requestToken }
+			})
+			.then(function() {
+				window.location.reload();
+			})
+			.catch(function(error) {
+				previewDiscardBtn.disabled = false;
+				console.error('Error discarding theme preview:', error);
+				OC.Notification.showTemporary(t('nldesign', 'Failed to discard theme preview.'));
+			});
+		});
+	}
+
+	// Publish the active preview — runs the EXISTING apply dialog (and,
+	// when applicable, the theming-sync dialog) for the previewed set;
+	// only on confirmation does POST /settings/preview/publish fire
+	// (publishMode = true), promoting it to the instance-wide active set.
+	if (previewPublishBtn !== null && activePreview !== null) {
+		previewPublishBtn.addEventListener('click', function() {
+			openTokenSetApplyDialog(activePreview.tokenSet, currentTokenSetId, true);
+		});
+	}
+
+	// Commit a token set change to the server. In normal mode this is the
+	// instance-wide POST /settings/tokenset. In publish mode (promoting an
+	// active session preview — "proefdraaien" — to instance-wide) it is
+	// POST /settings/preview/publish instead, which reads the previewed set
+	// server-side from the caller's own preview state; no body is sent.
+	function commitTokenSetChange(tokenSet, publishMode) {
+		var url = publishMode
+			? OC.generateUrl('/apps/nldesign/settings/preview/publish')
+			: OC.generateUrl('/apps/nldesign/settings/tokenset');
+		var options = {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'requesttoken': OC.requestToken
-			},
-			body: JSON.stringify({ tokenSet: tokenSet })
-		})
-		.then(function(response) { return response.json(); })
+			headers: { 'requesttoken': OC.requestToken }
+		};
+		if (publishMode !== true) {
+			options.headers['Content-Type'] = 'application/json';
+			options.body = JSON.stringify({ tokenSet: tokenSet });
+		}
+
+		return fetch(url, options).then(function(response) { return response.json(); });
+	}
+
+	// Save token set to server (instance-wide, or promoting a preview when
+	// publishMode is true).
+	function saveTokenSet(tokenSet, publishMode) {
+		commitTokenSetChange(tokenSet, publishMode === true)
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Theme updated successfully. reload the page to see changes.'));
+				OC.Notification.showTemporary(publishMode === true
+					? t('nldesign', 'Theme published instance-wide. Reload the page to see changes.')
+					: t('nldesign', 'Theme updated successfully. reload the page to see changes.'));
 
 				// Check if this token set has theming metadata
 				var tsData = tokenSetsData[tokenSet];
@@ -980,14 +1074,18 @@ function nldesignAdminMain() {
 	 * TOKEN SET APPLY DIALOG
 	 * ========================================================================== */
 
-	function openTokenSetApplyDialog(newTokenSetId, prevTokenSetId) {
+	// publishMode (default false): when true, the dialog's confirmation
+	// promotes the ALREADY-ACTIVE session preview (POST /settings/preview/publish)
+	// instead of applying newTokenSetId instance-wide directly (POST
+	// /settings/tokenset) — the banner/settings-panel Publish control's path.
+	function openTokenSetApplyDialog(newTokenSetId, prevTokenSetId, publishMode) {
 		fetch(OC.generateUrl('/apps/nldesign/settings/tokenset-preview/' + encodeURIComponent(newTokenSetId)), {
 			headers: { 'requesttoken': OC.requestToken }
 		})
 		.then(function(r) { return r.json(); })
 		.then(function(data) {
 			if (data.error !== undefined) {
-				saveTokenSet(newTokenSetId);
+				saveTokenSet(newTokenSetId, publishMode);
 				return;
 			}
 			var newValues = data.resolved || {};
@@ -1001,18 +1099,18 @@ function nldesignAdminMain() {
 				}
 			});
 			if (changes.length === 0) {
-				saveTokenSet(newTokenSetId);
+				saveTokenSet(newTokenSetId, publishMode);
 				return;
 			}
-			showApplyDialog(newTokenSetId, prevTokenSetId, changes);
+			showApplyDialog(newTokenSetId, prevTokenSetId, changes, publishMode);
 		})
 		.catch(function(err) {
 			console.error('Error fetching token set preview:', err);
-			saveTokenSet(newTokenSetId);
+			saveTokenSet(newTokenSetId, publishMode);
 		});
 	}
 
-	function showApplyDialog(newTokenSetId, prevTokenSetId, changes) {
+	function showApplyDialog(newTokenSetId, prevTokenSetId, changes, publishMode) {
 		var existing = document.getElementById('nldesign-apply-dialog-overlay');
 		if (existing !== null) {
 			existing.remove();
@@ -1138,16 +1236,11 @@ function nldesignAdminMain() {
 				if (saveData.status !== 'ok') {
 					throw new Error(saveData.error || 'Save failed');
 				}
-				return fetch(OC.generateUrl('/apps/nldesign/settings/tokenset'), {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'requesttoken': OC.requestToken },
-					body: JSON.stringify({ tokenSet: newTokenSetId })
-				});
+				return commitTokenSetChange(newTokenSetId, publishMode === true);
 			})
-			.then(function(r) { return r.json(); })
 			.then(function(tsData) {
 				closeDialogOverlay(overlay);
-				if (tsData.status === 'ok' && tokenSetSelect !== null) {
+				if (tsData.status === 'ok' && tokenSetSelect !== null && publishMode !== true) {
 					tokenSetSelect.dataset.previousValue = newTokenSetId;
 				}
 				OC.Notification.showTemporary(t('nldesign', 'Token overrides applied.'));
@@ -1391,6 +1484,244 @@ function nldesignAdminMain() {
 	initAppTheming();
 
 	/* ==========================================================================
+	 * GROUP THEMING — map Nextcloud groups to token sets (multi-tenant huisstijl)
+	 * openspec/specs/per-group-theming/spec.md
+	 * ========================================================================== */
+
+	// In-memory ordered mapping rows: [{ group: string, tokenSet: string }, ...].
+	// Array order IS priority order — mirrors the server's storage shape
+	// exactly so there is nothing extra to keep in sync.
+	var groupThemingRows = [];
+	var groupThemingGroups = [];
+	var groupThemingTokenSets = [];
+
+	function initGroupTheming() {
+		var listEl = document.getElementById('nldesign-group-theming-list');
+		var addBtn = document.getElementById('nldesign-group-theming-add');
+		var saveBtn = document.getElementById('nldesign-group-theming-save');
+		if (listEl === null || addBtn === null || saveBtn === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/group-theming'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			groupThemingGroups = (data && data.groups) || [];
+			groupThemingTokenSets = (data && data.tokenSets) || [];
+			groupThemingRows = ((data && data.mapping) || []).map(function(entry) {
+				return { group: entry.group, tokenSet: entry.tokenSet };
+			});
+			renderGroupThemingList();
+		})
+		.catch(function(err) {
+			console.error('Error loading group theming:', err);
+			listEl.textContent = t('nldesign', 'Failed to load group mappings.');
+		});
+
+		addBtn.addEventListener('click', function() {
+			var defaultGroup = groupThemingGroups.length > 0 ? groupThemingGroups[0].id : '';
+			var defaultTokenSet = groupThemingTokenSets.length > 0 ? groupThemingTokenSets[0].id : '';
+			groupThemingRows.push({ group: defaultGroup, tokenSet: defaultTokenSet });
+			renderGroupThemingList();
+
+			// Move focus to the newly added row's group select.
+			var rows = listEl.querySelectorAll('.nldesign-group-theming-row');
+			var last = rows[rows.length - 1];
+			if (last) {
+				var groupSelect = last.querySelector('[data-field="group"]');
+				if (groupSelect) { groupSelect.focus(); }
+			}
+		});
+
+		saveBtn.addEventListener('click', saveGroupTheming);
+	}
+
+	// Render one row per mapping entry: group select, token-set select,
+	// move-up / move-down (keyboard-operable, no drag-and-drop), remove.
+	function renderGroupThemingList(focusMoveButtonIndex) {
+		var listEl = document.getElementById('nldesign-group-theming-list');
+		if (listEl === null) {
+			return;
+		}
+
+		listEl.innerHTML = '';
+
+		if (groupThemingRows.length === 0) {
+			var empty = document.createElement('p');
+			empty.className = 'settings-hint';
+			empty.textContent = t('nldesign', 'No group mappings configured.');
+			listEl.appendChild(empty);
+			return;
+		}
+
+		groupThemingRows.forEach(function(row, index) {
+			var rowEl = document.createElement('div');
+			rowEl.className = 'nldesign-group-theming-row';
+
+			var groupSelect = document.createElement('select');
+			groupSelect.setAttribute('data-field', 'group');
+			groupSelect.setAttribute('aria-label', t('nldesign', 'Group'));
+			groupThemingGroups.forEach(function(g) {
+				var opt = document.createElement('option');
+				opt.value = g.id;
+				opt.textContent = g.displayName || g.id;
+				if (g.id === row.group) { opt.selected = true; }
+				groupSelect.appendChild(opt);
+			});
+			groupSelect.addEventListener('change', function() {
+				groupThemingRows[index].group = groupSelect.value;
+			});
+
+			var tokenSetSelect = document.createElement('select');
+			tokenSetSelect.setAttribute('data-field', 'tokenSet');
+			tokenSetSelect.setAttribute('aria-label', t('nldesign', 'Token set'));
+			groupThemingTokenSets.forEach(function(ts) {
+				var opt = document.createElement('option');
+				opt.value = ts.id;
+				opt.textContent = ts.name || ts.id;
+				if (ts.id === row.tokenSet) { opt.selected = true; }
+				tokenSetSelect.appendChild(opt);
+			});
+			tokenSetSelect.addEventListener('change', function() {
+				groupThemingRows[index].tokenSet = tokenSetSelect.value;
+			});
+
+			var moveUpBtn = document.createElement('button');
+			moveUpBtn.type = 'button';
+			moveUpBtn.className = 'nldesign-group-theming-move-up';
+			moveUpBtn.setAttribute('aria-label', t('nldesign', 'Move mapping up'));
+			moveUpBtn.textContent = '▲';
+			moveUpBtn.disabled = (index === 0);
+			moveUpBtn.addEventListener('click', function() { moveGroupThemingRow(index, -1); });
+
+			var moveDownBtn = document.createElement('button');
+			moveDownBtn.type = 'button';
+			moveDownBtn.className = 'nldesign-group-theming-move-down';
+			moveDownBtn.setAttribute('aria-label', t('nldesign', 'Move mapping down'));
+			moveDownBtn.textContent = '▼';
+			moveDownBtn.disabled = (index === groupThemingRows.length - 1);
+			moveDownBtn.addEventListener('click', function() { moveGroupThemingRow(index, 1); });
+
+			var removeBtn = document.createElement('button');
+			removeBtn.type = 'button';
+			removeBtn.className = 'nldesign-group-theming-remove';
+			removeBtn.setAttribute('aria-label', t('nldesign', 'Remove mapping'));
+			removeBtn.textContent = '×';
+			removeBtn.addEventListener('click', function() {
+				groupThemingRows.splice(index, 1);
+				renderGroupThemingList();
+			});
+
+			rowEl.appendChild(groupSelect);
+			rowEl.appendChild(tokenSetSelect);
+			rowEl.appendChild(moveUpBtn);
+			rowEl.appendChild(moveDownBtn);
+			rowEl.appendChild(removeBtn);
+			listEl.appendChild(rowEl);
+		});
+
+		// Restore focus to the moved row's move-up button after a reorder
+		// (WCAG 2.1.1 Keyboard / 2.4.3 Focus Order — no keyboard trap, no
+		// lost focus on re-render).
+		if (typeof focusMoveButtonIndex === 'number') {
+			var focusRows = listEl.querySelectorAll('.nldesign-group-theming-row');
+			var target = focusRows[focusMoveButtonIndex];
+			if (target) {
+				// A row moved to a boundary has its corresponding move button
+				// disabled, and a disabled control cannot hold focus — focus
+				// would fall back to <body>, losing the user's place. Focus the
+				// nearest still-operable control on the moved row instead, so
+				// keyboard users always land on the row they just moved.
+				var btn = target.querySelector('.nldesign-group-theming-move-up');
+				if (btn === null || btn.disabled === true) {
+					btn = target.querySelector('.nldesign-group-theming-move-down');
+				}
+				if (btn !== null && btn.disabled === false) { btn.focus(); }
+			}
+		}
+	}
+
+	// Swap row at `index` with its neighbour `index + direction` (direction
+	// is -1 for up, +1 for down) and keep focus on the moved row's move-up
+	// button at its new position.
+	function moveGroupThemingRow(index, direction) {
+		var target = index + direction;
+		if (target < 0 || target >= groupThemingRows.length) {
+			return;
+		}
+
+		var tmp = groupThemingRows[index];
+		groupThemingRows[index] = groupThemingRows[target];
+		groupThemingRows[target] = tmp;
+
+		renderGroupThemingList(target);
+	}
+
+	// POST the full ordered mapping and surface success/validation feedback.
+	function saveGroupTheming() {
+		var feedback = document.getElementById('nldesign-group-theming-feedback');
+		var payload = groupThemingRows.map(function(row) {
+			return { group: row.group, tokenSet: row.tokenSet };
+		});
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/group-theming'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ mapping: payload })
+		})
+		.then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+		.then(function(result) {
+			var data = result.data;
+
+			if (result.ok === true && data && data.status === 'ok') {
+				groupThemingRows = (data.mapping || []).map(function(entry) {
+					return { group: entry.group, tokenSet: entry.tokenSet };
+				});
+				renderGroupThemingList();
+				if (feedback !== null) {
+					feedback.textContent = t('nldesign', 'Group theming saved.');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Group theming saved.'));
+				return;
+			}
+
+			if (data && data.error === 'invalid_mapping') {
+				var entryGroup = (data.entry && data.entry.group) || '?';
+				var entryTokenSet = (data.entry && data.entry.tokenSet) || '?';
+				var message = t(
+					'nldesign',
+					'Could not save mapping for group "{group}" → "{tokenSet}": {reason}',
+					{ group: entryGroup, tokenSet: entryTokenSet, reason: (data.reason || '') }
+				);
+				if (feedback !== null) {
+					feedback.textContent = message;
+				}
+				OC.Notification.showTemporary(message);
+				// Rows are left exactly as the admin edited them — no silent
+				// state reset — so the offending entry stays editable.
+				return;
+			}
+
+			if (feedback !== null) {
+				feedback.textContent = t('nldesign', 'Failed to save group theming.');
+			}
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save group theming.'));
+		})
+		.catch(function(err) {
+			console.error('Error saving group theming:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save group theming.'));
+		});
+	}
+
+	// Initialise the group theming panel on page load.
+	initGroupTheming();
+
+	/* ==========================================================================
 	 * CUSTOM TOKEN SETS — upload / list / download / delete (eigen huisstijl)
 	 * ========================================================================== */
 
@@ -1447,6 +1778,84 @@ function nldesignAdminMain() {
 		loadCustomTokenSets();
 	}
 
+	// Localised label for a DTCG import diagnostic `reason` code. Falls back to
+	// the raw code for any future reason this script does not yet know about,
+	// so a new mapper diagnostic never renders as blank.
+	function reasonLabel(reason) {
+		var labels = {
+			'unmapped-path': t('nldesign', 'Not part of the --nldesign-* vocabulary'),
+			'missing-type': t('nldesign', 'No $type could be resolved (never guessed)'),
+			'unsupported-color-space': t('nldesign', 'Unsupported color space'),
+			'unsupported-value-shape': t('nldesign', 'Unsupported value shape'),
+			'alias-cycle': t('nldesign', 'Alias cycle detected'),
+			'alias-target-missing': t('nldesign', 'Alias target does not exist'),
+			'alias-depth-exceeded': t('nldesign', 'Alias chain too deep (more than 10 hops)'),
+			'duplicate-target': t('nldesign', 'Another token already maps to this target')
+		};
+		return labels[reason] || reason;
+	}
+
+	// Inline copy of tokenTransforms' groupDiagnosticsByReason, used when the
+	// transforms module is not present on `window` (the app template loads it
+	// first, but admin.js must degrade rather than silently render nothing).
+	// Keep in sync with js/lib/tokenTransforms.js.
+	function groupDiagnosticsByReasonFallback(entries) {
+		if (!Array.isArray(entries) || entries.length === 0) {
+			return [];
+		}
+
+		var byReason = {};
+		entries.forEach(function(entry) {
+			var reason = (entry && entry.reason) || 'unknown';
+			if (byReason[reason] === undefined) {
+				byReason[reason] = [];
+			}
+			byReason[reason].push(entry);
+		});
+
+		return Object.keys(byReason).sort().map(function(reason) {
+			return { reason: reason, items: byReason[reason] };
+		});
+	}
+
+	// Build the DTCG import-diagnostics fragment for an upload response:
+	// skipped/error paths grouped by reason, plus $deprecated import warnings.
+	// Returns an empty (childless) fragment when both arrays are absent/empty,
+	// so a CSS upload's plain-text summary is never followed by empty markup.
+	function buildDiagnosticsFragment(data) {
+		var fragment = document.createDocumentFragment();
+
+		var diagnostics = [].concat(data.skipped || [], data.errors || []);
+		var groups = (typeof TT.groupDiagnosticsByReason === 'function')
+			? TT.groupDiagnosticsByReason(diagnostics)
+			: groupDiagnosticsByReasonFallback(diagnostics);
+
+		if (groups.length > 0) {
+			var list = document.createElement('ul');
+			list.className = 'nldesign-diagnostics-list';
+			groups.forEach(function(group) {
+				var item = document.createElement('li');
+				var paths = group.items.map(function(entry) { return entry.path; }).join(', ');
+				item.textContent = reasonLabel(group.reason) + ' (' + group.items.length + '): ' + paths;
+				list.appendChild(item);
+			});
+			fragment.appendChild(list);
+		}
+
+		if (data.importWarnings && data.importWarnings.length > 0) {
+			var warnList = document.createElement('ul');
+			warnList.className = 'nldesign-deprecation-list';
+			data.importWarnings.forEach(function(w) {
+				var item = document.createElement('li');
+				item.textContent = w.path + (w.message ? ': ' + w.message : '');
+				warnList.appendChild(item);
+			});
+			fragment.appendChild(warnList);
+		}
+
+		return fragment;
+	}
+
 	function uploadCustomTokenSet(name, file) {
 		var resultEl = document.getElementById('nldesign-upload-result');
 		var formData = new FormData();
@@ -1462,10 +1871,12 @@ function nldesignAdminMain() {
 		.then(function(res) {
 			if (resultEl !== null) {
 				resultEl.style.display = 'block';
+				resultEl.innerHTML = '';
 			}
 			if (res.status >= 400) {
 				if (resultEl !== null) {
-					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
+					resultEl.appendChild(document.createTextNode(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '')));
+					resultEl.appendChild(buildDiagnosticsFragment(res.data));
 				}
 				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
 				return;
@@ -1473,12 +1884,16 @@ function nldesignAdminMain() {
 			var msg = t('nldesign', '{imported} tokens imported, {skipped} skipped.')
 				.replace('{imported}', res.data.imported)
 				.replace('{skipped}', (res.data.skipped || []).length);
+			if (res.data.version) {
+				msg += ' ' + t('nldesign', 'Package version: {version}').replace('{version}', res.data.version);
+			}
 			if (res.data.warnings && res.data.warnings.length > 0) {
 				msg += ' ' + t('nldesign', '{count} WCAG AA contrast warning(s) — see the apply dialog.')
 					.replace('{count}', res.data.warnings.length);
 			}
 			if (resultEl !== null) {
-				resultEl.textContent = msg;
+				resultEl.appendChild(document.createTextNode(msg));
+				resultEl.appendChild(buildDiagnosticsFragment(res.data));
 			}
 			OC.Notification.showTemporary(t('nldesign', 'Token set uploaded. Reload the page to apply it.'));
 			loadCustomTokenSets();
@@ -1525,6 +1940,13 @@ function nldesignAdminMain() {
 			nameSpan.className = 'nldesign-custom-set-name';
 			nameSpan.textContent = set.name || set.id;
 			row.appendChild(nameSpan);
+
+			if (set.version) {
+				var versionSpan = document.createElement('span');
+				versionSpan.className = 'nldesign-custom-set-version';
+				versionSpan.textContent = t('nldesign', 'v{version}', { version: set.version });
+				row.appendChild(versionSpan);
+			}
 
 			var badge = document.createElement('span');
 			badge.className = 'nldesign-badge';
@@ -1866,6 +2288,86 @@ function nldesignAdminMain() {
 	}
 
 	initAuditLog();
+
+	/* ==========================================================================
+	 * CONFIGURATION BUNDLE — complete-config OTAP promotion download/upload
+	 * (config-portability spec). Distinct from the token-editor overrides
+	 * download/upload above: this bundle covers the token set, both toggles,
+	 * per-app exclusions, overrides CSS, custom token sets, the email footer,
+	 * and the upstream-freshness toggle in one JSON file.
+	 * ========================================================================== */
+
+	function downloadConfigBundle() {
+		window.location = OC.generateUrl('/apps/nldesign/settings/config/export');
+	}
+
+	function showConfigBundleResult(message) {
+		var resultEl = document.getElementById('nldesign-config-bundle-result');
+		if (resultEl === null) {
+			return;
+		}
+		resultEl.textContent = message;
+		resultEl.style.display = 'block';
+	}
+
+	function uploadConfigBundle(file) {
+		var formData = new FormData();
+		formData.append('file', file);
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/config/import'), {
+			method: 'POST',
+			headers: { 'requesttoken': OC.requestToken },
+			body: formData
+		})
+		.then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+		.then(function(result) {
+			if (result.status === 200 && result.data.applied === true) {
+				showConfigBundleResult(t('nldesign', 'Configuration imported successfully. Reloading…'));
+				OC.Notification.showTemporary(t('nldesign', 'Configuration imported successfully.'));
+				window.setTimeout(function() { window.location.reload(); }, 1200);
+				return;
+			}
+
+			var errors = (result.data && result.data.errors) || [];
+			var lines = errors.map(function(e) {
+				return '[' + (e.section || 'unknown') + '] ' + (e.message || '');
+			});
+			showConfigBundleResult(
+				t('nldesign', 'Import failed — nothing was applied:') + ' ' + lines.join('; ')
+			);
+			OC.Notification.showTemporary(t('nldesign', 'Configuration import failed.'));
+		})
+		.catch(function(err) {
+			console.error('Error importing configuration bundle:', err);
+			showConfigBundleResult(t('nldesign', 'Import failed.'));
+			OC.Notification.showTemporary(t('nldesign', 'Configuration import failed.'));
+		});
+	}
+
+	function initConfigBundle() {
+		var downloadBtn = document.getElementById('nldesign-config-bundle-download-btn');
+		var uploadBtn = document.getElementById('nldesign-config-bundle-upload-btn');
+		var fileInput = document.getElementById('nldesign-config-bundle-input');
+		if (downloadBtn === null || uploadBtn === null || fileInput === null) {
+			return;
+		}
+
+		downloadBtn.addEventListener('click', downloadConfigBundle);
+
+		uploadBtn.addEventListener('click', function() {
+			fileInput.click();
+		});
+
+		fileInput.addEventListener('change', function(e) {
+			var file = e.target.files[0];
+			if (file) {
+				uploadConfigBundle(file);
+			}
+			fileInput.value = '';
+		});
+	}
+
+	initConfigBundle();
 
 	/* ==========================================================================
 	 * EMAIL TEMPLATE THEMING — mail_template_class toggle + compliance footer

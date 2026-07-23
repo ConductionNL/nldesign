@@ -7,6 +7,7 @@
  * @var array{orgName: string, accessibilityUrl: string, privacyUrl: string} $emailFooterConfig
  * @var string $occEnableCommand
  * @var string $occDisableCommand
+ * @var array{tokenSet: string, name: string}|null $activePreview
  */
 
 // Load the pure token/colour transforms first so admin.js can consume them via
@@ -18,7 +19,8 @@ style('nldesign', 'admin');
 
 <div id="nldesign-settings" class="section"
 	 data-token-sets="<?php p(json_encode($_['tokenSets'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>"
-	 data-current-token-set="<?php p($_['currentTokenSet']); ?>">
+	 data-current-token-set="<?php p($_['currentTokenSet']); ?>"
+	 data-active-preview="<?php p(json_encode($_['activePreview'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>">
 	<div class="nldesign-settings-header">
 		<h2><?php p($l->t('NL Design System Theme')); ?></h2>
 		<a href="https://nldesign.app" target="_blank" rel="noopener noreferrer" class="nldesign-doc-link">
@@ -42,6 +44,25 @@ style('nldesign', 'admin');
 			<?php endforeach; ?>
 		</select>
 		<span id="nldesign-design-system-badge" class="nldesign-badge"></span>
+		<button type="button" id="nldesign-preview-btn" class="button">
+			<?php p($l->t('Preview in my session')); ?>
+		</button>
+	</div>
+
+	<!-- Active theme preview ("proefdraaien") — only rendered for the
+	     requesting admin's own active preview; publishing runs the existing
+	     apply + theming-sync dialogs before calling the publish endpoint. -->
+	<div class="nldesign-active-preview" id="nldesign-active-preview"
+		 style="<?php echo ($_['activePreview'] === null) ? 'display:none' : ''; ?>">
+		<p class="settings-hint" role="status">
+			<?php p($l->t('Previewing "{name}" in your session only.', ['name' => ($_['activePreview']['name'] ?? '')])); ?>
+		</p>
+		<button type="button" id="nldesign-preview-publish-btn" class="button">
+			<?php p($l->t('Publish')); ?>
+		</button>
+		<button type="button" id="nldesign-preview-discard-btn" class="button">
+			<?php p($l->t('Discard')); ?>
+		</button>
 	</div>
 
 	<!-- Custom token set upload (eigen huisstijl) -->
@@ -154,6 +175,31 @@ style('nldesign', 'admin');
 			<?php p($l->t('Save app theming')); ?>
 		</button>
 		<span id="nldesign-app-theming-feedback" class="nldesign-app-theming-feedback" role="status" aria-live="polite"></span>
+	</div>
+
+	<!-- Group theming — map Nextcloud groups to token sets for shared-instance
+	     multi-tenant huisstijl (openspec/specs/per-group-theming/spec.md).
+	     Row order IS priority order; keyboard-operable move-up/move-down
+	     buttons instead of drag-and-drop. -->
+	<div class="nldesign-group-theming" id="nldesign-group-theming" style="margin-top:2em">
+		<h3><?php p($l->t('Group theming')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Map Nextcloud groups to token sets so different gemeenten sharing one instance each see their own house style. Row order is priority order: for a user in multiple mapped groups, the first matching row wins.')); ?>
+		</p>
+		<p class="settings-hint">
+			<?php p($l->t('Logo, mail templates, and other Nextcloud core branding always follow the instance default token set above — they are not per-group. Only this token-set stylesheet layer differs per group.')); ?>
+		</p>
+		<div id="nldesign-group-theming-list" class="nldesign-group-theming-list" role="group"
+			 aria-label="<?php p($l->t('Group theming')); ?>">
+			<p class="settings-hint"><?php p($l->t('Loading group mappings…')); ?></p>
+		</div>
+		<button type="button" id="nldesign-group-theming-add" class="button">
+			<?php p($l->t('Add mapping')); ?>
+		</button>
+		<button type="button" id="nldesign-group-theming-save" class="button primary">
+			<?php p($l->t('Save group theming')); ?>
+		</button>
+		<span id="nldesign-group-theming-feedback" class="nldesign-group-theming-feedback" role="status" aria-live="polite"></span>
 	</div>
 
 	<!-- Email template theming — mail_template_class toggle + compliance footer -->
@@ -346,6 +392,28 @@ style('nldesign', 'admin');
 		<button type="button" id="nldesign-audit-download-btn" class="button">
 			<?php p($l->t('Download full log')); ?>
 		</button>
+	</div>
+
+	<!-- Complete configuration bundle — OTAP (dev/test/acceptatie/productie)
+	     promotion. Unlike the token-editor overrides download above, this
+	     covers the COMPLETE nldesign configuration (config-portability spec):
+	     token set, toggles, per-app exclusions, overrides, custom token sets,
+	     email footer, custom-font metadata, upstream-freshness toggle. -->
+	<div class="nldesign-config-bundle" id="nldesign-config-bundle" style="margin-top:2em">
+		<h3><?php p($l->t('Configuration bundle (OTAP promotion)')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Download or upload the complete NL Design configuration as one JSON file — the active token set, toggles, per-app exclusions, token overrides, custom token sets, email footer, and the upstream-update toggle. Use this to promote configuration between dev, test, acceptance, and production environments identically. This is different from the overrides-only download above.')); ?>
+		</p>
+		<div class="nldesign-upload-form">
+			<button type="button" id="nldesign-config-bundle-download-btn" class="button">
+				<?php p($l->t('Download configuration')); ?>
+			</button>
+			<input type="file" id="nldesign-config-bundle-input" accept=".json" style="display:none">
+			<button type="button" id="nldesign-config-bundle-upload-btn" class="button">
+				<?php p($l->t('Upload configuration')); ?>
+			</button>
+		</div>
+		<div id="nldesign-config-bundle-result" class="nldesign-import-result" role="status" aria-live="polite" style="display:none"></div>
 	</div>
 
 	<p class="nldesign-info">

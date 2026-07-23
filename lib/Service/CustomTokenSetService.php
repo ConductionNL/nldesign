@@ -236,6 +236,39 @@ class CustomTokenSetService
     }//end store()
 
     /**
+     * Create or replace a custom token set by an already-known id, writing
+     * the canonical CSS content and manifest entry verbatim.
+     *
+     * Unlike {@see store()} — which derives the id from a display name and
+     * rejects a collision (409, first-upload contract) — this is the
+     * OTAP-promotion path (`config-portability` bundle import): the target
+     * environment may already have an id-matching custom set (replace) or
+     * may never have seen it before (create), and either outcome is
+     * expected and valid. The caller MUST have already re-serialised `$css`
+     * from validated declarations (e.g. via
+     * {@see CustomTokenSetValidator::serialize()}) — this method never
+     * re-validates, it only writes.
+     *
+     * @param string               $id    The custom set id (already `isCustomId()`-checked by the caller).
+     * @param array<string, mixed> $entry The manifest entry to persist verbatim (name, description, theming, warnings, …).
+     * @param string               $css   The canonical CSS file content to write verbatim.
+     *
+     * @return void
+     *
+     * @throws RuntimeException When the file cannot be written (500).
+     *
+     * @spec openspec/specs/config-portability/spec.md
+     */
+    public function replace(string $id, array $entry, string $css): void
+    {
+        $this->writeFile(path: $this->getCssPath(id: $id), contents: $css);
+
+        $manifest      = $this->getManifest();
+        $manifest[$id] = $entry;
+        $this->saveManifest(manifest: $manifest);
+    }//end replace()
+
+    /**
      * Delete a custom token set: its CSS file, manifest entry, and any
      * generated dark variant.
      *

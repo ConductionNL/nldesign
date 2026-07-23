@@ -373,6 +373,135 @@ strings.
 - WHEN the admin activates "Download full log"
 - THEN the browser MUST download `nldesign-audit.jsonl` containing every retained entry
 
+### Requirement: Group Theming Mapping Section
+
+The settings panel MUST include a "Group theming" section, implemented as vanilla PHP template
+plus vanilla JavaScript (consistent with REQ-ASET-008 and the existing per-app theming list
+pattern in `js/admin.js`), that lists the ordered group→token-set mapping rows and lets the
+admin add, remove, and reorder them. Each row MUST contain: a group `<select>` (options from
+the groups returned by `GET /settings/group-theming`, showing display names), a token-set
+`<select>` (same option source as the main token-set dropdown), keyboard-operable move-up /
+move-down buttons for priority reordering (no drag-and-drop requirement), and a remove button.
+Every control MUST have an accessible name (associated `<label>` or `aria-label`). The section
+MUST include an "Add mapping" button, a Save button that POSTs the full ordered mapping to
+`/settings/group-theming`, a feedback element announcing success or the server's per-entry
+validation error, and a localized hint stating (a) that row order is priority order — the first
+matching group wins — and (b) the core-theming limitation: logo, mail templates and Nextcloud
+core branding follow the instance default set, not the group set. Rendering an empty state
+("No group mappings configured") is required when the mapping is empty. All strings use
+`$l->t()` / the JS translation helpers with English source keys.
+
+#### Scenario: Section lists mappings in priority order
+
+- GIVEN a stored mapping `[{gemeente-a → amsterdam}, {gemeente-b → utrecht}]`
+- WHEN the admin opens the settings panel
+- THEN the group theming section MUST render two rows in that order
+- AND each row MUST show the group display name and the token set name in its selects
+
+#### Scenario: Admin adds, reorders, and saves a mapping
+
+- GIVEN the admin adds a row mapping `gemeente-b` to `utrecht` and moves it above an existing
+  row using the move-up button
+- WHEN they press Save
+- THEN the POST body MUST contain the rows in the displayed order
+- AND on success the feedback element MUST announce the save
+- AND after a panel reload the rows MUST render in the saved order
+
+#### Scenario: Server validation error is surfaced per entry
+
+@e2e exclude error branch — vitest with a mocked 422 response
+- GIVEN the server rejects the save with HTTP 422 naming an offending entry
+- WHEN the response is handled
+- THEN the feedback element MUST display the localized error including the offending
+  group/set
+- AND the rows MUST remain editable with no silent state reset
+
+#### Scenario: Reordering works with the keyboard alone
+
+- GIVEN focus is on a row's move-up button
+- WHEN the admin activates it with Enter or Space
+- THEN the row MUST swap with its predecessor
+- AND focus MUST remain on the moved row's move-up button (WCAG 2.1.1, no keyboard trap)
+
+#### Scenario: Empty state and limitation hint are shown
+
+- GIVEN no group mappings are configured
+- WHEN the section renders
+- THEN it MUST show the localized empty state
+- AND the hint stating priority ordering and the instance-global core-theming limitation MUST
+  be visible whether or not mappings exist
+
+### Requirement: Session Preview Controls
+
+The settings panel MUST provide a "Preview in my session" button adjacent to the token set
+dropdown that starts a per-user preview of the currently selected set (via
+`POST /settings/preview`) instead of applying it instance-wide. While the requesting admin has
+an active preview, the panel MUST display an active-preview row showing the previewed set's name
+with Publish and Discard controls, and `js/admin.js` MUST detect the active preview on load so a
+banner-initiated Publish opens the existing apply-dialog flow for the previewed set (whose
+confirmation calls `POST /settings/preview/publish` rather than `POST /settings/tokenset`). All
+new controls MUST follow the panel's existing vanilla-JS architecture (no Vue, no build step),
+be localized via `$l->t()` / `t('nldesign', …)` with English source keys, and carry labels
+programmatically associated with their controls.
+
+#### Scenario: Preview button starts a session-only preview
+
+- GIVEN the admin selects "Gemeente Amsterdam" in the token set dropdown
+- WHEN they activate "Preview in my session"
+- THEN the client MUST call `POST /settings/preview` with the selected id
+- AND the instance-wide `token_set` app value MUST NOT change
+- AND after reload the panel MUST show the active-preview row for "Gemeente Amsterdam"
+
+#### Scenario: Active-preview row offers Publish and Discard
+
+- GIVEN the requesting admin has an active preview
+- WHEN the settings panel loads
+- THEN a row MUST show the previewed set's name and Publish and Discard controls
+- AND Discard MUST call `DELETE /settings/preview` and refresh the panel state
+- AND Publish MUST run the existing apply dialog (and theming-sync dialog when applicable)
+  before calling `POST /settings/preview/publish`
+
+#### Scenario: Panel without an active preview is unchanged
+
+- GIVEN the requesting admin has no active preview
+- WHEN the settings panel loads
+- THEN no active-preview row MUST render and every pre-existing control MUST behave exactly as
+  specified by the other requirements of this spec
+
+### Requirement: Configuration Bundle Controls
+
+The settings panel MUST provide a "Configuration" block with a **Download configuration** button
+(navigating to `GET /settings/config/export`) and an **Upload configuration** control
+(multipart `POST /settings/config/import`). After an upload, the panel MUST display the
+per-section import result — applied counts on success, or the complete all-or-nothing error
+listing on validation failure — as a dismissible message, and on a successfully applied import
+MUST refresh the panel so the token set dropdown, toggles, exclusion list, and token editor
+reflect the imported state. The controls MUST follow the panel's vanilla-JS architecture (no
+Vue, no build step), be localized with English source keys, and have labels programmatically
+associated with the controls. The block SHOULD state that this bundle is the OTAP-promotion
+path and covers the complete configuration, unlike the overrides-only download.
+
+#### Scenario: Download configuration button
+
+- GIVEN the settings panel is loaded
+- WHEN the admin activates "Download configuration"
+- THEN the browser MUST download `nldesign-config.json` containing the full bundle
+
+#### Scenario: Successful upload refreshes panel state
+
+- GIVEN a valid bundle whose token set differs from the live one
+- WHEN the admin uploads it
+- THEN the per-section applied counts MUST be shown
+- AND after refresh the dropdown, toggles, exclusion list, and token editor MUST show the
+  imported values
+
+#### Scenario: Failed upload shows the full error listing and changes nothing
+
+- GIVEN a bundle with a hard validation error in one section
+- WHEN the admin uploads it
+- THEN the panel MUST show the complete per-section error listing (HTTP 400 body)
+- AND every control MUST still show the pre-upload configuration
+
 ## Current Implementation Status
 
 **Fully implemented:**

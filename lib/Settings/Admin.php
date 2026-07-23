@@ -16,6 +16,7 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
+ * @spec openspec/specs/admin-settings/spec.md#requirement-session-preview-controls
  */
 
 declare(strict_types=1);
@@ -24,10 +25,12 @@ namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\ThemePreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IConfig;
 use OCP\IL10N;
+use OCP\IUserSession;
 use OCP\Settings\IDelegatedSettings;
 
 /**
@@ -72,23 +75,44 @@ class Admin implements IDelegatedSettings
     private EmailThemingService $emailThemingService;
 
     /**
+     * The theme preview service (drives the active-preview row).
+     *
+     * @var ThemePreviewService
+     */
+    private ThemePreviewService $previewService;
+
+    /**
+     * The user session — resolves the requesting admin's uid for the
+     * active-preview row.
+     *
+     * @var IUserSession
+     */
+    private IUserSession $userSession;
+
+    /**
      * Constructor.
      *
      * @param IConfig             $config              The config service.
      * @param IL10N               $l                   The localization service.
      * @param TokenSetService     $tokenSetService     The token set service.
      * @param EmailThemingService $emailThemingService The email theming service.
+     * @param ThemePreviewService $previewService      The theme preview service.
+     * @param IUserSession        $userSession         The user session.
      */
     public function __construct(
         IConfig $config,
         IL10N $l,
         TokenSetService $tokenSetService,
-        EmailThemingService $emailThemingService
+        EmailThemingService $emailThemingService,
+        ThemePreviewService $previewService,
+        IUserSession $userSession
     ) {
         $this->config = $config;
         $this->l      = $l;
         $this->tokenSetService     = $tokenSetService;
         $this->emailThemingService = $emailThemingService;
+        $this->previewService      = $previewService;
+        $this->userSession         = $userSession;
     }//end __construct()
 
     /**
@@ -130,6 +154,8 @@ class Admin implements IDelegatedSettings
         $emailThemingState = $this->emailThemingService->getState();
         $emailFooterConfig = $this->emailThemingService->getFooterConfig();
 
+        $activePreview = $this->getActivePreviewForCurrentUser();
+
         return new TemplateResponse(
             Application::APP_ID,
                 'settings/admin',
@@ -143,9 +169,46 @@ class Admin implements IDelegatedSettings
                     'emailFooterConfig'   => $emailFooterConfig,
                     'occEnableCommand'    => EmailThemingService::OCC_ENABLE_COMMAND,
                     'occDisableCommand'   => EmailThemingService::OCC_DISABLE_COMMAND,
+                    'activePreview'       => $activePreview,
                 ]
         );
     }//end getForm()
+
+    /**
+     * Resolve the requesting admin's active preview (name + token set id), or
+     * null when they have none — drives the settings panel's active-preview
+     * row (admin-settings spec: Session Preview Controls).
+     *
+     * @return array{tokenSet: string, name: string}|null The active preview, or null.
+     *
+     * @spec openspec/specs/admin-settings/spec.md#requirement-session-preview-controls
+     */
+    private function getActivePreviewForCurrentUser(): ?array
+    {
+        $uid = $this->userSession->getUser()?->getUID();
+        if ($uid === null) {
+            return null;
+        }
+
+        $preview = $this->previewService->getActivePreview(uid: $uid);
+        if ($preview === null) {
+            return null;
+        }
+
+        $meta = $this->tokenSetService->getAvailableTokenSets();
+        $name = $preview['tokenSet'];
+        foreach ($meta as $tokenSet) {
+            if ($tokenSet['id'] === $preview['tokenSet']) {
+                $name = $tokenSet['name'];
+                break;
+            }
+        }
+
+        return [
+            'tokenSet' => $preview['tokenSet'],
+            'name'     => $name,
+        ];
+    }//end getActivePreviewForCurrentUser()
 
     /**
      * Get the settings section identifier.
@@ -195,6 +258,7 @@ class Admin implements IDelegatedSettings
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
      * @spec openspec/specs/upstream-freshness/spec.md
+     * @spec openspec/specs/per-group-theming/spec.md
      */
     public function getAuthorizedAppConfig(): array
     {
@@ -206,6 +270,11 @@ class Admin implements IDelegatedSettings
                 '/dark_variants/',
                 '/disabled_apps/',
                 '/theming_syncs_total/',
+                // Per-group theming mapping (openspec/specs/per-group-theming/spec.md):
+                // the ordered group->token-set mapping and its cache-invalidation
+                // generation counter.
+                '/group_token_sets/',
+                '/group_token_sets_generation/',
                 // Upstream token freshness — only the two admin-initiated
                 // config keys (the opt-in toggle and dismissal state); the
                 // job-internal ETag/head-SHA/checked-at/notices keys are never

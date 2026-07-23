@@ -47,6 +47,8 @@ Gratis en open source onder de EUPL-1.2 licentie.
 	<commands>
 		<command>OCA\NLDesign\Command\ComplianceReport</command>
 		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
+		<command>OCA\NLDesign\Command\ConfigExport</command>
+		<command>OCA\NLDesign\Command\ConfigImport</command>
 	</commands>
 	<repair-steps>
 		<post-migration>
