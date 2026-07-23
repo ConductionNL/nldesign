@@ -41,6 +41,16 @@ return [
 		['name' => 'customTokenSet#list', 'url' => '/settings/tokensets/custom', 'verb' => 'GET'],
 		['name' => 'customTokenSet#export', 'url' => '/settings/tokensets/custom/{id}/export', 'verb' => 'GET'],
 		['name' => 'customTokenSet#delete', 'url' => '/settings/tokensets/custom/{id}', 'verb' => 'DELETE'],
+		// Custom font upload lifecycle (admin-only).
+		['name' => 'font#upload', 'url' => '/settings/fonts/upload', 'verb' => 'POST'],
+		['name' => 'font#list', 'url' => '/settings/fonts', 'verb' => 'GET'],
+		['name' => 'font#delete', 'url' => '/settings/fonts/{id}', 'verb' => 'DELETE'],
+		// Font serving — deliberately public (#[PublicPage] + #[NoCSRFRequired]
+		// on FontController::serve()/css()): CSS `url()` font loads carry no
+		// CSRF token and must also work on the pre-login page before any
+		// session exists.
+		['name' => 'font#serve', 'url' => '/fonts/{id}.woff2', 'verb' => 'GET'],
+		['name' => 'font#css', 'url' => '/fonts/css', 'verb' => 'GET'],
 		// Theming audit trail — admin-only (AuthorizedAdminSetting), no
 		// #[PublicPage]/#[NoAdminRequired].
 		['name' => 'audit#list', 'url' => '/settings/audit', 'verb' => 'GET'],

@@ -25,11 +25,13 @@ use OCA\NLDesign\Capabilities;
 use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
+use OCA\NLDesign\Service\FontService;
 use OCA\NLDesign\Themes\NLDesignTheme;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\IURLGenerator;
 
 /**
  * Main application class for NL Design.
@@ -110,6 +112,7 @@ class Application extends App implements IBootstrap
      * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
+     * @spec openspec/specs/custom-fonts/spec.md
      */
     private function injectThemeCSS($serverContainer): void
     {
@@ -156,6 +159,27 @@ class Application extends App implements IBootstrap
         $customOverridesSvc = $serverContainer->get(CustomOverridesService::class);
         $customOverridesSvc->ensureExists();
         \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
+
+        // 4.5 Custom fonts — admin-uploaded, self-hosted webfonts. Injected as
+        // a <link rel="stylesheet"> (not \OCP\Util::addStyle(), because the
+        // CSS is generated dynamically by FontController::css(), not a static
+        // file under css/) AFTER the token-set styles so the font tokens win
+        // the cascade, and only when at least one font is configured, so a
+        // themed instance with zero uploaded fonts issues no extra request.
+        if ($designSystemId !== 'none') {
+            $fontService = $serverContainer->get(FontService::class);
+            if ($fontService->hasFonts() === true) {
+                $urlGenerator = $serverContainer->get(IURLGenerator::class);
+                $cssUrl       = $urlGenerator->linkToRoute('nldesign.font.css').'?v='.$fontService->getRevision();
+                \OCP\Util::addHeader(
+                    tag: 'link',
+                    attributes: [
+                        'rel'  => 'stylesheet',
+                        'href' => $cssUrl,
+                    ]
+                );
+            }
+        }
 
         // 5. Conditional stylesheets.
         if ($hideSlogan === true) {

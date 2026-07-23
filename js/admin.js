@@ -1395,61 +1395,6 @@ function nldesignAdminMain() {
 		loadCustomTokenSets();
 	}
 
-	// Localised label for a DTCG import diagnostic `reason` code. Falls back to
-	// the raw code for any future reason this script does not yet know about,
-	// so a new mapper diagnostic never renders as blank.
-	function reasonLabel(reason) {
-		var labels = {
-			'unmapped-path': t('nldesign', 'Not part of the --nldesign-* vocabulary'),
-			'missing-type': t('nldesign', 'No $type could be resolved (never guessed)'),
-			'unsupported-color-space': t('nldesign', 'Unsupported color space'),
-			'unsupported-value-shape': t('nldesign', 'Unsupported value shape'),
-			'alias-cycle': t('nldesign', 'Alias cycle detected'),
-			'alias-target-missing': t('nldesign', 'Alias target does not exist'),
-			'alias-depth-exceeded': t('nldesign', 'Alias chain too deep (more than 10 hops)'),
-			'duplicate-target': t('nldesign', 'Another token already maps to this target')
-		};
-		return labels[reason] || reason;
-	}
-
-	// Build the DTCG import-diagnostics fragment for an upload response:
-	// skipped/error paths grouped by reason, plus $deprecated import warnings.
-	// Returns an empty (childless) fragment when both arrays are absent/empty,
-	// so a CSS upload's plain-text summary is never followed by empty markup.
-	function buildDiagnosticsFragment(data) {
-		var fragment = document.createDocumentFragment();
-
-		var diagnostics = [].concat(data.skipped || [], data.errors || []);
-		var groups = (typeof TT.groupDiagnosticsByReason === 'function')
-			? TT.groupDiagnosticsByReason(diagnostics)
-			: [];
-
-		if (groups.length > 0) {
-			var list = document.createElement('ul');
-			list.className = 'nldesign-diagnostics-list';
-			groups.forEach(function(group) {
-				var item = document.createElement('li');
-				var paths = group.items.map(function(entry) { return entry.path; }).join(', ');
-				item.textContent = reasonLabel(group.reason) + ' (' + group.items.length + '): ' + paths;
-				list.appendChild(item);
-			});
-			fragment.appendChild(list);
-		}
-
-		if (data.importWarnings && data.importWarnings.length > 0) {
-			var warnList = document.createElement('ul');
-			warnList.className = 'nldesign-deprecation-list';
-			data.importWarnings.forEach(function(w) {
-				var item = document.createElement('li');
-				item.textContent = w.path + (w.message ? ': ' + w.message : '');
-				warnList.appendChild(item);
-			});
-			fragment.appendChild(warnList);
-		}
-
-		return fragment;
-	}
-
 	function uploadCustomTokenSet(name, file) {
 		var resultEl = document.getElementById('nldesign-upload-result');
 		var formData = new FormData();
@@ -1465,12 +1410,10 @@ function nldesignAdminMain() {
 		.then(function(res) {
 			if (resultEl !== null) {
 				resultEl.style.display = 'block';
-				resultEl.innerHTML = '';
 			}
 			if (res.status >= 400) {
 				if (resultEl !== null) {
-					resultEl.appendChild(document.createTextNode(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '')));
-					resultEl.appendChild(buildDiagnosticsFragment(res.data));
+					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
 				}
 				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
 				return;
@@ -1482,12 +1425,8 @@ function nldesignAdminMain() {
 				msg += ' ' + t('nldesign', '{count} WCAG AA contrast warning(s) — see the apply dialog.')
 					.replace('{count}', res.data.warnings.length);
 			}
-			if (res.data.version) {
-				msg += ' ' + t('nldesign', 'Package version: {version}').replace('{version}', res.data.version);
-			}
 			if (resultEl !== null) {
-				resultEl.appendChild(document.createTextNode(msg));
-				resultEl.appendChild(buildDiagnosticsFragment(res.data));
+				resultEl.textContent = msg;
 			}
 			OC.Notification.showTemporary(t('nldesign', 'Token set uploaded. Reload the page to apply it.'));
 			loadCustomTokenSets();
@@ -1534,13 +1473,6 @@ function nldesignAdminMain() {
 			nameSpan.className = 'nldesign-custom-set-name';
 			nameSpan.textContent = set.name || set.id;
 			row.appendChild(nameSpan);
-
-			if (set.version) {
-				var versionSpan = document.createElement('span');
-				versionSpan.className = 'nldesign-custom-set-version';
-				versionSpan.textContent = t('nldesign', 'v{version}', { version: set.version });
-				row.appendChild(versionSpan);
-			}
 
 			var badge = document.createElement('span');
 			badge.className = 'nldesign-badge';
@@ -1606,6 +1538,177 @@ function nldesignAdminMain() {
 
 	// Initialise the custom token set panel on page load.
 	initCustomTokenSets();
+
+	/* ==========================================================================
+	 * CUSTOM FONTS (admin-uploaded, self-hosted webfonts)
+	 *
+	 * Mirrors the custom token set upload panel above (FormData POST, list
+	 * refresh, delete-with-confirm), hardened for binary input: the file
+	 * input accepts .woff2 as a UX hint only — the server-side WOFF2 magic
+	 * byte check is authoritative and rejects anything else with a 422 the
+	 * user sees inline.
+	 * ========================================================================== */
+
+	function initCustomFonts() {
+		var uploadBtn = document.getElementById('nldesign-font-upload-btn');
+		var fileInput = document.getElementById('nldesign-font-input');
+		var nameInput = document.getElementById('nldesign-font-name');
+		var roleSelect = document.getElementById('nldesign-font-role');
+		if (uploadBtn === null || fileInput === null || nameInput === null || roleSelect === null) {
+			return;
+		}
+
+		uploadBtn.addEventListener('click', function() {
+			if (nameInput.value.trim() === '') {
+				OC.Notification.showTemporary(t('nldesign', 'Enter a font display name first.'));
+				nameInput.focus();
+				return;
+			}
+			fileInput.click();
+		});
+
+		fileInput.addEventListener('change', function(e) {
+			var file = e.target.files[0];
+			if (!file) {
+				return;
+			}
+			uploadFont(nameInput.value.trim(), roleSelect.value, file);
+			fileInput.value = '';
+		});
+
+		loadFonts();
+	}
+
+	function uploadFont(name, role, file) {
+		var resultEl = document.getElementById('nldesign-font-upload-result');
+		var formData = new FormData();
+		formData.append('name', name);
+		formData.append('role', role);
+		formData.append('font', file);
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/fonts/upload'), {
+			method: 'POST',
+			headers: { 'requesttoken': OC.requestToken },
+			body: formData
+		})
+		.then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+		.then(function(res) {
+			if (resultEl !== null) {
+				resultEl.style.display = 'block';
+			}
+			if (res.status >= 400) {
+				if (resultEl !== null) {
+					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
+				return;
+			}
+			if (resultEl !== null) {
+				resultEl.textContent = '';
+				resultEl.style.display = 'none';
+			}
+			OC.Notification.showTemporary(t('nldesign', 'Font uploaded. Reload the page to apply it.'));
+			loadFonts();
+		})
+		.catch(function(err) {
+			console.error('Error uploading font:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Upload failed.'));
+		});
+	}
+
+	function loadFonts() {
+		var listEl = document.getElementById('nldesign-font-list');
+		if (listEl === null) {
+			return;
+		}
+		fetch(OC.generateUrl('/apps/nldesign/settings/fonts'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderFontList(listEl, (data && data.fonts) || []);
+		})
+		.catch(function(err) {
+			console.error('Error loading fonts:', err);
+			listEl.textContent = t('nldesign', 'Failed to load fonts.');
+		});
+	}
+
+	function renderFontList(listEl, fonts) {
+		listEl.innerHTML = '';
+		if (fonts.length === 0) {
+			var empty = document.createElement('p');
+			empty.className = 'settings-hint';
+			empty.textContent = t('nldesign', 'No fonts uploaded yet.');
+			listEl.appendChild(empty);
+			return;
+		}
+
+		fonts.forEach(function(font) {
+			var row = document.createElement('div');
+			row.className = 'nldesign-custom-set-row';
+
+			var nameSpan = document.createElement('span');
+			nameSpan.className = 'nldesign-custom-set-name';
+			nameSpan.textContent = font.name || font.id;
+			row.appendChild(nameSpan);
+
+			var roleBadge = document.createElement('span');
+			roleBadge.className = 'nldesign-badge';
+			roleBadge.textContent = (font.role === 'heading') ? t('nldesign', 'Heading') : t('nldesign', 'Body text');
+			row.appendChild(roleBadge);
+
+			var sizeSpan = document.createElement('span');
+			sizeSpan.className = 'nldesign-badge';
+			sizeSpan.textContent = Math.max(1, Math.round((font.size || 0) / 1024)) + ' KB';
+			row.appendChild(sizeSpan);
+
+			var deleteBtn = document.createElement('button');
+			deleteBtn.type = 'button';
+			deleteBtn.className = 'nldesign-btn nldesign-btn--small nldesign-btn--danger';
+			deleteBtn.textContent = t('nldesign', 'Delete');
+			deleteBtn.addEventListener('click', function() {
+				deleteFont(font.id, font.name || font.id);
+			});
+			row.appendChild(deleteBtn);
+
+			listEl.appendChild(row);
+		});
+	}
+
+	function deleteFont(id, name) {
+		OC.dialogs.confirm(
+			t('nldesign', 'Delete the font "{name}"? Pages using it will fall back to Fira Sans.').replace('{name}', name),
+			t('nldesign', 'Delete font'),
+			function(confirmed) {
+				if (confirmed !== true) {
+					return;
+				}
+				fetch(OC.generateUrl('/apps/nldesign/settings/fonts/' + encodeURIComponent(id)), {
+					method: 'DELETE',
+					headers: { 'requesttoken': OC.requestToken }
+				})
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (data && data.status === 'ok') {
+						OC.Notification.showTemporary(t('nldesign', 'Font deleted. Reload the page to refresh the styling.'));
+						loadFonts();
+					} else {
+						OC.Notification.showTemporary(t('nldesign', 'Failed to delete font.'));
+					}
+				})
+				.catch(function(err) {
+					console.error('Error deleting font:', err);
+					OC.Notification.showTemporary(t('nldesign', 'Failed to delete font.'));
+				});
+			},
+			true
+		);
+	}
+
+	// Initialise the custom fonts panel on page load.
+	initCustomFonts();
+
 
 	/* ==========================================================================
 	 * THEMING AUDIT LOG

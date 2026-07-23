@@ -1,13 +1,20 @@
-# Custom Fonts — New Capability Delta
+---
+status: done
+---
 
-**Spec refs**: `custom-fonts` (new), `custom-token-sets` (architectural template: slugging,
-manifest, admin-only upload lifecycle), `token-sets` (font tokens layer over the active set),
-nextcloud/server#46043
-**Standards**: WOFF2 (W3C WOFF File Format 2.0 — magic number `wOF2`), CSS Fonts Module
-(`@font-face`, `font-display`), OWASP file-upload validation (content-based type checking,
-path-traversal prevention), Nextcloud CSP posture (self-hosted assets only)
+# Custom Fonts Specification
 
-## ADDED Requirements
+## Purpose
+Let a licensed admin upload their organization's own webfonts (e.g. RijksoverheidSans, a
+municipal corporate font) so nldesign can theme with the real house style typography instead
+of only the bundled Fira Sans (SIL OFL) open proxy. nldesign cannot ship these fonts itself —
+they are proprietary — but it can let the license holder upload them: self-hosted (no external
+CDN, CSP-clean, works on air-gapped instances), content-validated (WOFF2 only, verified by
+magic bytes, never extension or client MIME type), and capped (2 MB per file, 20 fonts per
+instance). A missing or unloadable font always degrades to exactly the bundled Fira Sans
+fallback chain. Backs nextcloud/server#46043 (no font facility upstream).
+
+## Requirements
 
 ### Requirement: Font Upload (woff2 only, content-validated)
 
