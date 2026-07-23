@@ -1395,66 +1395,82 @@ function nldesignAdminMain() {
 		loadCustomTokenSets();
 	}
 
-	/**
-	 * Group DTCG `skipped`/`errors` diagnostics ({path, reason, detail?}) by
-	 * `reason` into one entry per reason. Plain-string skipped entries (the
-	 * legacy CSS-upload shape — a bare token name, no `path`/`reason`) are
-	 * ignored here on purpose: they have no per-item diagnostics UI, only
-	 * the existing summary count in the result message.
-	 */
-	function groupDiagnosticsByReason(skipped, errors) {
-		var groups = {};
-		var order = [];
-
-		function addItem(item) {
-			if (!item || typeof item !== 'object' || !item.path) {
-				return;
-			}
-			var reason = item.reason || 'unknown';
-			if (!groups[reason]) {
-				groups[reason] = { reason: reason, paths: [] };
-				order.push(reason);
-			}
-			groups[reason].paths.push(item.path);
-		}
-
-		(skipped || []).forEach(addItem);
-		(errors || []).forEach(addItem);
-
-		return order.map(function(reason) { return groups[reason]; });
+	// Localised label for a DTCG import diagnostic `reason` code. Falls back to
+	// the raw code for any future reason this script does not yet know about,
+	// so a new mapper diagnostic never renders as blank.
+	function reasonLabel(reason) {
+		var labels = {
+			'unmapped-path': t('nldesign', 'Not part of the --nldesign-* vocabulary'),
+			'missing-type': t('nldesign', 'No $type could be resolved (never guessed)'),
+			'unsupported-color-space': t('nldesign', 'Unsupported color space'),
+			'unsupported-value-shape': t('nldesign', 'Unsupported value shape'),
+			'alias-cycle': t('nldesign', 'Alias cycle detected'),
+			'alias-target-missing': t('nldesign', 'Alias target does not exist'),
+			'alias-depth-exceeded': t('nldesign', 'Alias chain too deep (more than 10 hops)'),
+			'duplicate-target': t('nldesign', 'Another token already maps to this target')
+		};
+		return labels[reason] || reason;
 	}
 
-	/** Append the grouped-by-reason diagnostics `<ul>` to resultEl, if there is anything to show. */
-	function appendDiagnosticsList(resultEl, skipped, errors) {
-		var groups = groupDiagnosticsByReason(skipped, errors);
-		if (groups.length === 0) {
-			return;
+	// Inline copy of tokenTransforms' groupDiagnosticsByReason, used when the
+	// transforms module is not present on `window` (the app template loads it
+	// first, but admin.js must degrade rather than silently render nothing).
+	// Keep in sync with js/lib/tokenTransforms.js.
+	function groupDiagnosticsByReasonFallback(entries) {
+		if (!Array.isArray(entries) || entries.length === 0) {
+			return [];
 		}
 
-		var list = document.createElement('ul');
-		list.className = 'nldesign-diagnostics-list';
-		groups.forEach(function(group) {
-			var li = document.createElement('li');
-			li.textContent = group.reason + ': ' + group.paths.join(', ');
-			list.appendChild(li);
+		var byReason = {};
+		entries.forEach(function(entry) {
+			var reason = (entry && entry.reason) || 'unknown';
+			if (byReason[reason] === undefined) {
+				byReason[reason] = [];
+			}
+			byReason[reason].push(entry);
 		});
-		resultEl.appendChild(list);
+
+		return Object.keys(byReason).sort().map(function(reason) {
+			return { reason: reason, items: byReason[reason] };
+		});
 	}
 
-	/** Append the DTCG `$deprecated` import-warnings `<ul>` to resultEl, if any were reported. */
-	function appendDeprecationList(resultEl, importWarnings) {
-		if (!importWarnings || importWarnings.length === 0) {
-			return;
+	// Build the DTCG import-diagnostics fragment for an upload response:
+	// skipped/error paths grouped by reason, plus $deprecated import warnings.
+	// Returns an empty (childless) fragment when both arrays are absent/empty,
+	// so a CSS upload's plain-text summary is never followed by empty markup.
+	function buildDiagnosticsFragment(data) {
+		var fragment = document.createDocumentFragment();
+
+		var diagnostics = [].concat(data.skipped || [], data.errors || []);
+		var groups = (typeof TT.groupDiagnosticsByReason === 'function')
+			? TT.groupDiagnosticsByReason(diagnostics)
+			: groupDiagnosticsByReasonFallback(diagnostics);
+
+		if (groups.length > 0) {
+			var list = document.createElement('ul');
+			list.className = 'nldesign-diagnostics-list';
+			groups.forEach(function(group) {
+				var item = document.createElement('li');
+				var paths = group.items.map(function(entry) { return entry.path; }).join(', ');
+				item.textContent = reasonLabel(group.reason) + ' (' + group.items.length + '): ' + paths;
+				list.appendChild(item);
+			});
+			fragment.appendChild(list);
 		}
 
-		var list = document.createElement('ul');
-		list.className = 'nldesign-deprecation-list';
-		importWarnings.forEach(function(warning) {
-			var li = document.createElement('li');
-			li.textContent = (warning.path || '') + ': ' + (warning.message || '');
-			list.appendChild(li);
-		});
-		resultEl.appendChild(list);
+		if (data.importWarnings && data.importWarnings.length > 0) {
+			var warnList = document.createElement('ul');
+			warnList.className = 'nldesign-deprecation-list';
+			data.importWarnings.forEach(function(w) {
+				var item = document.createElement('li');
+				item.textContent = w.path + (w.message ? ': ' + w.message : '');
+				warnList.appendChild(item);
+			});
+			fragment.appendChild(warnList);
+		}
+
+		return fragment;
 	}
 
 	function uploadCustomTokenSet(name, file) {
@@ -1472,10 +1488,12 @@ function nldesignAdminMain() {
 		.then(function(res) {
 			if (resultEl !== null) {
 				resultEl.style.display = 'block';
+				resultEl.innerHTML = '';
 			}
 			if (res.status >= 400) {
 				if (resultEl !== null) {
-					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
+					resultEl.appendChild(document.createTextNode(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '')));
+					resultEl.appendChild(buildDiagnosticsFragment(res.data));
 				}
 				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
 				return;
@@ -1491,9 +1509,8 @@ function nldesignAdminMain() {
 					.replace('{count}', res.data.warnings.length);
 			}
 			if (resultEl !== null) {
-				resultEl.textContent = msg;
-				appendDiagnosticsList(resultEl, res.data.skipped, res.data.errors);
-				appendDeprecationList(resultEl, res.data.importWarnings);
+				resultEl.appendChild(document.createTextNode(msg));
+				resultEl.appendChild(buildDiagnosticsFragment(res.data));
 			}
 			OC.Notification.showTemporary(t('nldesign', 'Token set uploaded. Reload the page to apply it.'));
 			loadCustomTokenSets();
@@ -1544,7 +1561,7 @@ function nldesignAdminMain() {
 			if (set.version) {
 				var versionSpan = document.createElement('span');
 				versionSpan.className = 'nldesign-custom-set-version';
-				versionSpan.textContent = t('nldesign', 'v{version}').replace('{version}', set.version);
+				versionSpan.textContent = t('nldesign', 'v{version}', { version: set.version });
 				row.appendChild(versionSpan);
 			}
 
