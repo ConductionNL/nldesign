@@ -6,6 +6,7 @@
  * @var array{orgName: string, accessibilityUrl: string, privacyUrl: string} $emailFooterConfig
  * @var string $occEnableCommand
  * @var string $occDisableCommand
+ * @var array{tokenSet: string, name: string}|null $activePreview
  */
 
 // Load the pure token/colour transforms first so admin.js can consume them via
@@ -17,7 +18,8 @@ style('nldesign', 'admin');
 
 <div id="nldesign-settings" class="section"
 	 data-token-sets="<?php p(json_encode($_['tokenSets'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>"
-	 data-current-token-set="<?php p($_['currentTokenSet']); ?>">
+	 data-current-token-set="<?php p($_['currentTokenSet']); ?>"
+	 data-active-preview="<?php p(json_encode($_['activePreview'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>">
 	<div class="nldesign-settings-header">
 		<h2><?php p($l->t('NL Design System Theme')); ?></h2>
 		<a href="https://nldesign.app" target="_blank" rel="noopener noreferrer" class="nldesign-doc-link">
@@ -41,6 +43,25 @@ style('nldesign', 'admin');
 			<?php endforeach; ?>
 		</select>
 		<span id="nldesign-design-system-badge" class="nldesign-badge"></span>
+		<button type="button" id="nldesign-preview-btn" class="button">
+			<?php p($l->t('Preview in my session')); ?>
+		</button>
+	</div>
+
+	<!-- Active theme preview ("proefdraaien") — only rendered for the
+	     requesting admin's own active preview; publishing runs the existing
+	     apply + theming-sync dialogs before calling the publish endpoint. -->
+	<div class="nldesign-active-preview" id="nldesign-active-preview"
+		 style="<?php echo ($_['activePreview'] === null) ? 'display:none' : ''; ?>">
+		<p class="settings-hint" role="status">
+			<?php p($l->t('Previewing "{name}" in your session only.', ['name' => ($_['activePreview']['name'] ?? '')])); ?>
+		</p>
+		<button type="button" id="nldesign-preview-publish-btn" class="button">
+			<?php p($l->t('Publish')); ?>
+		</button>
+		<button type="button" id="nldesign-preview-discard-btn" class="button">
+			<?php p($l->t('Discard')); ?>
+		</button>
 	</div>
 
 	<!-- Custom token set upload (eigen huisstijl) -->

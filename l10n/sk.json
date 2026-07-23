@@ -180,7 +180,15 @@
         "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets have updates ({version}) — review & apply",
         "Dismiss": "Dismiss",
         "Upstream token update checks enabled.": "Upstream token update checks enabled.",
-        "Upstream token update checks disabled.": "Upstream token update checks disabled."
+        "Upstream token update checks disabled.": "Upstream token update checks disabled.",
+        "Discard": "Discard",
+        "Failed to discard theme preview.": "Failed to discard theme preview.",
+        "Failed to start theme preview.": "Failed to start theme preview.",
+        "Preview: {name} — this is only visible to you": "Preview: {name} — this is only visible to you",
+        "Publish": "Publish",
+        "Theme published instance-wide. Reload the page to see changes.": "Theme published instance-wide. Reload the page to see changes.",
+        "Preview in my session": "Preview in my session",
+        "Previewing \"{name}\" in your session only.": "Previewing \"{name}\" in your session only."
     },
     "plurals": {}
 }

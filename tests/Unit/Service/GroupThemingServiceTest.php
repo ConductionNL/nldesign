@@ -15,6 +15,7 @@ namespace OCA\NLDesign\Tests\Unit\Service;
 
 use OCA\NLDesign\Service\Exception\GroupThemingValidationException;
 use OCA\NLDesign\Service\GroupThemingService;
+use OCA\NLDesign\Service\ThemePreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\ICache;
 use OCP\ICacheFactory;
@@ -73,6 +74,7 @@ class GroupThemingServiceTest extends TestCase
             $groupManager,
             $userSession,
             $tokenSetService,
+            $this->inactivePreviewService(),
             $cacheFactory
         );
 
@@ -120,6 +122,27 @@ class GroupThemingServiceTest extends TestCase
 
         return $user;
     }//end fakeUser()
+
+    /**
+     * A theme-preview service stub with no active preview, so these tests
+     * exercise group-mapping resolution only. Preview precedence has its own
+     * dedicated coverage in the theme-preview suite.
+     *
+     * @return ThemePreviewService The stub.
+     */
+    private function inactivePreviewService(): ThemePreviewService
+    {
+        $preview = $this->createMock(ThemePreviewService::class);
+        $preview->method('resolveEffectiveTokenSet')->willReturnCallback(
+            static fn (IUserSession $session, string $activeTokenSet): array => [
+                'tokenSet'      => $activeTokenSet,
+                'previewActive' => false,
+                'expiresAt'     => null,
+            ]
+        );
+
+        return $preview;
+    }//end inactivePreviewService()
 
     /**
      * A token set service stub where every id in $available validates and
@@ -462,6 +485,7 @@ class GroupThemingServiceTest extends TestCase
             $groupManager,
             $userSession,
             $this->fakeTokenSetService([]),
+            $this->inactivePreviewService(),
             $cacheFactory
         );
 
@@ -583,6 +607,7 @@ class GroupThemingServiceTest extends TestCase
             $groupManager,
             $userSession,
             $this->fakeTokenSetService(['amsterdam']),
+            $this->inactivePreviewService(),
             $cacheFactory
         );
 

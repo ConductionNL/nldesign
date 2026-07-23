@@ -41,6 +41,16 @@ function nldesignAdminMain() {
 		console.error('Failed to parse token sets data:', e);
 	}
 
+	// Parse the requesting admin's active theme preview ("proefdraaien"), if
+	// any — server-rendered by lib/Settings/Admin.php, same data-attribute
+	// convention as data-token-sets/data-current-token-set above.
+	var activePreview = null;
+	try {
+		activePreview = JSON.parse(settingsEl.getAttribute('data-active-preview') || 'null');
+	} catch (e) {
+		console.error('Failed to parse active preview data:', e);
+	}
+
 	/**
 	 * Derive preview colors dynamically from the token set's theming metadata
 	 * (primary_color field in token-sets.json, already passed in data-token-sets).
@@ -154,22 +164,106 @@ function nldesignAdminMain() {
 		tokenSetSelect.dataset.previousValue = tokenSetSelect.value;
 	}
 
-	// Save token set to server
-	function saveTokenSet(tokenSet) {
-		var url = OC.generateUrl('/apps/nldesign/settings/tokenset');
+	/* ==========================================================================
+	 * THEME PREVIEW ("proefdraaien") — trial a token set in the admin's own
+	 * session before publishing it instance-wide.
+	 * ========================================================================== */
 
-		fetch(url, {
+	var previewBtn        = document.getElementById('nldesign-preview-btn');
+	var previewPublishBtn = document.getElementById('nldesign-preview-publish-btn');
+	var previewDiscardBtn = document.getElementById('nldesign-preview-discard-btn');
+	var currentTokenSetId = settingsEl ? settingsEl.getAttribute('data-current-token-set') : '';
+
+	// Start a preview of the currently selected token set — session-only,
+	// instance-wide token_set is left untouched.
+	if (previewBtn !== null && tokenSetSelect !== null) {
+		previewBtn.addEventListener('click', function() {
+			previewBtn.disabled = true;
+			fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'requesttoken': OC.requestToken
+				},
+				body: JSON.stringify({ tokenSet: tokenSetSelect.value })
+			})
+			.then(function(response) { return response.json(); })
+			.then(function(data) {
+				if (data.status === 'ok') {
+					window.location.reload();
+				} else {
+					previewBtn.disabled = false;
+					OC.Notification.showTemporary(t('nldesign', 'Failed to start theme preview.'));
+				}
+			})
+			.catch(function(error) {
+				previewBtn.disabled = false;
+				console.error('Error starting theme preview:', error);
+				OC.Notification.showTemporary(t('nldesign', 'Failed to start theme preview.'));
+			});
+		});
+	}
+
+	// Discard the active preview — clears the session-only state; the panel
+	// (and the banner on every other page) reverts to the active set.
+	if (previewDiscardBtn !== null) {
+		previewDiscardBtn.addEventListener('click', function() {
+			previewDiscardBtn.disabled = true;
+			fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+				method: 'DELETE',
+				headers: { 'requesttoken': OC.requestToken }
+			})
+			.then(function() {
+				window.location.reload();
+			})
+			.catch(function(error) {
+				previewDiscardBtn.disabled = false;
+				console.error('Error discarding theme preview:', error);
+				OC.Notification.showTemporary(t('nldesign', 'Failed to discard theme preview.'));
+			});
+		});
+	}
+
+	// Publish the active preview — runs the EXISTING apply dialog (and,
+	// when applicable, the theming-sync dialog) for the previewed set;
+	// only on confirmation does POST /settings/preview/publish fire
+	// (publishMode = true), promoting it to the instance-wide active set.
+	if (previewPublishBtn !== null && activePreview !== null) {
+		previewPublishBtn.addEventListener('click', function() {
+			openTokenSetApplyDialog(activePreview.tokenSet, currentTokenSetId, true);
+		});
+	}
+
+	// Commit a token set change to the server. In normal mode this is the
+	// instance-wide POST /settings/tokenset. In publish mode (promoting an
+	// active session preview — "proefdraaien" — to instance-wide) it is
+	// POST /settings/preview/publish instead, which reads the previewed set
+	// server-side from the caller's own preview state; no body is sent.
+	function commitTokenSetChange(tokenSet, publishMode) {
+		var url = publishMode
+			? OC.generateUrl('/apps/nldesign/settings/preview/publish')
+			: OC.generateUrl('/apps/nldesign/settings/tokenset');
+		var options = {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'requesttoken': OC.requestToken
-			},
-			body: JSON.stringify({ tokenSet: tokenSet })
-		})
-		.then(function(response) { return response.json(); })
+			headers: { 'requesttoken': OC.requestToken }
+		};
+		if (publishMode !== true) {
+			options.headers['Content-Type'] = 'application/json';
+			options.body = JSON.stringify({ tokenSet: tokenSet });
+		}
+
+		return fetch(url, options).then(function(response) { return response.json(); });
+	}
+
+	// Save token set to server (instance-wide, or promoting a preview when
+	// publishMode is true).
+	function saveTokenSet(tokenSet, publishMode) {
+		commitTokenSetChange(tokenSet, publishMode === true)
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Theme updated successfully. reload the page to see changes.'));
+				OC.Notification.showTemporary(publishMode === true
+					? t('nldesign', 'Theme published instance-wide. Reload the page to see changes.')
+					: t('nldesign', 'Theme updated successfully. reload the page to see changes.'));
 
 				// Check if this token set has theming metadata
 				var tsData = tokenSetsData[tokenSet];
@@ -928,14 +1022,18 @@ function nldesignAdminMain() {
 	 * TOKEN SET APPLY DIALOG
 	 * ========================================================================== */
 
-	function openTokenSetApplyDialog(newTokenSetId, prevTokenSetId) {
+	// publishMode (default false): when true, the dialog's confirmation
+	// promotes the ALREADY-ACTIVE session preview (POST /settings/preview/publish)
+	// instead of applying newTokenSetId instance-wide directly (POST
+	// /settings/tokenset) — the banner/settings-panel Publish control's path.
+	function openTokenSetApplyDialog(newTokenSetId, prevTokenSetId, publishMode) {
 		fetch(OC.generateUrl('/apps/nldesign/settings/tokenset-preview/' + encodeURIComponent(newTokenSetId)), {
 			headers: { 'requesttoken': OC.requestToken }
 		})
 		.then(function(r) { return r.json(); })
 		.then(function(data) {
 			if (data.error !== undefined) {
-				saveTokenSet(newTokenSetId);
+				saveTokenSet(newTokenSetId, publishMode);
 				return;
 			}
 			var newValues = data.resolved || {};
@@ -949,18 +1047,18 @@ function nldesignAdminMain() {
 				}
 			});
 			if (changes.length === 0) {
-				saveTokenSet(newTokenSetId);
+				saveTokenSet(newTokenSetId, publishMode);
 				return;
 			}
-			showApplyDialog(newTokenSetId, prevTokenSetId, changes);
+			showApplyDialog(newTokenSetId, prevTokenSetId, changes, publishMode);
 		})
 		.catch(function(err) {
 			console.error('Error fetching token set preview:', err);
-			saveTokenSet(newTokenSetId);
+			saveTokenSet(newTokenSetId, publishMode);
 		});
 	}
 
-	function showApplyDialog(newTokenSetId, prevTokenSetId, changes) {
+	function showApplyDialog(newTokenSetId, prevTokenSetId, changes, publishMode) {
 		var existing = document.getElementById('nldesign-apply-dialog-overlay');
 		if (existing !== null) {
 			existing.remove();
@@ -1086,16 +1184,11 @@ function nldesignAdminMain() {
 				if (saveData.status !== 'ok') {
 					throw new Error(saveData.error || 'Save failed');
 				}
-				return fetch(OC.generateUrl('/apps/nldesign/settings/tokenset'), {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', 'requesttoken': OC.requestToken },
-					body: JSON.stringify({ tokenSet: newTokenSetId })
-				});
+				return commitTokenSetChange(newTokenSetId, publishMode === true);
 			})
-			.then(function(r) { return r.json(); })
 			.then(function(tsData) {
 				closeDialogOverlay(overlay);
-				if (tsData.status === 'ok' && tokenSetSelect !== null) {
+				if (tsData.status === 'ok' && tokenSetSelect !== null && publishMode !== true) {
 					tokenSetSelect.dataset.previousValue = newTokenSetId;
 				}
 				OC.Notification.showTemporary(t('nldesign', 'Token overrides applied.'));
