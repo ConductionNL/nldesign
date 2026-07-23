@@ -150,15 +150,17 @@ class Capabilities implements IPublicCapability
         $available = $this->tokenSetService->getAvailableTokenSets();
         $byId      = array_column($available, null, 'id');
 
-        // Manifest entries are an open shape (no `version` key today; the
-        // upstream-token-freshness change adds provenance fields later).
+        // A discovered entry always carries `name`. The version reported here is
+        // the upstream provenance recorded by the token-sync workflow
+        // (`upstreamVersion`), present only for sets generated from an upstream
+        // release — null for hand-maintained and custom sets.
         $entry   = ($byId[$tokenSetId] ?? null);
         $name    = $tokenSetId;
         $version = null;
         if (is_array($entry) === true) {
-            $name = (string) ($entry['name'] ?? $tokenSetId);
-            if (isset($entry['version']) === true) {
-                $version = (string) $entry['version'];
+            $name = (string) $entry['name'];
+            if (isset($entry['upstreamVersion']) === true) {
+                $version = (string) $entry['upstreamVersion'];
             }
         }
 

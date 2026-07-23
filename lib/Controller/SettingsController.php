@@ -185,7 +185,7 @@ class SettingsController extends Controller
         $this->complianceService = $complianceService;
         $this->auditService      = $auditService;
         $this->emailThemingService = $emailThemingService;
-        $this->freshnessService  = $freshnessService;
+        $this->freshnessService    = $freshnessService;
     }//end __construct()
 
     /**

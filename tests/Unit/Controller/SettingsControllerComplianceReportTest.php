@@ -19,6 +19,7 @@ use OCA\NLDesign\Service\ComplianceReportService;
 use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
+use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\DataDownloadResponse;
@@ -76,7 +77,8 @@ class SettingsControllerComplianceReportTest extends TestCase
             $this->createMock(AppThemingService::class),
             $this->complianceReportService,
             $this->createMock(ThemingAuditService::class),
-            $this->createMock(EmailThemingService::class)
+            $this->createMock(EmailThemingService::class),
+            $this->createMock(UpstreamFreshnessService::class)
         );
     }//end setUp()
 
