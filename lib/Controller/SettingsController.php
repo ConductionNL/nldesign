@@ -671,4 +671,48 @@ class SettingsController extends Controller
             ]
         );
     }//end setEmailTheming()
+
+    /**
+     * Get the instance-wide dark-mode variants toggle state.
+     *
+     * @return JSONResponse The `{ enabled }` state (default enabled).
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getDarkVariants(): JSONResponse
+    {
+        $enabled = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+
+        return new JSONResponse(['enabled' => $enabled]);
+    }//end getDarkVariants()
+
+    /**
+     * Set the instance-wide dark-mode variants toggle. Disabling stops the
+     * generated dark stylesheet from loading (see
+     * `Application::injectThemeCSS()`) without deleting the generated files.
+     *
+     * @param bool $enabled Whether dark-mode variants should be active.
+     *
+     * @return JSONResponse The response with the persisted state.
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setDarkVariants(bool $enabled): JSONResponse
+    {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+        $this->saveBooleanSetting(key: 'dark_variants', value: $enabled);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'dark_variants',
+                'old' => $previous,
+                'new' => $enabled,
+            ]
+        );
+
+        return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+    }//end setDarkVariants()
 }//end class

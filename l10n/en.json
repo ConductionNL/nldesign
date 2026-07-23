@@ -164,7 +164,11 @@
         "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets have updates ({version}) — review & apply",
         "Dismiss": "Dismiss",
         "Upstream token update checks enabled.": "Upstream token update checks enabled.",
-        "Upstream token update checks disabled.": "Upstream token update checks disabled."
+        "Upstream token update checks disabled.": "Upstream token update checks disabled.",
+        "Dark logo": "Dark logo",
+        "This token set also ships a dark-surface logo. Nextcloud core has no dark logo slot, so it is applied by nldesign's own dark-mode stylesheet, not synced to Nextcloud theming.": "This token set also ships a dark-surface logo. Nextcloud core has no dark logo slot, so it is applied by nldesign's own dark-mode stylesheet, not synced to Nextcloud theming.",
+        "Enable dark mode variants for the active token set": "Enable dark mode variants for the active token set",
+        "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.": "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself."
     },
     "plurals": {}
 }

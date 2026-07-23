@@ -113,6 +113,7 @@ class Application extends App implements IBootstrap
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
      * @spec openspec/specs/custom-fonts/spec.md
+     * @spec openspec/specs/dark-mode/spec.md
      */
     private function injectThemeCSS($serverContainer): void
     {
@@ -144,6 +145,11 @@ class Application extends App implements IBootstrap
         // 3. Load token values (only when a design system reads --nldesign-* vars).
         if ($designSystemId !== 'none') {
             \OCP\Util::addStyle(application: self::APP_ID, file: 'tokens/'.$tokenSet);
+
+            // 3.5 Dark-mode variant — generated build/install-time static CSS,
+            // loaded directly after the light layer (see openspec/specs/dark-mode/spec.md).
+            $this->injectDarkVariantStyle(config: $config, dsService: $dsService, tokenSet: $tokenSet);
+
             // Functional contrast fix shared by all design systems: app icons
             // that carry their white fill on <path> vanish on light surfaces
             // in the NC 34 app-management list (see css/icon-contrast.css).
@@ -153,32 +159,16 @@ class Application extends App implements IBootstrap
             // components painting --color-error-text on it lose all contrast
             // (see css/error-contrast.css).
             \OCP\Util::addStyle(application: self::APP_ID, file: 'error-contrast');
-        }
+        }//end if
 
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
         $customOverridesSvc = $serverContainer->get(CustomOverridesService::class);
         $customOverridesSvc->ensureExists();
         \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
 
-        // 4.5 Custom fonts — admin-uploaded, self-hosted webfonts. Injected as
-        // a <link rel="stylesheet"> (not \OCP\Util::addStyle(), because the
-        // CSS is generated dynamically by FontController::css(), not a static
-        // file under css/) AFTER the token-set styles so the font tokens win
-        // the cascade, and only when at least one font is configured, so a
-        // themed instance with zero uploaded fonts issues no extra request.
+        // 4.5 Custom fonts — admin-uploaded, self-hosted webfonts.
         if ($designSystemId !== 'none') {
-            $fontService = $serverContainer->get(FontService::class);
-            if ($fontService->hasFonts() === true) {
-                $urlGenerator = $serverContainer->get(IURLGenerator::class);
-                $cssUrl       = $urlGenerator->linkToRoute('nldesign.font.css').'?v='.$fontService->getRevision();
-                \OCP\Util::addHeader(
-                    tag: 'link',
-                    attributes: [
-                        'rel'  => 'stylesheet',
-                        'href' => $cssUrl,
-                    ]
-                );
-            }
+            $this->injectCustomFontsHeader(serverContainer: $serverContainer);
         }
 
         // 5. Conditional stylesheets.
@@ -190,6 +180,71 @@ class Application extends App implements IBootstrap
             \OCP\Util::addStyle(application: self::APP_ID, file: 'show-menu-labels');
         }
     }//end injectThemeCSS()
+
+    /**
+     * Add the generated dark-mode stylesheet, when ALL of: the `dark_variants`
+     * app config is enabled, and a generated `css/tokens/dark/{set}.css` file
+     * exists for the active set. A missing file or a disabled toggle simply
+     * adds nothing — never an error (see openspec/specs/dark-mode/spec.md).
+     *
+     * @param \OCP\IConfig        $config    The config service.
+     * @param DesignSystemService $dsService The design system service (also resolves the file check).
+     * @param string              $tokenSet  The active token set id.
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    private function injectDarkVariantStyle(\OCP\IConfig $config, DesignSystemService $dsService, string $tokenSet): void
+    {
+        $darkVariantsEnabled = ($config->getAppValue(self::APP_ID, 'dark_variants', '1') === '1');
+        if ($darkVariantsEnabled === false) {
+            return;
+        }
+
+        if ($dsService->hasGeneratedDarkVariant(tokenSetId: $tokenSet) === false) {
+            return;
+        }
+
+        \OCP\Util::addStyle(application: self::APP_ID, file: 'tokens/dark/'.$tokenSet);
+    }//end injectDarkVariantStyle()
+
+    /**
+     * Add the custom-fonts stylesheet header link, when at least one
+     * self-hosted font is configured. Injected as a `<link rel="stylesheet">`
+     * (not `\OCP\Util::addStyle()`, because the CSS is generated dynamically
+     * by `FontController::css()`, not a static file under `css/`) AFTER the
+     * token-set styles so the font tokens win the cascade, and only when at
+     * least one font is configured, so a themed instance with zero uploaded
+     * fonts issues no extra request.
+     *
+     * @param mixed $serverContainer The server container.
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addHeader() is the Nextcloud API for header injection
+     *
+     * @spec openspec/specs/custom-fonts/spec.md
+     */
+    private function injectCustomFontsHeader($serverContainer): void
+    {
+        $fontService = $serverContainer->get(FontService::class);
+        if ($fontService->hasFonts() === false) {
+            return;
+        }
+
+        $urlGenerator = $serverContainer->get(IURLGenerator::class);
+        $cssUrl       = $urlGenerator->linkToRoute('nldesign.font.css').'?v='.$fontService->getRevision();
+        \OCP\Util::addHeader(
+            tag: 'link',
+            attributes: [
+                'rel'  => 'stylesheet',
+                'href' => $cssUrl,
+            ]
+        );
+    }//end injectCustomFontsHeader()
 
     /**
      * Resolve whether theming must be skipped for the request being rendered.

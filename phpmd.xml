@@ -59,7 +59,11 @@
     <rule ref="rulesets/naming.xml/ShortVariable">
         <properties>
             <property name="minimum" value="3" />
-            <property name="exceptions" value="id,db,qb,op,ui,io,gc,tz,pk,fk,to,ch,a,b,l,v,c,t,r,f,n,k,e" />
+            <!-- g,h,s,p,q added for RGB/HSL colour-space math (DarkPaletteService):
+                 r,g,b (RGB channels) and h,s,l (hue/saturation/lightness) and p,q
+                 (the standard HSL->RGB intermediate terms) are universal, idiomatic
+                 single-letter names in every colour-conversion reference implementation. -->
+            <property name="exceptions" value="id,db,qb,op,ui,io,gc,tz,pk,fk,to,ch,a,b,l,v,c,t,r,f,n,k,e,g,h,s,p,q" />
         </properties>
     </rule>
     <rule ref="rulesets/naming.xml/LongVariable"/>

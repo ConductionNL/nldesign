@@ -2,6 +2,7 @@
 /**
  * @var array $tokenSets
  * @var string $currentTokenSet
+ * @var bool $darkVariantsEnabled
  * @var array{state: string, configReadOnly: bool, foreignClass: ?string} $emailThemingState
  * @var array{orgName: string, accessibilityUrl: string, privacyUrl: string} $emailFooterConfig
  * @var string $occEnableCommand
@@ -120,6 +121,24 @@ style('nldesign', 'admin');
 			<?php p($l->t('Show text labels in app menu (hide icons)')); ?>
 		</label>
 	</div>
+
+	<!-- Dark mode variants — instance-wide toggle for the generated dark
+	     stylesheets (openspec/specs/dark-mode/spec.md). Never touches the
+	     user's/instance's Nextcloud dark/light/system theme choice; it only
+	     follows whatever Nextcloud itself already decided. -->
+	<div class="nldesign-option">
+		<input type="checkbox"
+			   name="nldesign-dark-variants"
+			   id="nldesign-dark-variants"
+			   class="checkbox"
+			   <?php if ($_['darkVariantsEnabled']): ?>checked<?php endif; ?>>
+		<label for="nldesign-dark-variants">
+			<?php p($l->t('Enable dark mode variants for the active token set')); ?>
+		</label>
+	</div>
+	<p class="settings-hint">
+		<?php p($l->t('When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.')); ?>
+	</p>
 
 	<!-- Theming per app — exclude individual apps from nldesign theming -->
 	<div class="nldesign-app-theming" id="nldesign-app-theming" style="margin-top:2em">

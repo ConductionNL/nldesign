@@ -97,6 +97,7 @@ class Admin implements IDelegatedSettings
      * @return TemplateResponse The settings form template.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+     * @spec openspec/specs/dark-mode/spec.md
      */
     public function getForm(): TemplateResponse
     {
@@ -120,6 +121,12 @@ class Admin implements IDelegatedSettings
             '0'
         ) === '1';
 
+        $darkVariantsEnabled = $this->config->getAppValue(
+            Application::APP_ID,
+            'dark_variants',
+            '1'
+        ) === '1';
+
         $emailThemingState = $this->emailThemingService->getState();
         $emailFooterConfig = $this->emailThemingService->getFooterConfig();
 
@@ -127,14 +134,15 @@ class Admin implements IDelegatedSettings
             Application::APP_ID,
                 'settings/admin',
                 [
-                    'tokenSets'         => $tokenSets,
-                    'currentTokenSet'   => $currentTokenSet,
-                    'hideSlogan'        => $hideSlogan,
-                    'showMenuLabels'    => $showMenuLabels,
-                    'emailThemingState' => $emailThemingState,
-                    'emailFooterConfig' => $emailFooterConfig,
-                    'occEnableCommand'  => EmailThemingService::OCC_ENABLE_COMMAND,
-                    'occDisableCommand' => EmailThemingService::OCC_DISABLE_COMMAND,
+                    'tokenSets'           => $tokenSets,
+                    'currentTokenSet'     => $currentTokenSet,
+                    'hideSlogan'          => $hideSlogan,
+                    'showMenuLabels'      => $showMenuLabels,
+                    'darkVariantsEnabled' => $darkVariantsEnabled,
+                    'emailThemingState'   => $emailThemingState,
+                    'emailFooterConfig'   => $emailFooterConfig,
+                    'occEnableCommand'    => EmailThemingService::OCC_ENABLE_COMMAND,
+                    'occDisableCommand'   => EmailThemingService::OCC_DISABLE_COMMAND,
                 ]
         );
     }//end getForm()
@@ -195,6 +203,7 @@ class Admin implements IDelegatedSettings
                 '/token_set/',
                 '/hide_slogan/',
                 '/show_menu_labels/',
+                '/dark_variants/',
                 '/disabled_apps/',
                 '/theming_syncs_total/',
                 // Upstream token freshness — only the two admin-initiated
