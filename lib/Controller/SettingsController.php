@@ -148,6 +148,11 @@ class SettingsController extends Controller
      * @param ComplianceReportService $complianceService   The compliance evidence report service.
      * @param ThemingAuditService     $auditService        The theming audit trail service.
      * @param EmailThemingService     $emailThemingService The email theming service.
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList) - This is the app's aggregating settings
+     * controller; each dependency backs one settings endpoint family (token set, theming sync,
+     * per-app theming, compliance report, audit trail, email theming). NC's DI container supplies
+     * them; a synthetic parameter-object split would not reduce the real coupling.
      */
     public function __construct(
         string $appName,

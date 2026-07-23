@@ -51,6 +51,12 @@ use OCP\IURLGenerator;
  * evaluation (claim-accuracy discipline, `openspec/specs/claim-accuracy/spec.md`).
  *
  * @spec openspec/specs/compliance-evidence/spec.md
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity) - The complexity is the 18-pair WCAG
+ * contrast matrix: each pair resolves fg+bg through the same layered cascade the runtime uses
+ * (defaults → active set → theming.background_color → #ffffff → custom-overrides) and classifies
+ * against AA thresholds with an unevaluated-caps-the-verdict rule. The evidence contract is the
+ * source of the branching, not accidental structure.
  */
 class ComplianceReportService
 {
@@ -428,19 +434,18 @@ class ComplianceReportService
             designSystemId: $designSystemId
         );
 
+        $bgResolved = $this->resolveColorToken(
+            token: $pairDef['bg'],
+            customOverrides: $customOverrides,
+            mapping: $mapping,
+            declarations: $declarations,
+            designSystemId: $designSystemId
+        );
         if ($pairDef['bg'] === self::MAIN_BACKGROUND_TOKEN) {
             $bgResolved = $this->resolveMainBackground(
                 customOverrides: $customOverrides,
                 declarations: $declarations,
                 tokenSetMeta: $tokenSetMeta
-            );
-        } else {
-            $bgResolved = $this->resolveColorToken(
-                token: $pairDef['bg'],
-                customOverrides: $customOverrides,
-                mapping: $mapping,
-                declarations: $declarations,
-                designSystemId: $designSystemId
             );
         }
 

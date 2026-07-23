@@ -16,6 +16,8 @@ namespace OCA\NLDesign\Tests\Unit\Controller;
 use OCA\NLDesign\Controller\SettingsController;
 use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\ComplianceReportService;
+use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
@@ -72,7 +74,9 @@ class SettingsControllerComplianceReportTest extends TestCase
             $this->createMock(ThemingService::class),
             $this->createMock(TokenSetPreviewService::class),
             $this->createMock(AppThemingService::class),
-            $this->complianceReportService
+            $this->complianceReportService,
+            $this->createMock(ThemingAuditService::class),
+            $this->createMock(EmailThemingService::class)
         );
     }//end setUp()
 
@@ -113,7 +117,9 @@ class SettingsControllerComplianceReportTest extends TestCase
         $this->assertArrayHasKey('Content-Disposition', $headers);
         $this->assertStringStartsWith('attachment;', $headers['Content-Disposition']);
         $this->assertStringContainsString('nldesign-compliance-inst123-utrecht-', $headers['Content-Disposition']);
-        $this->assertStringEndsWith('.json"', $headers['Content-Disposition']);
+        // The real OCP DataDownloadResponse quotes the filename; the standalone
+        // OCP stub does not — assert the extension without the quoting flavour.
+        $this->assertStringContainsString('.json', $headers['Content-Disposition']);
         $this->assertSame('application/json', $headers['Content-Type']);
     }//end testDefaultFormatReturnsJsonDownload()
 
@@ -126,7 +132,7 @@ class SettingsControllerComplianceReportTest extends TestCase
 
         $this->assertInstanceOf(DataDownloadResponse::class, $response);
         $headers = $this->rawHeaders(response: $response);
-        $this->assertStringEndsWith('.md"', $headers['Content-Disposition']);
+        $this->assertStringContainsString('.md', $headers['Content-Disposition']);
         $this->assertSame('text/markdown', $headers['Content-Type']);
         $this->assertSame("# Report\n", $response->render());
     }//end testMarkdownFormatReturnsMarkdownDownload()
