@@ -2,6 +2,10 @@
 /**
  * @var array $tokenSets
  * @var string $currentTokenSet
+ * @var array{state: string, configReadOnly: bool, foreignClass: ?string} $emailThemingState
+ * @var array{orgName: string, accessibilityUrl: string, privacyUrl: string} $emailFooterConfig
+ * @var string $occEnableCommand
+ * @var string $occDisableCommand
  */
 
 // Load the pure token/colour transforms first so admin.js can consume them via
@@ -100,6 +104,63 @@ style('nldesign', 'admin');
 			<?php p($l->t('Save app theming')); ?>
 		</button>
 		<span id="nldesign-app-theming-feedback" class="nldesign-app-theming-feedback" role="status" aria-live="polite"></span>
+	</div>
+
+	<!-- Email template theming — mail_template_class toggle + compliance footer -->
+	<div class="nldesign-email-theming" id="nldesign-email-theming" style="margin-top:2em"
+		 data-state="<?php p($_['emailThemingState']['state']); ?>"
+		 data-config-read-only="<?php p($_['emailThemingState']['configReadOnly'] ? '1' : '0'); ?>"
+		 data-foreign-class="<?php p($_['emailThemingState']['foreignClass'] ?? ''); ?>">
+		<h3><?php p($l->t('Email template')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Brand password-reset, share-notification, and other system emails with the active token set\'s color and logo. If nldesign is later disabled, Nextcloud automatically falls back to the stock email template — mail is never blocked by this setting.')); ?>
+		</p>
+
+		<?php if ($_['emailThemingState']['state'] === 'foreign'): ?>
+			<p class="nldesign-email-foreign-note" role="alert">
+				<?php p($l->t('A different mail template class is already configured ({class}); nldesign will not overwrite it.', ['class' => $_['emailThemingState']['foreignClass']])); ?>
+			</p>
+		<?php endif; ?>
+
+		<div class="nldesign-option">
+			<input type="checkbox"
+				   name="nldesign-email-theming-enabled"
+				   id="nldesign-email-theming-enabled"
+				   class="checkbox"
+				   <?php if ($_['emailThemingState']['state'] === 'enabled'): ?>checked<?php endif; ?>
+				   <?php if ($_['emailThemingState']['state'] === 'foreign'): ?>disabled<?php endif; ?>>
+			<label for="nldesign-email-theming-enabled">
+				<?php p($l->t('Use NL Design email template')); ?>
+			</label>
+		</div>
+
+		<div class="nldesign-email-footer-fields">
+			<label for="nldesign-email-footer-org-name"><?php p($l->t('Organization name')); ?></label>
+			<input type="text" id="nldesign-email-footer-org-name" class="nldesign-email-footer-input"
+				   value="<?php p($_['emailFooterConfig']['orgName']); ?>"
+				   placeholder="<?php p($l->t('e.g. Gemeente Voorbeeld')); ?>" maxlength="2048">
+
+			<label for="nldesign-email-footer-accessibility-url"><?php p($l->t('Accessibility statement URL')); ?></label>
+			<input type="url" id="nldesign-email-footer-accessibility-url" class="nldesign-email-footer-input"
+				   value="<?php p($_['emailFooterConfig']['accessibilityUrl']); ?>"
+				   placeholder="https://example.org/toegankelijkheidsverklaring" maxlength="2048">
+
+			<label for="nldesign-email-footer-privacy-url"><?php p($l->t('Privacy statement URL')); ?></label>
+			<input type="url" id="nldesign-email-footer-privacy-url" class="nldesign-email-footer-input"
+				   value="<?php p($_['emailFooterConfig']['privacyUrl']); ?>"
+				   placeholder="https://example.org/privacy" maxlength="2048">
+		</div>
+
+		<button type="button" id="nldesign-email-theming-save" class="button">
+			<?php p($l->t('Save email template settings')); ?>
+		</button>
+		<span id="nldesign-email-theming-feedback" class="nldesign-email-theming-feedback" role="status" aria-live="polite"></span>
+
+		<div class="nldesign-email-occ-hint" id="nldesign-email-occ-hint" role="alert" style="display:none">
+			<p><?php p($l->t('config.php is read-only. Run one of the following commands manually to enable or disable the email template:')); ?></p>
+			<p><code id="nldesign-email-occ-enable"><?php p($_['occEnableCommand']); ?></code></p>
+			<p><code id="nldesign-email-occ-disable"><?php p($_['occDisableCommand']); ?></code></p>
+		</div>
 	</div>
 
 	<div class="nldesign-preview" id="nldesign-preview">
