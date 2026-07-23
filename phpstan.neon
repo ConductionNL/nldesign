@@ -23,7 +23,18 @@ parameters:
         - vendor/nextcloud/ocp
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
-        # Nextcloud server internals (\OC, OC_App, OC\) not stubbed in nextcloud/ocp
+        # Nextcloud server internals (\OC, OC_App, OC\) not stubbed in nextcloud/ocp.
+        # lib/Mail/NLDesignEMailTemplate.php extends the private OC\Mail\EMailTemplate
+        # (the server's own sanctioned mail_template_class hook) — PHPStan cannot
+        # resolve OC\ classes under the OCP/NCU-only bootstrap this app uses, and
+        # "extends unknown class" is a hard PHPStan error category that cannot be
+        # ignored via ignoreErrors (only excludePaths, which would hide real bugs
+        # in the file). This mirrors the pre-existing, same-shaped situation in
+        # lib/Controller/HealthController.php (extends the cross-app
+        # OCA\OpenRegister\AppHost\Controller\GenericHealthController) — accepted as
+        # a known static-analysis gap covered by composer check:strict's designed
+        # fallback (the `phpstan` composer script degrades to a warning when the
+        # analysis itself cannot complete), not a defect in either file.
         - '#Call to an undefined method OC::#'
         - '#Class OC not found#'
         - '#Access to static property \$server on an unknown class OC#'
