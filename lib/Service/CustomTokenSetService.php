@@ -15,6 +15,7 @@
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.2
+ * @spec openspec/specs/custom-token-sets/spec.md
  */
 
 declare(strict_types=1);
@@ -129,11 +130,22 @@ class CustomTokenSetService
      *
      * Derives the id `custom-{slug}`, rejects collisions (RuntimeException
      * with code 409), writes the canonical CSS atomically, persists the
-     * manifest entry (name, description, derived theming, contrast warnings).
+     * manifest entry (name, description, derived theming, contrast warnings,
+     * and — for a DTCG import — the declared package `version` and any
+     * `importWarnings`, e.g. `$deprecated` notices).
      *
-     * @param string                $displayName  The admin display name.
-     * @param string                $description  Optional description.
-     * @param array<string, string> $declarations The whitelisted declarations.
+     * `$version` and `$importWarnings` are DTCG-import concerns and are
+     * deliberately named apart from the pre-existing `warnings` key (WCAG
+     * contrast warnings, computed below): the two are unrelated diagnostics
+     * and merging them into one array would corrupt whichever consumer reads
+     * it (the contrast banner keys off `pair`/`ratio`; an import warning
+     * carries `path`/`message`).
+     *
+     * @param string                                                $displayName    The admin display name.
+     * @param string                                                $description    Optional description.
+     * @param array<string, string>                                 $declarations   The whitelisted declarations.
+     * @param string|null                                           $version        The declared DTCG package version, verbatim (never fabricated).
+     * @param array<int, array{path: string, message: string|null}> $importWarnings DTCG `$deprecated` import warnings, if any.
      *
      * @return array{id: string, warnings: array<int, array<string, mixed>>} The result.
      *
@@ -142,9 +154,15 @@ class CustomTokenSetService
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.1
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.2
+     * @spec openspec/specs/custom-token-sets/spec.md
      */
-    public function store(string $displayName, string $description, array $declarations): array
-    {
+    public function store(
+        string $displayName,
+        string $description,
+        array $declarations,
+        ?string $version=null,
+        array $importWarnings=[]
+    ): array {
         $slug = $this->slugify(name: $displayName);
         if ($slug === '') {
             throw new RuntimeException(message: 'A token set name must contain at least one letter or digit.', code: 422);
@@ -166,13 +184,23 @@ class CustomTokenSetService
             $resolvedDescription = 'Custom token set: '.$displayName;
         }
 
-        $manifest      = $this->getManifest();
-        $manifest[$id] = [
+        $entry = [
             'name'        => $displayName,
             'description' => $resolvedDescription,
             'theming'     => $this->deriveTheming(declarations: $declarations),
             'warnings'    => $warnings,
         ];
+
+        if ($version !== null) {
+            $entry['version'] = $version;
+        }
+
+        if (empty($importWarnings) === false) {
+            $entry['importWarnings'] = $importWarnings;
+        }
+
+        $manifest      = $this->getManifest();
+        $manifest[$id] = $entry;
         $this->saveManifest(manifest: $manifest);
 
         return [

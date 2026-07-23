@@ -10,6 +10,7 @@
  * @license EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-5.1
+ * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-2
  */
 
 declare(strict_types=1);
@@ -24,7 +25,10 @@ use PHPUnit\Framework\TestCase;
  *
  * Covers the payload corpus called out in tasks.md#task-5.1: selector
  * smuggling, external url(), oversized hint, comments, and accepted
- * org-palette extras.
+ * org-palette extras. Also covers the value-injection hardening corpus from
+ * harden-custom-token-set-value-validation/tasks.md#task-2: semicolon and
+ * CSS-comment-marker smuggling, both at the isForbiddenValue() unit level
+ * and the validateDeclarations() end-to-end level.
  */
 class CustomTokenSetValidatorTest extends TestCase
 {
@@ -140,6 +144,65 @@ class CustomTokenSetValidatorTest extends TestCase
         $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'red } /* injected'));
         $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'red */ .evil { color: red'));
     }//end testCommentDelimitersAreForbidden()
+
+    /**
+     * Proposal-literal regression: a semicolon after a legitimate value can
+     * smuggle an unrelated `background` declaration into the served :root
+     * block. This is the exact payload from the change proposal's "Why"
+     * section and MUST be rejected.
+     *
+     * @return void
+     *
+     * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-2.1
+     */
+    public function testSemicolonSmuggledBackgroundDeclarationIsForbidden(): void
+    {
+        $this->assertTrue(
+            condition: $this->validator->isForbiddenValue(value: 'red; background: url(https://evil.example/x.png)')
+        );
+    }//end testSemicolonSmuggledBackgroundDeclarationIsForbidden()
+
+    /**
+     * A bare CSS comment marker embedded in an otherwise plausible value must
+     * be rejected even when it is not paired with a semicolon, since `/*` /
+     * `*​/` alone can unbalance the generated :root block's comment nesting.
+     *
+     * @return void
+     *
+     * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-2.2
+     */
+    public function testBareCommentMarkerValueIsForbidden(): void
+    {
+        $this->assertTrue(condition: $this->validator->isForbiddenValue(value: 'red /* } */'));
+    }//end testBareCommentMarkerValueIsForbidden()
+
+    /**
+     * End-to-end proof (not just isForbiddenValue() in isolation): a
+     * declaration set containing the semicolon-smuggling payload is rejected
+     * by validateDeclarations() as a hard 422 failure — it must NOT be
+     * silently split into an "accepted" (trimmed/truncated) value and a
+     * "skipped" entry, which would still let the smuggled fragment reach
+     * storage under a mangled but present accepted value.
+     *
+     * @return void
+     *
+     * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-2.3
+     */
+    public function testValidateDeclarationsRejectsSemicolonSmugglingEndToEnd(): void
+    {
+        $split = $this->validator->validateDeclarations(
+            declarations: [
+                '--nldesign-color-primary' => 'red; background: url(https://evil.example/x.png)',
+            ],
+            slug: 'gemeente'
+        );
+
+        $this->assertNull(actual: $split, message: 'the smuggling payload must be a hard failure, not a split result');
+
+        $error = $this->validator->getLastError();
+        $this->assertSame(expected: 422, actual: $error['status']);
+        $this->assertSame(expected: '--nldesign-color-primary', actual: $error['property']);
+    }//end testValidateDeclarationsRejectsSemicolonSmugglingEndToEnd()
 
     /**
      * Any selector other than :root (or any at-rule) is rejected pre-parse.

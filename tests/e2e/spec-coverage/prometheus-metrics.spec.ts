@@ -14,8 +14,11 @@
 // @e2e exclude openspec/specs/prometheus-metrics/spec.md#metrics-endpoint-returns-correct-content-type
 // API response header assertion — not DOM-testable.
 
-// @e2e exclude openspec/specs/prometheus-metrics/spec.md#metrics-endpoint-is-publicly-accessible-without-csrf
-// @NoCSRFRequired annotation — not DOM-testable (and must NOT add @NoCSRFRequired to test).
+// @e2e exclude openspec/specs/prometheus-metrics/spec.md#metrics-endpoint-requires-an-authenticated-admin-session
+// SecurityMiddleware admin-auth default + @NoCSRFRequired annotation — not DOM-testable
+// (and must NOT add @NoCSRFRequired to test); covered by
+// tests/Unit/Controller/MetricsControllerTest.php (attribute-absence assertions) and the
+// deferred manual curl check in openspec/changes/metrics-endpoint-admin-auth/tasks.md#task-4.2.
 
 // @e2e exclude openspec/specs/prometheus-metrics/spec.md#metrics-endpoint-returns-all-metric-families
 // API response body format — not DOM-testable.

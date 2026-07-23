@@ -101,7 +101,9 @@ class TokenSetService
      *
      * Scans css/tokens/ for CSS files and merges metadata from token-sets.json.
      *
-     * @return array<array{id: string, name: string, description: string}> The available token sets.
+     * @return array<int, array<string, mixed>> The available token sets. Every entry carries at
+     *         least `id`, `name` and `description`; manifest entries may add open-shape keys
+     *         (`theming`, `design_system`, `note`, and later provenance/version fields).
      *
      * @spec openspec/specs/token-sets/spec.md
      */
@@ -119,65 +121,95 @@ class TokenSetService
 
         // Scan filesystem for actual CSS files.
         $tokenSets = [];
+        $files     = [];
         if (is_dir($tokensDir) === true) {
             $files = scandir($tokensDir);
-            foreach ($files as $file) {
-                if (str_ends_with($file, '.css') === true) {
-                    $id       = basename($file, '.css');
-                    $isCustom = str_starts_with($id, 'custom-');
+        }
 
-                    // Shipped manifest takes precedence on an (impossible) id
-                    // collision; log it so the operator can investigate.
-                    $shippedMeta = $metadata[$id] ?? null;
-                    $customMeta  = $customMetadata[$id] ?? null;
-                    if ($shippedMeta !== null && $customMeta !== null) {
-                        $this->logger->warning(
-                            'NL Design token set id "'.$id.'" exists in both the shipped and custom manifests; using the shipped metadata.'
-                        );
-                        $customMeta = null;
-                    }
+        foreach ($files as $file) {
+            if (str_ends_with($file, '.css') === false) {
+                continue;
+            }
 
-                    $meta     = ($shippedMeta ?? $customMeta);
-                    $tokenSet = [
-                        'id'            => $id,
-                        'name'          => $meta['name'] ?? $this->formatName(id: $id),
-                        'description'   => $meta['description'] ?? 'Design tokens for '.$this->formatName(id: $id),
-                        'design_system' => $meta['design_system'] ?? 'nldesign',
-                    ];
-                    if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
-                        $tokenSet['theming'] = $meta['theming'];
-                    }
+            $id = basename($file, '.css');
 
-                    if ($isCustom === true && $shippedMeta === null) {
-                        $tokenSet['custom'] = true;
-                        if (isset($meta['warnings']) === true && is_array($meta['warnings']) === true) {
-                            $tokenSet['warnings'] = $meta['warnings'];
-                        }
-                    } else {
-                        // Shipped set: surface the same non-blocking WCAG contrast
-                        // warning the apply dialog raises for a custom upload, so a
-                        // sub-AA or unevaluated shipped set is not silently applied.
-                        $warnings = $this->audit->warningsFor(
-                            appPath: $appPath,
-                            id: $id,
-                            designSystem: $tokenSet['design_system'],
-                            theming: ($tokenSet['theming'] ?? [])
-                        );
-                        if (empty($warnings) === false) {
-                            $tokenSet['warnings'] = $warnings;
-                        }
-                    }
+            // Shipped manifest takes precedence on an (impossible) id
+            // collision; log it so the operator can investigate.
+            $shippedMeta = $metadata[$id] ?? null;
+            $customMeta  = $customMetadata[$id] ?? null;
+            if ($shippedMeta !== null && $customMeta !== null) {
+                $this->logger->warning(
+                    'NL Design token set id "'.$id.'" exists in both the shipped and custom manifests; using the shipped metadata.'
+                );
+                $customMeta = null;
+            }
 
-                    $tokenSets[] = $tokenSet;
-                }//end if
-            }//end foreach
-        }//end if
+            $tokenSets[] = $this->buildTokenSetEntry(
+                appPath: $appPath,
+                id: $id,
+                shippedMeta: $shippedMeta,
+                customMeta: $customMeta
+            );
+        }//end foreach
 
         // Sort alphabetically by name.
         usort($tokenSets, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
 
         return $tokenSets;
     }//end getAvailableTokenSets()
+
+    /**
+     * Build one token-set list entry from its manifest metadata.
+     *
+     * Custom uploads carry their stored upload-time warnings; shipped sets
+     * surface the same non-blocking WCAG contrast warning the apply dialog
+     * raises for a custom upload, so a sub-AA or unevaluated shipped set is
+     * not silently applied.
+     *
+     * @param string                    $appPath     The app root path.
+     * @param string                    $id          The token set id (CSS basename).
+     * @param array<string, mixed>|null $shippedMeta The token-sets.json entry, if any.
+     * @param array<string, mixed>|null $customMeta  The custom-manifest entry, if any.
+     *
+     * @return array<string, mixed> The list entry.
+     *
+     * @spec openspec/specs/token-sets/spec.md
+     */
+    private function buildTokenSetEntry(string $appPath, string $id, ?array $shippedMeta, ?array $customMeta): array
+    {
+        $meta     = ($shippedMeta ?? $customMeta);
+        $tokenSet = [
+            'id'            => $id,
+            'name'          => $meta['name'] ?? $this->formatName(id: $id),
+            'description'   => $meta['description'] ?? 'Design tokens for '.$this->formatName(id: $id),
+            'design_system' => $meta['design_system'] ?? 'nldesign',
+        ];
+        if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
+            $tokenSet['theming'] = $meta['theming'];
+        }
+
+        $isCustom = str_starts_with($id, 'custom-');
+        if ($isCustom === true && $shippedMeta === null) {
+            $tokenSet['custom'] = true;
+            if (isset($meta['warnings']) === true && is_array($meta['warnings']) === true) {
+                $tokenSet['warnings'] = $meta['warnings'];
+            }
+
+            return $tokenSet;
+        }
+
+        $warnings = $this->audit->warningsFor(
+            appPath: $appPath,
+            id: $id,
+            designSystem: $tokenSet['design_system'],
+            theming: ($tokenSet['theming'] ?? [])
+        );
+        if (empty($warnings) === false) {
+            $tokenSet['warnings'] = $warnings;
+        }
+
+        return $tokenSet;
+    }//end buildTokenSetEntry()
 
     /**
      * Check if a token set exists on the filesystem.

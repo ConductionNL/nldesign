@@ -7,14 +7,15 @@
 	<description><![CDATA[
 This app allows you to apply NL Design System design tokens to your Nextcloud instance.
 
-It ships 42 token sets covering the Dutch national government (Rijkshuisstijl), the
-large-city design systems (Utrecht, Amsterdam, Den Haag, Rotterdam) and a broad set of
-community-maintained municipality and organization brands. Configure which token set to
-use in the admin settings.
+It ships 43 token sets covering the Dutch national government (Rijkshuisstijl), the
+large-city design systems (Utrecht, Amsterdam, Den Haag, Rotterdam), a broad set of
+community-maintained municipality and organization brands, and La Suite numérique
+(Cunningham design system) for European sovereign-workplace (MinBZK/mijn-bureau EDIC)
+bundles. Configure which token set to use in the admin settings.
 
-Fira Sans (SIL Open Font License 1.1) is bundled and self-hosted — no external CDN — so
-the theme works inside Nextcloud's default Content-Security-Policy and on air-gapped
-government instances.
+Fira Sans and Inter (both SIL Open Font License 1.1) are bundled and self-hosted — no
+external CDN — so the theme works inside Nextcloud's default Content-Security-Policy and
+on air-gapped government instances.
 
 Free and open source under the EUPL-1.2 license.
 Gratis en open source onder de EUPL-1.2 licentie.

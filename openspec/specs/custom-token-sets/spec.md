@@ -6,10 +6,7 @@ status: done
 
 ## Purpose
 Admins upload, validate, manage, and activate their own organization token sets ("eigen huisstijl"), in the app native `--nldesign-*` CSS format or the W3C Design Tokens JSON format. Backs GOVERNMENT-FEATURES F-04.
-
 ## Requirements
-
-
 ### Requirement: Upload Custom Token Set (CSS format)
 The admin settings panel MUST provide an upload control that accepts a CSS file containing `--nldesign-*` custom property declarations and stores it as a new token set with id `custom-{slug}`, where the slug is derived from the admin-supplied display name (`[a-z0-9-]`, max 64 chars).
 
@@ -43,36 +40,42 @@ The admin settings panel MUST provide an upload control that accepts a CSS file 
 - AND no upload MUST ever write to a path other than `css/tokens/custom-*.css`
 
 ### Requirement: CSS Validation Whitelist
-Uploaded CSS MUST be parsed and re-serialized through a whitelist: exactly one `:root` rule; only `--nldesign-*` and `--{slug}-*` custom properties; values MUST NOT contain `@import`, `expression(`, `javascript:`, `<`, or `url()` with a scheme or host (relative `url()` and `data:image/svg+xml` are permitted). The served file MUST be generated from the parsed declarations, never from the raw upload bytes. Uploads over 512 KB MUST be rejected.
 
-#### Scenario: Disallowed CSS payload is rejected with a structured error
-@e2e exclude security validation branch — PHPUnit on the validator with a payload corpus
-- GIVEN a CSS file containing `:root { --nldesign-color-primary: #007bc7; } .header { background: url(https://evil.example/x.png); }`
-- WHEN the admin uploads it
-- THEN the upload MUST be rejected with HTTP 422
-- AND the error body MUST identify the offending construct (selector other than `:root`)
-- AND no file MUST be written
+The server MUST reject, as a hard upload failure, any accepted declaration (`--nldesign-*` or
+`--{slug}-*` name) whose value contains a semicolon (`;`) or a CSS comment marker (`/*` or `*/`),
+in addition to the existing rejections (`@import`, `expression(`, `javascript:`, raw `<`, and
+disallowed `url()` schemes/hosts). A value containing any of these MUST cause
+`CustomTokenSetValidator::isForbiddenValue()` to return `true`, which MUST propagate as a 422
+upload failure via `CustomTokenSetController::upload()` for both the CSS and W3C Design Tokens
+JSON upload paths.
 
-#### Scenario: External url() in a token value is rejected
-@e2e exclude security validation branch — PHPUnit on the validator
-- GIVEN a CSS file containing `:root { --nldesign-logo-url: url('https://evil.example/logo.svg'); }`
-- WHEN the admin uploads it
-- THEN the upload MUST be rejected with HTTP 422 naming the offending property
-- AND a file using `url('../../img/logos/custom.svg')` or a `data:image/svg+xml` URI MUST be accepted
+#### Scenario: Semicolon-smuggled declaration is rejected (CSS upload)
 
-#### Scenario: Unknown properties are skipped and counted
-@e2e exclude parser behavior — PHPUnit on the validator
-- GIVEN a CSS file with three `--nldesign-*` declarations and two `--color-primary`-style Nextcloud variables
-- WHEN the admin uploads it
-- THEN only the three `--nldesign-*` declarations MUST be written
-- AND the response MUST report `imported: 3, skipped: 2`
-- AND skipped declarations MUST be listed by name so the admin can move them to `custom-overrides.css` instead
+- GIVEN a CSS upload whose `:root` block contains
+  `--nldesign-color-primary: red; background: url(https://evil.example/x.png);`
+- WHEN the admin uploads the file
+- THEN the upload MUST fail with HTTP 422
+- AND the response MUST NOT contain a served CSS file with the smuggled `background` declaration
 
-#### Scenario: Oversized upload is rejected
-@e2e exclude size guard — PHPUnit on the controller
-- GIVEN a CSS file larger than 512 KB
+#### Scenario: Comment-marker payload is rejected (CSS upload)
+
+- GIVEN a CSS upload whose `:root` block contains a declaration value containing `/*` or `*/`
+- WHEN the admin uploads the file
+- THEN the upload MUST fail with HTTP 422
+
+#### Scenario: Semicolon-smuggled value is rejected (W3C Design Tokens JSON upload)
+
+- GIVEN a W3C Design Tokens JSON upload whose mapped `--nldesign-*` value contains a semicolon
+  followed by an additional declaration
+- WHEN the admin uploads the file
+- THEN `CustomTokenSetController::mapFromJson()` MUST reject the upload with HTTP 422 via the same
+  `isForbiddenValue()` gate used by the CSS path
+
+#### Scenario: Legitimate values with no injection characters still succeed
+
+- GIVEN a CSS upload with `--nldesign-color-primary: #154273`
 - WHEN the admin uploads it
-- THEN the upload MUST be rejected with HTTP 413 before parsing
+- THEN the upload MUST succeed exactly as before this change (no regression for benign values)
 
 ### Requirement: W3C Design Tokens JSON Import
 The upload control MUST also accept a JSON file in the Design Tokens Community Group format (`$value`/`$type`, nested groups). Recognized `color`, `fontFamily`, and `dimension` tokens MUST be mapped to `--nldesign-*` variables via the published mapping table; unmapped tokens MUST be skipped and counted. The mapped result MUST pass through the same whitelist, serialization, and storage pipeline as CSS uploads.
@@ -159,3 +162,4 @@ The admin panel MUST list uploaded sets with their contrast status and provide d
 - WHEN the admin deletes it
 - THEN the active token set MUST be reset to `nextcloud`
 - AND after reload no `custom-gemeente-voorbeeld` CSS MUST be injected on any page
+
