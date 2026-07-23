@@ -36,6 +36,9 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		<php min-version="8.3"/>
 		<nextcloud min-version="28" max-version="34"/>
 	</dependencies>
+	<commands>
+		<command>OCA\NLDesign\Command\ComplianceReport</command>
+	</commands>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
 		<admin-section>theming</admin-section>

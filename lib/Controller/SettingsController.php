@@ -33,13 +33,16 @@ namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\AppThemingService;
+use OCA\NLDesign\Service\ComplianceReportService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
+use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\Response;
 use OCP\IConfig;
 use OCP\IRequest;
 
@@ -101,15 +104,23 @@ class SettingsController extends Controller
     private AppThemingService $appThemingService;
 
     /**
+     * The compliance evidence report service.
+     *
+     * @var ComplianceReportService
+     */
+    private ComplianceReportService $complianceService;
+
+    /**
      * Constructor.
      *
-     * @param string                 $appName           The app name.
-     * @param IRequest               $request           The request object.
-     * @param IConfig                $config            The config service.
-     * @param TokenSetService        $tokenSetService   The token set service.
-     * @param ThemingService         $themingService    The theming service.
-     * @param TokenSetPreviewService $previewService    The token set preview service.
-     * @param AppThemingService      $appThemingService The per-app theming service.
+     * @param string                  $appName           The app name.
+     * @param IRequest                $request           The request object.
+     * @param IConfig                 $config            The config service.
+     * @param TokenSetService         $tokenSetService   The token set service.
+     * @param ThemingService          $themingService    The theming service.
+     * @param TokenSetPreviewService  $previewService    The token set preview service.
+     * @param AppThemingService       $appThemingService The per-app theming service.
+     * @param ComplianceReportService $complianceService The compliance evidence report service.
      */
     public function __construct(
         string $appName,
@@ -118,7 +129,8 @@ class SettingsController extends Controller
         TokenSetService $tokenSetService,
         ThemingService $themingService,
         TokenSetPreviewService $previewService,
-        AppThemingService $appThemingService
+        AppThemingService $appThemingService,
+        ComplianceReportService $complianceService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->config            = $config;
@@ -126,6 +138,7 @@ class SettingsController extends Controller
         $this->themingService    = $themingService;
         $this->previewService    = $previewService;
         $this->appThemingService = $appThemingService;
+        $this->complianceService = $complianceService;
     }//end __construct()
 
     /**
@@ -369,4 +382,43 @@ class SettingsController extends Controller
             ]
         );
     }//end setAppTheming()
+
+    /**
+     * Export the active-configuration WCAG contrast compliance evidence report.
+     *
+     * Color-contrast evidence for theme tokens only — NOT a WCAG-EM audit and
+     * NOT a full WCAG evaluation (see ComplianceReportService::SCOPE_STATEMENT).
+     * Served as a download so it can be attached directly to a
+     * toegankelijkheidsverklaring evidence package.
+     *
+     * @param string $format The requested format: "json" (default) or "markdown".
+     *
+     * @return Response The report download, or a 400 JSON error for an unknown format.
+     *
+     * @spec openspec/specs/compliance-evidence/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function complianceReport(string $format='json'): Response
+    {
+        if ($format !== 'json' && $format !== 'markdown') {
+            return new JSONResponse(['error' => 'Unknown format. Use "json" or "markdown".'], 400);
+        }
+
+        $tokenSetId = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
+        $instanceId = $this->config->getSystemValue('instanceid', 'unknown');
+        $date       = gmdate('Ymd');
+
+        $extension   = 'json';
+        $contentType = 'application/json';
+        $content     = $this->complianceService->renderJson();
+        if ($format === 'markdown') {
+            $extension   = 'md';
+            $contentType = 'text/markdown';
+            $content     = $this->complianceService->renderMarkdown();
+        }
+
+        $filename = sprintf('nldesign-compliance-%s-%s-%s.%s', $instanceId, $tokenSetId, $date, $extension);
+
+        return new DataDownloadResponse(data: $content, filename: $filename, contentType: $contentType);
+    }//end complianceReport()
 }//end class

@@ -41,5 +41,7 @@ return [
 		['name' => 'customTokenSet#list', 'url' => '/settings/tokensets/custom', 'verb' => 'GET'],
 		['name' => 'customTokenSet#export', 'url' => '/settings/tokensets/custom/{id}/export', 'verb' => 'GET'],
 		['name' => 'customTokenSet#delete', 'url' => '/settings/tokensets/custom/{id}', 'verb' => 'DELETE'],
+		// Active-configuration WCAG contrast compliance evidence report (download).
+		['name' => 'settings#complianceReport', 'url' => '/settings/compliance-report', 'verb' => 'GET'],
 	],
 ];
