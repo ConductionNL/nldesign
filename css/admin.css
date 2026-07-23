@@ -292,6 +292,32 @@
 	padding-left: 18px;
 }
 
+/* Custom fonts */
+.nldesign-license-notice {
+	margin: 8px 0 12px;
+	padding: 10px 12px;
+	border-left: 4px solid var(--color-warning, #c7a008);
+	background: var(--color-background-dark);
+	border-radius: var(--border-radius);
+}
+
+.nldesign-font-name {
+	min-width: 220px;
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+}
+
+#nldesign-font-role {
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+}
+
 /* ==========================================================================
  * Token editor — name, picker and revert on a single line
  * ========================================================================== */

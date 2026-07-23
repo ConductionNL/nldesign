@@ -62,6 +62,37 @@ style('nldesign', 'admin');
 		</div>
 	</div>
 
+	<!-- Custom font upload -->
+	<div class="nldesign-custom-fonts" id="nldesign-custom-fonts" style="margin-top:2em">
+		<h3><?php p($l->t('Custom fonts')); ?></h3>
+		<p class="nldesign-license-notice">
+			<?php p($l->t('Only upload fonts your organization holds a license to self-host. Licensing responsibility rests with the uploader.')); ?>
+		</p>
+		<p class="settings-hint">
+			<?php p($l->t('Upload a WOFF2 font file (max 2 MB, 20 fonts max) and assign it to the body text or heading role. Uploaded fonts are self-hosted — no external requests.')); ?>
+		</p>
+		<div class="nldesign-upload-form">
+			<label for="nldesign-font-name"><?php p($l->t('Font display name')); ?></label>
+			<input type="text" id="nldesign-font-name" class="nldesign-font-name"
+				   placeholder="<?php p($l->t('e.g. Rijks Sans')); ?>"
+				   maxlength="64">
+			<label for="nldesign-font-role"><?php p($l->t('Font role')); ?></label>
+			<select id="nldesign-font-role" name="nldesign-font-role">
+				<option value="body"><?php p($l->t('Body text')); ?></option>
+				<option value="heading"><?php p($l->t('Heading')); ?></option>
+			</select>
+			<input type="file" id="nldesign-font-input" accept=".woff2" style="display:none">
+			<button type="button" id="nldesign-font-upload-btn" class="button">
+				<?php p($l->t('Choose font and upload')); ?>
+			</button>
+		</div>
+		<div id="nldesign-font-upload-result" class="nldesign-import-result" role="status" aria-live="polite" style="display:none"></div>
+		<div id="nldesign-font-list" class="nldesign-custom-set-list" role="group"
+			 aria-label="<?php p($l->t('Custom fonts')); ?>">
+			<p class="settings-hint"><?php p($l->t('Loading fonts…')); ?></p>
+		</div>
+	</div>
+
 	<!-- Hide Slogan/Payoff Option -->
 	<div class="nldesign-option">
 		<input type="checkbox"
