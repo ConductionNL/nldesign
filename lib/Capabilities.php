@@ -150,16 +150,22 @@ class Capabilities implements IPublicCapability
         $available = $this->tokenSetService->getAvailableTokenSets();
         $byId      = array_column($available, null, 'id');
 
-        // The manifest is external JSON: today's entries carry no `version`
-        // key (upstream-token-freshness adds provenance later), so treat the
-        // entry as an open shape rather than the declared fixed shape.
-        /** @var array<string, mixed>|null $entry */
-        $entry = ($byId[$tokenSetId] ?? null);
+        // Manifest entries are an open shape (no `version` key today; the
+        // upstream-token-freshness change adds provenance fields later).
+        $entry   = ($byId[$tokenSetId] ?? null);
+        $name    = $tokenSetId;
+        $version = null;
+        if (is_array($entry) === true) {
+            $name = (string) ($entry['name'] ?? $tokenSetId);
+            if (isset($entry['version']) === true) {
+                $version = (string) $entry['version'];
+            }
+        }
 
         return [
             'id'      => $tokenSetId,
-            'name'    => ($entry['name'] ?? $tokenSetId),
-            'version' => ($entry['version'] ?? null),
+            'name'    => $name,
+            'version' => $version,
         ];
     }//end buildTokenSet()
 
@@ -249,7 +255,7 @@ class Capabilities implements IPublicCapability
             appPath: $appPath,
             id: $tokenSetId,
             theming: $theming,
-            aaa: false
+            level: 'AA'
         )['verdict'] === 'pass';
 
         if ($declaresAaa === true) {
@@ -257,7 +263,7 @@ class Capabilities implements IPublicCapability
                 appPath: $appPath,
                 id: $tokenSetId,
                 theming: $theming,
-                aaa: true
+                level: 'AAA'
             )['verdict'] === 'pass';
 
             if ($passesAaa === true) {
