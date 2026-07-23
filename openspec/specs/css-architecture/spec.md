@@ -12,49 +12,74 @@ Defines the layered CSS architecture that transforms NL Design System tokens int
 @e2e exclude CSS-architecture / PHP boot-order spec — all scenarios describe CSS cascade layers, file load order, and server-side PHP logic with no testable UI surface in the admin settings page. The architecture uses a design-system-driven approach: `design-systems.json` declares ordered stylesheet bundles, and `Application::boot()` loads the correct bundle for the active token set. Organization-specific tokens cascade correctly, incomplete token sets fall back gracefully, and NL Design System component tokens (using the `--utrecht-*` prefix) are bridged to the `--nldesign-*` namespace. The load order is critical: each layer builds on the previous one.
 ## Requirements
 ### Requirement: Design System Driven Stylesheet Loading
-The app MUST resolve which design system a token set belongs to and load the corresponding stylesheet bundle in declared order.
+
+The app MUST resolve which design system a token set belongs to and load the corresponding
+stylesheet bundle in declared order. The active token set for a request MUST be obtained
+through `GroupThemingService::resolveTokenSetForRequest()` (precedence: admin preview → group
+mapping → instance default `token_set`, per the `per-group-theming` spec) instead of reading
+the `token_set` app value directly; with an empty group mapping and no active preview the
+resolved set MUST be identical to the `token_set` app value, preserving prior behavior exactly.
+Resolution affects ONLY which token set (and thus which design-system bundle) is chosen; the
+layer order, the custom-overrides layer, and the conditional stylesheets are unchanged and
+identical for all users.
 
 #### Scenario: Standard CSS load order for nldesign design system
+
 - GIVEN the nldesign app boots via `Application::boot()`
-- AND the active token set belongs to the `nldesign` design system
+- AND the token set resolved for the request belongs to the `nldesign` design system
 - WHEN `injectThemeCSS()` is called
 - THEN the `DesignSystemService` MUST resolve the design system from `design-systems.json`
 - AND CSS files MUST be loaded in the order declared in the design system's `stylesheets` array via `\OCP\Util::addStyle()`
 - AND the standard nldesign order MUST be:
   1. `systems/nldesign/fonts` (Layer 1 -- @font-face declarations)
   2. `systems/nldesign/defaults` (Layer 2 -- all `--nldesign-*` token defaults)
-  3. Token set file loaded separately: `tokens/{activeTokenSet}` (Layer 3 -- organization overrides)
+  3. Token set file loaded separately: `tokens/{resolvedTokenSet}` (Layer 3 -- organization overrides)
   4. `systems/nldesign/utrecht-bridge` (Layer 4 -- `--utrecht-*` to `--nldesign-component-*` mapping)
   5. `systems/nldesign/theme` (Layer 5 -- `--nldesign-*` to Nextcloud element selectors)
   6. `systems/nldesign/overrides` (Layer 6 -- Nextcloud `--color-*` variable mappings)
   7. `systems/nldesign/element-overrides` (Layer 7 -- low-level element styling)
 
 #### Scenario: Stock Nextcloud design system loads no stylesheets
-- GIVEN the active token set has `design_system: "none"`
+
+- GIVEN the token set resolved for the request has `design_system: "none"`
 - WHEN `injectThemeCSS()` is called
 - THEN the design system's `stylesheets` array MUST be empty
 - AND no nldesign CSS files MUST be loaded for layers 1-7
 - AND Nextcloud's default theming MUST remain untouched
 
 #### Scenario: Token set CSS loaded after design system stylesheets
+
 - GIVEN the design system stylesheets have been loaded
 - AND the design system is not `"none"`
 - WHEN the token set file is loaded
-- THEN `tokens/{activeTokenSet}` MUST be loaded after all design system stylesheets
+- THEN `tokens/{resolvedTokenSet}` MUST be loaded after all design system stylesheets
 - AND before the custom-overrides layer
 
 #### Scenario: Custom overrides always loaded last
+
 - GIVEN all design system stylesheets and token set CSS are loaded
 - WHEN `injectThemeCSS()` continues
 - THEN `custom-overrides` MUST be loaded after all design system and token layers
 - AND `CustomOverridesService::ensureExists()` MUST be called before loading
 - AND custom overrides MUST override all previous layers in the cascade
+- AND the custom-overrides layer MUST be the same instance-global file for every user,
+  whichever token set was resolved for the request
 
 #### Scenario: Conditional CSS loading
+
 - GIVEN the hide_slogan setting is enabled (value `'1'`)
 - WHEN `injectThemeCSS()` is called
 - THEN `hide-slogan` CSS MUST be loaded after all core and custom-override layers
 - AND if show_menu_labels is also enabled, `show-menu-labels` CSS MUST also be loaded
+- AND the conditional stylesheets MUST be instance-global (not per-group)
+
+#### Scenario: Empty mapping preserves legacy resolution byte-for-byte
+
+@e2e exclude regression invariant — PHPUnit asserts resolved id equals the app value
+- GIVEN `group_token_sets` is absent or an empty array and no preview is active
+- WHEN any request resolves its token set
+- THEN the resolved id MUST equal the `token_set` app value (default `nextcloud`)
+- AND the set of stylesheets injected MUST be identical to the pre-change behavior
 
 ### Requirement: Layer 1 -- Font Declarations
 The fonts layer MUST declare Fira Sans @font-face rules for all required weights and styles.
@@ -266,10 +291,12 @@ The element-overrides layer MUST apply NL Design styling to specific HTML elemen
 - AND these exclusions MUST prevent breaking app-specific layouts
 
 ### Requirement: Custom Overrides Layer (Layer 8)
-An 8th layer MUST load admin-defined CSS overrides that always win over all design system and token layers.
+
+An 8th layer MUST load admin-defined CSS overrides that always win over all design system and
+token layers.
 
 #### Scenario: Custom overrides file loaded
-- GIVEN `Application::injectThemeCSS()` runs
+- GIVEN `CssInjectionService::inject()` runs for a themed render context
 - WHEN all design system and token set CSS has been loaded
 - THEN `CustomOverridesService::ensureExists()` MUST be called to create the file if missing
 - AND `custom-overrides` CSS MUST be loaded via `\OCP\Util::addStyle()`
@@ -374,6 +401,45 @@ structure, one directory per shipped design system.
 - WHEN its stylesheets are declared in `design-systems.json`
 - THEN its CSS files MUST be in `css/systems/custom-ds/`
 - AND they MUST NOT conflict with nldesign files
+
+### Requirement: Render-Context Discrimination
+
+Style injection MUST be per-render-context. The listener MUST derive a context from the event:
+`BeforeLoginTemplateRenderedEvent` ⇒ `login`; `BeforeTemplateRenderedEvent` ⇒ the response's
+`renderAs` value mapped to `user`, `guest`, `public`, or `error`; any other or future `renderAs`
+value MUST be treated as themed (fail open). The appconfig key `themed_contexts` (JSON array of
+the five context names) selects which contexts receive nldesign CSS. An absent, empty, or
+unparseable value MUST theme ALL contexts — the default behavior is byte-identical to the
+previous boot-time injection on every surface. This change ships no admin UI for the key
+(occ-only); ambiguity always resolves to themed because theming is presentation, not security.
+
+#### Scenario: Default themes every context
+- GIVEN the `themed_contexts` appconfig key is absent
+- WHEN a login page, a user page, a guest page, a public share page, and an app-framework error
+  page are each rendered
+- THEN every one of them MUST receive the full nldesign stylesheet set exactly as before this
+  change
+
+#### Scenario: A context can be deliberately unthemed
+- GIVEN `themed_contexts` is `["user","login","guest","error"]`
+- WHEN a public share page (`renderAs: public`) is rendered
+- THEN no nldesign stylesheet MUST be injected on that page
+- AND a user page rendered in the same configuration MUST remain fully themed
+
+#### Scenario: Invalid configuration fails open to themed
+@e2e exclude config-validation branch — PHPUnit on CssInjectionService
+- GIVEN `themed_contexts` contains unparseable JSON or a non-array value
+- WHEN any template renders
+- THEN all contexts MUST be treated as themed
+- AND no error MUST be raised
+
+#### Scenario: Unknown renderAs values stay themed
+@e2e exclude forward-compatibility branch — PHPUnit on the listener mapping
+- GIVEN a `BeforeTemplateRenderedEvent` whose response `renderAs` is `blank` or a value unknown
+  to the listener
+- WHEN the listener handles the event
+- THEN injection MUST proceed as themed (fail open)
+- AND the unknown value MUST NOT cause the configured context list to strip theming
 
 ## Current Implementation Status
 
