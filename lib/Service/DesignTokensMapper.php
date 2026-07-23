@@ -36,6 +36,12 @@ namespace OCA\NLDesign\Service;
  * the caller) or a zero-yield result is a hard failure.
  *
  * @spec openspec/specs/custom-token-sets/spec.md
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity) - This class implements the full W3C DTCG
+ * v2025.10 serialisation contract: one branch per recognised token $type (color object/string,
+ * dimension, fontFamily, fontWeight, composite typography, shadow, …) plus $extensions/$deprecated
+ * handling. The complexity is essential to the spec surface, not accidental; the transitive alias
+ * resolution — the one genuinely separable concern — already lives in DesignTokensAliasResolver.
  */
 class DesignTokensMapper
 {
