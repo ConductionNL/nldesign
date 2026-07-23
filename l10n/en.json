@@ -122,7 +122,17 @@
         "Invalid footer URL — use an http:// or https:// address.": "Invalid footer URL — use an http:// or https:// address.",
         "Failed to save email template settings.": "Failed to save email template settings.",
         "Accessibility statement": "Accessibility statement",
-        "Privacy statement": "Privacy statement"
+        "Privacy statement": "Privacy statement",
+        "Alias chain too deep (more than 10 hops)": "Alias chain too deep (more than 10 hops)",
+        "Alias cycle detected": "Alias cycle detected",
+        "Alias target does not exist": "Alias target does not exist",
+        "Another token already maps to this target": "Another token already maps to this target",
+        "No $type could be resolved (never guessed)": "No $type could be resolved (never guessed)",
+        "Not part of the --nldesign-* vocabulary": "Not part of the --nldesign-* vocabulary",
+        "Package version: {version}": "Package version: {version}",
+        "Unsupported color space": "Unsupported color space",
+        "Unsupported value shape": "Unsupported value shape",
+        "v{version}": "v{version}"
     },
     "plurals": {}
 }

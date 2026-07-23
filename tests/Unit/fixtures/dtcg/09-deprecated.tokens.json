@@ -1,0 +1,9 @@
+{
+  "color": {
+    "primary": {
+      "$type": "color",
+      "$value": "#154273",
+      "$deprecated": "Use color.brand.primary instead"
+    }
+  }
+}

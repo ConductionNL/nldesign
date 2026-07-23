@@ -16,6 +16,7 @@
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.2
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
+ * @spec openspec/specs/custom-token-sets/spec.md
  * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
@@ -258,13 +259,22 @@ class CustomTokenSetController extends Controller
     }//end mapFromCss()
 
     /**
-     * Parse and map a W3C Design Tokens JSON upload into the accepted/skipped split.
+     * Parse and map a W3C Design Tokens JSON upload into the accepted/skipped
+     * split, plus the full DTCG diagnostics (structured skips, errors,
+     * deprecation warnings, declared package version).
      *
      * @param string $content The raw JSON upload.
      *
-     * @return array{accepted: array<string, string>, skipped: string[]}|JSONResponse
+     * @return array{
+     *     accepted: array<string, string>,
+     *     skipped: array<int, array{path: string, reason: string, detail?: string}>,
+     *     errors: array<int, array{path: string, reason: string, detail?: string}>,
+     *     importWarnings: array<int, array{path: string, message: string|null}>,
+     *     version: string|null
+     * }|JSONResponse The split plus diagnostics, or a hard-failure error response.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
+     * @spec openspec/specs/custom-token-sets/spec.md
      */
     private function mapFromJson(string $content)
     {
@@ -291,27 +301,48 @@ class CustomTokenSetController extends Controller
         }
 
         if (empty($accepted) === true) {
+            // Zero-yield: reject actionably, carrying the full structured
+            // diagnostics so the admin can see why nothing mapped.
             return new JSONResponse(
-                ['error' => $this->l->t('No recognized design tokens were found in the uploaded file.')],
+                [
+                    'error'          => $this->l->t('No recognized design tokens were found in the uploaded file.'),
+                    'imported'       => 0,
+                    'skipped'        => $mapped['skipped'],
+                    'errors'         => $mapped['errors'],
+                    'importWarnings' => $mapped['warnings'],
+                ],
                 422
             );
         }
 
         return [
-            'accepted' => $accepted,
-            'skipped'  => $mapped['skipped'],
+            'accepted'       => $accepted,
+            'skipped'        => $mapped['skipped'],
+            'errors'         => $mapped['errors'],
+            'importWarnings' => $mapped['warnings'],
+            'version'        => $mapped['packageVersion'],
         ];
     }//end mapFromJson()
 
     /**
      * Store the accepted declarations and build the upload response.
      *
-     * @param string                                                    $name   The display name.
-     * @param array{accepted: array<string, string>, skipped: string[]} $parsed The validated split.
+     * The response's `warnings` key is always the WCAG contrast warnings
+     * (pre-existing behaviour, unchanged). A DTCG (JSON) upload additionally
+     * carries `errors` (structured, non-recoverable per-token diagnostics),
+     * `importWarnings` (structured `$deprecated` notices — deliberately not
+     * named `warnings` to avoid colliding with the contrast warnings above)
+     * and `version` (the declared package version, when present). A CSS
+     * upload carries none of those three — `$parsed` simply omits them.
+     *
+     * @param string               $name   The display name.
+     * @param array<string, mixed> $parsed The validated split (`accepted`, `skipped`), plus — for a
+     *                                     DTCG upload — `errors`, `importWarnings` and `version` (see the description above).
      *
      * @return JSONResponse The upload result or a collision/storage error.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
+     * @spec openspec/specs/custom-token-sets/spec.md
      * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     private function persist(string $name, array $parsed): JSONResponse
@@ -320,7 +351,9 @@ class CustomTokenSetController extends Controller
             $result = $this->service->store(
                 displayName: $name,
                 description: trim((string) ($this->request->getParam('description', ''))),
-                declarations: $parsed['accepted']
+                declarations: $parsed['accepted'],
+                version: ($parsed['version'] ?? null),
+                importWarnings: ($parsed['importWarnings'] ?? [])
             );
         } catch (RuntimeException $e) {
             $code = $e->getCode();
@@ -347,14 +380,26 @@ class CustomTokenSetController extends Controller
             ]
         );
 
-        return new JSONResponse(
-            [
-                'id'       => $result['id'],
-                'imported' => count($parsed['accepted']),
-                'skipped'  => $parsed['skipped'],
-                'warnings' => $result['warnings'],
-            ]
-        );
+        $response = [
+            'id'       => $result['id'],
+            'imported' => count($parsed['accepted']),
+            'skipped'  => $parsed['skipped'],
+            'warnings' => $result['warnings'],
+        ];
+
+        if (isset($parsed['errors']) === true) {
+            $response['errors'] = $parsed['errors'];
+        }
+
+        if (isset($parsed['importWarnings']) === true) {
+            $response['importWarnings'] = $parsed['importWarnings'];
+        }
+
+        if (array_key_exists('version', $parsed) === true) {
+            $response['version'] = $parsed['version'];
+        }
+
+        return new JSONResponse($response);
     }//end persist()
 
     /**

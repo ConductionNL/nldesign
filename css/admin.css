@@ -106,6 +106,18 @@
 	padding: 20px;
 	background: var(--color-background-dark);
 	border-radius: var(--border-radius-large);
+	--prev-primary: #2874d1;
+	--prev-primary-text: #fff;
+	--prev-surface: #fff;
+	--prev-bg: #f2f4f7;
+	--prev-text: #1b2733;
+	--prev-muted: #6b7785;
+	--prev-border: #e3e9f0;
+	--prev-warning: #c79a00;
+	--prev-error: #c0392b;
+	--prev-info: #1f6fd0;
+	--prev-radius: 8px;
+	--prev-login-bg: var(--prev-primary);
 }
 
 .nldesign-preview h3 {
@@ -270,6 +282,20 @@
 	flex: 1 1 auto;
 }
 
+.nldesign-custom-set-version {
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+	font-family: monospace;
+}
+
+.nldesign-diagnostics-list,
+.nldesign-deprecation-list {
+	margin: 8px 0 0;
+	padding-left: 20px;
+	font-size: 0.9em;
+	color: var(--color-text-maxcontrast);
+}
+
 .nldesign-badge--warning {
 	background: var(--color-warning, #c7a008);
 	color: var(--color-primary-text, #fff);
@@ -362,21 +388,6 @@
 .nldesign-preview-switch-btn { border: none; background: none; padding: 4px 14px; border-radius: 999px; cursor: pointer; color: var(--color-text-maxcontrast); font-weight: 500; }
 .nldesign-preview-switch-btn.active { background: var(--color-main-background); color: var(--color-main-text); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
 .nldesign-preview-stage[hidden] { display: none; }
-
-.nldesign-preview {
-	--prev-primary: #2874d1;
-	--prev-primary-text: #fff;
-	--prev-surface: #fff;
-	--prev-bg: #f2f4f7;
-	--prev-text: #1b2733;
-	--prev-muted: #6b7785;
-	--prev-border: #e3e9f0;
-	--prev-warning: #c79a00;
-	--prev-error: #c0392b;
-	--prev-info: #1f6fd0;
-	--prev-radius: 8px;
-	--prev-login-bg: var(--prev-primary);
-}
 
 /* --- mini app shell --- */
 .nl-mini {
