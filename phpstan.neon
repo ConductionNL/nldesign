@@ -13,6 +13,10 @@ parameters:
     excludePaths:
         - vendor
         - vendor-bin
+        # Soft optional dependency: extends OCA\OpenRegister\AppHost\GenericHealthController,
+        # which is absent during static analysis. phpstan refuses to ignore
+        # "extends unknown class" via ignoreErrors and mandates excludePaths.
+        - lib/Controller/HealthController.php
         # Apps that ship a verbatim template snapshot under lib/Resources/template/ (e.g. openbuild).
         - lib/Resources/template
     scanDirectories:

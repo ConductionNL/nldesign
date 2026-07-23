@@ -130,7 +130,36 @@ class CustomTokenSetController extends Controller
             return new JSONResponse(['error' => $this->l->t('A token set name is required.')], 400);
         }
 
-        $file = $this->request->getUploadedFile(key: 'file');
+        $slug = $this->service->slugify(name: $name);
+        if ($slug === '') {
+            return new JSONResponse(['error' => $this->l->t('A token set name must contain at least one letter or digit.')], 422);
+        }
+
+        $file    = $this->request->getUploadedFile(key: 'file');
+        $content = $this->readUpload(file: $file);
+        if ($content instanceof JSONResponse) {
+            return $content;
+        }
+
+        $parsed = $this->mapUpload(fileName: (string) ($file['name'] ?? ''), content: $content, slug: $slug);
+        if ($parsed instanceof JSONResponse) {
+            return $parsed;
+        }
+
+        return $this->persist(name: $name, parsed: $parsed);
+    }//end upload()
+
+    /**
+     * Validate the uploaded file envelope and read its content.
+     *
+     * @param array<string, mixed>|null $file The uploaded file array from the request.
+     *
+     * @return string|JSONResponse The raw content, or the error response.
+     *
+     * @spec openspec/specs/custom-token-sets/spec.md
+     */
+    private function readUpload(?array $file)
+    {
         if (empty($file) === true || isset($file['tmp_name']) === false) {
             return new JSONResponse(['error' => $this->l->t('No file uploaded.')], 400);
         }
@@ -144,24 +173,30 @@ class CustomTokenSetController extends Controller
             return new JSONResponse(['error' => $this->l->t('Could not read the uploaded file.')], 400);
         }
 
-        $extension = strtolower(pathinfo(($file['name'] ?? ''), PATHINFO_EXTENSION));
-        $slug      = $this->service->slugify(name: $name);
-        if ($slug === '') {
-            return new JSONResponse(['error' => $this->l->t('A token set name must contain at least one letter or digit.')], 422);
+        return $content;
+    }//end readUpload()
+
+    /**
+     * Route the upload to the JSON or CSS mapper based on its file name.
+     *
+     * @param string $fileName The uploaded file name.
+     * @param string $content  The raw upload content.
+     * @param string $slug     The derived slug (for `--{slug}-*` extras).
+     *
+     * @return array{accepted: array<string, string>, skipped: string[]}|JSONResponse
+     *
+     * @spec openspec/specs/custom-token-sets/spec.md
+     */
+    private function mapUpload(string $fileName, string $content, string $slug)
+    {
+        $lower     = strtolower($fileName);
+        $extension = pathinfo($lower, PATHINFO_EXTENSION);
+        if ($extension === 'json' || str_ends_with($lower, '.tokens.json') === true) {
+            return $this->mapFromJson(content: $content);
         }
 
-        if ($extension === 'json' || str_ends_with(strtolower((string) ($file['name'] ?? '')), '.tokens.json') === true) {
-            $parsed = $this->mapFromJson(content: $content);
-        } else {
-            $parsed = $this->mapFromCss(content: $content, slug: $slug);
-        }
-
-        if ($parsed instanceof JSONResponse) {
-            return $parsed;
-        }
-
-        return $this->persist(name: $name, parsed: $parsed);
-    }//end upload()
+        return $this->mapFromCss(content: $content, slug: $slug);
+    }//end mapUpload()
 
     /**
      * Parse and map a CSS upload into the accepted/skipped split.
