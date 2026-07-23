@@ -164,7 +164,15 @@
         "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets hebben updates ({version}) — beoordelen & toepassen",
         "Dismiss": "Negeren",
         "Upstream token update checks enabled.": "Controle op upstream token-updates ingeschakeld.",
-        "Upstream token update checks disabled.": "Controle op upstream token-updates uitgeschakeld."
+        "Upstream token update checks disabled.": "Controle op upstream token-updates uitgeschakeld.",
+        "Configuration bundle (OTAP promotion)": "Configuratiebundel (OTAP-promotie)",
+        "Download or upload the complete NL Design configuration as one JSON file — the active token set, toggles, per-app exclusions, token overrides, custom token sets, email footer, and the upstream-update toggle. Use this to promote configuration between dev, test, acceptance, and production environments identically. This is different from the overrides-only download above.": "Download of upload de volledige NL Design-configuratie als één JSON-bestand — de actieve tokenset, schakelaars, per-app uitsluitingen, token-overrides, aangepaste tokensets, e-mailvoettekst en de upstream-updateschakelaar. Gebruik dit om configuratie identiek te promoveren tussen ontwikkel-, test-, acceptatie- en productieomgevingen (OTAP). Dit is anders dan de overrides-only download hierboven.",
+        "Download configuration": "Configuratie downloaden",
+        "Upload configuration": "Configuratie uploaden",
+        "Configuration imported successfully. Reloading…": "Configuratie succesvol geïmporteerd. Pagina wordt herladen…",
+        "Configuration imported successfully.": "Configuratie succesvol geïmporteerd.",
+        "Import failed — nothing was applied:": "Import mislukt — er is niets toegepast:",
+        "Configuration import failed.": "Importeren van configuratie mislukt."
     },
     "plurals": {}
 }

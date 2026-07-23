@@ -153,6 +153,35 @@ class EmailThemingService
     }//end getFooterConfig()
 
     /**
+     * Validate a candidate footer config without persisting it.
+     *
+     * Extracted from {@see setFooterConfig()} so a validate-only caller (the
+     * `config-portability` bundle import's phase 1) can reuse the EXACT same
+     * rule set instead of re-implementing it — a bundle import must reject
+     * on the same conditions setFooterConfig() would, with zero writes.
+     *
+     * @param string $orgName          The organization name.
+     * @param string $accessibilityUrl The toegankelijkheidsverklaring URL.
+     * @param string $privacyUrl       The privacy statement URL.
+     *
+     * @return void
+     *
+     * @throws FooterValidationException When a value fails validation.
+     *
+     * @spec openspec/specs/email-theming/spec.md
+     * @spec openspec/specs/config-portability/spec.md
+     */
+    public function validateFooterConfig(string $orgName, string $accessibilityUrl, string $privacyUrl): void
+    {
+        if (strlen($orgName) > self::MAX_FOOTER_VALUE_LENGTH) {
+            throw new FooterValidationException(field: 'orgName', message: 'Organization name exceeds the maximum length.');
+        }
+
+        $this->validateUrl(field: 'accessibilityUrl', url: $accessibilityUrl);
+        $this->validateUrl(field: 'privacyUrl', url: $privacyUrl);
+    }//end validateFooterConfig()
+
+    /**
      * Set the compliance footer values.
      *
      * Empty values are accepted (omit that line). Non-empty URL values MUST
@@ -172,12 +201,7 @@ class EmailThemingService
      */
     public function setFooterConfig(string $orgName, string $accessibilityUrl, string $privacyUrl): array
     {
-        if (strlen($orgName) > self::MAX_FOOTER_VALUE_LENGTH) {
-            throw new FooterValidationException(field: 'orgName', message: 'Organization name exceeds the maximum length.');
-        }
-
-        $this->validateUrl(field: 'accessibilityUrl', url: $accessibilityUrl);
-        $this->validateUrl(field: 'privacyUrl', url: $privacyUrl);
+        $this->validateFooterConfig(orgName: $orgName, accessibilityUrl: $accessibilityUrl, privacyUrl: $privacyUrl);
 
         $this->config->setAppValue(Application::APP_ID, self::FOOTER_ORG_NAME_KEY, $orgName);
         $this->config->setAppValue(Application::APP_ID, self::FOOTER_ACCESSIBILITY_URL_KEY, $accessibilityUrl);
