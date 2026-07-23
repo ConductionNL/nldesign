@@ -19,6 +19,7 @@ use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomTokenSetService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
 use OCA\NLDesign\Service\DesignTokensMapper;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
@@ -118,7 +119,9 @@ class CustomTokenSetControllerTest extends TestCase
             new CustomTokenSetValidator(),
             new CssParserService(),
             new DesignTokensMapper(),
-            $l
+            $l,
+            $this->createMock(ThemingAuditService::class),
+            $config
         );
     }//end setUp()
 
@@ -308,4 +311,75 @@ class CustomTokenSetControllerTest extends TestCase
         $this->assertArrayNotHasKey('importWarnings', $data);
         $this->assertArrayNotHasKey('version', $data);
     }//end testUploadCssResponseOmitsDtcgFields()
+
+    /**
+     * A semicolon-smuggled value mapped from a DTCG JSON token is rejected by
+     * the same isForbiddenValue() gate the CSS path uses — the injection is
+     * not limited to the CSS upload format.
+     */
+    public function testJsonUploadWithSemicolonSmugglingIsRejected(): void
+    {
+        $document = [
+            'color' => [
+                'primary' => [
+                    '$type'  => 'color',
+                    '$value' => 'red; --nldesign-evil: url(javascript:alert(1))',
+                ],
+            ],
+        ];
+
+        $this->mockUpload(name: 'Gemeente Voorbeeld', filename: 'theme.tokens.json', content: json_encode($document));
+
+        $response = $this->controller->upload();
+
+        $this->assertSame(422, $response->getStatus());
+        $this->assertArrayHasKey('error', $response->getData());
+    }//end testJsonUploadWithSemicolonSmugglingIsRejected()
+
+    /**
+     * A comment-marker-smuggled value mapped from a DTCG JSON token is
+     * rejected the same way.
+     */
+    public function testJsonUploadWithCommentMarkerSmugglingIsRejected(): void
+    {
+        $document = [
+            'color' => [
+                'primary' => [
+                    '$type'  => 'color',
+                    '$value' => 'red */ .evil { color: red',
+                ],
+            ],
+        ];
+
+        $this->mockUpload(name: 'Gemeente Voorbeeld', filename: 'theme.tokens.json', content: json_encode($document));
+
+        $response = $this->controller->upload();
+
+        $this->assertSame(422, $response->getStatus());
+        $this->assertArrayHasKey('error', $response->getData());
+    }//end testJsonUploadWithCommentMarkerSmugglingIsRejected()
+
+    /**
+     * A legitimate mapped value (no injection characters) is accepted and
+     * stored — no regression for benign W3C Design Tokens uploads.
+     */
+    public function testJsonUploadWithCleanValueIsAccepted(): void
+    {
+        $document = [
+            'color' => [
+                'primary' => [
+                    '$type'  => 'color',
+                    '$value' => '#154273',
+                ],
+            ],
+        ];
+
+        $this->mockUpload(name: 'Gemeente Voorbeeld', filename: 'theme.tokens.json', content: json_encode($document));
+
+        $response = $this->controller->upload();
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame('custom-gemeente-voorbeeld', $response->getData()['id']);
+        $this->assertSame(1, $response->getData()['imported']);
+    }//end testJsonUploadWithCleanValueIsAccepted()
 }//end class

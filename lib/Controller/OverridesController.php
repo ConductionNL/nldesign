@@ -20,6 +20,7 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-11
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-12
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
 declare(strict_types=1);
@@ -28,6 +29,7 @@ namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomOverridesService;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\TokenRegistry;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
@@ -67,22 +69,32 @@ class OverridesController extends Controller
     private CssParserService $cssParser;
 
     /**
+     * The theming audit trail service.
+     *
+     * @var ThemingAuditService
+     */
+    private ThemingAuditService $auditService;
+
+    /**
      * Constructor.
      *
      * @param string                 $appName          The app name.
      * @param IRequest               $request          The request object.
      * @param CustomOverridesService $overridesService The custom overrides service.
      * @param CssParserService       $cssParser        The CSS parser service.
+     * @param ThemingAuditService    $auditService     The theming audit trail service.
      */
     public function __construct(
         string $appName,
         IRequest $request,
         CustomOverridesService $overridesService,
-        CssParserService $cssParser
+        CssParserService $cssParser,
+        ThemingAuditService $auditService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->overridesService = $overridesService;
         $this->cssParser        = $cssParser;
+        $this->auditService     = $auditService;
     }//end __construct()
 
     /**
@@ -122,6 +134,7 @@ class OverridesController extends Controller
      * @return JSONResponse Status and count of written tokens.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-8
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setOverrides(): JSONResponse
@@ -133,11 +146,21 @@ class OverridesController extends Controller
             return new JSONResponse(['error' => 'overrides must be an object'], 400);
         }
 
+        $before = $this->overridesService->read();
+
         try {
             $this->overridesService->write(tokens: $overrides);
         } catch (\RuntimeException $e) {
             return new JSONResponse(['error' => $e->getMessage()], 500);
         }
+
+        $this->auditService->log(
+            action: 'overrides_written',
+            context: [
+                'old' => $before,
+                'new' => $overrides,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'written' => count($overrides)]);
     }//end setOverrides()
@@ -193,7 +216,7 @@ class OverridesController extends Controller
             );
         }
 
-        return $this->writeImportedTokens(parsed: $parsed);
+        return $this->writeImportedTokens(parsed: $parsed, rawContent: $content);
     }//end importOverrides()
 
     /**
@@ -258,15 +281,17 @@ class OverridesController extends Controller
     /**
      * Filter parsed tokens and write editable ones to the overrides file.
      *
-     * @param array<string, string> $parsed The parsed CSS tokens.
+     * @param array<string, string> $parsed     The parsed CSS tokens.
+     * @param string                $rawContent The raw uploaded CSS, hashed into the audit entry (never persisted verbatim).
      *
      * @return JSONResponse The import result response.
      *
      * @SuppressWarnings(PHPMD.StaticAccess) - TokenRegistry uses static methods by design
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-13
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
-    private function writeImportedTokens(array $parsed): JSONResponse
+    private function writeImportedTokens(array $parsed, string $rawContent): JSONResponse
     {
         $toImport = [];
         $skipped  = 0;
@@ -284,6 +309,16 @@ class OverridesController extends Controller
         } catch (\RuntimeException $e) {
             return new JSONResponse(['error' => $e->getMessage()], 500);
         }
+
+        $this->auditService->log(
+            action: 'overrides_imported',
+            context: [
+                'imported' => count($toImport),
+                'skipped'  => $skipped,
+                'new'      => $rawContent,
+                'newIsCss' => true,
+            ]
+        );
 
         return new JSONResponse(
             [

@@ -17,21 +17,25 @@
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.2
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
  * @spec openspec/specs/custom-token-sets/spec.md
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
 declare(strict_types=1);
 
 namespace OCA\NLDesign\Controller;
 
+use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomTokenSetService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
 use OCA\NLDesign\Service\DesignTokensMapper;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use RuntimeException;
@@ -45,6 +49,7 @@ use RuntimeException;
  * the served file is always re-serialised from parsed declarations.
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 class CustomTokenSetController extends Controller
 {
@@ -85,15 +90,32 @@ class CustomTokenSetController extends Controller
     private IL10N $l;
 
     /**
+     * The theming audit trail service.
+     *
+     * @var ThemingAuditService
+     */
+    private ThemingAuditService $auditService;
+
+    /**
+     * The application configuration service (active token set lookup, for
+     * detecting whether a delete resets the active set).
+     *
+     * @var IConfig
+     */
+    private IConfig $config;
+
+    /**
      * Constructor.
      *
-     * @param string                  $appName   The app name.
-     * @param IRequest                $request   The request object.
-     * @param CustomTokenSetService   $service   The storage/lifecycle service.
-     * @param CustomTokenSetValidator $validator The CSS validator.
-     * @param CssParserService        $cssParser The CSS parser service.
-     * @param DesignTokensMapper      $mapper    The DTCG mapper.
-     * @param IL10N                   $l         The localization service.
+     * @param string                  $appName      The app name.
+     * @param IRequest                $request      The request object.
+     * @param CustomTokenSetService   $service      The storage/lifecycle service.
+     * @param CustomTokenSetValidator $validator    The CSS validator.
+     * @param CssParserService        $cssParser    The CSS parser service.
+     * @param DesignTokensMapper      $mapper       The DTCG mapper.
+     * @param IL10N                   $l            The localization service.
+     * @param ThemingAuditService     $auditService The theming audit trail service.
+     * @param IConfig                 $config       The config service.
      */
     public function __construct(
         string $appName,
@@ -102,14 +124,18 @@ class CustomTokenSetController extends Controller
         CustomTokenSetValidator $validator,
         CssParserService $cssParser,
         DesignTokensMapper $mapper,
-        IL10N $l
+        IL10N $l,
+        ThemingAuditService $auditService,
+        IConfig $config
     ) {
         parent::__construct(appName: $appName, request: $request);
-        $this->service   = $service;
-        $this->validator = $validator;
-        $this->cssParser = $cssParser;
-        $this->mapper    = $mapper;
-        $this->l         = $l;
+        $this->service      = $service;
+        $this->validator    = $validator;
+        $this->cssParser    = $cssParser;
+        $this->mapper       = $mapper;
+        $this->l            = $l;
+        $this->auditService = $auditService;
+        $this->config       = $config;
     }//end __construct()
 
     /**
@@ -131,7 +157,36 @@ class CustomTokenSetController extends Controller
             return new JSONResponse(['error' => $this->l->t('A token set name is required.')], 400);
         }
 
-        $file = $this->request->getUploadedFile(key: 'file');
+        $slug = $this->service->slugify(name: $name);
+        if ($slug === '') {
+            return new JSONResponse(['error' => $this->l->t('A token set name must contain at least one letter or digit.')], 422);
+        }
+
+        $file    = $this->request->getUploadedFile(key: 'file');
+        $content = $this->readUpload(file: $file);
+        if ($content instanceof JSONResponse) {
+            return $content;
+        }
+
+        $parsed = $this->mapUpload(fileName: (string) ($file['name'] ?? ''), content: $content, slug: $slug);
+        if ($parsed instanceof JSONResponse) {
+            return $parsed;
+        }
+
+        return $this->persist(name: $name, parsed: $parsed);
+    }//end upload()
+
+    /**
+     * Validate the uploaded file envelope and read its content.
+     *
+     * @param array<string, mixed>|null $file The uploaded file array from the request.
+     *
+     * @return string|JSONResponse The raw content, or the error response.
+     *
+     * @spec openspec/specs/custom-token-sets/spec.md
+     */
+    private function readUpload(?array $file)
+    {
         if (empty($file) === true || isset($file['tmp_name']) === false) {
             return new JSONResponse(['error' => $this->l->t('No file uploaded.')], 400);
         }
@@ -145,24 +200,30 @@ class CustomTokenSetController extends Controller
             return new JSONResponse(['error' => $this->l->t('Could not read the uploaded file.')], 400);
         }
 
-        $extension = strtolower(pathinfo(($file['name'] ?? ''), PATHINFO_EXTENSION));
-        $slug      = $this->service->slugify(name: $name);
-        if ($slug === '') {
-            return new JSONResponse(['error' => $this->l->t('A token set name must contain at least one letter or digit.')], 422);
+        return $content;
+    }//end readUpload()
+
+    /**
+     * Route the upload to the JSON or CSS mapper based on its file name.
+     *
+     * @param string $fileName The uploaded file name.
+     * @param string $content  The raw upload content.
+     * @param string $slug     The derived slug (for `--{slug}-*` extras).
+     *
+     * @return array{accepted: array<string, string>, skipped: string[]}|JSONResponse
+     *
+     * @spec openspec/specs/custom-token-sets/spec.md
+     */
+    private function mapUpload(string $fileName, string $content, string $slug)
+    {
+        $lower     = strtolower($fileName);
+        $extension = pathinfo($lower, PATHINFO_EXTENSION);
+        if ($extension === 'json' || str_ends_with($lower, '.tokens.json') === true) {
+            return $this->mapFromJson(content: $content);
         }
 
-        if ($extension === 'json' || str_ends_with(strtolower((string) ($file['name'] ?? '')), '.tokens.json') === true) {
-            $parsed = $this->mapFromJson(content: $content);
-        } else {
-            $parsed = $this->mapFromCss(content: $content, slug: $slug);
-        }
-
-        if ($parsed instanceof JSONResponse) {
-            return $parsed;
-        }
-
-        return $this->persist(name: $name, parsed: $parsed);
-    }//end upload()
+        return $this->mapFromCss(content: $content, slug: $slug);
+    }//end mapUpload()
 
     /**
      * Parse and map a CSS upload into the accepted/skipped split.
@@ -282,6 +343,7 @@ class CustomTokenSetController extends Controller
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.3
      * @spec openspec/specs/custom-token-sets/spec.md
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     private function persist(string $name, array $parsed): JSONResponse
     {
@@ -301,6 +363,22 @@ class CustomTokenSetController extends Controller
 
             return new JSONResponse(['error' => $e->getMessage()], $code);
         }
+
+        $servedCss   = $this->service->getRawContent(id: $result['id']);
+        $contentHash = null;
+        if ($servedCss !== null) {
+            $contentHash = 'sha256:'.substr(hash(algo: 'sha256', data: $servedCss), 0, 12);
+        }
+
+        $this->auditService->log(
+            action: 'custom_set_uploaded',
+            context: [
+                'id'               => $result['id'],
+                'name'             => $name,
+                'declarationCount' => count($parsed['accepted']),
+                'contentHash'      => $contentHash,
+            ]
+        );
 
         $response = [
             'id'       => $result['id'],
@@ -369,6 +447,7 @@ class CustomTokenSetController extends Controller
      * @return JSONResponse The deletion result.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function delete(string $id): JSONResponse
@@ -377,9 +456,26 @@ class CustomTokenSetController extends Controller
             return new JSONResponse(['error' => $this->l->t('Only custom token sets can be deleted.')], 400);
         }
 
+        $activeBefore = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
+        $servedCss    = $this->service->getRawContent(id: $id);
+
         if ($this->service->delete(id: $id) === false) {
             return new JSONResponse(['error' => $this->l->t('Token set not found.')], 404);
         }
+
+        $contentHash = null;
+        if ($servedCss !== null) {
+            $contentHash = 'sha256:'.substr(hash(algo: 'sha256', data: $servedCss), 0, 12);
+        }
+
+        $this->auditService->log(
+            action: 'custom_set_deleted',
+            context: [
+                'id'          => $id,
+                'activeReset' => ($activeBefore === $id),
+                'contentHash' => $contentHash,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok']);
     }//end delete()

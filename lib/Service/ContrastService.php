@@ -147,12 +147,13 @@ class ContrastService
     {
         $channels = [];
         foreach ($rgb as $value) {
-            $srgb = ($value / 255);
+            $srgb    = ($value / 255);
+            $channel = ((($srgb + 0.055) / 1.055) ** 2.4);
             if ($srgb <= 0.03928) {
-                $channels[] = ($srgb / 12.92);
-            } else {
-                $channels[] = ((($srgb + 0.055) / 1.055) ** 2.4);
+                $channel = ($srgb / 12.92);
             }
+
+            $channels[] = $channel;
         }
 
         return ((0.2126 * $channels[0]) + (0.7152 * $channels[1]) + (0.0722 * $channels[2]));
