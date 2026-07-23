@@ -164,7 +164,15 @@
         "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets hebben updates ({version}) — beoordelen & toepassen",
         "Dismiss": "Negeren",
         "Upstream token update checks enabled.": "Controle op upstream token-updates ingeschakeld.",
-        "Upstream token update checks disabled.": "Controle op upstream token-updates uitgeschakeld."
+        "Upstream token update checks disabled.": "Controle op upstream token-updates uitgeschakeld.",
+        "Discard": "Verwerpen",
+        "Failed to discard theme preview.": "Verwerpen van thema-voorbeeld mislukt.",
+        "Failed to start theme preview.": "Starten van thema-voorbeeld mislukt.",
+        "Preview: {name} — this is only visible to you": "Voorbeeld: {name} — alleen zichtbaar voor u",
+        "Publish": "Publiceren",
+        "Theme published instance-wide. Reload the page to see changes.": "Thema instantiebreed gepubliceerd. Herlaad de pagina om de wijzigingen te zien.",
+        "Preview in my session": "Voorbeeld bekijken in mijn sessie",
+        "Previewing \"{name}\" in your session only.": "U bekijkt een voorbeeld van \"{name}\", alleen zichtbaar voor u."
     },
     "plurals": {}
 }

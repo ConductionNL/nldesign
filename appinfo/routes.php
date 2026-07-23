@@ -64,5 +64,11 @@ return [
 		// Email template theming — admin toggle + compliance footer config.
 		['name' => 'settings#getEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'GET'],
 		['name' => 'settings#setEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'POST'],
+		// Theme preview ("proefdraaien") — per-session token set trial before
+		// instance-wide publish. Admin-only (AuthorizedAdminSetting), no
+		// #[PublicPage]/#[NoAdminRequired].
+		['name' => 'preview#start', 'url' => '/settings/preview', 'verb' => 'POST'],
+		['name' => 'preview#discard', 'url' => '/settings/preview', 'verb' => 'DELETE'],
+		['name' => 'preview#publish', 'url' => '/settings/preview/publish', 'verb' => 'POST'],
 	],
 ];

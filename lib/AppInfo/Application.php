@@ -26,12 +26,15 @@ use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\FontService;
+use OCA\NLDesign\Service\ThemePreviewService;
 use OCA\NLDesign\Themes\NLDesignTheme;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\AppFramework\Services\IInitialState;
 use OCP\IURLGenerator;
+use OCP\IUserSession;
 
 /**
  * Main application class for NL Design.
@@ -40,6 +43,12 @@ use OCP\IURLGenerator;
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects) - This is the single boot-time CSS
+ * injection pipeline: each dependency is one stage of the cascade (design system
+ * resolution, custom overrides, custom fonts, theme preview resolution, the preview
+ * banner). Splitting it would scatter one coherent, order-sensitive rendering decision
+ * across synthetic collaborators for no real decoupling.
  */
 class Application extends App implements IBootstrap
 {
@@ -97,15 +106,17 @@ class Application extends App implements IBootstrap
     public function boot(IBootContext $context): void
     {
         $serverContainer = $context->getServerContainer();
+        $appContainer    = $context->getAppContainer();
 
         // Inject our CSS variables.
-        $this->injectThemeCSS(serverContainer: $serverContainer);
+        $this->injectThemeCSS(serverContainer: $serverContainer, appContainer: $appContainer);
     }//end boot()
 
     /**
      * Inject theme CSS files based on configuration.
      *
      * @param mixed $serverContainer The server container.
+     * @param mixed $appContainer    The app-scoped container (resolves app-bound services such as IInitialState).
      *
      * @return void
      *
@@ -113,8 +124,9 @@ class Application extends App implements IBootstrap
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
      * @spec openspec/specs/custom-fonts/spec.md
+     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-isolation
      */
-    private function injectThemeCSS($serverContainer): void
+    private function injectThemeCSS($serverContainer, $appContainer): void
     {
         // Per-app theming guard: if the app currently being rendered is in the
         // admin's exclusion list, skip ALL nldesign style injection so its pages
@@ -125,9 +137,15 @@ class Application extends App implements IBootstrap
         }
 
         $config         = $serverContainer->get(\OCP\IConfig::class);
-        $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
+        $activeTokenSet = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
         $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
         $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
+
+        // Theme preview ("proefdraaien") — only the token set is substituted;
+        // hideSlogan/showMenuLabels above keep their active values regardless
+        // of any preview. See resolvePreview() for the full contract.
+        $effective = $this->resolvePreview(serverContainer: $serverContainer, activeTokenSet: $activeTokenSet);
+        $tokenSet  = $effective['tokenSet'];
 
         // 1. Resolve which design system this token set uses.
         $dsService      = $serverContainer->get(DesignSystemService::class);
@@ -189,7 +207,66 @@ class Application extends App implements IBootstrap
         if ($showMenuLabels === true) {
             \OCP\Util::addStyle(application: self::APP_ID, file: 'show-menu-labels');
         }
+
+        // 6. Preview banner — ONLY when a preview is active for this request,
+        // so no asset or initial-state payload is ever emitted for a user
+        // without one (zero footprint for everyone else).
+        if ($effective['previewActive'] === true) {
+            $this->injectPreviewBanner(appContainer: $appContainer, effective: $effective, tokenSet: $tokenSet, tokenSetMeta: $tokenSetMeta);
+        }
     }//end injectThemeCSS()
+
+    /**
+     * Resolve the effective token set for the current request — the ONE call
+     * site of the preview contract, so a future relocation of injection
+     * (e.g. change `render-event-injection`) only has to move this call, not
+     * re-derive the rules living in {@see ThemePreviewService::resolveEffectiveTokenSet()}.
+     *
+     * @param mixed  $serverContainer The server container.
+     * @param string $activeTokenSet  The instance-wide active token set id.
+     *
+     * @return array{tokenSet: string, previewActive: bool, expiresAt: int|null} The effective token set.
+     *
+     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-isolation
+     */
+    private function resolvePreview($serverContainer, string $activeTokenSet): array
+    {
+        $previewService = $serverContainer->get(ThemePreviewService::class);
+        $userSession    = $serverContainer->get(IUserSession::class);
+
+        return $previewService->resolveEffectiveTokenSet(userSession: $userSession, activeTokenSet: $activeTokenSet);
+    }//end resolvePreview()
+
+    /**
+     * Load the preview banner's script/style and provide its initial state.
+     * Only called when a preview is active for the requesting user.
+     *
+     * @param mixed                                                             $appContainer The app-scoped container (resolves IInitialState).
+     * @param array{tokenSet: string, previewActive: bool, expiresAt: int|null} $effective    The resolved effective token set.
+     * @param string                                                            $tokenSet     The (previewed) token set id.
+     * @param array                                                             $tokenSetMeta The token set's metadata (for its display name).
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addScript()/addStyle() is the Nextcloud API for asset injection
+     *
+     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
+     */
+    private function injectPreviewBanner($appContainer, array $effective, string $tokenSet, array $tokenSetMeta): void
+    {
+        \OCP\Util::addScript(application: self::APP_ID, file: 'preview-banner');
+        \OCP\Util::addStyle(application: self::APP_ID, file: 'preview-banner');
+
+        $initialState = $appContainer->get(IInitialState::class);
+        $initialState->provideInitialState(
+            'preview',
+            [
+                'tokenSet'  => $tokenSet,
+                'name'      => ($tokenSetMeta['name'] ?? $tokenSet),
+                'expiresAt' => $effective['expiresAt'],
+            ]
+        );
+    }//end injectPreviewBanner()
 
     /**
      * Resolve whether theming must be skipped for the request being rendered.

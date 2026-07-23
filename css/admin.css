@@ -474,3 +474,24 @@
 .nl-login__field { height: 14px; border-radius: 999px; background: var(--prev-bg); border: 1px solid var(--prev-border); }
 .nl-login__submit { align-self: stretch; text-align: center; padding: 7px; }
 .nl-login__slogan { width: 130px; height: 6px; border-radius: 3px; background: var(--prev-primary-text); opacity: .6; }
+
+/* Theme preview ("proefdraaien") controls in the settings panel. */
+#nldesign-preview-btn {
+	margin-left: 12px;
+}
+
+.nldesign-active-preview {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 0.5em 0 1.5em;
+	padding: 10px 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	background: var(--color-background-hover);
+}
+
+.nldesign-active-preview .settings-hint {
+	margin-bottom: 0;
+	flex: 1;
+}
