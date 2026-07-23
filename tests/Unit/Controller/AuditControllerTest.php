@@ -115,7 +115,10 @@ class AuditControllerTest extends TestCase
         $headers = $property->getValue($response);
 
         $this->assertSame('application/x-ndjson', $headers['Content-Type']);
-        $this->assertSame('attachment; filename="nldesign-audit.jsonl"', $headers['Content-Disposition']);
+        // The real OCP DataDownloadResponse does not quote the filename; the
+        // standalone stub does. Assert the parts, not the quoting flavour.
+        $this->assertStringContainsString('attachment;', $headers['Content-Disposition']);
+        $this->assertStringContainsString('nldesign-audit.jsonl', $headers['Content-Disposition']);
         $this->assertSame('{"a":1}'."\n", $response->render());
     }//end testExportHeaders()
 

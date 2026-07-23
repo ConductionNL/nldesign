@@ -15,6 +15,7 @@ namespace OCA\NLDesign\Tests\Unit\Controller;
 
 use OCA\NLDesign\Controller\SettingsController;
 use OCA\NLDesign\Service\AppThemingService;
+use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
@@ -95,7 +96,8 @@ class SettingsControllerAuditTest extends TestCase
             $this->createMock(ThemingService::class),
             $this->createMock(TokenSetPreviewService::class),
             $this->createMock(AppThemingService::class),
-            $this->auditService
+            $this->auditService,
+            $this->createMock(EmailThemingService::class)
         );
     }//end setUp()
 
@@ -164,7 +166,8 @@ class SettingsControllerAuditTest extends TestCase
             $this->createMock(ThemingService::class),
             $this->createMock(TokenSetPreviewService::class),
             $this->createMock(AppThemingService::class),
-            $realAuditService
+            $realAuditService,
+            $this->createMock(EmailThemingService::class)
         );
 
         $response = $controller->setTokenSet(tokenSet: 'amsterdam');
