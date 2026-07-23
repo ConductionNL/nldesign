@@ -101,6 +101,14 @@ class CssInjectionService
     private IURLGenerator $urlGenerator;
 
     /**
+     * Resolves the effective token set for the requesting user (per-group
+     * mapping, falling back to the instance default).
+     *
+     * @var GroupThemingService
+     */
+    private GroupThemingService $groupThemingService;
+
+    /**
      * Constructor.
      *
      * @param IConfig                $config              The config service.
@@ -114,13 +122,15 @@ class CssInjectionService
         DesignSystemService $designSystemService,
         CustomOverridesService $overridesService,
         FontService $fontService,
-        IURLGenerator $urlGenerator
+        IURLGenerator $urlGenerator,
+        GroupThemingService $groupThemingService
     ) {
         $this->config = $config;
         $this->designSystemService = $designSystemService;
         $this->overridesService    = $overridesService;
         $this->fontService         = $fontService;
         $this->urlGenerator        = $urlGenerator;
+        $this->groupThemingService = $groupThemingService;
     }//end __construct()
 
     /**
@@ -147,7 +157,10 @@ class CssInjectionService
             return;
         }
 
-        $tokenSet       = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
+        // The active set is the per-group resolution (group mapping → instance
+        // default). With no mapping configured this is the plain appconfig
+        // value, so behaviour is byte-identical to a single-tenant instance.
+        $tokenSet       = $this->groupThemingService->resolveTokenSetForRequest();
         $hideSlogan     = $this->config->getAppValue(Application::APP_ID, 'hide_slogan', '0') === '1';
         $showMenuLabels = $this->config->getAppValue(Application::APP_ID, 'show_menu_labels', '0') === '1';
 
