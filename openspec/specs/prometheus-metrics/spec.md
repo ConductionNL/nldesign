@@ -289,7 +289,10 @@ The MetricsController MUST receive all required dependencies via constructor inj
 ## Current Implementation Status
 
 **Fully implemented:**
-- MetricsController at `lib/Controller/MetricsController.php` with `@NoCSRFRequired` annotation
+- MetricsController at `lib/Controller/MetricsController.php` carries neither `#[PublicPage]` nor
+  `#[NoAdminRequired]`, so the Nextcloud `SecurityMiddleware` admin-only default applies
+  (ADR-006); `@NoCSRFRequired` remains so a Prometheus scraper authenticating as an admin (e.g.
+  via an app password) is not also required to present a CSRF token
 - Info gauge: `nldesign_info` with version, php_version, nextcloud_version labels
 - Up gauge: `nldesign_up` always 1
 - Token sets total: `nldesign_token_sets_total` via `TokenSetService::getAvailableTokenSets()` with try/catch fallback to 0
