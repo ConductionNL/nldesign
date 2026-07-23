@@ -63,6 +63,10 @@ class NLDesignEMailTemplate extends EMailTemplate
      * @return EmailThemingService|null The service, or null on any failure.
      *
      * @spec openspec/specs/email-theming/spec.md
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - Mailer::makeTemplate() constructs this class with a
+     * fixed argument list, so constructor injection is impossible; \OCP\Server::get() is the
+     * sanctioned lazy-resolution seam here.
      */
     protected function getEmailThemingService(): ?EmailThemingService
     {

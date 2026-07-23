@@ -17,6 +17,10 @@ parameters:
         # which is absent during static analysis. phpstan refuses to ignore
         # "extends unknown class" via ignoreErrors and mandates excludePaths.
         - lib/Controller/HealthController.php
+        # Extends the server-private OC\Mail\EMailTemplate (the sanctioned
+        # mail_template_class hook) — same "extends unknown class" shape as
+        # HealthController; behavior is covered by tests/Unit/Mail/.
+        - lib/Mail/NLDesignEMailTemplate.php
         # Apps that ship a verbatim template snapshot under lib/Resources/template/ (e.g. openbuild).
         - lib/Resources/template
     scanDirectories:
