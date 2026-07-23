@@ -31,6 +31,7 @@ system reads `--nldesign-*` tokens, computed by `ContrastService` over
 | hoog-contrast | 21.00:1 | 7.0:1 | 21.00:1 | 4.5:1 | pass |
 | hoorn | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | horstaandemaas | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
+| lasuite | 7.76:1 | 4.5:1 | 7.76:1 | 3.0:1 | pass |
 | leiden | 5.10:1 | 4.5:1 | 5.10:1 | 3.0:1 | pass |
 | leidschendam-voorburg | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | nijmegen | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |

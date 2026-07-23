@@ -395,5 +395,15 @@
 			"primary_color": "#000000",
 			"background_color": "#FFFFFF"
 		}
+	},
+	{
+		"id": "lasuite",
+		"name": "La Suite numérique",
+		"description": "European sovereign-workplace theme (MinBZK/mijn-bureau EDIC bundle) — Cunningham design tokens (MIT), self-hosted Inter, brand blue-violet #4844AD. No La Suite/state logo bundled (trademark).",
+		"design_system": "lasuite",
+		"theming": {
+			"primary_color": "#4844AD",
+			"background_color": "#FFFFFF"
+		}
 	}
 ]
