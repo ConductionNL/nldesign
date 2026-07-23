@@ -1832,12 +1832,12 @@ function nldesignAdminMain() {
 			var msg = t('nldesign', '{imported} tokens imported, {skipped} skipped.')
 				.replace('{imported}', res.data.imported)
 				.replace('{skipped}', (res.data.skipped || []).length);
+			if (res.data.version) {
+				msg += ' ' + t('nldesign', 'Package version: {version}').replace('{version}', res.data.version);
+			}
 			if (res.data.warnings && res.data.warnings.length > 0) {
 				msg += ' ' + t('nldesign', '{count} WCAG AA contrast warning(s) — see the apply dialog.')
 					.replace('{count}', res.data.warnings.length);
-			}
-			if (res.data.version) {
-				msg += ' ' + t('nldesign', 'Package version: {version}').replace('{version}', res.data.version);
 			}
 			if (resultEl !== null) {
 				resultEl.appendChild(document.createTextNode(msg));
@@ -2236,6 +2236,86 @@ function nldesignAdminMain() {
 	}
 
 	initAuditLog();
+
+	/* ==========================================================================
+	 * CONFIGURATION BUNDLE — complete-config OTAP promotion download/upload
+	 * (config-portability spec). Distinct from the token-editor overrides
+	 * download/upload above: this bundle covers the token set, both toggles,
+	 * per-app exclusions, overrides CSS, custom token sets, the email footer,
+	 * and the upstream-freshness toggle in one JSON file.
+	 * ========================================================================== */
+
+	function downloadConfigBundle() {
+		window.location = OC.generateUrl('/apps/nldesign/settings/config/export');
+	}
+
+	function showConfigBundleResult(message) {
+		var resultEl = document.getElementById('nldesign-config-bundle-result');
+		if (resultEl === null) {
+			return;
+		}
+		resultEl.textContent = message;
+		resultEl.style.display = 'block';
+	}
+
+	function uploadConfigBundle(file) {
+		var formData = new FormData();
+		formData.append('file', file);
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/config/import'), {
+			method: 'POST',
+			headers: { 'requesttoken': OC.requestToken },
+			body: formData
+		})
+		.then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+		.then(function(result) {
+			if (result.status === 200 && result.data.applied === true) {
+				showConfigBundleResult(t('nldesign', 'Configuration imported successfully. Reloading…'));
+				OC.Notification.showTemporary(t('nldesign', 'Configuration imported successfully.'));
+				window.setTimeout(function() { window.location.reload(); }, 1200);
+				return;
+			}
+
+			var errors = (result.data && result.data.errors) || [];
+			var lines = errors.map(function(e) {
+				return '[' + (e.section || 'unknown') + '] ' + (e.message || '');
+			});
+			showConfigBundleResult(
+				t('nldesign', 'Import failed — nothing was applied:') + ' ' + lines.join('; ')
+			);
+			OC.Notification.showTemporary(t('nldesign', 'Configuration import failed.'));
+		})
+		.catch(function(err) {
+			console.error('Error importing configuration bundle:', err);
+			showConfigBundleResult(t('nldesign', 'Import failed.'));
+			OC.Notification.showTemporary(t('nldesign', 'Configuration import failed.'));
+		});
+	}
+
+	function initConfigBundle() {
+		var downloadBtn = document.getElementById('nldesign-config-bundle-download-btn');
+		var uploadBtn = document.getElementById('nldesign-config-bundle-upload-btn');
+		var fileInput = document.getElementById('nldesign-config-bundle-input');
+		if (downloadBtn === null || uploadBtn === null || fileInput === null) {
+			return;
+		}
+
+		downloadBtn.addEventListener('click', downloadConfigBundle);
+
+		uploadBtn.addEventListener('click', function() {
+			fileInput.click();
+		});
+
+		fileInput.addEventListener('change', function(e) {
+			var file = e.target.files[0];
+			if (file) {
+				uploadConfigBundle(file);
+			}
+			fileInput.value = '';
+		});
+	}
+
+	initConfigBundle();
 
 	/* ==========================================================================
 	 * EMAIL TEMPLATE THEMING — mail_template_class toggle + compliance footer

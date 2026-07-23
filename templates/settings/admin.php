@@ -375,6 +375,28 @@ style('nldesign', 'admin');
 		</button>
 	</div>
 
+	<!-- Complete configuration bundle — OTAP (dev/test/acceptatie/productie)
+	     promotion. Unlike the token-editor overrides download above, this
+	     covers the COMPLETE nldesign configuration (config-portability spec):
+	     token set, toggles, per-app exclusions, overrides, custom token sets,
+	     email footer, custom-font metadata, upstream-freshness toggle. -->
+	<div class="nldesign-config-bundle" id="nldesign-config-bundle" style="margin-top:2em">
+		<h3><?php p($l->t('Configuration bundle (OTAP promotion)')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Download or upload the complete NL Design configuration as one JSON file — the active token set, toggles, per-app exclusions, token overrides, custom token sets, email footer, and the upstream-update toggle. Use this to promote configuration between dev, test, acceptance, and production environments identically. This is different from the overrides-only download above.')); ?>
+		</p>
+		<div class="nldesign-upload-form">
+			<button type="button" id="nldesign-config-bundle-download-btn" class="button">
+				<?php p($l->t('Download configuration')); ?>
+			</button>
+			<input type="file" id="nldesign-config-bundle-input" accept=".json" style="display:none">
+			<button type="button" id="nldesign-config-bundle-upload-btn" class="button">
+				<?php p($l->t('Upload configuration')); ?>
+			</button>
+		</div>
+		<div id="nldesign-config-bundle-result" class="nldesign-import-result" role="status" aria-live="polite" style="display:none"></div>
+	</div>
+
 	<p class="nldesign-info">
 		<a href="https://nldesignsystem.nl/" target="_blank" rel="noopener noreferrer">
 			<?php p($l->t('Learn more about NL Design System')); ?> ↗
