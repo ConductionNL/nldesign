@@ -140,6 +140,11 @@ class Application extends App implements IBootstrap
             // that carry their white fill on <path> vanish on light surfaces
             // in the NC 34 app-management list (see css/icon-contrast.css).
             \OCP\Util::addStyle(application: self::APP_ID, file: 'icon-contrast');
+            // Functional contrast fix shared by all design systems: our error
+            // fill is a saturated brand red where Nextcloud's is pale, so the
+            // components painting --color-error-text on it lose all contrast
+            // (see css/error-contrast.css).
+            \OCP\Util::addStyle(application: self::APP_ID, file: 'error-contrast');
         }
 
         // 4. Custom overrides — admin-defined token overrides, always loaded last.

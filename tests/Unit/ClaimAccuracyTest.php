@@ -72,10 +72,15 @@ class ClaimAccuracyTest extends TestCase
     {
         $info = $this->readFile('appinfo/info.xml');
 
+        // The fleet declares the version explicitly ("EUPL-1.2"), which the
+        // original bare-"eupl" pattern rejected — so this test failed against a
+        // manifest that was in fact correct, and consistent with every other
+        // Conduction app. Accept the version suffix; the point of the assertion
+        // is EUPL rather than AGPL, which the check below still enforces.
         $this->assertMatchesRegularExpression(
-            '#<licence>\s*eupl\s*</licence>#i',
+            '#<licence>\s*eupl(-1\.2)?\s*</licence>#i',
             $info,
-            'appinfo/info.xml <licence> must declare "eupl" (EUPL-1.2).'
+            'appinfo/info.xml <licence> must declare EUPL ("eupl" or "EUPL-1.2").'
         );
         $this->assertDoesNotMatchRegularExpression(
             '#<licence>\s*agpl\s*</licence>#i',
