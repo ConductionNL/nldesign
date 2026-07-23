@@ -37,6 +37,13 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		<php min-version="8.3"/>
 		<nextcloud min-version="28" max-version="34"/>
 	</dependencies>
+
+	<!-- Upstream token freshness check (openspec/specs/upstream-freshness/spec.md):
+	     daily, time-insensitive, disabled by default (admin opt-in toggle). -->
+	<background-jobs>
+		<job>OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob</job>
+	</background-jobs>
+
 	<commands>
 		<command>OCA\NLDesign\Command\ComplianceReport</command>
 	</commands>

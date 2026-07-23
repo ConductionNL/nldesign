@@ -1953,5 +1953,143 @@ function nldesignAdminMain() {
 	// Initialise the email theming panel on page load.
 	initEmailTheming();
 
+
+	/* ==========================================================================
+	 * UPSTREAM TOKEN FRESHNESS — opt-in daily check against upstream
+	 * nl-design-system/themes (openspec/specs/upstream-freshness/spec.md).
+	 * No apply control here: informational only.
+	 * ========================================================================== */
+
+	// Format an epoch-seconds timestamp (as returned by the status endpoint)
+	// for the "last checked" hint. Falls back to the raw value if Intl/Date
+	// parsing is unavailable.
+	function formatCheckedAt(value) {
+		if (!value) {
+			return '';
+		}
+		var ms = /^[0-9]+$/.test(String(value)) ? (parseInt(value, 10) * 1000) : Date.parse(value);
+		if (isNaN(ms)) {
+			return String(value);
+		}
+		try {
+			return new Date(ms).toLocaleString();
+		} catch (e) {
+			return String(value);
+		}
+	}
+
+	// Build the human-facing label for one notice: the specific-set message
+	// when a setId was attributed, or a generic fallback when attribution
+	// failed and only a head SHA is known.
+	function upstreamNoticeLabel(notice) {
+		var version = notice.upstreamVersion || (notice.headSha ? notice.headSha.slice(0, 7) : '');
+		if (notice.setId && notice.setId !== '__generic__') {
+			var ts = tokenSetsData[notice.setId];
+			var name = ts ? ts.name : notice.setId;
+			return t('nldesign', 'Token set {name} has upstream update {version} — review & apply', { name: name, version: version });
+		}
+		return t('nldesign', 'Upstream token sets have updates ({version}) — review & apply', { version: version });
+	}
+
+	function renderUpstreamFreshness(data) {
+		var toggle = document.getElementById('nldesign-upstream-freshness-toggle');
+		var lastCheckedEl = document.getElementById('nldesign-upstream-freshness-lastchecked');
+		var noticesEl = document.getElementById('nldesign-upstream-freshness-notices');
+		if (toggle === null || noticesEl === null) {
+			return;
+		}
+
+		toggle.checked = data.enabled === true;
+
+		if (lastCheckedEl !== null) {
+			lastCheckedEl.textContent = data.lastChecked
+				? t('nldesign', 'Last checked: {when}', { when: formatCheckedAt(data.lastChecked) })
+				: t('nldesign', 'Not checked yet.');
+		}
+
+		noticesEl.innerHTML = '';
+		(data.notices || []).forEach(function(notice) {
+			var row = document.createElement('div');
+			row.className = 'nldesign-upstream-notice';
+
+			var label = document.createElement('span');
+			label.textContent = upstreamNoticeLabel(notice);
+			row.appendChild(label);
+
+			var dismissBtn = document.createElement('button');
+			dismissBtn.type = 'button';
+			dismissBtn.className = 'nldesign-btn nldesign-btn--small';
+			dismissBtn.textContent = t('nldesign', 'Dismiss');
+			dismissBtn.addEventListener('click', function() {
+				dismissUpstreamNotice(notice.setId, notice.upstreamVersion || notice.headSha);
+			});
+			row.appendChild(dismissBtn);
+
+			noticesEl.appendChild(row);
+		});
+	}
+
+	function loadUpstreamFreshness() {
+		fetch(OC.generateUrl('/apps/nldesign/settings/upstream-freshness'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(renderUpstreamFreshness)
+		.catch(function(err) {
+			console.error('Error loading upstream freshness status:', err);
+		});
+	}
+
+	function dismissUpstreamNotice(setId, version) {
+		fetch(OC.generateUrl('/apps/nldesign/settings/upstream-freshness/dismiss'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ setId: setId, version: version || '' })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function() { loadUpstreamFreshness(); })
+		.catch(function(err) {
+			console.error('Error dismissing upstream freshness notice:', err);
+		});
+	}
+
+	function initUpstreamFreshness() {
+		var toggle = document.getElementById('nldesign-upstream-freshness-toggle');
+		if (toggle === null) {
+			return;
+		}
+
+		toggle.addEventListener('change', function() {
+			var enabled = toggle.checked;
+			fetch(OC.generateUrl('/apps/nldesign/settings/upstream-freshness'), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'requesttoken': OC.requestToken
+				},
+				body: JSON.stringify({ enabled: enabled })
+			})
+			.then(function(r) { return r.json(); })
+			.then(function() {
+				OC.Notification.showTemporary(enabled
+					? t('nldesign', 'Upstream token update checks enabled.')
+					: t('nldesign', 'Upstream token update checks disabled.'));
+				loadUpstreamFreshness();
+			})
+			.catch(function(err) {
+				console.error('Error saving upstream freshness setting:', err);
+				toggle.checked = !enabled;
+			});
+		});
+
+		loadUpstreamFreshness();
+	}
+
+	// Initialise the upstream freshness panel on page load.
+	initUpstreamFreshness();
+
 }
 })();

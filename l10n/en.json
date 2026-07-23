@@ -154,7 +154,17 @@
         "Delete the font \"{name}\"? Pages using it will fall back to Fira Sans.": "Delete the font \"{name}\"? Pages using it will fall back to Fira Sans.",
         "Delete font": "Delete font",
         "Font deleted. Reload the page to refresh the styling.": "Font deleted. Reload the page to refresh the styling.",
-        "Failed to delete font.": "Failed to delete font."
+        "Failed to delete font.": "Failed to delete font.",
+        "Upstream token updates": "Upstream token updates",
+        "Optionally check once a day whether the upstream NL Design System themes have new tokens. This is the only outbound network request this app makes; it contacts api.github.com and never applies anything automatically — you always review and apply updates yourself.": "Optionally check once a day whether the upstream NL Design System themes have new tokens. This is the only outbound network request this app makes; it contacts api.github.com and never applies anything automatically — you always review and apply updates yourself.",
+        "Check daily for upstream token updates (contacts api.github.com)": "Check daily for upstream token updates (contacts api.github.com)",
+        "Last checked: {when}": "Last checked: {when}",
+        "Not checked yet.": "Not checked yet.",
+        "Token set {name} has upstream update {version} — review & apply": "Token set {name} has upstream update {version} — review & apply",
+        "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets have updates ({version}) — review & apply",
+        "Dismiss": "Dismiss",
+        "Upstream token update checks enabled.": "Upstream token update checks enabled.",
+        "Upstream token update checks disabled.": "Upstream token update checks disabled."
     },
     "plurals": {}
 }

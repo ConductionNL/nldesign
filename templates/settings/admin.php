@@ -279,6 +279,31 @@ style('nldesign', 'admin');
 		<p class="settings-hint"><?php p($l->t('Loading token editor…')); ?></p>
 	</div>
 
+	<!-- Upstream token updates — opt-in daily freshness check against
+	     nl-design-system/themes (openspec/specs/upstream-freshness/spec.md).
+	     Disabled by default; the toggle label discloses the contacted host.
+	     No apply control anywhere in this block — informational only, the
+	     update path remains the reviewed sync-workflow release. -->
+	<div class="nldesign-upstream-freshness" id="nldesign-upstream-freshness" style="margin-top:2em">
+		<h3><?php p($l->t('Upstream token updates')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Optionally check once a day whether the upstream NL Design System themes have new tokens. This is the only outbound network request this app makes; it contacts api.github.com and never applies anything automatically — you always review and apply updates yourself.')); ?>
+		</p>
+		<div class="nldesign-option">
+			<input type="checkbox"
+				   id="nldesign-upstream-freshness-toggle"
+				   class="checkbox">
+			<label for="nldesign-upstream-freshness-toggle">
+				<?php p($l->t('Check daily for upstream token updates (contacts api.github.com)')); ?>
+			</label>
+		</div>
+		<p class="settings-hint" id="nldesign-upstream-freshness-lastchecked"></p>
+		<div id="nldesign-upstream-freshness-notices"
+			 class="nldesign-upstream-freshness-notices"
+			 role="group"
+			 aria-label="<?php p($l->t('Upstream token updates')); ?>"></div>
+	</div>
+
 	<!-- Theming audit log — who changed which theming setting, from what, to
 	     what, and when. Evidence for accessibility/WCAG-EM audits. -->
 	<div class="nldesign-audit-log" id="nldesign-audit-log" style="margin-top:2em">

@@ -154,7 +154,17 @@
         "Delete the font \"{name}\"? Pages using it will fall back to Fira Sans.": "Het lettertype \"{name}\" verwijderen? Pagina's die het gebruiken vallen terug op Fira Sans.",
         "Delete font": "Lettertype verwijderen",
         "Font deleted. Reload the page to refresh the styling.": "Lettertype verwijderd. Herlaad de pagina om de opmaak te vernieuwen.",
-        "Failed to delete font.": "Verwijderen van lettertype mislukt."
+        "Failed to delete font.": "Verwijderen van lettertype mislukt.",
+        "Upstream token updates": "Upstream token-updates",
+        "Optionally check once a day whether the upstream NL Design System themes have new tokens. This is the only outbound network request this app makes; it contacts api.github.com and never applies anything automatically — you always review and apply updates yourself.": "Controleer optioneel eenmaal per dag of de upstream NL Design System-thema's nieuwe tokens hebben. Dit is het enige uitgaande netwerkverzoek van deze app; het contacteert api.github.com en past nooit automatisch iets toe — u beoordeelt en past updates altijd zelf toe.",
+        "Check daily for upstream token updates (contacts api.github.com)": "Dagelijks controleren op upstream token-updates (contacteert api.github.com)",
+        "Last checked: {when}": "Laatst gecontroleerd: {when}",
+        "Not checked yet.": "Nog niet gecontroleerd.",
+        "Token set {name} has upstream update {version} — review & apply": "Token set {name} heeft upstream update {version} — beoordelen & toepassen",
+        "Upstream token sets have updates ({version}) — review & apply": "Upstream token sets hebben updates ({version}) — beoordelen & toepassen",
+        "Dismiss": "Negeren",
+        "Upstream token update checks enabled.": "Controle op upstream token-updates ingeschakeld.",
+        "Upstream token update checks disabled.": "Controle op upstream token-updates uitgeschakeld."
     },
     "plurals": {}
 }

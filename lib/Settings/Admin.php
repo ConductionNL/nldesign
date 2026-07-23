@@ -186,6 +186,7 @@ class Admin implements IDelegatedSettings
      * @return array<string, string[]> The authorized app config map.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
+     * @spec openspec/specs/upstream-freshness/spec.md
      */
     public function getAuthorizedAppConfig(): array
     {
@@ -196,6 +197,12 @@ class Admin implements IDelegatedSettings
                 '/show_menu_labels/',
                 '/disabled_apps/',
                 '/theming_syncs_total/',
+                // Upstream token freshness — only the two admin-initiated
+                // config keys (the opt-in toggle and dismissal state); the
+                // job-internal ETag/head-SHA/checked-at/notices keys are never
+                // written through this delegated-admin surface.
+                '/upstream_freshness_enabled/',
+                '/upstream_freshness_dismissed/',
                 '/email_footer_org_name/',
                 '/email_footer_accessibility_url/',
                 '/email_footer_privacy_url/',
