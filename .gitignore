@@ -4,9 +4,13 @@
 *.Identifier
 .vscode/
 
-# Dependencies
+# Dependencies — both forms: with trailing slash (directory) and without
+# (worktree setups symlink these, and `/vendor/` does not match a symlink,
+# which is how the symlinks got committed once).
 /vendor/
+/vendor
 /node_modules/
+/node_modules
 
 # Runtime theme state — written by the NL Design theme editor at runtime
 # (CustomOverridesService). ensureExists() recreates an empty :root {} on

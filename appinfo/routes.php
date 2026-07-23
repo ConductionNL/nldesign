@@ -43,5 +43,22 @@ return [
 		['name' => 'customTokenSet#delete', 'url' => '/settings/tokensets/custom/{id}', 'verb' => 'DELETE'],
 		// Active-configuration WCAG contrast compliance evidence report (download).
 		['name' => 'settings#complianceReport', 'url' => '/settings/compliance-report', 'verb' => 'GET'],
+		// Custom font upload lifecycle (admin-only).
+		['name' => 'font#upload', 'url' => '/settings/fonts/upload', 'verb' => 'POST'],
+		['name' => 'font#list', 'url' => '/settings/fonts', 'verb' => 'GET'],
+		['name' => 'font#delete', 'url' => '/settings/fonts/{id}', 'verb' => 'DELETE'],
+		// Font serving — deliberately public (#[PublicPage] + #[NoCSRFRequired]
+		// on FontController::serve()/css()): CSS `url()` font loads carry no
+		// CSRF token and must also work on the pre-login page before any
+		// session exists.
+		['name' => 'font#serve', 'url' => '/fonts/{id}.woff2', 'verb' => 'GET'],
+		['name' => 'font#css', 'url' => '/fonts/css', 'verb' => 'GET'],
+		// Theming audit trail — admin-only (AuthorizedAdminSetting), no
+		// #[PublicPage]/#[NoAdminRequired].
+		['name' => 'audit#list', 'url' => '/settings/audit', 'verb' => 'GET'],
+		['name' => 'audit#export', 'url' => '/settings/audit/export', 'verb' => 'GET'],
+		// Email template theming — admin toggle + compliance footer config.
+		['name' => 'settings#getEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'GET'],
+		['name' => 'settings#setEmailTheming', 'url' => '/settings/email-theming', 'verb' => 'POST'],
 	],
 ];

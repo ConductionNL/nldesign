@@ -160,6 +160,71 @@ class CustomTokenSetServiceTest extends TestCase
     }//end testStoreWritesFileAndManifest()
 
     /**
+     * A DTCG import's declared package version is persisted verbatim in the
+     * manifest and returned by list().
+     */
+    public function testStorePersistsDeclaredVersion(): void
+    {
+        $this->service->store(
+            displayName: 'Gemeente Voorbeeld',
+            description: '',
+            declarations: ['--nldesign-color-primary' => '#007bc7'],
+            version: '2.3.1'
+        );
+
+        $manifest = $this->service->getManifest();
+        $this->assertSame('2.3.1', $manifest['custom-gemeente-voorbeeld']['version']);
+
+        $listed = $this->service->list();
+        $this->assertSame('2.3.1', $listed[0]['version']);
+    }//end testStorePersistsDeclaredVersion()
+
+    /**
+     * Absent a declared version, the manifest entry never fabricates one.
+     */
+    public function testStoreWithoutVersionOmitsVersionKey(): void
+    {
+        $this->service->store(
+            displayName: 'Gemeente Voorbeeld',
+            description: '',
+            declarations: ['--nldesign-color-primary' => '#007bc7']
+        );
+
+        $manifest = $this->service->getManifest();
+        $this->assertArrayNotHasKey('version', $manifest['custom-gemeente-voorbeeld']);
+    }//end testStoreWithoutVersionOmitsVersionKey()
+
+    /**
+     * DTCG `$deprecated` import warnings are persisted apart from the
+     * pre-existing WCAG contrast `warnings` key and exposed via list().
+     */
+    public function testStorePersistsImportWarningsSeparatelyFromContrastWarnings(): void
+    {
+        $result = $this->service->store(
+            displayName: 'Gemeente Voorbeeld',
+            description: '',
+            declarations: ['--nldesign-color-primary' => '#007bc7'],
+            importWarnings: [['path' => 'color.primary', 'message' => 'Use color.brand.primary instead']]
+        );
+
+        // The store() result's `warnings` key remains the contrast warnings.
+        $this->assertSame([], $result['warnings']);
+
+        $manifest = $this->service->getManifest();
+        $this->assertSame(
+            [['path' => 'color.primary', 'message' => 'Use color.brand.primary instead']],
+            $manifest['custom-gemeente-voorbeeld']['importWarnings']
+        );
+        $this->assertSame([], $manifest['custom-gemeente-voorbeeld']['warnings']);
+
+        $listed = $this->service->list();
+        $this->assertSame(
+            [['path' => 'color.primary', 'message' => 'Use color.brand.primary instead']],
+            $listed[0]['importWarnings']
+        );
+    }//end testStorePersistsImportWarningsSeparatelyFromContrastWarnings()
+
+    /**
      * Storing the same display name twice is a 409 collision.
      */
     public function testStoreCollisionThrows409(): void

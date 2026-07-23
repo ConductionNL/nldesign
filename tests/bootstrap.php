@@ -74,6 +74,27 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
+// Server-internal `OC\` classes (e.g. OC\Mail\EMailTemplate, extended by
+// lib/Mail/NLDesignEMailTemplate.php) are not part of the nextcloud/ocp dev
+// dependency — there is no public stub package for private-namespace code.
+// When the full Nextcloud server IS mounted (real environment, or a
+// standalone container with the server's lib/private/ bind-mounted at
+// /var/www/html/lib/private per the fleet-standard phpunit invocation), fall
+// back to loading the class directly from there. Absent that mount this is a
+// silent no-op — mirrors the OCP/NCU registration above, and any test that
+// actually needs the class simply fails with a clear "class not found"
+// rather than the bootstrap itself failing.
+spl_autoload_register(static function (string $class): void {
+    if (str_starts_with($class, 'OC\\') === false) {
+        return;
+    }
+
+    $path = '/var/www/html/lib/private/' . str_replace('\\', '/', substr($class, strlen('OC\\'))) . '.php';
+    if (is_file($path) === true) {
+        require_once $path;
+    }
+});
+
 if (!defined('OC_CONSOLE')) {
     if (file_exists(__DIR__ . '/../../../lib/base.php')) {
         require_once __DIR__ . '/../../../lib/base.php';

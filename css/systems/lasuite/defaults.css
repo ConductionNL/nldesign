@@ -1,0 +1,110 @@
+/**
+ * La Suite numérique — Cunningham Token Defaults Layer
+ *
+ * Curated `--lasuite-*` subset transcribed from Cunningham
+ * (`@gouvfr-lasuite/cunningham-react`, MIT license —
+ * https://github.com/suitenumerique/cunningham), the design system behind
+ * La Suite Docs/Meet/Chat and the MinBZK/mijn-bureau EDIC sovereign-workplace
+ * bundle. Values verified live against the shipped
+ * `src/frontend/apps/impress/src/cunningham/cunningham-tokens.css` in
+ * suitenumerique/docs (fetched 2026-07-23; `--c--globals--colors--*` /
+ * `--c--globals--spacings--*` / `--c--components--button--border-radius`
+ * token names below are the upstream source).
+ *
+ * This is a CURATED subset (the upstream file generates ~14k lines across
+ * light/dark/high-contrast variants and every component) — only the values
+ * the lasuite bridge and element-overrides layers consume. It is NOT a copy
+ * of the full generated token file.
+ *
+ * Load order: fonts → [defaults] → bridge → element-overrides, then
+ * tokens/lasuite (Layer 3, --nldesign-* namespace).
+ */
+
+:root {
+	/* ===================================================================
+	 * BRAND SCALE
+	 * Source: --c--globals--colors--brand-* (Cunningham "light" root block).
+	 * brand-650 (#4844ad) is La Suite's own brand colour — also its
+	 * `--c--globals--colors--logo-1-light` value.
+	 * =================================================================== */
+
+	--lasuite-color-brand-050: #eef1fa; /* --c--globals--colors--brand-050 */
+	--lasuite-color-brand-100: #dde2f5; /* --c--globals--colors--brand-100 */
+	--lasuite-color-brand-200: #bec5f0; /* --c--globals--colors--brand-200 */
+	--lasuite-color-brand-300: #a0a5f6; /* --c--globals--colors--brand-300 */
+	--lasuite-color-brand-400: #8184fc; /* --c--globals--colors--brand-400 */
+	--lasuite-color-brand-500: #6969df; /* --c--globals--colors--brand-500 */
+	--lasuite-color-brand-600: #534fc2; /* --c--globals--colors--brand-600 */
+	--lasuite-color-brand-650: #4844ad; /* --c--globals--colors--brand-650 — La Suite brand */
+	--lasuite-color-brand-700: #3e3b98; /* --c--globals--colors--brand-700 */
+	--lasuite-color-brand-750: #36347d; /* --c--globals--colors--brand-750 — button hover step */
+	--lasuite-color-brand-800: #2d2f5f; /* --c--globals--colors--brand-800 */
+	--lasuite-color-brand-900: #1c1e32; /* --c--globals--colors--brand-900 */
+	--lasuite-color-brand-950: #11131f; /* --c--globals--colors--brand-950 */
+
+	/* ===================================================================
+	 * GREYSCALE
+	 * Source: --c--globals--colors--gray-*. gray-000 is the white surface
+	 * Cunningham uses for cards/header (--c--contextuals--background--surface--primary).
+	 * =================================================================== */
+
+	--lasuite-color-gray-000: #ffffff; /* --c--globals--colors--gray-000 */
+	--lasuite-color-gray-025: #f8f8f9; /* --c--globals--colors--gray-025 */
+	--lasuite-color-gray-050: #f0f0f3; /* --c--globals--colors--gray-050 */
+	--lasuite-color-gray-100: #e2e2ea; /* --c--globals--colors--gray-100 */
+	--lasuite-color-gray-200: #c5c6d5; /* --c--globals--colors--gray-200 — hairline border */
+	--lasuite-color-gray-300: #a9a9bf; /* --c--globals--colors--gray-300 — input border */
+	--lasuite-color-gray-500: #75758a; /* --c--globals--colors--gray-500 */
+	--lasuite-color-gray-700: #454558; /* --c--globals--colors--gray-700 */
+	--lasuite-color-gray-900: #1b1b23; /* --c--globals--colors--gray-900 — body text */
+	--lasuite-color-gray-1000: #000000; /* --c--globals--colors--gray-1000 */
+
+	/* ===================================================================
+	 * SEMANTIC COLORS
+	 * The "-500" values are Cunningham's own NAMED swatches (the values the
+	 * spec/upstream docs refer to as "success-500" etc). Cunningham's actual
+	 * interactive fill token (--c--contextuals--background--semantic--{name}--primary)
+	 * resolves to the darker "-550" step instead — the "-500" swatch alone is
+	 * used for accents (borders, icons), not as a solid fill carrying white
+	 * text. Both are curated here: -500 for spec/accent fidelity, -550 as the
+	 * fill the bridge maps onto --nldesign-color-{status} (white text on -550
+	 * clears WCAG AA >=4.5:1 with margin; on the raw -500 swatch it does not).
+	 * =================================================================== */
+
+	--lasuite-color-success-500: #1e884a; /* --c--globals--colors--success-500 */
+	--lasuite-color-success-550: #027b3e; /* --c--globals--colors--success-550 (background--semantic--success--primary) */
+	--lasuite-color-warning-500: #cb5000; /* --c--globals--colors--warning-500 */
+	--lasuite-color-warning-550: #bc4200; /* --c--globals--colors--warning-550 (background--semantic--warning--primary) */
+	--lasuite-color-error-500: #e82322; /* --c--globals--colors--error-500 */
+	--lasuite-color-error-550: #d7010e; /* --c--globals--colors--error-550 (background--semantic--error--primary) */
+	--lasuite-color-error-650: #aa0000; /* --c--globals--colors--error-650 — hover step */
+	--lasuite-color-info-500: #0077de; /* --c--globals--colors--info-500 */
+	--lasuite-color-info-550: #0069cf; /* --c--globals--colors--info-550 (background--semantic--info--primary) */
+
+	/* Accessible text painted on the "-550" fills above (white — see comment
+	 * on the semantic block; not accessible on the raw "-500" swatch). */
+	--lasuite-color-on-success: var(--lasuite-color-gray-000);
+	--lasuite-color-on-warning: var(--lasuite-color-gray-000);
+	--lasuite-color-on-error: var(--lasuite-color-gray-000);
+	--lasuite-color-on-info: var(--lasuite-color-gray-000);
+
+	/* ===================================================================
+	 * BORDER RADIUS
+	 * Source: --c--components--button--border-radius /
+	 * --c--components--forms-input--border-radius (both 4px — Cunningham is
+	 * a flat 4px system across buttons, inputs and selects).
+	 * =================================================================== */
+
+	--lasuite-border-radius: 4px;
+
+	/* ===================================================================
+	 * SPACING (base scale)
+	 * Source: --c--globals--spacings--xs/sm/base/md/lg.
+	 * =================================================================== */
+
+	--lasuite-spacing-xs: 0.5rem; /* --c--globals--spacings--xs */
+	--lasuite-spacing-sm: 0.75rem; /* --c--globals--spacings--sm */
+	--lasuite-spacing-base: 1rem; /* --c--globals--spacings--base */
+	--lasuite-spacing-md: 1.5rem; /* --c--globals--spacings--md */
+	--lasuite-spacing-lg: 2rem; /* --c--globals--spacings--lg */
+}

@@ -25,6 +25,7 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
 declare(strict_types=1);
@@ -34,6 +35,11 @@ namespace OCA\NLDesign\Controller;
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\AppThemingService;
 use OCA\NLDesign\Service\ComplianceReportService;
+use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
+use OCA\NLDesign\Service\Exception\FooterValidationException;
+use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
@@ -64,6 +70,11 @@ use OCP\IRequest;
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects) - This controller aggregates every settings
+ * endpoint of the app (token set, toggles, theming sync, per-app theming, audit trail, email
+ * theming); each dependency is one endpoint's service. Splitting it is tracked implicitly by
+ * the per-feature OpenSpec changes, not worth a synthetic split today.
  */
 class SettingsController extends Controller
 {
@@ -111,16 +122,32 @@ class SettingsController extends Controller
     private ComplianceReportService $complianceService;
 
     /**
+     * The theming audit trail service.
+     *
+     * @var ThemingAuditService
+     */
+    private ThemingAuditService $auditService;
+
+    /**
+     * The email theming service.
+     *
+     * @var EmailThemingService
+     */
+    private EmailThemingService $emailThemingService;
+
+    /**
      * Constructor.
      *
-     * @param string                  $appName           The app name.
-     * @param IRequest                $request           The request object.
-     * @param IConfig                 $config            The config service.
-     * @param TokenSetService         $tokenSetService   The token set service.
-     * @param ThemingService          $themingService    The theming service.
-     * @param TokenSetPreviewService  $previewService    The token set preview service.
-     * @param AppThemingService       $appThemingService The per-app theming service.
-     * @param ComplianceReportService $complianceService The compliance evidence report service.
+     * @param string                  $appName             The app name.
+     * @param IRequest                $request             The request object.
+     * @param IConfig                 $config              The config service.
+     * @param TokenSetService         $tokenSetService     The token set service.
+     * @param ThemingService          $themingService      The theming service.
+     * @param TokenSetPreviewService  $previewService      The token set preview service.
+     * @param AppThemingService       $appThemingService   The per-app theming service.
+     * @param ComplianceReportService $complianceService   The compliance evidence report service.
+     * @param ThemingAuditService     $auditService        The theming audit trail service.
+     * @param EmailThemingService     $emailThemingService The email theming service.
      */
     public function __construct(
         string $appName,
@@ -130,7 +157,9 @@ class SettingsController extends Controller
         ThemingService $themingService,
         TokenSetPreviewService $previewService,
         AppThemingService $appThemingService,
-        ComplianceReportService $complianceService
+        ComplianceReportService $complianceService,
+        ThemingAuditService $auditService,
+        EmailThemingService $emailThemingService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->config            = $config;
@@ -139,6 +168,8 @@ class SettingsController extends Controller
         $this->previewService    = $previewService;
         $this->appThemingService = $appThemingService;
         $this->complianceService = $complianceService;
+        $this->auditService      = $auditService;
+        $this->emailThemingService = $emailThemingService;
     }//end __construct()
 
     /**
@@ -149,6 +180,7 @@ class SettingsController extends Controller
      * @return JSONResponse The response with status and selected token set.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setTokenSet(string $tokenSet): JSONResponse
@@ -157,7 +189,16 @@ class SettingsController extends Controller
             return new JSONResponse(['error' => 'Invalid token set'], 400);
         }
 
+        $previous = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
         $this->config->setAppValue(Application::APP_ID, 'token_set', $tokenSet);
+
+        $this->auditService->log(
+            action: 'token_set_changed',
+            context: [
+                'old' => $previous,
+                'new' => $tokenSet,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'tokenSet' => $tokenSet]);
     }//end setTokenSet()
@@ -224,11 +265,22 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setSloganSetting(bool $hideSlogan): JSONResponse
     {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'hide_slogan', '0') === '1');
         $this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'hide_slogan',
+                'old' => $previous,
+                'new' => $hideSlogan,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
     }//end setSloganSetting()
@@ -241,11 +293,22 @@ class SettingsController extends Controller
      * @return JSONResponse The response with the status.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
     {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'show_menu_labels', '0') === '1');
         $this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'show_menu_labels',
+                'old' => $previous,
+                'new' => $showMenuLabels,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
     }//end setMenuLabelsSetting()
@@ -256,6 +319,7 @@ class SettingsController extends Controller
      * @return JSONResponse The response with updated fields.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function updateThemingValues(): JSONResponse
@@ -272,6 +336,8 @@ class SettingsController extends Controller
             return new JSONResponse(['error' => $imageError], 400);
         }
 
+        $before = $this->buildThemingSnapshot();
+
         $updatedColors = $this->themingService->applyColors(params: $params);
         $updatedImages = $this->themingService->applyImages(params: $params);
         $updated       = array_merge($updatedColors, $updatedImages);
@@ -281,6 +347,14 @@ class SettingsController extends Controller
         // apply* calls completed without throwing).
         $current = (int) $this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
         $this->config->setAppValue(Application::APP_ID, 'theming_syncs_total', (string) ($current + 1));
+
+        $this->auditService->log(
+            action: 'theming_sync_applied',
+            context: [
+                'old' => $before,
+                'new' => $updated,
+            ]
+        );
 
         return new JSONResponse(['status' => 'ok', 'updated' => $updated]);
     }//end updateThemingValues()
@@ -369,16 +443,27 @@ class SettingsController extends Controller
      * @return JSONResponse The persisted state after validation.
      *
      * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+     * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
      */
     #[AuthorizedAdminSetting(Admin::class)]
     public function setAppTheming(array $disabledApps=[]): JSONResponse
     {
+        $before = $this->appThemingService->getDisabledApps();
         $this->appThemingService->setDisabledApps(appIds: $disabledApps);
+        $after = $this->appThemingService->getDisabledApps();
+
+        $this->auditService->log(
+            action: 'app_exclusions_changed',
+            context: [
+                'old' => $before,
+                'new' => $after,
+            ]
+        );
 
         return new JSONResponse(
             [
                 'status'       => 'ok',
-                'disabledApps' => $this->appThemingService->getDisabledApps(),
+                'disabledApps' => $after,
             ]
         );
     }//end setAppTheming()
@@ -421,4 +506,99 @@ class SettingsController extends Controller
 
         return new DataDownloadResponse(data: $content, filename: $filename, contentType: $contentType);
     }//end complianceReport()
+
+    /**
+     * Get the email template toggle state and compliance footer config.
+     *
+     * @return JSONResponse The state, footer config, and manual occ commands.
+     *
+     * @spec openspec/specs/email-theming/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getEmailTheming(): JSONResponse
+    {
+        return new JSONResponse(
+            [
+                'state'      => $this->emailThemingService->getState(),
+                'footer'     => $this->emailThemingService->getFooterConfig(),
+                'occEnable'  => EmailThemingService::OCC_ENABLE_COMMAND,
+                'occDisable' => EmailThemingService::OCC_DISABLE_COMMAND,
+            ]
+        );
+    }//end getEmailTheming()
+
+    /**
+     * Save the compliance footer config and toggle the email template.
+     *
+     * The footer config is always applied first (app config, always
+     * writable) and independently reported, so it saves successfully even
+     * when the system-config toggle write fails (read-only config.php or a
+     * foreign `mail_template_class`).
+     *
+     * @param bool   $enabled          Whether the branded template should be enabled.
+     * @param string $orgName          The organization name.
+     * @param string $accessibilityUrl The toegankelijkheidsverklaring URL.
+     * @param string $privacyUrl       The privacy statement URL.
+     *
+     * @return JSONResponse The result, or a structured 409/422 error.
+     *
+     * @spec openspec/specs/email-theming/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setEmailTheming(
+        bool $enabled,
+        string $orgName='',
+        string $accessibilityUrl='',
+        string $privacyUrl=''
+    ): JSONResponse {
+        try {
+            $this->emailThemingService->setFooterConfig($orgName, $accessibilityUrl, $privacyUrl);
+        } catch (FooterValidationException $e) {
+            return new JSONResponse(
+                [
+                    'error'   => 'invalid_footer',
+                    'field'   => $e->getField(),
+                    'message' => $e->getMessage(),
+                ],
+                422
+            );
+        }
+
+        try {
+            if ($enabled === true) {
+                $this->emailThemingService->enable();
+            }
+
+            if ($enabled === false) {
+                $this->emailThemingService->disable();
+            }
+        } catch (ConfigReadOnlyException $e) {
+            return new JSONResponse(
+                [
+                    'error'      => 'config_read_only',
+                    'occEnable'  => $e->getOccEnableCommand(),
+                    'occDisable' => $e->getOccDisableCommand(),
+                    'footer'     => $this->emailThemingService->getFooterConfig(),
+                ],
+                409
+            );
+        } catch (ForeignMailTemplateClassException $e) {
+            return new JSONResponse(
+                [
+                    'error'  => 'foreign_mail_template_class',
+                    'class'  => $e->getForeignClass(),
+                    'footer' => $this->emailThemingService->getFooterConfig(),
+                ],
+                409
+            );
+        }//end try
+
+        return new JSONResponse(
+            [
+                'status' => 'ok',
+                'state'  => $this->emailThemingService->getState(),
+                'footer' => $this->emailThemingService->getFooterConfig(),
+            ]
+        );
+    }//end setEmailTheming()
 }//end class

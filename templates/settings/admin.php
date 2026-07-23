@@ -2,6 +2,10 @@
 /**
  * @var array $tokenSets
  * @var string $currentTokenSet
+ * @var array{state: string, configReadOnly: bool, foreignClass: ?string} $emailThemingState
+ * @var array{orgName: string, accessibilityUrl: string, privacyUrl: string} $emailFooterConfig
+ * @var string $occEnableCommand
+ * @var string $occDisableCommand
  */
 
 // Load the pure token/colour transforms first so admin.js can consume them via
@@ -62,6 +66,37 @@ style('nldesign', 'admin');
 		</div>
 	</div>
 
+	<!-- Custom font upload -->
+	<div class="nldesign-custom-fonts" id="nldesign-custom-fonts" style="margin-top:2em">
+		<h3><?php p($l->t('Custom fonts')); ?></h3>
+		<p class="nldesign-license-notice">
+			<?php p($l->t('Only upload fonts your organization holds a license to self-host. Licensing responsibility rests with the uploader.')); ?>
+		</p>
+		<p class="settings-hint">
+			<?php p($l->t('Upload a WOFF2 font file (max 2 MB, 20 fonts max) and assign it to the body text or heading role. Uploaded fonts are self-hosted — no external requests.')); ?>
+		</p>
+		<div class="nldesign-upload-form">
+			<label for="nldesign-font-name"><?php p($l->t('Font display name')); ?></label>
+			<input type="text" id="nldesign-font-name" class="nldesign-font-name"
+				   placeholder="<?php p($l->t('e.g. Rijks Sans')); ?>"
+				   maxlength="64">
+			<label for="nldesign-font-role"><?php p($l->t('Font role')); ?></label>
+			<select id="nldesign-font-role" name="nldesign-font-role">
+				<option value="body"><?php p($l->t('Body text')); ?></option>
+				<option value="heading"><?php p($l->t('Heading')); ?></option>
+			</select>
+			<input type="file" id="nldesign-font-input" accept=".woff2" style="display:none">
+			<button type="button" id="nldesign-font-upload-btn" class="button">
+				<?php p($l->t('Choose font and upload')); ?>
+			</button>
+		</div>
+		<div id="nldesign-font-upload-result" class="nldesign-import-result" role="status" aria-live="polite" style="display:none"></div>
+		<div id="nldesign-font-list" class="nldesign-custom-set-list" role="group"
+			 aria-label="<?php p($l->t('Custom fonts')); ?>">
+			<p class="settings-hint"><?php p($l->t('Loading fonts…')); ?></p>
+		</div>
+	</div>
+
 	<!-- Hide Slogan/Payoff Option -->
 	<div class="nldesign-option">
 		<input type="checkbox"
@@ -100,6 +135,63 @@ style('nldesign', 'admin');
 			<?php p($l->t('Save app theming')); ?>
 		</button>
 		<span id="nldesign-app-theming-feedback" class="nldesign-app-theming-feedback" role="status" aria-live="polite"></span>
+	</div>
+
+	<!-- Email template theming — mail_template_class toggle + compliance footer -->
+	<div class="nldesign-email-theming" id="nldesign-email-theming" style="margin-top:2em"
+		 data-state="<?php p($_['emailThemingState']['state']); ?>"
+		 data-config-read-only="<?php p($_['emailThemingState']['configReadOnly'] ? '1' : '0'); ?>"
+		 data-foreign-class="<?php p($_['emailThemingState']['foreignClass'] ?? ''); ?>">
+		<h3><?php p($l->t('Email template')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Brand password-reset, share-notification, and other system emails with the active token set\'s color and logo. If nldesign is later disabled, Nextcloud automatically falls back to the stock email template — mail is never blocked by this setting.')); ?>
+		</p>
+
+		<?php if ($_['emailThemingState']['state'] === 'foreign'): ?>
+			<p class="nldesign-email-foreign-note" role="alert">
+				<?php p($l->t('A different mail template class is already configured ({class}); nldesign will not overwrite it.', ['class' => $_['emailThemingState']['foreignClass']])); ?>
+			</p>
+		<?php endif; ?>
+
+		<div class="nldesign-option">
+			<input type="checkbox"
+				   name="nldesign-email-theming-enabled"
+				   id="nldesign-email-theming-enabled"
+				   class="checkbox"
+				   <?php if ($_['emailThemingState']['state'] === 'enabled'): ?>checked<?php endif; ?>
+				   <?php if ($_['emailThemingState']['state'] === 'foreign'): ?>disabled<?php endif; ?>>
+			<label for="nldesign-email-theming-enabled">
+				<?php p($l->t('Use NL Design email template')); ?>
+			</label>
+		</div>
+
+		<div class="nldesign-email-footer-fields">
+			<label for="nldesign-email-footer-org-name"><?php p($l->t('Organization name')); ?></label>
+			<input type="text" id="nldesign-email-footer-org-name" class="nldesign-email-footer-input"
+				   value="<?php p($_['emailFooterConfig']['orgName']); ?>"
+				   placeholder="<?php p($l->t('e.g. Gemeente Voorbeeld')); ?>" maxlength="2048">
+
+			<label for="nldesign-email-footer-accessibility-url"><?php p($l->t('Accessibility statement URL')); ?></label>
+			<input type="url" id="nldesign-email-footer-accessibility-url" class="nldesign-email-footer-input"
+				   value="<?php p($_['emailFooterConfig']['accessibilityUrl']); ?>"
+				   placeholder="https://example.org/toegankelijkheidsverklaring" maxlength="2048">
+
+			<label for="nldesign-email-footer-privacy-url"><?php p($l->t('Privacy statement URL')); ?></label>
+			<input type="url" id="nldesign-email-footer-privacy-url" class="nldesign-email-footer-input"
+				   value="<?php p($_['emailFooterConfig']['privacyUrl']); ?>"
+				   placeholder="https://example.org/privacy" maxlength="2048">
+		</div>
+
+		<button type="button" id="nldesign-email-theming-save" class="button">
+			<?php p($l->t('Save email template settings')); ?>
+		</button>
+		<span id="nldesign-email-theming-feedback" class="nldesign-email-theming-feedback" role="status" aria-live="polite"></span>
+
+		<div class="nldesign-email-occ-hint" id="nldesign-email-occ-hint" role="alert" style="display:none">
+			<p><?php p($l->t('config.php is read-only. Run one of the following commands manually to enable or disable the email template:')); ?></p>
+			<p><code id="nldesign-email-occ-enable"><?php p($_['occEnableCommand']); ?></code></p>
+			<p><code id="nldesign-email-occ-disable"><?php p($_['occDisableCommand']); ?></code></p>
+		</div>
 	</div>
 
 	<div class="nldesign-preview" id="nldesign-preview">
@@ -185,6 +277,31 @@ style('nldesign', 'admin');
 	<!-- Token Editor Panel — mounted by admin.js -->
 	<div id="nldesign-token-editor" style="margin-top:2em">
 		<p class="settings-hint"><?php p($l->t('Loading token editor…')); ?></p>
+	</div>
+
+	<!-- Theming audit log — who changed which theming setting, from what, to
+	     what, and when. Evidence for accessibility/WCAG-EM audits. -->
+	<div class="nldesign-audit-log" id="nldesign-audit-log" style="margin-top:2em">
+		<h3><?php p($l->t('Theming audit log')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('A record of theming configuration changes: who changed what, from what, to what, and when. Useful evidence for accessibility audits.')); ?>
+		</p>
+		<table class="nldesign-audit-table" id="nldesign-audit-table">
+			<thead>
+				<tr>
+					<th><?php p($l->t('Timestamp')); ?></th>
+					<th><?php p($l->t('User')); ?></th>
+					<th><?php p($l->t('Action')); ?></th>
+					<th><?php p($l->t('Details')); ?></th>
+				</tr>
+			</thead>
+			<tbody id="nldesign-audit-table-body">
+				<tr><td colspan="4" class="settings-hint"><?php p($l->t('Loading audit log…')); ?></td></tr>
+			</tbody>
+		</table>
+		<button type="button" id="nldesign-audit-download-btn" class="button">
+			<?php p($l->t('Download full log')); ?>
+		</button>
 	</div>
 
 	<p class="nldesign-info">

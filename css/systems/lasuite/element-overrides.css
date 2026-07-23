@@ -1,0 +1,240 @@
+/**
+ * La Suite numérique — Element-Level Overrides
+ *
+ * The pixel-adjacent La Suite chrome the core variable bridge cannot express
+ * on its own: a white header with a gray-200 hairline border and brand-650
+ * accents, a flat white navigation card, 4px-radius primary buttons and
+ * inputs. Reaches Nextcloud core selectors directly, mirroring the scoping
+ * discipline of the other design systems in this app (targeted selectors,
+ * never a universal `*` rule — ADR-CSS-001 — so icon fonts and monospace
+ * code blocks keep their own font-family).
+ *
+ * Load order: fonts → defaults → bridge → [element-overrides], then
+ * tokens/lasuite.
+ */
+
+/* ============================================
+   HEADER — white surface, hairline border, brand accents
+   ============================================ */
+
+#header,
+header#header {
+	background-color: var(--lasuite-color-gray-000) !important;
+	background-image: none !important;
+	background: var(--lasuite-color-gray-000) !important;
+	border-bottom: 1px solid var(--lasuite-color-gray-200) !important;
+	position: relative !important;
+	overflow: visible !important;
+}
+
+#header::before,
+#header::after {
+	content: none !important;
+	display: none !important;
+}
+
+/* Header foreground — dark text/icons on the white bar. */
+#header .header-appname,
+#header .header-left a {
+	color: var(--lasuite-color-brand-650) !important;
+	font-weight: 600 !important;
+}
+
+#header .header-right a,
+#header .header-right button,
+#header .menutoggle,
+#header .unified-search__button {
+	color: var(--lasuite-color-gray-900) !important;
+	filter: none !important;
+	opacity: 1 !important;
+}
+
+#header .header-end svg,
+#header .header-end .button-vue__icon,
+#header .header-end .icon-vue {
+	filter: invert(1) brightness(0) contrast(100) !important;
+	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
+}
+
+/* Preserve avatar / user-status colour on the white bar. */
+#header .header-end .avatardiv img,
+#header .header-end .user-status-icon svg {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
+/* App menu — dark on white, brand-650 active indicator (Cunningham accent). */
+#header nav.app-menu a,
+#header nav.app-menu .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry__label {
+	color: var(--lasuite-color-gray-900) !important;
+	font-weight: 400 !important;
+}
+
+#header nav.app-menu .app-menu-entry--active a,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__label {
+	color: var(--lasuite-color-brand-650) !important;
+	font-weight: 600 !important;
+}
+
+#header nav.app-menu .app-menu-entry--active a::after,
+#header nav.app-menu .app-menu-entry--active .app-menu-entry__link::after {
+	content: '' !important;
+	position: absolute !important;
+	bottom: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	height: 3px !important;
+	background: var(--lasuite-color-brand-650) !important;
+	display: block !important;
+}
+
+#header nav.app-menu a:hover,
+#header nav.app-menu .app-menu-entry__link:hover {
+	background-color: var(--lasuite-color-gray-050) !important;
+	color: var(--lasuite-color-brand-650) !important;
+}
+
+#header nav.app-menu .app-menu-icon img,
+#header nav.app-menu .app-menu-icon__icon,
+#header nav.app-menu .app-menu-entry__icon img {
+	filter: invert(1) brightness(0) contrast(100) !important;
+	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
+	opacity: 1 !important;
+}
+
+/* ============================================
+   APP NAVIGATION — flat white card, 4px radius
+   ============================================ */
+
+#app-navigation,
+.app-navigation,
+#app-navigation-vue {
+	background: var(--lasuite-color-gray-000) !important;
+	border-right: 1px solid var(--lasuite-color-gray-200) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+	box-shadow: none !important;
+	margin-right: 16px !important;
+}
+
+#app-navigation.app-navigation--close,
+.app-navigation.app-navigation--close {
+	margin-right: 0 !important;
+}
+
+.app-navigation-entry,
+.app-navigation-entry-link {
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+.app-navigation-entry:hover {
+	background-color: var(--lasuite-color-gray-050) !important;
+}
+
+#app-navigation .app-navigation-entry.active,
+#app-navigation .app-navigation-entry--active,
+.app-navigation-entry.active,
+.app-navigation-entry--active {
+	background: var(--lasuite-color-brand-050) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+#app-navigation .app-navigation-entry.active a,
+.app-navigation-entry.active a,
+.app-navigation-entry--active a {
+	color: var(--lasuite-color-brand-650) !important;
+	font-weight: 600 !important;
+}
+
+/* App content — flat white card, no shadow (Cunningham surfaces are flat). */
+#app-content,
+.app-content,
+#app-content-vue {
+	background: var(--lasuite-color-gray-000) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+/* ============================================
+   PRIMARY BUTTONS — brand-650 fill, white text, 4px radius
+   ============================================ */
+
+.button-vue--vue-primary,
+button.primary,
+input.primary,
+.button-vue.button-vue--vue-primary,
+button[class*="primary"] {
+	background-color: var(--lasuite-color-brand-650) !important;
+	border-color: var(--lasuite-color-brand-650) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+.button-vue--vue-primary,
+.button-vue--vue-primary *,
+.button-vue--vue-primary span,
+button.primary,
+button.primary *,
+input.primary {
+	color: var(--lasuite-color-gray-000) !important;
+}
+
+.button-vue--vue-primary:hover,
+button.primary:hover,
+.button-vue.button-vue--vue-primary:hover {
+	background-color: var(--lasuite-color-brand-750) !important;
+	border-color: var(--lasuite-color-brand-750) !important;
+}
+
+/* Buttons/inputs/dropdowns share the flat 4px radius everywhere. */
+.button,
+button,
+.button-vue,
+input,
+textarea,
+select,
+.dropdown,
+.modal-container,
+.popover {
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+/* ============================================
+   INPUTS — 1px gray-300 border, 4px radius
+   ============================================ */
+
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="password"],
+.input-field__input {
+	border: 1px solid var(--lasuite-color-gray-300) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus {
+	border-color: var(--lasuite-color-brand-650) !important;
+	box-shadow: 0 0 0 2px var(--nldesign-color-focus) !important;
+}
+
+/* ============================================
+   FONT — form elements that resist body inheritance (ADR-CSS-001: targeted
+   selectors only, no universal `*` rule, so icon fonts / monospace editors
+   keep their own font-family).
+   ============================================ */
+
+button,
+input,
+textarea,
+select,
+label {
+	font-family: var(--lasuite-font-family);
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--lasuite-font-family);
+	color: var(--lasuite-color-gray-900);
+}

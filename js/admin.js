@@ -1539,5 +1539,419 @@ function nldesignAdminMain() {
 	// Initialise the custom token set panel on page load.
 	initCustomTokenSets();
 
+	/* ==========================================================================
+	 * CUSTOM FONTS (admin-uploaded, self-hosted webfonts)
+	 *
+	 * Mirrors the custom token set upload panel above (FormData POST, list
+	 * refresh, delete-with-confirm), hardened for binary input: the file
+	 * input accepts .woff2 as a UX hint only — the server-side WOFF2 magic
+	 * byte check is authoritative and rejects anything else with a 422 the
+	 * user sees inline.
+	 * ========================================================================== */
+
+	function initCustomFonts() {
+		var uploadBtn = document.getElementById('nldesign-font-upload-btn');
+		var fileInput = document.getElementById('nldesign-font-input');
+		var nameInput = document.getElementById('nldesign-font-name');
+		var roleSelect = document.getElementById('nldesign-font-role');
+		if (uploadBtn === null || fileInput === null || nameInput === null || roleSelect === null) {
+			return;
+		}
+
+		uploadBtn.addEventListener('click', function() {
+			if (nameInput.value.trim() === '') {
+				OC.Notification.showTemporary(t('nldesign', 'Enter a font display name first.'));
+				nameInput.focus();
+				return;
+			}
+			fileInput.click();
+		});
+
+		fileInput.addEventListener('change', function(e) {
+			var file = e.target.files[0];
+			if (!file) {
+				return;
+			}
+			uploadFont(nameInput.value.trim(), roleSelect.value, file);
+			fileInput.value = '';
+		});
+
+		loadFonts();
+	}
+
+	function uploadFont(name, role, file) {
+		var resultEl = document.getElementById('nldesign-font-upload-result');
+		var formData = new FormData();
+		formData.append('name', name);
+		formData.append('role', role);
+		formData.append('font', file);
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/fonts/upload'), {
+			method: 'POST',
+			headers: { 'requesttoken': OC.requestToken },
+			body: formData
+		})
+		.then(function(r) { return r.json().then(function(data) { return { status: r.status, data: data }; }); })
+		.then(function(res) {
+			if (resultEl !== null) {
+				resultEl.style.display = 'block';
+			}
+			if (res.status >= 400) {
+				if (resultEl !== null) {
+					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
+				return;
+			}
+			if (resultEl !== null) {
+				resultEl.textContent = '';
+				resultEl.style.display = 'none';
+			}
+			OC.Notification.showTemporary(t('nldesign', 'Font uploaded. Reload the page to apply it.'));
+			loadFonts();
+		})
+		.catch(function(err) {
+			console.error('Error uploading font:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Upload failed.'));
+		});
+	}
+
+	function loadFonts() {
+		var listEl = document.getElementById('nldesign-font-list');
+		if (listEl === null) {
+			return;
+		}
+		fetch(OC.generateUrl('/apps/nldesign/settings/fonts'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderFontList(listEl, (data && data.fonts) || []);
+		})
+		.catch(function(err) {
+			console.error('Error loading fonts:', err);
+			listEl.textContent = t('nldesign', 'Failed to load fonts.');
+		});
+	}
+
+	function renderFontList(listEl, fonts) {
+		listEl.innerHTML = '';
+		if (fonts.length === 0) {
+			var empty = document.createElement('p');
+			empty.className = 'settings-hint';
+			empty.textContent = t('nldesign', 'No fonts uploaded yet.');
+			listEl.appendChild(empty);
+			return;
+		}
+
+		fonts.forEach(function(font) {
+			var row = document.createElement('div');
+			row.className = 'nldesign-custom-set-row';
+
+			var nameSpan = document.createElement('span');
+			nameSpan.className = 'nldesign-custom-set-name';
+			nameSpan.textContent = font.name || font.id;
+			row.appendChild(nameSpan);
+
+			var roleBadge = document.createElement('span');
+			roleBadge.className = 'nldesign-badge';
+			roleBadge.textContent = (font.role === 'heading') ? t('nldesign', 'Heading') : t('nldesign', 'Body text');
+			row.appendChild(roleBadge);
+
+			var sizeSpan = document.createElement('span');
+			sizeSpan.className = 'nldesign-badge';
+			sizeSpan.textContent = Math.max(1, Math.round((font.size || 0) / 1024)) + ' KB';
+			row.appendChild(sizeSpan);
+
+			var deleteBtn = document.createElement('button');
+			deleteBtn.type = 'button';
+			deleteBtn.className = 'nldesign-btn nldesign-btn--small nldesign-btn--danger';
+			deleteBtn.textContent = t('nldesign', 'Delete');
+			deleteBtn.addEventListener('click', function() {
+				deleteFont(font.id, font.name || font.id);
+			});
+			row.appendChild(deleteBtn);
+
+			listEl.appendChild(row);
+		});
+	}
+
+	function deleteFont(id, name) {
+		OC.dialogs.confirm(
+			t('nldesign', 'Delete the font "{name}"? Pages using it will fall back to Fira Sans.').replace('{name}', name),
+			t('nldesign', 'Delete font'),
+			function(confirmed) {
+				if (confirmed !== true) {
+					return;
+				}
+				fetch(OC.generateUrl('/apps/nldesign/settings/fonts/' + encodeURIComponent(id)), {
+					method: 'DELETE',
+					headers: { 'requesttoken': OC.requestToken }
+				})
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (data && data.status === 'ok') {
+						OC.Notification.showTemporary(t('nldesign', 'Font deleted. Reload the page to refresh the styling.'));
+						loadFonts();
+					} else {
+						OC.Notification.showTemporary(t('nldesign', 'Failed to delete font.'));
+					}
+				})
+				.catch(function(err) {
+					console.error('Error deleting font:', err);
+					OC.Notification.showTemporary(t('nldesign', 'Failed to delete font.'));
+				});
+			},
+			true
+		);
+	}
+
+	// Initialise the custom fonts panel on page load.
+	initCustomFonts();
+
+
+	/* ==========================================================================
+	 * THEMING AUDIT LOG
+	 *
+	 * Read-only panel: fetches the most recent entries on page load and wires
+	 * the full-log download button. All entry values are rendered via
+	 * textContent (DOM text nodes), never innerHTML — audit entries can carry
+	 * admin-supplied names (custom token set names) so must be treated as
+	 * untrusted content.
+	 * ========================================================================== */
+
+	function initAuditLog() {
+		var tableBody   = document.getElementById('nldesign-audit-table-body');
+		var downloadBtn = document.getElementById('nldesign-audit-download-btn');
+		if (tableBody === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/audit?limit=20'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderAuditTable(tableBody, (data && data.entries) || []);
+		})
+		.catch(function(err) {
+			console.error('Error loading audit log:', err);
+			renderAuditMessage(tableBody, t('nldesign', 'Failed to load the audit log.'));
+		});
+
+		if (downloadBtn !== null) {
+			downloadBtn.addEventListener('click', function() {
+				window.location = OC.generateUrl('/apps/nldesign/settings/audit/export');
+			});
+		}
+	}
+
+	function renderAuditMessage(tableBody, message) {
+		tableBody.innerHTML = '';
+		var row = document.createElement('tr');
+		var cell = document.createElement('td');
+		cell.colSpan = 4;
+		cell.className = 'settings-hint';
+		cell.textContent = message;
+		row.appendChild(cell);
+		tableBody.appendChild(row);
+	}
+
+	function renderAuditTable(tableBody, entries) {
+		tableBody.innerHTML = '';
+
+		if (entries.length === 0) {
+			renderAuditMessage(tableBody, t('nldesign', 'No theming changes have been recorded yet.'));
+			return;
+		}
+
+		entries.forEach(function(entry) {
+			var row = document.createElement('tr');
+
+			var tsCell = document.createElement('td');
+			tsCell.textContent = entry.ts || '';
+			row.appendChild(tsCell);
+
+			var actorCell = document.createElement('td');
+			actorCell.textContent = entry.actor || '';
+			row.appendChild(actorCell);
+
+			var actionCell = document.createElement('td');
+			actionCell.textContent = entry.action || '';
+			row.appendChild(actionCell);
+
+			var detailsCell = document.createElement('td');
+			detailsCell.textContent = formatAuditDetails(entry);
+			row.appendChild(detailsCell);
+
+			tableBody.appendChild(row);
+		});
+	}
+
+	function formatAuditValue(value) {
+		if (value === null || value === undefined) {
+			return '';
+		}
+		if (typeof value === 'object') {
+			try {
+				return JSON.stringify(value);
+			} catch (e) {
+				return String(value);
+			}
+		}
+		return String(value);
+	}
+
+	function formatAuditDetails(entry) {
+		var parts = [];
+		if (entry.old !== undefined && entry.old !== null) {
+			parts.push(t('nldesign', 'from {value}').replace('{value}', formatAuditValue(entry.old)));
+		}
+		if (entry.new !== undefined && entry.new !== null) {
+			parts.push(t('nldesign', 'to {value}').replace('{value}', formatAuditValue(entry.new)));
+		}
+		return parts.join(' ');
+	}
+
+	initAuditLog();
+
+	/* ==========================================================================
+	 * EMAIL TEMPLATE THEMING — mail_template_class toggle + compliance footer
+	 * ========================================================================== */
+
+	// Re-render the panel from a { state, footer } payload (shared by the
+	// initial GET and every subsequent POST response).
+	function renderEmailTheming(state, footer) {
+		var root = document.getElementById('nldesign-email-theming');
+		var checkbox = document.getElementById('nldesign-email-theming-enabled');
+		var occHint = document.getElementById('nldesign-email-occ-hint');
+		if (root === null || checkbox === null) {
+			return;
+		}
+
+		if (state) {
+			root.setAttribute('data-state', state.state || 'disabled');
+			root.setAttribute('data-config-read-only', state.configReadOnly ? '1' : '0');
+			root.setAttribute('data-foreign-class', state.foreignClass || '');
+			checkbox.checked = state.state === 'enabled';
+			checkbox.disabled = state.state === 'foreign';
+		}
+
+		if (footer) {
+			var orgInput = document.getElementById('nldesign-email-footer-org-name');
+			var a11yInput = document.getElementById('nldesign-email-footer-accessibility-url');
+			var privacyInput = document.getElementById('nldesign-email-footer-privacy-url');
+			if (orgInput !== null) { orgInput.value = footer.orgName || ''; }
+			if (a11yInput !== null) { a11yInput.value = footer.accessibilityUrl || ''; }
+			if (privacyInput !== null) { privacyInput.value = footer.privacyUrl || ''; }
+		}
+
+		if (occHint !== null) {
+			occHint.style.display = 'none';
+		}
+	}
+
+	function initEmailTheming() {
+		var root = document.getElementById('nldesign-email-theming');
+		var saveBtn = document.getElementById('nldesign-email-theming-save');
+		if (root === null || saveBtn === null) {
+			return;
+		}
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/email-theming'), {
+			headers: { 'requesttoken': OC.requestToken }
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			renderEmailTheming(data && data.state, data && data.footer);
+		})
+		.catch(function(err) {
+			console.error('Error loading email theming:', err);
+		});
+
+		saveBtn.addEventListener('click', saveEmailTheming);
+	}
+
+	function saveEmailTheming() {
+		var checkbox = document.getElementById('nldesign-email-theming-enabled');
+		var orgInput = document.getElementById('nldesign-email-footer-org-name');
+		var a11yInput = document.getElementById('nldesign-email-footer-accessibility-url');
+		var privacyInput = document.getElementById('nldesign-email-footer-privacy-url');
+		var feedback = document.getElementById('nldesign-email-theming-feedback');
+		var occHint = document.getElementById('nldesign-email-occ-hint');
+		var foreignNote = document.querySelector('.nldesign-email-foreign-note');
+		if (checkbox === null) {
+			return;
+		}
+
+		var payload = {
+			enabled: checkbox.checked,
+			orgName: orgInput !== null ? orgInput.value : '',
+			accessibilityUrl: a11yInput !== null ? a11yInput.value : '',
+			privacyUrl: privacyInput !== null ? privacyInput.value : ''
+		};
+
+		fetch(OC.generateUrl('/apps/nldesign/settings/email-theming'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify(payload)
+		})
+		.then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+		.then(function(result) {
+			var data = result.data;
+
+			if (result.ok === true && data && data.status === 'ok') {
+				renderEmailTheming(data.state, data.footer);
+				if (feedback !== null) {
+					feedback.textContent = t('nldesign', 'Email template settings saved.');
+				}
+				OC.Notification.showTemporary(t('nldesign', 'Email template settings saved.'));
+				return;
+			}
+
+			if (data && data.error === 'config_read_only') {
+				checkbox.checked = false;
+				renderEmailTheming(null, data.footer);
+				if (occHint !== null) {
+					occHint.style.display = '';
+					var enableCode = document.getElementById('nldesign-email-occ-enable');
+					var disableCode = document.getElementById('nldesign-email-occ-disable');
+					if (enableCode !== null && data.occEnable) { enableCode.textContent = data.occEnable; }
+					if (disableCode !== null && data.occDisable) { disableCode.textContent = data.occDisable; }
+				}
+				OC.Notification.showTemporary(t('nldesign', 'config.php is read-only; run the shown occ command manually.'));
+				return;
+			}
+
+			if (data && data.error === 'foreign_mail_template_class') {
+				checkbox.checked = false;
+				checkbox.disabled = true;
+				renderEmailTheming(null, data.footer);
+				if (foreignNote !== null) {
+					foreignNote.textContent = t('nldesign', 'A different mail template class is already configured ({class}); nldesign will not overwrite it.', { class: data.class });
+				}
+				OC.Notification.showTemporary(t('nldesign', 'A different mail template class is already configured.'));
+				return;
+			}
+
+			if (data && data.error === 'invalid_footer') {
+				OC.Notification.showTemporary(t('nldesign', 'Invalid footer URL — use an http:// or https:// address.'));
+				return;
+			}
+
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save email template settings.'));
+		})
+		.catch(function(err) {
+			console.error('Error saving email theming:', err);
+			OC.Notification.showTemporary(t('nldesign', 'Failed to save email template settings.'));
+		});
+	}
+
+	// Initialise the email theming panel on page load.
+	initEmailTheming();
+
 }
 })();

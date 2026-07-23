@@ -22,6 +22,8 @@ per instance. The upload endpoint MUST be admin-only (`AuthorizedAdminSetting`) 
 CSRF-protected, mirroring the custom-token-set upload posture.
 
 #### Scenario: Valid woff2 upload succeeds
+@e2e exclude covered by FontServiceTest::testStoreWritesFileAndManifest and
+FontControllerTest upload-success case (PHPUnit)
 
 - GIVEN an admin uploads a file whose bytes begin with `wOF2`, 180 KB, display name
   "Rijks Sans", role `body`
@@ -32,6 +34,8 @@ CSRF-protected, mirroring the custom-token-set upload posture.
 - AND the response MUST report the id `custom-rijks-sans`
 
 #### Scenario: Renamed non-woff2 file is rejected by magic bytes
+@e2e exclude covered by FontValidatorTest hardening corpus — TTF/OTF/WOFF1/zip/renamed-text
+(PHPUnit)
 
 - GIVEN a TrueType font renamed to `font.woff2` (bytes begin `\x00\x01\x00\x00`) uploaded
   with MIME type `font/woff2`
@@ -40,12 +44,16 @@ CSRF-protected, mirroring the custom-token-set upload posture.
 - AND no file MUST be written and no manifest entry created
 
 #### Scenario: Oversized upload is rejected
+@e2e exclude covered by FontValidatorTest::testOversizeRejected and
+FontControllerTest oversize case (PHPUnit)
 
 - GIVEN an upload larger than 2 MB
 - WHEN the upload is processed
 - THEN it MUST be rejected with HTTP 413 before the content is stored
 
 #### Scenario: Filename sanitization and no path traversal
+@e2e exclude covered by FontServiceTest path-traversal-id cases (delete/getFont) and
+FontValidatorTest display-name cases (PHPUnit)
 
 - GIVEN a display name or id containing `/`, `..`, or a NUL byte (e.g.
   `../../config/config`)
@@ -55,6 +63,8 @@ CSRF-protected, mirroring the custom-token-set upload posture.
 - AND no user-supplied string MUST ever be concatenated into an appdata filesystem path
 
 #### Scenario: Upload endpoint is admin-only and CSRF-protected
+@e2e exclude covered by FontControllerTest reflection-based auth-posture assertion
+(PHPUnit); live non-admin-rejection curl check deferred to tasks.md#task-6.4
 
 - GIVEN a non-admin authenticated user
 - WHEN they POST to `/settings/fonts/upload`
@@ -71,6 +81,8 @@ the organization is licensed to self-host may be uploaded and that licensing res
 rests with the uploader. The notice MUST be a translatable string with an ENGLISH source key.
 
 #### Scenario: License notice is visible before upload
+@e2e exclude covered by a template-content assertion in AdminFontNoticeTest (PHPUnit);
+live visual placement check deferred to tasks.md#task-6.3
 
 - GIVEN an admin opens the Custom fonts section
 - WHEN the section renders
@@ -92,6 +104,8 @@ return 404 without detail. No font source outside the instance origin MUST ever 
 referenced.
 
 #### Scenario: Font loads without authentication
+@e2e exclude PublicPage attribute + cache headers covered by FontControllerTest (PHPUnit);
+live unauthenticated curl check deferred to tasks.md#task-6.2
 
 - GIVEN a stored font `custom-rijks-sans`
 - WHEN an unauthenticated request fetches `/apps/nldesign/fonts/custom-rijks-sans.woff2`
@@ -101,6 +115,8 @@ referenced.
   request to any external host
 
 #### Scenario: Unknown font id returns 404
+@e2e exclude covered by FontServiceTest::testGetFontReturnsNullForUnknownId and
+FontControllerTest 404 case (PHPUnit)
 
 - GIVEN no manifest entry `custom-ghost`
 - WHEN `/apps/nldesign/fonts/custom-ghost.woff2` is requested
@@ -123,6 +139,8 @@ all when no fonts are configured. Display names MUST be CSS-string-escaped befor
 interpolation into the generated stylesheet.
 
 #### Scenario: Body font override with intact fallback
+@e2e exclude covered by FontServiceTest::testBuildCssBodyOverride (PHPUnit); live
+computed-style check deferred to tasks.md#task-6.3
 
 - GIVEN a stored `body`-role font "Rijks Sans"
 - WHEN `/apps/nldesign/fonts/css` is served
@@ -132,6 +150,11 @@ interpolation into the generated stylesheet.
   Fira Sans fallback chain
 
 #### Scenario: No fonts configured means no injection
+@e2e exclude covered by FontServiceTest::testHasFontsFalseWhenEmpty (PHPUnit); the
+Application::boot() injection guard itself is exercised live only, consistent with the
+existing hide-slogan/show-menu-labels conditional injectors in this app (see
+tests/e2e/workflows/checkbox-toggle-persistence.workflow.spec.ts) — deferred to
+tasks.md#task-6.3
 
 - GIVEN zero entries in the `custom_fonts` manifest
 - WHEN any themed page renders
@@ -139,6 +162,7 @@ interpolation into the generated stylesheet.
 - AND rendering MUST be byte-identical to the pre-feature CSS stack
 
 #### Scenario: Display name cannot break the generated stylesheet
+@e2e exclude covered by FontServiceTest::testBuildCssEscapesDisplayName (PHPUnit)
 
 - GIVEN a font stored with display name `Test"Font` (embedded quote)
 - WHEN the stylesheet is generated
@@ -153,6 +177,9 @@ bust), and cause the generated stylesheet to drop its rules so rendering falls b
 shipped chain. List and delete endpoints MUST be admin-only and CSRF-protected.
 
 #### Scenario: Admin deletes a font
+@e2e exclude covered by FontServiceTest::testDeleteRemovesFileAndManifest and
+FontControllerTest delete cases (PHPUnit); live rendering-fallback check deferred to
+tasks.md#task-6.4
 
 - GIVEN a stored font `custom-rijks-sans` currently referenced by the generated stylesheet
 - WHEN the admin deletes it and reloads
