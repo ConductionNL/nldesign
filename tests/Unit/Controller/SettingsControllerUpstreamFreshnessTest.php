@@ -15,6 +15,9 @@ namespace OCA\NLDesign\Tests\Unit\Controller;
 
 use OCA\NLDesign\Controller\SettingsController;
 use OCA\NLDesign\Service\AppThemingService;
+use OCA\NLDesign\Service\ComplianceReportService;
+use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
@@ -80,6 +83,9 @@ class SettingsControllerUpstreamFreshnessTest extends TestCase
             $this->createMock(ThemingService::class),
             $this->createMock(TokenSetPreviewService::class),
             $this->createMock(AppThemingService::class),
+            $this->createMock(ComplianceReportService::class),
+            $this->createMock(ThemingAuditService::class),
+            $this->createMock(EmailThemingService::class),
             $upstreamFreshnessService
         );
     }//end makeController()

@@ -19,6 +19,7 @@ use OCA\NLDesign\Service\ComplianceReportService;
 use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
+use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -99,7 +100,8 @@ class SettingsControllerAuditTest extends TestCase
             $this->createMock(AppThemingService::class),
             $this->createMock(ComplianceReportService::class),
             $this->auditService,
-            $this->createMock(EmailThemingService::class)
+            $this->createMock(EmailThemingService::class),
+            $this->createMock(UpstreamFreshnessService::class)
         );
     }//end setUp()
 
@@ -170,7 +172,8 @@ class SettingsControllerAuditTest extends TestCase
             $this->createMock(AppThemingService::class),
             $this->createMock(ComplianceReportService::class),
             $realAuditService,
-            $this->createMock(EmailThemingService::class)
+            $this->createMock(EmailThemingService::class),
+            $this->createMock(UpstreamFreshnessService::class)
         );
 
         $response = $controller->setTokenSet(tokenSet: 'amsterdam');

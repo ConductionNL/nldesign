@@ -20,6 +20,7 @@ use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
+use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\IConfig;
@@ -52,7 +53,8 @@ class SettingsControllerTest extends TestCase
             $this->createMock(AppThemingService::class),
             $this->createMock(ComplianceReportService::class),
             $this->createMock(ThemingAuditService::class),
-            $emailThemingService
+            $emailThemingService,
+            $this->createMock(UpstreamFreshnessService::class)
         );
     }//end makeController()
 

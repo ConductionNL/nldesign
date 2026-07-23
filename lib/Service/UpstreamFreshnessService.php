@@ -38,6 +38,12 @@ use Psr\Log\LoggerInterface;
  * state untouched and never throwing out of {@see runCheck()}.
  *
  * @spec openspec/specs/upstream-freshness/spec.md
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity) - The branching IS the safety contract:
+ * opt-in gate, ETag conditional-GET, 304 steady state, request cap, per-set attribution with
+ * graceful fallback to a generic notice, per-(set, version) dismissal, and a silent-degradation
+ * path for every failure mode (offline, timeout, malformed body). Each branch is individually
+ * covered by a unit test; collapsing them would trade auditable failure handling for a lower score.
  */
 class UpstreamFreshnessService
 {
