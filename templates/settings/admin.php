@@ -187,6 +187,31 @@ style('nldesign', 'admin');
 		<p class="settings-hint"><?php p($l->t('Loading token editor…')); ?></p>
 	</div>
 
+	<!-- Theming audit log — who changed which theming setting, from what, to
+	     what, and when. Evidence for accessibility/WCAG-EM audits. -->
+	<div class="nldesign-audit-log" id="nldesign-audit-log" style="margin-top:2em">
+		<h3><?php p($l->t('Theming audit log')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('A record of theming configuration changes: who changed what, from what, to what, and when. Useful evidence for accessibility audits.')); ?>
+		</p>
+		<table class="nldesign-audit-table" id="nldesign-audit-table">
+			<thead>
+				<tr>
+					<th><?php p($l->t('Timestamp')); ?></th>
+					<th><?php p($l->t('User')); ?></th>
+					<th><?php p($l->t('Action')); ?></th>
+					<th><?php p($l->t('Details')); ?></th>
+				</tr>
+			</thead>
+			<tbody id="nldesign-audit-table-body">
+				<tr><td colspan="4" class="settings-hint"><?php p($l->t('Loading audit log…')); ?></td></tr>
+			</tbody>
+		</table>
+		<button type="button" id="nldesign-audit-download-btn" class="button">
+			<?php p($l->t('Download full log')); ?>
+		</button>
+	</div>
+
 	<p class="nldesign-info">
 		<a href="https://nldesignsystem.nl/" target="_blank" rel="noopener noreferrer">
 			<?php p($l->t('Learn more about NL Design System')); ?> ↗

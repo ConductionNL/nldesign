@@ -94,7 +94,19 @@
         "{themed} of {total} apps themed": "{themed} of {total} apps themed",
         "Search apps": "Search apps",
         "Search apps…": "Search apps…",
-        "Reset {label} to default": "Reset {label} to default"
+        "Reset {label} to default": "Reset {label} to default",
+        "Failed to load the audit log.": "Laden van het auditlog mislukt.",
+        "from {value}": "van {value}",
+        "No theming changes have been recorded yet.": "Er zijn nog geen thema-wijzigingen vastgelegd.",
+        "to {value}": "naar {value}",
+        "Theming audit log": "Thema-auditlog",
+        "A record of theming configuration changes: who changed what, from what, to what, and when. Useful evidence for accessibility audits.": "Een overzicht van thema-configuratiewijzigingen: wie wat wijzigde, van wat, naar wat, en wanneer. Nuttig bewijs voor toegankelijkheidsaudits.",
+        "Timestamp": "Tijdstip",
+        "User": "Gebruiker",
+        "Action": "Actie",
+        "Details": "Details",
+        "Loading audit log…": "Auditlog laden…",
+        "Download full log": "Volledig log downloaden"
     },
     "plurals": {}
 }
