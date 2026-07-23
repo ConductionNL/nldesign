@@ -18,6 +18,9 @@ use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\FontService;
 use OCA\NLDesign\Service\GroupThemingService;
+use OCA\NLDesign\Service\ThemePreviewService;
+use OCP\AppFramework\Services\IInitialState;
+use OCP\IUserSession;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -78,6 +81,27 @@ class CssInjectionServiceTest extends TestCase
     private $groupThemingService;
 
     /**
+     * The theme preview service mock.
+     *
+     * @var ThemePreviewService&MockObject
+     */
+    private $previewService;
+
+    /**
+     * The user session mock.
+     *
+     * @var IUserSession&MockObject
+     */
+    private $userSession;
+
+    /**
+     * The initial state mock (preview banner payload).
+     *
+     * @var IInitialState&MockObject
+     */
+    private $initialState;
+
+    /**
      * Set up mocks before each test.
      */
     protected function setUp(): void
@@ -89,6 +113,9 @@ class CssInjectionServiceTest extends TestCase
         $this->fontService            = $this->createMock(FontService::class);
         $this->urlGenerator           = $this->createMock(IURLGenerator::class);
         $this->groupThemingService    = $this->createMock(GroupThemingService::class);
+        $this->previewService         = $this->createMock(ThemePreviewService::class);
+        $this->userSession            = $this->createMock(IUserSession::class);
+        $this->initialState           = $this->createMock(IInitialState::class);
 
         // Default: no group mapping configured, so the resolver returns the
         // plain appconfig token set — byte-identical to pre-per-group behaviour.
@@ -126,9 +153,15 @@ class CssInjectionServiceTest extends TestCase
                     $this->fontService,
                     $this->urlGenerator,
                     $this->groupThemingService,
+                    $this->previewService,
+                    $this->userSession,
+                    $this->initialState,
                 ]
             )
-            ->onlyMethods(['emitStyle', 'emitFontLink'])
+            // injectPreviewBanner is stubbed out: the banner has its own
+            // dedicated coverage, and these tests assert the stylesheet
+            // cascade only.
+            ->onlyMethods(['emitStyle', 'emitFontLink', 'injectPreviewBanner'])
             ->getMock();
 
         $service->method('emitStyle')->willReturnCallback(

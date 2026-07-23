@@ -98,17 +98,19 @@ class GroupThemingService
     /**
      * Constructor.
      *
-     * @param IConfig         $config          The config service.
-     * @param IGroupManager   $groupManager    The group manager, for membership and existence checks.
-     * @param IUserSession    $userSession     The user session, to resolve the requesting user.
-     * @param TokenSetService $tokenSetService The token set service, for availability checks.
-     * @param ICacheFactory   $cacheFactory    Creates the distributed per-user resolution cache.
+     * @param IConfig             $config          The config service.
+     * @param IGroupManager       $groupManager    The group manager, for membership and existence checks.
+     * @param IUserSession        $userSession     The user session, to resolve the requesting user.
+     * @param TokenSetService     $tokenSetService The token set service, for availability checks.
+     * @param ThemePreviewService $previewService  The admin theme-preview resolver (wins over group mapping).
+     * @param ICacheFactory       $cacheFactory    Creates the distributed per-user resolution cache.
      */
     public function __construct(
         private readonly IConfig $config,
         private readonly IGroupManager $groupManager,
         private readonly IUserSession $userSession,
         private readonly TokenSetService $tokenSetService,
+        private readonly ThemePreviewService $previewService,
         ICacheFactory $cacheFactory
     ) {
         $this->cache = $cacheFactory->createDistributed(prefix: 'nldesign-group-theming');
@@ -387,19 +389,34 @@ class GroupThemingService
      * The active admin theme preview's token set for the requesting
      * session, if any.
      *
-     * Integration point for change `theme-preview-workflow`: once that
-     * change's `ThemePreviewService` lands, this method (or its caller) is
-     * wired to consult it. Returns null unconditionally until then, which
-     * makes step 1 of the resolution precedence a correct no-op rather than
-     * dead code — group mapping and the instance default already behave
-     * exactly as specified with no preview feature installed.
+     * Wired to `ThemePreviewService` (change `theme-preview-workflow`): an
+     * admin previewing a token set sees it in their own session only, ahead
+     * of any group mapping. Returns null for everyone else, so group mapping
+     * and the instance default behave exactly as specified.
      *
-     * @return string|null Always null today.
+     * Fails open (null) on any error — a broken preview lookup must never
+     * cost a normal user their theme.
+     *
+     * @return string|null The previewed token set, or null when no preview is active.
      *
      * @spec openspec/specs/per-group-theming/spec.md
+     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-isolation
      */
     protected function getActivePreviewSet(): ?string
     {
+        try {
+            $preview = $this->previewService->resolveEffectiveTokenSet(
+                userSession: $this->userSession,
+                activeTokenSet: $this->getDefaultTokenSet()
+            );
+
+            if ($preview['previewActive'] === true) {
+                return $preview['tokenSet'];
+            }
+        } catch (\Throwable $e) {
+            return null;
+        }
+
         return null;
     }//end getActivePreviewSet()
 

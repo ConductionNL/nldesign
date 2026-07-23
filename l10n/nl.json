@@ -188,7 +188,15 @@
         "Configuration imported successfully. Reloading…": "Configuratie succesvol geïmporteerd. Pagina wordt herladen…",
         "Configuration imported successfully.": "Configuratie succesvol geïmporteerd.",
         "Import failed — nothing was applied:": "Import mislukt — er is niets toegepast:",
-        "Configuration import failed.": "Importeren van configuratie mislukt."
+        "Configuration import failed.": "Importeren van configuratie mislukt.",
+        "Discard": "Verwerpen",
+        "Failed to discard theme preview.": "Verwerpen van thema-voorbeeld mislukt.",
+        "Failed to start theme preview.": "Starten van thema-voorbeeld mislukt.",
+        "Preview: {name} — this is only visible to you": "Voorbeeld: {name} — alleen zichtbaar voor u",
+        "Publish": "Publiceren",
+        "Theme published instance-wide. Reload the page to see changes.": "Thema instantiebreed gepubliceerd. Herlaad de pagina om de wijzigingen te zien.",
+        "Preview in my session": "Voorbeeld bekijken in mijn sessie",
+        "Previewing \"{name}\" in your session only.": "U bekijkt een voorbeeld van \"{name}\", alleen zichtbaar voor u."
     },
     "plurals": {}
 }

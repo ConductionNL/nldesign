@@ -188,7 +188,15 @@
         "Configuration imported successfully. Reloading…": "Configuration imported successfully. Reloading…",
         "Configuration imported successfully.": "Configuration imported successfully.",
         "Import failed — nothing was applied:": "Import failed — nothing was applied:",
-        "Configuration import failed.": "Configuration import failed."
+        "Configuration import failed.": "Configuration import failed.",
+        "Discard": "Discard",
+        "Failed to discard theme preview.": "Failed to discard theme preview.",
+        "Failed to start theme preview.": "Failed to start theme preview.",
+        "Preview: {name} — this is only visible to you": "Preview: {name} — this is only visible to you",
+        "Publish": "Publish",
+        "Theme published instance-wide. Reload the page to see changes.": "Theme published instance-wide. Reload the page to see changes.",
+        "Preview in my session": "Preview in my session",
+        "Previewing \"{name}\" in your session only.": "Previewing \"{name}\" in your session only."
     },
     "plurals": {}
 }

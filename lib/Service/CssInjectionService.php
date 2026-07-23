@@ -22,8 +22,10 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Service;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
 use OCP\IURLGenerator;
+use OCP\IUserSession;
 
 /**
  * Injects the nldesign stylesheet cascade for a themed render context.
@@ -109,6 +111,27 @@ class CssInjectionService
     private GroupThemingService $groupThemingService;
 
     /**
+     * Resolves whether the requesting user has an active theme preview.
+     *
+     * @var ThemePreviewService
+     */
+    private ThemePreviewService $previewService;
+
+    /**
+     * The user session, to resolve the previewing user.
+     *
+     * @var IUserSession
+     */
+    private IUserSession $userSession;
+
+    /**
+     * Provides the preview banner's initial state to the frontend.
+     *
+     * @var IInitialState
+     */
+    private IInitialState $initialState;
+
+    /**
      * Constructor.
      *
      * @param IConfig                $config              The config service.
@@ -117,6 +140,14 @@ class CssInjectionService
      * @param FontService            $fontService         The custom font resolver.
      * @param IURLGenerator          $urlGenerator        The URL generator.
      * @param GroupThemingService    $groupThemingService The per-group token-set resolver.
+     * @param ThemePreviewService    $previewService      The admin theme-preview resolver.
+     * @param IUserSession           $userSession         The user session.
+     * @param IInitialState          $initialState        Provides the preview banner's initial state.
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList) - Each dependency is one layer of the
+     * documented injection cascade (config, design system, overrides, fonts, URLs, per-group
+     * resolution, preview). NC's DI container supplies them; a parameter object would only
+     * rename the coupling.
      */
     public function __construct(
         IConfig $config,
@@ -124,7 +155,10 @@ class CssInjectionService
         CustomOverridesService $overridesService,
         FontService $fontService,
         IURLGenerator $urlGenerator,
-        GroupThemingService $groupThemingService
+        GroupThemingService $groupThemingService,
+        ThemePreviewService $previewService,
+        IUserSession $userSession,
+        IInitialState $initialState
     ) {
         $this->config = $config;
         $this->designSystemService = $designSystemService;
@@ -132,6 +166,9 @@ class CssInjectionService
         $this->fontService         = $fontService;
         $this->urlGenerator        = $urlGenerator;
         $this->groupThemingService = $groupThemingService;
+        $this->previewService      = $previewService;
+        $this->userSession         = $userSession;
+        $this->initialState        = $initialState;
     }//end __construct()
 
     /**
@@ -213,7 +250,70 @@ class CssInjectionService
         if ($showMenuLabels === true) {
             $this->emitStyle(file: 'show-menu-labels');
         }
+
+        // 6. Preview banner — ONLY when a theme preview is active for this
+        // request's user. Every other user (and every anonymous render) pays
+        // nothing: no script, no style, no initial state.
+        $this->injectPreviewBanner(tokenSet: $tokenSet, tokenSetMeta: $tokenSetMeta);
     }//end inject()
+
+    /**
+     * Load the preview banner assets and provide its initial state when the
+     * requesting user has an active theme preview.
+     *
+     * Fails open (renders nothing) on any error — a broken banner must never
+     * break the page it annotates.
+     *
+     * @param string               $tokenSet     The previewed token set id.
+     * @param array<string, mixed> $tokenSetMeta The token set metadata (for its display name).
+     *
+     * @return void
+     *
+     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
+     */
+    protected function injectPreviewBanner(string $tokenSet, array $tokenSetMeta): void
+    {
+        try {
+            $effective = $this->previewService->resolveEffectiveTokenSet(
+                userSession: $this->userSession,
+                activeTokenSet: $tokenSet
+            );
+
+            if ($effective['previewActive'] !== true) {
+                return;
+            }
+
+            $this->emitPreviewAssets();
+            $this->initialState->provideInitialState(
+                'preview',
+                [
+                    'tokenSet'  => $tokenSet,
+                    'name'      => ($tokenSetMeta['name'] ?? $tokenSet),
+                    'expiresAt' => ($effective['expiresAt'] ?? null),
+                ]
+            );
+        } catch (\Throwable $e) {
+            return;
+        }
+    }//end injectPreviewBanner()
+
+    /**
+     * Emit the preview banner's script and stylesheet.
+     *
+     * Isolated as a seam so unit tests can assert banner injection without a
+     * Nextcloud bootstrap (see the emitStyle()/emitFontLink() rationale).
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util is the Nextcloud API for asset injection.
+     *
+     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
+     */
+    protected function emitPreviewAssets(): void
+    {
+        \OCP\Util::addScript(application: Application::APP_ID, file: 'preview-banner');
+        \OCP\Util::addStyle(application: Application::APP_ID, file: 'preview-banner');
+    }//end emitPreviewAssets()
 
     /**
      * Whether a render context must receive nldesign CSS.

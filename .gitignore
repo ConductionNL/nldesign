@@ -26,6 +26,7 @@
 /js/*
 !/js/admin.js
 !/js/lib/
+!/js/preview-banner.js
 /build/
 /dist/
 
