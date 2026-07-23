@@ -182,13 +182,7 @@ class CustomTokenSetValidator
      */
     public function isForbiddenValue(string $value): bool
     {
-        $lower = strtolower($value);
-
-        if (str_contains($lower, '@import') === true
-            || str_contains($lower, 'expression(') === true
-            || str_contains($lower, 'javascript:') === true
-            || str_contains($value, '<') === true
-        ) {
+        if ($this->containsDangerousKeyword(value: $value) === true) {
             return true;
         }
 
@@ -198,36 +192,87 @@ class CustomTokenSetValidator
         // terminator.
         $withoutUrlPayloads = preg_replace('/url\(\s*([\'"]?).*?\1\s*\)/i', '', $value);
 
-        if (str_contains($withoutUrlPayloads, '{') === true
-            || str_contains($withoutUrlPayloads, '}') === true
-            || str_contains($withoutUrlPayloads, ';') === true
-            || str_contains($withoutUrlPayloads, '/*') === true
-            || str_contains($withoutUrlPayloads, '*/') === true
-        ) {
+        if ($this->containsInjectionCharacter(value: $withoutUrlPayloads) === true) {
             return true;
         }
 
-        // Inspect every url(...) occurrence.
-        if (preg_match_all('/url\(\s*([\'"]?)(.*?)\1\s*\)/i', $value, $urls, PREG_SET_ORDER) > 0) {
-            foreach ($urls as $url) {
-                $target = trim($url[2]);
+        return $this->hasDisallowedUrlTarget(value: $value);
+    }//end isForbiddenValue()
 
-                // Data image URIs (svg+xml, png, …) are allowed.
-                if (preg_match('#^data:image/(svg\+xml|png|jpeg|gif|webp)#i', $target) === 1) {
-                    continue;
-                }
+    /**
+     * Determine whether a value contains a keyword-based dangerous construct:
+     * `@import`, `expression(`, `javascript:`, or raw markup (`<`).
+     *
+     * @param string $value The declaration value.
+     *
+     * @return bool True when a dangerous keyword is present.
+     *
+     * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-1
+     */
+    private function containsDangerousKeyword(string $value): bool
+    {
+        $lower = strtolower($value);
 
-                // A scheme or protocol-relative or host reference is forbidden.
-                if (preg_match('#^([a-z][a-z0-9+.-]*:|//)#i', $target) === 1) {
-                    return true;
-                }
+        return str_contains($lower, '@import') === true
+            || str_contains($lower, 'expression(') === true
+            || str_contains($lower, 'javascript:') === true
+            || str_contains($value, '<') === true;
+    }//end containsDangerousKeyword()
 
-                // Bare relative paths (../img/..., img/...) are allowed.
+    /**
+     * Determine whether a value (with any url(...) payload already stripped)
+     * contains a CSS injection character: `{`, `}`, `;`, `/*`, or `*​/`.
+     *
+     * @param string $value The value with url(...) payloads stripped.
+     *
+     * @return bool True when an injection character is present.
+     *
+     * @spec openspec/changes/harden-custom-token-set-value-validation/tasks.md#task-1
+     */
+    private function containsInjectionCharacter(string $value): bool
+    {
+        return str_contains($value, '{') === true
+            || str_contains($value, '}') === true
+            || str_contains($value, ';') === true
+            || str_contains($value, '/*') === true
+            || str_contains($value, '*/') === true;
+    }//end containsInjectionCharacter()
+
+    /**
+     * Determine whether any url(...) occurrence in the value targets a
+     * disallowed scheme, protocol-relative reference, or host. Relative
+     * paths and permitted data:image/* URIs are not disallowed.
+     *
+     * @param string $value The declaration value.
+     *
+     * @return bool True when a url(...) target is disallowed.
+     *
+     * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.1
+     */
+    private function hasDisallowedUrlTarget(string $value): bool
+    {
+        if (preg_match_all('/url\(\s*([\'"]?)(.*?)\1\s*\)/i', $value, $urls, PREG_SET_ORDER) === 0) {
+            return false;
+        }
+
+        foreach ($urls as $url) {
+            $target = trim($url[2]);
+
+            // Data image URIs (svg+xml, png, …) are allowed.
+            if (preg_match('#^data:image/(svg\+xml|png|jpeg|gif|webp)#i', $target) === 1) {
+                continue;
             }
+
+            // A scheme or protocol-relative or host reference is forbidden.
+            if (preg_match('#^([a-z][a-z0-9+.-]*:|//)#i', $target) === 1) {
+                return true;
+            }
+
+            // Bare relative paths (../img/..., img/...) are allowed.
         }
 
         return false;
-    }//end isForbiddenValue()
+    }//end hasDisallowedUrlTarget()
 
     /**
      * Re-serialise accepted declarations into a canonical CSS file body.
