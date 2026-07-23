@@ -149,7 +149,12 @@ class Capabilities implements IPublicCapability
     {
         $available = $this->tokenSetService->getAvailableTokenSets();
         $byId      = array_column($available, null, 'id');
-        $entry     = ($byId[$tokenSetId] ?? null);
+
+        // The manifest is external JSON: today's entries carry no `version`
+        // key (upstream-token-freshness adds provenance later), so treat the
+        // entry as an open shape rather than the declared fixed shape.
+        /** @var array<string, mixed>|null $entry */
+        $entry = ($byId[$tokenSetId] ?? null);
 
         return [
             'id'      => $tokenSetId,
