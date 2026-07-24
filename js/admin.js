@@ -15,6 +15,35 @@ function nldesignAdminMain() {
 	// `|| {}` fallback keeps admin.js working even if the helper script is absent.
 	var TT = (typeof window !== 'undefined' && window.NldesignTokenTransforms) || {};
 
+	/**
+	 * Show a transient toast, never breaking the flow that raised it.
+	 *
+	 * `OC.Notification` was REMOVED in Nextcloud 34 (toasts live in
+	 * `OCP.Toast` / @nextcloud/dialogs now), so the old
+	 * `notify()` call throws a TypeError. Because those
+	 * calls sit inside `.then()` handlers, the throw aborted the rest of the
+	 * handler — e.g. an upload succeeded server-side but `loadCustomTokenSets()`
+	 * never ran, so the list silently never refreshed.
+	 *
+	 * A purely cosmetic notification must never be able to break a functional
+	 * flow, so every failure path here is swallowed and downgraded to a log.
+	 */
+	function notify(message) {
+		try {
+			if (window.OCP && OCP.Toast && typeof OCP.Toast.message === 'function') {
+				OCP.Toast.message(message);
+				return;
+			}
+			if (window.OC && OC.Notification && typeof OC.Notification.showTemporary === 'function') {
+				notify(message);
+				return;
+			}
+		} catch (e) {
+			// Fall through to the console fallback below.
+		}
+		console.info('[nldesign] ' + message);
+	}
+
 	var settingsEl = document.getElementById('nldesign-settings');
 	var tokenSetSelect = document.getElementById('nldesign-token-set-select');
 	var hideSloganCheckbox = document.getElementById('nldesign-hide-slogan');
@@ -193,13 +222,13 @@ function nldesignAdminMain() {
 					window.location.reload();
 				} else {
 					previewBtn.disabled = false;
-					OC.Notification.showTemporary(t('nldesign', 'Failed to start theme preview.'));
+					notify(t('nldesign', 'Failed to start theme preview.'));
 				}
 			})
 			.catch(function(error) {
 				previewBtn.disabled = false;
 				console.error('Error starting theme preview:', error);
-				OC.Notification.showTemporary(t('nldesign', 'Failed to start theme preview.'));
+				notify(t('nldesign', 'Failed to start theme preview.'));
 			});
 		});
 	}
@@ -219,7 +248,7 @@ function nldesignAdminMain() {
 			.catch(function(error) {
 				previewDiscardBtn.disabled = false;
 				console.error('Error discarding theme preview:', error);
-				OC.Notification.showTemporary(t('nldesign', 'Failed to discard theme preview.'));
+				notify(t('nldesign', 'Failed to discard theme preview.'));
 			});
 		});
 	}
@@ -261,7 +290,7 @@ function nldesignAdminMain() {
 		commitTokenSetChange(tokenSet, publishMode === true)
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(publishMode === true
+				notify(publishMode === true
 					? t('nldesign', 'Theme published instance-wide. Reload the page to see changes.')
 					: t('nldesign', 'Theme updated successfully. reload the page to see changes.'));
 
@@ -271,12 +300,12 @@ function nldesignAdminMain() {
 					checkAndShowThemingDialog(tsData);
 				}
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to update theme.'));
+				notify(t('nldesign', 'Failed to update theme.'));
 			}
 		})
 		.catch(function(error) {
 			console.error('Error saving token set:', error);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to update theme.'));
+			notify(t('nldesign', 'Failed to update theme.'));
 		});
 	}
 
@@ -469,18 +498,18 @@ function nldesignAdminMain() {
 			.then(function(data) {
 				closeDialogOverlay(overlay);
 				if (data.status === 'ok') {
-					OC.Notification.showTemporary(t('nldesign', 'Nextcloud theming updated successfully. reloading page...'));
+					notify(t('nldesign', 'Nextcloud theming updated successfully. reloading page...'));
 					setTimeout(function() {
 						window.location.reload();
 					}, 1500);
 				} else {
-					OC.Notification.showTemporary(t('nldesign', 'Failed to update Nextcloud theming:') + (data.error || ''));
+					notify(t('nldesign', 'Failed to update Nextcloud theming:') + (data.error || ''));
 				}
 			})
 			.catch(function(error) {
 				closeDialogOverlay(overlay);
 				console.error('Error updating theming:', error);
-				OC.Notification.showTemporary(t('nldesign', 'Failed to update Nextcloud theming.'));
+				notify(t('nldesign', 'Failed to update Nextcloud theming.'));
 			});
 		});
 	}
@@ -652,14 +681,14 @@ function nldesignAdminMain() {
 		.then(function(response) { return response.json(); })
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
+				notify(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+				notify(t('nldesign', 'Failed to save setting.'));
 			}
 		})
 		.catch(function(error) {
 			console.error('Error saving dark variants setting:', error);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+			notify(t('nldesign', 'Failed to save setting.'));
 		});
 	}
 
@@ -678,14 +707,14 @@ function nldesignAdminMain() {
 		.then(function(response) { return response.json(); })
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. reload the login page to see changes.'));
+				notify(t('nldesign', 'Setting saved successfully. reload the login page to see changes.'));
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+				notify(t('nldesign', 'Failed to save setting.'));
 			}
 		})
 		.catch(function(error) {
 			console.error('Error saving slogan setting:', error);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+			notify(t('nldesign', 'Failed to save setting.'));
 		});
 	}
 
@@ -704,14 +733,14 @@ function nldesignAdminMain() {
 		.then(function(response) { return response.json(); })
 		.then(function(data) {
 			if (data.status === 'ok') {
-				OC.Notification.showTemporary(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
+				notify(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+				notify(t('nldesign', 'Failed to save setting.'));
 			}
 		})
 		.catch(function(error) {
 			console.error('Error saving menu labels setting:', error);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save setting.'));
+			notify(t('nldesign', 'Failed to save setting.'));
 		});
 	}
 
@@ -1016,9 +1045,9 @@ function nldesignAdminMain() {
 			if (data.status === 'ok') {
 				Object.keys(tokenEditorState).forEach(function(k) { tokenEditorState[k].isDirty = false; });
 				updateSaveStatus();
-				OC.Notification.showTemporary(t('nldesign', 'Token overrides saved.'));
+				notify(t('nldesign', 'Token overrides saved.'));
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to save overrides:') + (data.error || ''));
+				notify(t('nldesign', 'Failed to save overrides:') + (data.error || ''));
 			}
 		})
 		.catch(function(err) {
@@ -1026,7 +1055,7 @@ function nldesignAdminMain() {
 				btn.disabled = false;
 			}
 			console.error('Error saving overrides:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save overrides.'));
+			notify(t('nldesign', 'Failed to save overrides.'));
 		});
 	}
 
@@ -1061,12 +1090,12 @@ function nldesignAdminMain() {
 				}
 				initTokenEditor();
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Import failed:') + (data.error || ''));
+				notify(t('nldesign', 'Import failed:') + (data.error || ''));
 			}
 		})
 		.catch(function(err) {
 			console.error('Error importing overrides:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Import failed.'));
+			notify(t('nldesign', 'Import failed.'));
 		});
 	}
 
@@ -1243,14 +1272,14 @@ function nldesignAdminMain() {
 				if (tsData.status === 'ok' && tokenSetSelect !== null && publishMode !== true) {
 					tokenSetSelect.dataset.previousValue = newTokenSetId;
 				}
-				OC.Notification.showTemporary(t('nldesign', 'Token overrides applied.'));
+				notify(t('nldesign', 'Token overrides applied.'));
 				initTokenEditor();
 			})
 			.catch(function(err) {
 				btn.disabled    = false;
 				btn.textContent = t('nldesign', 'Apply selected');
 				console.error('Error applying token set:', err);
-				OC.Notification.showTemporary(t('nldesign', 'Failed to apply token set.'));
+				notify(t('nldesign', 'Failed to apply token set.'));
 			});
 		});
 	}
@@ -1469,14 +1498,14 @@ function nldesignAdminMain() {
 				if (feedback !== null) {
 					feedback.textContent = t('nldesign', 'App theming saved. Reload an affected app to see changes.');
 				}
-				OC.Notification.showTemporary(t('nldesign', 'App theming saved. Reload an affected app to see changes.'));
+				notify(t('nldesign', 'App theming saved. Reload an affected app to see changes.'));
 			} else {
-				OC.Notification.showTemporary(t('nldesign', 'Failed to save app theming.'));
+				notify(t('nldesign', 'Failed to save app theming.'));
 			}
 		})
 		.catch(function(err) {
 			console.error('Error saving app theming:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save app theming.'));
+			notify(t('nldesign', 'Failed to save app theming.'));
 		});
 	}
 
@@ -1686,7 +1715,7 @@ function nldesignAdminMain() {
 				if (feedback !== null) {
 					feedback.textContent = t('nldesign', 'Group theming saved.');
 				}
-				OC.Notification.showTemporary(t('nldesign', 'Group theming saved.'));
+				notify(t('nldesign', 'Group theming saved.'));
 				return;
 			}
 
@@ -1701,7 +1730,7 @@ function nldesignAdminMain() {
 				if (feedback !== null) {
 					feedback.textContent = message;
 				}
-				OC.Notification.showTemporary(message);
+				notify(message);
 				// Rows are left exactly as the admin edited them — no silent
 				// state reset — so the offending entry stays editable.
 				return;
@@ -1710,11 +1739,11 @@ function nldesignAdminMain() {
 			if (feedback !== null) {
 				feedback.textContent = t('nldesign', 'Failed to save group theming.');
 			}
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save group theming.'));
+			notify(t('nldesign', 'Failed to save group theming.'));
 		})
 		.catch(function(err) {
 			console.error('Error saving group theming:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save group theming.'));
+			notify(t('nldesign', 'Failed to save group theming.'));
 		});
 	}
 
@@ -1759,7 +1788,7 @@ function nldesignAdminMain() {
 
 		uploadBtn.addEventListener('click', function() {
 			if (nameInput.value.trim() === '') {
-				OC.Notification.showTemporary(t('nldesign', 'Enter a token set name first.'));
+				notify(t('nldesign', 'Enter a token set name first.'));
 				nameInput.focus();
 				return;
 			}
@@ -1878,7 +1907,7 @@ function nldesignAdminMain() {
 					resultEl.appendChild(document.createTextNode(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '')));
 					resultEl.appendChild(buildDiagnosticsFragment(res.data));
 				}
-				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
+				notify(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
 				return;
 			}
 			var msg = t('nldesign', '{imported} tokens imported, {skipped} skipped.')
@@ -1895,12 +1924,12 @@ function nldesignAdminMain() {
 				resultEl.appendChild(document.createTextNode(msg));
 				resultEl.appendChild(buildDiagnosticsFragment(res.data));
 			}
-			OC.Notification.showTemporary(t('nldesign', 'Token set uploaded. Reload the page to apply it.'));
+			notify(t('nldesign', 'Token set uploaded. Reload the page to apply it.'));
 			loadCustomTokenSets();
 		})
 		.catch(function(err) {
 			console.error('Error uploading custom token set:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Upload failed.'));
+			notify(t('nldesign', 'Upload failed.'));
 		});
 	}
 
@@ -1995,15 +2024,15 @@ function nldesignAdminMain() {
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
 					if (data && data.status === 'ok') {
-						OC.Notification.showTemporary(t('nldesign', 'Custom token set deleted. Reload the page to refresh the dropdown.'));
+						notify(t('nldesign', 'Custom token set deleted. Reload the page to refresh the dropdown.'));
 						loadCustomTokenSets();
 					} else {
-						OC.Notification.showTemporary(t('nldesign', 'Failed to delete custom token set.'));
+						notify(t('nldesign', 'Failed to delete custom token set.'));
 					}
 				})
 				.catch(function(err) {
 					console.error('Error deleting custom token set:', err);
-					OC.Notification.showTemporary(t('nldesign', 'Failed to delete custom token set.'));
+					notify(t('nldesign', 'Failed to delete custom token set.'));
 				});
 			},
 			true
@@ -2034,7 +2063,7 @@ function nldesignAdminMain() {
 
 		uploadBtn.addEventListener('click', function() {
 			if (nameInput.value.trim() === '') {
-				OC.Notification.showTemporary(t('nldesign', 'Enter a font display name first.'));
+				notify(t('nldesign', 'Enter a font display name first.'));
 				nameInput.focus();
 				return;
 			}
@@ -2074,19 +2103,19 @@ function nldesignAdminMain() {
 				if (resultEl !== null) {
 					resultEl.textContent = t('nldesign', 'Upload failed:') + ' ' + (res.data.error || '');
 				}
-				OC.Notification.showTemporary(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
+				notify(t('nldesign', 'Upload failed:') + ' ' + (res.data.error || ''));
 				return;
 			}
 			if (resultEl !== null) {
 				resultEl.textContent = '';
 				resultEl.style.display = 'none';
 			}
-			OC.Notification.showTemporary(t('nldesign', 'Font uploaded. Reload the page to apply it.'));
+			notify(t('nldesign', 'Font uploaded. Reload the page to apply it.'));
 			loadFonts();
 		})
 		.catch(function(err) {
 			console.error('Error uploading font:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Upload failed.'));
+			notify(t('nldesign', 'Upload failed.'));
 		});
 	}
 
@@ -2165,15 +2194,15 @@ function nldesignAdminMain() {
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
 					if (data && data.status === 'ok') {
-						OC.Notification.showTemporary(t('nldesign', 'Font deleted. Reload the page to refresh the styling.'));
+						notify(t('nldesign', 'Font deleted. Reload the page to refresh the styling.'));
 						loadFonts();
 					} else {
-						OC.Notification.showTemporary(t('nldesign', 'Failed to delete font.'));
+						notify(t('nldesign', 'Failed to delete font.'));
 					}
 				})
 				.catch(function(err) {
 					console.error('Error deleting font:', err);
-					OC.Notification.showTemporary(t('nldesign', 'Failed to delete font.'));
+					notify(t('nldesign', 'Failed to delete font.'));
 				});
 			},
 			true
@@ -2323,7 +2352,7 @@ function nldesignAdminMain() {
 		.then(function(result) {
 			if (result.status === 200 && result.data.applied === true) {
 				showConfigBundleResult(t('nldesign', 'Configuration imported successfully. Reloading…'));
-				OC.Notification.showTemporary(t('nldesign', 'Configuration imported successfully.'));
+				notify(t('nldesign', 'Configuration imported successfully.'));
 				window.setTimeout(function() { window.location.reload(); }, 1200);
 				return;
 			}
@@ -2335,12 +2364,12 @@ function nldesignAdminMain() {
 			showConfigBundleResult(
 				t('nldesign', 'Import failed — nothing was applied:') + ' ' + lines.join('; ')
 			);
-			OC.Notification.showTemporary(t('nldesign', 'Configuration import failed.'));
+			notify(t('nldesign', 'Configuration import failed.'));
 		})
 		.catch(function(err) {
 			console.error('Error importing configuration bundle:', err);
 			showConfigBundleResult(t('nldesign', 'Import failed.'));
-			OC.Notification.showTemporary(t('nldesign', 'Configuration import failed.'));
+			notify(t('nldesign', 'Configuration import failed.'));
 		});
 	}
 
@@ -2462,7 +2491,7 @@ function nldesignAdminMain() {
 				if (feedback !== null) {
 					feedback.textContent = t('nldesign', 'Email template settings saved.');
 				}
-				OC.Notification.showTemporary(t('nldesign', 'Email template settings saved.'));
+				notify(t('nldesign', 'Email template settings saved.'));
 				return;
 			}
 
@@ -2476,7 +2505,7 @@ function nldesignAdminMain() {
 					if (enableCode !== null && data.occEnable) { enableCode.textContent = data.occEnable; }
 					if (disableCode !== null && data.occDisable) { disableCode.textContent = data.occDisable; }
 				}
-				OC.Notification.showTemporary(t('nldesign', 'config.php is read-only; run the shown occ command manually.'));
+				notify(t('nldesign', 'config.php is read-only; run the shown occ command manually.'));
 				return;
 			}
 
@@ -2487,20 +2516,20 @@ function nldesignAdminMain() {
 				if (foreignNote !== null) {
 					foreignNote.textContent = t('nldesign', 'A different mail template class is already configured ({class}); nldesign will not overwrite it.', { class: data.class });
 				}
-				OC.Notification.showTemporary(t('nldesign', 'A different mail template class is already configured.'));
+				notify(t('nldesign', 'A different mail template class is already configured.'));
 				return;
 			}
 
 			if (data && data.error === 'invalid_footer') {
-				OC.Notification.showTemporary(t('nldesign', 'Invalid footer URL — use an http:// or https:// address.'));
+				notify(t('nldesign', 'Invalid footer URL — use an http:// or https:// address.'));
 				return;
 			}
 
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save email template settings.'));
+			notify(t('nldesign', 'Failed to save email template settings.'));
 		})
 		.catch(function(err) {
 			console.error('Error saving email theming:', err);
-			OC.Notification.showTemporary(t('nldesign', 'Failed to save email template settings.'));
+			notify(t('nldesign', 'Failed to save email template settings.'));
 		});
 	}
 
@@ -2628,7 +2657,7 @@ function nldesignAdminMain() {
 			})
 			.then(function(r) { return r.json(); })
 			.then(function() {
-				OC.Notification.showTemporary(enabled
+				notify(enabled
 					? t('nldesign', 'Upstream token update checks enabled.')
 					: t('nldesign', 'Upstream token update checks disabled.'));
 				loadUpstreamFreshness();

@@ -62,7 +62,15 @@
 			.catch(function(err) {
 				console.error('Error discarding theme preview:', err);
 				discardBtn.disabled = false;
-				OC.Notification.showTemporary(t('nldesign', 'Failed to discard theme preview.'));
+				// OC.Notification was removed in NC 34; guard so a missing
+				// toast API can never throw on top of the original failure.
+				try {
+					if (window.OCP && OCP.Toast && typeof OCP.Toast.message === 'function') {
+						OCP.Toast.message(t('nldesign', 'Failed to discard theme preview.'));
+					}
+				} catch (e) {
+					console.info('[nldesign] Failed to discard theme preview.');
+				}
 			});
 		});
 		actions.appendChild(discardBtn);
