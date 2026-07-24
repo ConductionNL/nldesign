@@ -2,11 +2,20 @@
 sidebar_position: 7
 ---
 
-# Amsterdam Design System Icons Integration
+# NL-Government Icons Integration
 
 ## Overview
 
-The NL Design app now includes **344 icons** from the Amsterdam Design System and **23 logos**, making them available for use across all Nextcloud apps.
+The NL Design app includes **1488 icons** materialized from `@conduction/nextcloud-vue`'s
+EUPL-compatible NL-government icon packs (RVO, OpenGemeenten, Gemeente Den Haag), plus
+**23 logos**, making them available for use across all Nextcloud apps.
+
+**The proprietary City-of-Amsterdam icon set (`@amsterdam/design-system-assets`) is NOT
+bundled.** Its `LICENSE.md` marks the set proprietary to the City of Amsterdam,
+restricted to contexts where Amsterdam is the main communicator — nldesign shipping it to
+arbitrary Dutch-government instances was exactly the redistribution its notice forbids.
+It was removed; see `CHANGELOG.md` for the full list of removed filenames and their
+77 one-release legacy-name aliases.
 
 ## Availability and fallbacks
 
@@ -14,13 +23,14 @@ These icon and logo URLs only resolve while the nldesign app is installed **and 
 
 ## Naming stability
 
-Icon and logo filenames are a public API consumed by other apps (they hardcode names like `MagnifyingGlass.svg`). Renaming or removing a bundled icon or logo is a **breaking change**: it MUST be recorded in the changelog naming both the old and new filename, and `img/ICONS.md` MUST be updated in the same change so the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Syncing a newer Amsterdam Design System release is an explicit, reviewed change — never a silent regenerate.
+Icon and logo filenames are a public API consumed by other apps. Within an installed nc-vue pack version, renaming or removing a bundled icon or logo is a **breaking change**: it MUST be recorded in the changelog naming both the old and new filename, and `img/ICONS.md` MUST be regenerated in the same change so the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Upgrading the `@conduction/nextcloud-vue` dependency (which can change pack contents) MUST be an explicit, reviewed change whose diff of added/removed keys is listed in the changelog — never a silent regenerate.
 
 ## Available Icons
 
 View all available icons in the [icon documentation](https://codeberg.org/Conduction/nldesign/src/branch/main/img/ICONS.md) or browse the files in:
-- **Icons:** `img/icons/` (344 SVG files)
-- **Logos:** `img/logos/` (23 SVG files)
+- **Icons:** `img/icons/{rvo,open-gemeenten,den-haag}/` (1488 SVG files across 3 sets)
+- **Legacy aliases:** `img/icons/*.svg` (77 one-release compatibility files — see CHANGELOG.md, removed next minor release)
+- **Logos:** `img/logos/` (23 SVG files, static checked-in huisstijl assets — not build output)
 
 ## Usage in Nextcloud Apps
 
@@ -29,7 +39,7 @@ View all available icons in the [icon documentation](https://codeberg.org/Conduc
 ```php
 <?php
 // In your template file
-$iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/Bell.svg');
+$iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haag/dh-communication-message.svg');
 ?>
 <img src="<?php p($iconUrl); ?>" alt="Notifications" class="nldesign-icon" />
 ```
@@ -38,7 +48,7 @@ $iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/Bell.sv
 
 ```css
 .my-icon {
-    background-image: url('../../../nldesign/img/icons/Search.svg');
+    background-image: url('../../../nldesign/img/icons/den-haag/dh-functional-search.svg');
     background-size: contain;
     background-repeat: no-repeat;
     width: 24px;
@@ -51,28 +61,42 @@ $iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/Bell.sv
 ```php
 <?php
 // Read and output SVG content directly
-$iconPath = \OC::$SERVERROOT . '/apps/nldesign/img/icons/Bell.svg';
+$iconPath = \OC::$SERVERROOT . '/apps/nldesign/img/icons/den-haag/dh-communication-message.svg';
 if (file_exists($iconPath)) {
     echo file_get_contents($iconPath);
 }
 ?>
 ```
 
-## Icon Categories
+### Vue-based consumers
 
-The Amsterdam Design System icons are organized into several categories:
+Vue apps SHOULD import the packs from `@conduction/nextcloud-vue` directly rather than
+going through the PHP image-path contract:
 
-### Common Icons
-- **Navigation:** ArrowForward, ArrowBackward, ArrowUp, ArrowDown, House, Menu
-- **Actions:** Plus, Minus, Close, CheckMark, Pencil, Delete, Save, Download, Upload
-- **Communication:** Bell, Mail, Phone, SpeechBalloonEllipsis
-- **Interface:** Search, Filter, Settings, Info, Warning, Error
-- **Media:** Play, Pause, VolumeOn, VolumeOff, Camera, Image
+```js
+import { rvoIcons } from '@conduction/nextcloud-vue/src/icons/rvo.js'
+// <CnIconBrowser :url-icons="rvoIcons" … />
+```
 
-> Filenames follow the upstream Amsterdam Design System exactly (PascalCase). Some names differ from a generic icon vocabulary — e.g. the search icon is `Search.svg`, the home icon is `House.svg`, the edit icon is `Pencil.svg`, and the check icon is `CheckMark.svg`. Always confirm the exact filename in `img/icons/` before referencing it.
+## Icon Sets
 
-### Filled Variants
-Many icons have 'Fill' variants (e.g., `Bell.svg` and `BellFill.svg`) for different visual weights.
+| Set | Directory | Upstream | Licence | Count |
+| --- | --- | --- | --- | --- |
+| RVO / ROOS | `img/icons/rvo/` | Rijksdienst voor Ondernemend Nederland | CC0-1.0 | 1163 |
+| OpenGemeenten | `img/icons/open-gemeenten/` | OpenGemeenten Iconenset ("Line" style) | CC0-1.0 | 256 |
+| Gemeente Den Haag | `img/icons/den-haag/` | Gemeente Den Haag icon set | EUPL-1.2 | 69 |
+
+Filenames are the pack entry keys (kebab-case slugs already carrying a short set prefix,
+e.g. `rvo-zoek`, `dh-functional-search`, `og-zoeken`) — confirm the exact filename in
+`img/icons/{set}/` or `img/ICONS.md` before referencing it.
+
+### Legacy Amsterdam filename aliases (one release only)
+
+For exactly this release, 77 of the 344 removed Amsterdam filenames resolve at their old
+top-level path (`img/icons/{Name}.svg`) to a byte-identical copy of a replacement icon
+from the sets above — e.g. `Search.svg`, `Star.svg`, `House.svg`, `Mail.svg`. See
+`img/ICONS.md` for the full alias table. **These aliases are removed in the next minor
+release** — do not build new integrations against them; migrate to the set-prefixed path.
 
 ## Logos
 
@@ -85,7 +109,9 @@ The 23 logos in `img/logos/` cover government and municipal organizations. A rep
 - `vga-verzekeringen.svg` - VGA Verzekeringen
 - `rijkshuisstijl.svg`, `vng.svg`, `provincie-zuid-holland.svg`, and other municipal logos (Utrecht, Rotterdam, Leiden, Nijmegen, Tilburg, Hoorn, Epe, and more)
 
-Browse `img/logos/` for the complete set.
+Browse `img/logos/` for the complete set. These are static, checked-in huisstijl assets
+tied to `token-sets.json` `theming.logo` entries — `scripts/build-icons.js` never
+creates, modifies, or deletes anything under `img/logos/`.
 
 ## Styling Icons
 
@@ -110,7 +136,7 @@ Icons are designed to work with the NL Design System color tokens:
 ### Button with Icon
 ```php
 <button class="button-vue--vue-primary">
-    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/Plus.svg')); ?>" 
+    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/rvo/rvo-plus.svg')); ?>"
          alt="" class="button-icon" />
     Toevoegen
 </button>
@@ -120,7 +146,7 @@ Icons are designed to work with the NL Design System color tokens:
 ```php
 <li>
     <a href="/path">
-        <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/House.svg')); ?>" 
+        <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haag/dh-objects-house.svg')); ?>"
              alt="Home icon" />
         Home
     </a>
@@ -130,7 +156,7 @@ Icons are designed to work with the NL Design System color tokens:
 ### Status Indicator
 ```php
 <div class="status-indicator">
-    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/CheckMarkCircleFill.svg')); ?>" 
+    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haag/dh-informational-checkcircle.svg')); ?>"
          alt="Success" class="status-icon status-icon--success" />
     <span>Voltooid</span>
 </div>
@@ -162,23 +188,27 @@ When using icons, always provide appropriate alt text or aria-labels:
 
 ## License
 
-Icons are from the Amsterdam Design System:
-- **Package:** @amsterdam/design-system-assets
-- **License:** Mozilla Public License 2.0
-- **Source:** https://github.com/Amsterdam/design-system
+Icons are sourced from `@conduction/nextcloud-vue`:
+- **Package:** `@conduction/nextcloud-vue` (devDependency, build-time only)
+- **Canonical licence record:** `src/icons/ATTRIBUTION.md` (https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md)
+- **Licences:** RVO CC0-1.0, OpenGemeenten CC0-1.0, Gemeente Den Haag EUPL-1.2
+
+The proprietary `@amsterdam/design-system-assets` package is **not** a dependency of this
+app and no shipped asset derives from it.
 
 ## Resources
 
-- **Amsterdam Design System Storybook:** https://designsystem.amsterdam/?path=/docs/brand-assets-icons--docs
-- **Icon Browser:** Browse all icons at the Storybook link above
-- **Component Library:** https://github.com/Amsterdam/design-system
+- **nc-vue icon attribution:** https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md
+- **RVO icon source:** https://github.com/nl-design-system/rvo
+- **OpenGemeenten icon source:** https://github.com/OpenGemeenten/Iconenset
+- **Gemeente Den Haag icon source:** https://github.com/nl-design-system/denhaag
 
 ## Building Icons
 
-Icons are automatically built from npm packages. To rebuild:
+Icons are automatically built from `@conduction/nextcloud-vue`'s bundled icon packs. To rebuild:
 
 ```bash
 npm run build:icons
 ```
 
-This copies SVG files from `node_modules/@amsterdam/design-system-assets` to the app's `img/` directory.
+This decodes the data-URI icon packs at `node_modules/@conduction/nextcloud-vue/src/icons/{rvo,openGemeenten,denHaag}.js` into standalone SVG files under `img/icons/{set}/`, materializes the one-release legacy aliases from `scripts/icon-aliases.json`, and regenerates `img/ICONS.md`. It never touches `img/logos/`.
