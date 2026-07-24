@@ -1,23 +1,22 @@
 <?php
 
 /**
- * Inventory regression test for the Amsterdam Design System icon and logo assets.
+ * Inventory regression test for the nc-vue-sourced NL-government icon and logo assets.
  *
- * Guards the icon-assets capability contract: the on-disk SVG set under img/icons/
- * and img/logos/ must match the inventory documented in img/ICONS.md (counts and
- * sampled names), Fill variants must pair with their base icon, assets must be safe
- * standalone SVG (no <script>/event handlers), the MPL-2.0 attribution must remain
- * co-located with the assets, and the icon/logo counts must agree across README.md,
- * docs/reference/icons.md and img/ICONS.md. A rename or removal of any asset, or a
- * drift between docs and filesystem, fails this test.
+ * Guards the icon-assets capability contract: the on-disk SVG set under img/icons/{set}/
+ * (materialized from @conduction/nextcloud-vue's rvo/openGemeenten/denHaag packs) and
+ * img/logos/ must match the inventory documented in img/ICONS.md (counts and sampled
+ * names), every legacy Amsterdam alias in scripts/icon-aliases.json must resolve to a
+ * byte-identical copy of its mapped replacement, assets must be safe standalone SVG (no
+ * <script>/event handlers), the CC0-1.0/EUPL-1.2 attribution must remain co-located with
+ * the assets (never MPL-2.0 / @amsterdam/design-system-assets as a current source), and
+ * the icon/logo counts must agree across README.md, docs/reference/icons.md and
+ * img/ICONS.md. A rename, removal, or drift between docs and filesystem fails this test.
  *
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
- * @spec openspec/changes/icon-assets/tasks.md#task-2.1
- * @spec openspec/changes/icon-assets/tasks.md#task-2.2
- * @spec openspec/changes/icon-assets/tasks.md#task-2.3
- * @spec openspec/changes/icon-assets/tasks.md#task-2.4
+ * @spec openspec/changes/icons-from-ncvue/specs/icon-assets/spec.md
  */
 
 declare(strict_types=1);
@@ -32,9 +31,11 @@ use PHPUnit\Framework\TestCase;
 class IconAssetsTest extends TestCase
 {
     /**
-     * Number of icon SVG files the inventory is expected to contain.
+     * The three nc-vue-sourced icon set directory names.
+     *
+     * @var array<string>
      */
-    private const EXPECTED_ICON_COUNT = 344;
+    private const ICON_SETS = ['rvo', 'open-gemeenten', 'den-haag'];
 
     /**
      * Repository root, derived from this test file's location.
@@ -61,11 +62,33 @@ class IconAssetsTest extends TestCase
     }
 
     /**
-     * List of icon base names (without the .svg suffix) found on disk.
+     * Absolute path to the curated legacy-name alias map.
+     */
+    private function aliasesPath(): string
+    {
+        return $this->repoRoot() . '/scripts/icon-aliases.json';
+    }
+
+    /**
+     * List of pack entry keys (without the .svg suffix) found on disk for one set.
      *
      * @return array<string>
      */
-    private function diskIconNames(): array
+    private function diskSetIconNames(string $set): array
+    {
+        $files = glob($this->iconsDir() . '/' . $set . '/*.svg') ?: [];
+        return array_map(
+            static fn (string $p): string => basename($p, '.svg'),
+            $files
+        );
+    }
+
+    /**
+     * List of top-level legacy-alias icon base names (without the .svg suffix).
+     *
+     * @return array<string>
+     */
+    private function diskTopLevelIconNames(): array
     {
         $files = glob($this->iconsDir() . '/*.svg') ?: [];
         return array_map(
@@ -89,6 +112,22 @@ class IconAssetsTest extends TestCase
     }
 
     /**
+     * Decode the curated legacy alias map (excluding the "_comment" header key).
+     *
+     * @return array<string, string> legacy name => "{set}/{key}"
+     */
+    private function loadAliases(): array
+    {
+        $this->assertFileExists($this->aliasesPath(), 'scripts/icon-aliases.json must exist.');
+        $contents = file_get_contents($this->aliasesPath());
+        $this->assertIsString($contents, 'Could not read scripts/icon-aliases.json');
+        $decoded = json_decode($contents, true);
+        $this->assertIsArray($decoded, 'scripts/icon-aliases.json must decode to a JSON object.');
+        unset($decoded['_comment']);
+        return $decoded;
+    }
+
+    /**
      * Read a documentation file from the repository root.
      */
     private function readDoc(string $relativePath): string
@@ -101,42 +140,52 @@ class IconAssetsTest extends TestCase
     }
 
     /**
-     * The icon directory holds exactly the documented number of SVG files.
+     * Each icon-set directory holds the count documented in img/ICONS.md's
+     * "### {set} (N icons)" heading, and that heading exists for every set.
      */
-    public function testIconCountMatchesDocumentedTotal(): void
+    public function testIconSetCountsMatchDocumentedTotals(): void
     {
-        $this->assertDirectoryExists($this->iconsDir());
-        $this->assertCount(
-            self::EXPECTED_ICON_COUNT,
-            $this->diskIconNames(),
-            'On-disk icon count must equal the documented inventory total (' . self::EXPECTED_ICON_COUNT . ').'
-        );
+        $icons = $this->readDoc('img/ICONS.md');
+
+        foreach (self::ICON_SETS as $set) {
+            $this->assertDirectoryExists($this->iconsDir() . '/' . $set);
+
+            $pattern = '/###\s*' . preg_quote($set, '/') . '\s*\((\d+)\s*icons\)/i';
+            $this->assertMatchesRegularExpression(
+                $pattern,
+                $icons,
+                "img/ICONS.md must state a count heading for set \"{$set}\"."
+            );
+            preg_match($pattern, $icons, $m);
+            $documentedCount = (int) $m[1];
+
+            $this->assertSame(
+                $documentedCount,
+                \count($this->diskSetIconNames($set)),
+                "On-disk icon count for set \"{$set}\" must equal the documented total ({$documentedCount})."
+            );
+        }
     }
 
     /**
-     * Every icon name listed in img/ICONS.md resolves to a real file on disk.
-     *
-     * ICONS.md lists a representative sample (the first N icons then "... and X more"),
-     * so this checks that every name actually enumerated in the document exists.
+     * Every "- {set}/{key}" bullet enumerated in img/ICONS.md's Icons section
+     * resolves to a real file on disk.
      */
     public function testDocumentedIconSampleResolvesOnDisk(): void
     {
         $icons = $this->readDoc('img/ICONS.md');
 
-        // Capture the "## Icons" block up to the next "##" heading.
-        $this->assertMatchesRegularExpression('/##\s*Icons/i', $icons, 'ICONS.md must contain an Icons section.');
-        $iconsSection = $this->sectionBetween($icons, '## Icons', '## ');
+        $this->assertMatchesRegularExpression('/##\s*Icons\s*\n/i', $icons, 'ICONS.md must contain an Icons section.');
 
-        $documented = $this->bulletNames($iconsSection);
-        $this->assertNotEmpty($documented, 'ICONS.md must enumerate at least one icon name.');
+        // "{set}/{key}" bullets only ever occur in the per-set Icons subsections,
+        // so a whole-document scan is unambiguous (Logos bullets carry no slash).
+        preg_match_all('/^-\s+([a-z0-9-]+\/[a-z0-9-]+)\s*$/m', $icons, $matches);
+        $documented = $matches[1];
+        $this->assertNotEmpty($documented, 'ICONS.md must enumerate at least one "{set}/{key}" icon path.');
 
-        $onDisk = array_flip($this->diskIconNames());
-        foreach ($documented as $name) {
-            $this->assertArrayHasKey(
-                $name,
-                $onDisk,
-                "Icon documented in img/ICONS.md has no file img/icons/{$name}.svg"
-            );
+        foreach ($documented as $setSlashKey) {
+            $file = $this->iconsDir() . '/' . $setSlashKey . '.svg';
+            $this->assertFileExists($file, "Icon documented in img/ICONS.md has no file img/icons/{$setSlashKey}.svg");
         }
     }
 
@@ -169,7 +218,7 @@ class IconAssetsTest extends TestCase
     public function testDocumentedLogoSampleResolvesOnDisk(): void
     {
         $icons = $this->readDoc('img/ICONS.md');
-        $logosSection = $this->sectionBetween($icons, '## Logos', '## ');
+        $logosSection = $this->sectionBetween($icons, '## Logos', '## Naming stability');
 
         $documented = $this->bulletNames($logosSection);
         $this->assertNotEmpty($documented, 'ICONS.md must enumerate at least one logo name.');
@@ -185,26 +234,78 @@ class IconAssetsTest extends TestCase
     }
 
     /**
-     * Every *Fill.svg icon has its base-variant counterpart (naming convention).
+     * img/logos/ is untouched by the icon build: exactly the 23 checked-in files,
+     * no set-prefixed subdirectories, no stray output.
      */
-    public function testFillVariantsPairWithBaseIcon(): void
+    public function testLogosDirectoryHasNoBuildArtifacts(): void
     {
-        $names = array_flip($this->diskIconNames());
-        $orphans = [];
-        foreach (array_keys($names) as $name) {
-            if (str_ends_with($name, 'Fill')) {
-                $base = substr($name, 0, -\strlen('Fill'));
-                if ($base !== '' && !isset($names[$base])) {
-                    $orphans[] = $name;
-                }
-            }
+        $entries = scandir($this->logosDir()) ?: [];
+        $subdirs = array_filter($entries, function (string $entry): bool {
+            return $entry !== '.' && $entry !== '..' && is_dir($this->logosDir() . '/' . $entry);
+        });
+
+        $this->assertSame([], array_values($subdirs), 'img/logos/ must contain no subdirectories (it is not build output).');
+    }
+
+    /**
+     * Every entry in scripts/icon-aliases.json resolves to a top-level legacy file
+     * that is byte-identical to its mapped {set}/{key} replacement.
+     */
+    public function testAllAliasesResolveAndAreByteIdenticalToReplacement(): void
+    {
+        $aliases = $this->loadAliases();
+        $this->assertNotEmpty($aliases, 'scripts/icon-aliases.json must map at least one legacy name.');
+
+        foreach ($aliases as $legacyName => $replacementPath) {
+            $legacyFile = $this->iconsDir() . '/' . $legacyName . '.svg';
+            $replacementFile = $this->iconsDir() . '/' . $replacementPath . '.svg';
+
+            $this->assertFileExists($legacyFile, "Alias \"{$legacyName}\" has no legacy file img/icons/{$legacyName}.svg");
+            $this->assertFileExists($replacementFile, "Alias \"{$legacyName}\" maps to a nonexistent replacement img/icons/{$replacementPath}.svg");
+
+            $this->assertSame(
+                file_get_contents($replacementFile),
+                file_get_contents($legacyFile),
+                "Alias file for \"{$legacyName}\" must be byte-identical to its mapped replacement \"{$replacementPath}\"."
+            );
         }
+    }
+
+    /**
+     * Every top-level img/icons/*.svg file corresponds to an entry in
+     * scripts/icon-aliases.json — no orphaned Amsterdam-era file survives.
+     */
+    public function testNoOrphanedTopLevelIconFiles(): void
+    {
+        $aliases = $this->loadAliases();
+        $topLevel = array_flip($this->diskTopLevelIconNames());
+
+        $orphans = array_diff(array_keys($topLevel), array_keys($aliases));
 
         $this->assertSame(
             [],
-            $orphans,
-            'These Fill icons have no base counterpart: ' . implode(', ', $orphans)
+            array_values($orphans),
+            'These top-level img/icons/*.svg files have no scripts/icon-aliases.json entry: ' . implode(', ', $orphans)
         );
+    }
+
+    /**
+     * package.json must not declare the proprietary Amsterdam packages as dependencies.
+     */
+    public function testNoAmsterdamDependency(): void
+    {
+        $packageJson = $this->readDoc('package.json');
+        $decoded = json_decode($packageJson, true);
+        $this->assertIsArray($decoded, 'package.json must decode to a JSON object.');
+
+        $allDeps = array_merge(
+            $decoded['dependencies'] ?? [],
+            $decoded['devDependencies'] ?? []
+        );
+
+        $this->assertArrayNotHasKey('@amsterdam/design-system-assets', $allDeps, 'package.json must not depend on @amsterdam/design-system-assets.');
+        $this->assertArrayNotHasKey('@amsterdam/design-system-react-icons', $allDeps, 'package.json must not depend on @amsterdam/design-system-react-icons.');
+        $this->assertArrayHasKey('@conduction/nextcloud-vue', $decoded['devDependencies'] ?? [], '@conduction/nextcloud-vue must be a devDependency.');
     }
 
     /**
@@ -212,18 +313,22 @@ class IconAssetsTest extends TestCase
      */
     public function testSampledAssetsAreSafeStandaloneSvg(): void
     {
-        $icons = glob($this->iconsDir() . '/*.svg') ?: [];
+        $icons = [];
+        foreach (self::ICON_SETS as $set) {
+            $icons = array_merge($icons, glob($this->iconsDir() . '/' . $set . '/*.svg') ?: []);
+        }
+        $topLevelAliases = glob($this->iconsDir() . '/*.svg') ?: [];
         $logos = glob($this->logosDir() . '/*.svg') ?: [];
         $this->assertNotEmpty($icons, 'No icon SVG files found to sample.');
 
-        // Deterministic sample: sort and take a spread across the set, plus all logos.
+        // Deterministic sample: sort and take a spread across the set, plus all aliases and logos.
         sort($icons);
         $sample = [];
         $step = (int) max(1, floor(\count($icons) / 40));
         for ($i = 0; $i < \count($icons); $i += $step) {
             $sample[] = $icons[$i];
         }
-        $sample = array_merge($sample, $logos);
+        $sample = array_merge($sample, $topLevelAliases, $logos);
 
         foreach ($sample as $file) {
             $svg = file_get_contents($file);
@@ -256,21 +361,29 @@ class IconAssetsTest extends TestCase
     }
 
     /**
-     * img/ICONS.md carries the @amsterdam/design-system-assets MPL-2.0 attribution.
+     * img/ICONS.md attributes each set with its correct upstream licence, references
+     * nc-vue's ATTRIBUTION.md as the canonical record, and never claims MPL-2.0.
      */
-    public function testLicenseNoticeTravelsWithAssets(): void
+    public function testLicenceAttributionPresentAndCorrect(): void
     {
         $icons = $this->readDoc('img/ICONS.md');
 
+        $this->assertStringContainsString('CC0-1.0', $icons, 'img/ICONS.md must attribute CC0-1.0 licensed sets.');
+        $this->assertStringContainsString('EUPL-1.2', $icons, 'img/ICONS.md must attribute the den-haag set as EUPL-1.2.');
         $this->assertStringContainsString(
-            '@amsterdam/design-system-assets',
+            '@conduction/nextcloud-vue',
             $icons,
-            'img/ICONS.md must attribute the icons to @amsterdam/design-system-assets.'
+            'img/ICONS.md must reference @conduction/nextcloud-vue as the icon source.'
         );
-        $this->assertMatchesRegularExpression(
+        $this->assertStringContainsString(
+            'ATTRIBUTION.md',
+            $icons,
+            'img/ICONS.md must reference nc-vue\'s src/icons/ATTRIBUTION.md as the canonical licence record.'
+        );
+        $this->assertDoesNotMatchRegularExpression(
             '/Mozilla Public License 2\.0|MPL[\s-]?2\.0/i',
             $icons,
-            'img/ICONS.md must name the Mozilla Public License 2.0.'
+            'img/ICONS.md must not claim MPL-2.0 for the icons (removed proprietary set).'
         );
     }
 
@@ -279,13 +392,16 @@ class IconAssetsTest extends TestCase
      */
     public function testCountsAgreeAcrossDocuments(): void
     {
-        $iconCount = \count($this->diskIconNames());
+        $iconCount = 0;
+        foreach (self::ICON_SETS as $set) {
+            $iconCount += \count($this->diskSetIconNames($set));
+        }
+        $aliasCount = \count($this->loadAliases());
         $logoCount = \count($this->diskLogoNames());
 
         $readme = $this->readDoc('README.md');
         $docs = $this->readDoc('docs/reference/icons.md');
 
-        // README and docs must state the real icon count and never the wrong one.
         $this->assertStringContainsString(
             (string) $iconCount,
             $readme,
@@ -297,24 +413,42 @@ class IconAssetsTest extends TestCase
             'README.md must state the actual logo count.'
         );
         $this->assertStringContainsString(
-            (string) $logoCount . ' SVG files',
+            (string) $iconCount,
             $docs,
-            'docs/reference/icons.md must state the actual logo file count.'
+            'docs/reference/icons.md must state the actual icon count.'
         );
         $this->assertStringContainsString(
-            (string) $logoCount . ' logos',
+            (string) $logoCount,
             $docs,
             'docs/reference/icons.md must state the actual logo count.'
         );
+        $this->assertStringContainsString(
+            (string) $aliasCount,
+            $docs,
+            'docs/reference/icons.md must state the actual legacy-alias count.'
+        );
+
+        // Never present the removed Amsterdam set as a current source. Scoped to the
+        // README "## Icons" section (not the whole document): the "Dependency license
+        // policy" section legitimately lists MPL-2.0 as one of many generally-approved
+        // SPDX families for hypothetical future dependencies, unrelated to this app's
+        // bundled icon set; README's "## Changelog" section is a dated historical
+        // record (e.g. "v0.1.0 (2026-02-03)") that accurately describes what that past
+        // release contained. docs/reference/icons.md is entirely about icons, so it is
+        // checked in full.
+        $readmeIconsSection = $this->sectionBetween($readme, '## Icons', '## Installation');
+        foreach ([$readmeIconsSection, $docs] as $doc) {
+            $this->assertDoesNotMatchRegularExpression(
+                '/Mozilla Public License 2\.0|MPL[\s-]?2\.0/i',
+                $doc,
+                'Document must not claim MPL-2.0 for the current icon set.'
+            );
+        }
     }
 
     /**
      * Every icon/logo filename used in a consumption example across the docs
-     * resolves to a real asset on disk.
-     *
-     * This guards against documentation referencing icons that do not exist
-     * (e.g. an upstream rename of MagnifyingGlass -> Search): a consumer copying
-     * the snippet would otherwise get a broken image.
+     * resolves to a real asset on disk (nested "{set}/{key}" or legacy top-level alias).
      */
     public function testDocumentedConsumptionExamplesResolveOnDisk(): void
     {
@@ -324,17 +458,23 @@ class IconAssetsTest extends TestCase
             'img/ICONS.md',
         ];
 
-        $haveIcon = array_flip($this->diskIconNames());
         $haveLogo = array_flip($this->diskLogoNames());
+        $haveTopLevel = array_flip($this->diskTopLevelIconNames());
+        $haveNested = [];
+        foreach (self::ICON_SETS as $set) {
+            foreach ($this->diskSetIconNames($set) as $key) {
+                $haveNested[$set . '/' . $key] = true;
+            }
+        }
 
         foreach ($docs as $doc) {
             $contents = $this->readDoc($doc);
 
-            preg_match_all('#icons/([A-Za-z0-9_-]+)\.svg#', $contents, $iconRefs);
+            preg_match_all('#icons/((?:rvo|open-gemeenten|den-haag)/[a-z0-9-]+|[A-Za-z0-9_-]+)\.svg#', $contents, $iconRefs);
             foreach (array_unique($iconRefs[1]) as $name) {
-                $this->assertArrayHasKey(
-                    $name,
-                    $haveIcon,
+                $resolves = isset($haveNested[$name]) || isset($haveTopLevel[$name]);
+                $this->assertTrue(
+                    $resolves,
                     "{$doc} references a nonexistent icon img/icons/{$name}.svg"
                 );
             }
@@ -378,7 +518,7 @@ class IconAssetsTest extends TestCase
 
     /**
      * Extract the section of a markdown document starting at a heading and ending
-     * before the next occurrence of $stopMarker.
+     * before the next occurrence of $stopMarker (or end of document if absent).
      */
     private function sectionBetween(string $doc, string $startHeading, string $stopMarker): string
     {

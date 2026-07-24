@@ -25,19 +25,18 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 - **No Build Required**: Tokens are pre-compiled CSS and fonts are bundled and self-hosted (no external CDN)
 
-- **Amsterdam Design System Icons**: Includes 344 SVG icons from the official Amsterdam Design System, plus 23 organization logos, for use across all Nextcloud apps
+- **NL-Government Icons**: Includes 1488 SVG icons sourced from `@conduction/nextcloud-vue`'s EUPL-compatible NL-government packs (RVO, OpenGemeenten, Gemeente Den Haag), plus 23 organization logos, for use across all Nextcloud apps
 
 ## Icons
 
-The app includes **344 icons** and **23 logos**:
+The app includes **1488 icons** across three NL-government sets (RVO, OpenGemeenten, Gemeente Den Haag — CC0-1.0 / CC0-1.0 / EUPL-1.2) and **23 logos**:
 
-- Search, navigation, and UI icons from the Amsterdam Design System
-- Filled and outline variants
+- Search, navigation, and UI icons materialized from `@conduction/nextcloud-vue`
 - Government and municipal organization logos
 - SVG format for scalability
 - Accessible via Nextcloud's image path API
 
-Icon and logo filenames are a public API: other apps reference them by name (e.g. `MagnifyingGlass.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and MPL-2.0 licensing contract.
+Icon and logo filenames are a public API: other apps reference them by name (e.g. `icons/rvo/rvo-zoek.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and licensing contract. The proprietary City-of-Amsterdam icon set is **not** bundled — see `img/ICONS.md` for the licensing rationale.
 
 **[View Icon Documentation →](img/ICONS.md)**
 
@@ -316,10 +315,7 @@ Dependencies with licenses not on this list will fail CI unless explicitly appro
 
 ### License exceptions
 
-| Package | Reason |
-|---------|--------|
-| `@amsterdam/design-system-assets` | Amsterdam Design System - government open-source, EUPL-compatible — approved 2026-03-15 |
-| `@amsterdam/design-system-react-icons` | Amsterdam Design System - government open-source, EUPL-compatible — approved 2026-03-15 |
+No current exceptions. `@conduction/nextcloud-vue` (EUPL-1.2, devDependency, build-time icon source only) is already covered by the EUPL-1.1/1.2 allowlist entry above, and the proprietary `@amsterdam/design-system-assets` / `@amsterdam/design-system-react-icons` packages that previously required an exception here have been removed — see [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
