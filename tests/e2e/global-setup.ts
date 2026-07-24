@@ -42,7 +42,12 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
 	const page = await context.newPage()
 
 	await page.goto('/index.php/login')
-	await page.locator('input[name="user"]').fill(username)
+	// The Nextcloud login form is client-rendered (Vue): the inputs do not
+	// exist in the initial HTML, so filling immediately after goto() races the
+	// hydration and fails with "element not found". Wait for the real field.
+	const userField = page.locator('input[name="user"]')
+	await userField.waitFor({ state: 'visible', timeout: 30_000 })
+	await userField.fill(username)
 	await page.locator('input[name="password"]').fill(password)
 	await page.locator('button[type="submit"]').first().click()
 	await page.waitForSelector('#header, header.header', { timeout: 20_000 })
