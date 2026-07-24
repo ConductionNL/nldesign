@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Tests\Unit\Service;
 
 use OCA\NLDesign\Service\ContrastService;
+use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomTokenSetService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
+use OCA\NLDesign\Service\DarkPaletteService;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 /**
@@ -79,7 +82,13 @@ class CustomTokenSetServiceTest extends TestCase
             $appManager,
             $config,
             new CustomTokenSetValidator(),
-            new ContrastService()
+            new ContrastService(),
+            new DarkPaletteService(
+                new ContrastService(),
+                new CssParserService(),
+                $appManager,
+                $this->createMock(LoggerInterface::class)
+            )
         );
     }//end setUp()
 

@@ -18,6 +18,7 @@ use OCA\NLDesign\Service\ContrastService;
 use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\CustomTokenSetService;
 use OCA\NLDesign\Service\CustomTokenSetValidator;
+use OCA\NLDesign\Service\DarkPaletteService;
 use OCA\NLDesign\Service\DesignTokensMapper;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCP\App\IAppManager;
@@ -26,6 +27,7 @@ use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Unit tests for the custom token set upload controller's DTCG response
@@ -98,7 +100,18 @@ class CustomTokenSetControllerTest extends TestCase
             }
         );
 
-        $this->service = new CustomTokenSetService($appManager, $config, new CustomTokenSetValidator(), new ContrastService());
+        $this->service = new CustomTokenSetService(
+            $appManager,
+            $config,
+            new CustomTokenSetValidator(),
+            new ContrastService(),
+            new DarkPaletteService(
+                new ContrastService(),
+                new CssParserService(),
+                $appManager,
+                $this->createMock(LoggerInterface::class)
+            )
+        );
 
         $l = $this->createMock(IL10N::class);
         $l->method('t')->willReturnCallback(

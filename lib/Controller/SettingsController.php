@@ -39,6 +39,8 @@ use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
 use OCA\NLDesign\Service\Exception\FooterValidationException;
 use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
+use OCA\NLDesign\Service\Exception\GroupThemingValidationException;
+use OCA\NLDesign\Service\GroupThemingService;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
@@ -144,6 +146,13 @@ class SettingsController extends Controller
     private UpstreamFreshnessService $freshnessService;
 
     /**
+     * The group theming mapping/resolution service.
+     *
+     * @var GroupThemingService
+     */
+    private GroupThemingService $groupThemingService;
+
+    /**
      * Constructor.
      *
      * @param string                   $appName             The app name.
@@ -157,11 +166,13 @@ class SettingsController extends Controller
      * @param ThemingAuditService      $auditService        The theming audit trail service.
      * @param EmailThemingService      $emailThemingService The email theming service.
      * @param UpstreamFreshnessService $freshnessService    The upstream token freshness service.
+     * @param GroupThemingService      $groupThemingService The group theming mapping/resolution service.
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList) - This is the app's aggregating settings
      * controller; each dependency backs one settings endpoint family (token set, theming sync,
-     * per-app theming, compliance report, audit trail, email theming, upstream freshness). NC's DI
-     * container supplies them; a synthetic parameter-object split would not reduce the real coupling.
+     * per-app theming, compliance report, audit trail, email theming, upstream freshness, group
+     * theming). NC's DI container supplies them; a synthetic parameter-object split would not
+     * reduce the real coupling.
      */
     public function __construct(
         string $appName,
@@ -174,7 +185,8 @@ class SettingsController extends Controller
         ComplianceReportService $complianceService,
         ThemingAuditService $auditService,
         EmailThemingService $emailThemingService,
-        UpstreamFreshnessService $freshnessService
+        UpstreamFreshnessService $freshnessService,
+        GroupThemingService $groupThemingService
     ) {
         parent::__construct(appName: $appName, request: $request);
         $this->config            = $config;
@@ -186,6 +198,7 @@ class SettingsController extends Controller
         $this->auditService      = $auditService;
         $this->emailThemingService = $emailThemingService;
         $this->freshnessService    = $freshnessService;
+        $this->groupThemingService = $groupThemingService;
     }//end __construct()
 
     /**
@@ -671,4 +684,114 @@ class SettingsController extends Controller
             ]
         );
     }//end setEmailTheming()
+
+    /**
+     * Get the instance-wide dark-mode variants toggle state.
+     *
+     * @return JSONResponse The `{ enabled }` state (default enabled).
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getDarkVariants(): JSONResponse
+    {
+        $enabled = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+
+        return new JSONResponse(['enabled' => $enabled]);
+    }//end getDarkVariants()
+
+    /**
+     * Set the instance-wide dark-mode variants toggle. Disabling stops the
+     * generated dark stylesheet from loading (see
+     * `Application::injectThemeCSS()`) without deleting the generated files.
+     *
+     * @param bool $enabled Whether dark-mode variants should be active.
+     *
+     * @return JSONResponse The response with the persisted state.
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setDarkVariants(bool $enabled): JSONResponse
+    {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+        $this->saveBooleanSetting(key: 'dark_variants', value: $enabled);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'dark_variants',
+                'old' => $previous,
+                'new' => $enabled,
+            ]
+        );
+
+        return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+    }//end setDarkVariants()
+
+    /**
+     * Get the group theming mapping plus the picker option lists.
+     *
+     * @return JSONResponse The ordered mapping, available groups, and available token sets.
+     *
+     * @spec openspec/specs/per-group-theming/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getGroupTheming(): JSONResponse
+    {
+        return new JSONResponse(
+            [
+                'mapping'   => $this->groupThemingService->getMapping(),
+                'groups'    => $this->groupThemingService->getAvailableGroups(),
+                'tokenSets' => $this->tokenSetService->getAvailableTokenSets(),
+            ]
+        );
+    }//end getGroupTheming()
+
+    /**
+     * Replace the full ordered group theming mapping.
+     *
+     * Accepts `{ mapping: {group, tokenSet}[] }` in priority order. On
+     * validation failure the save is rejected wholesale (HTTP 422 naming the
+     * offending entry and reason) and nothing is persisted.
+     *
+     * @param array $mapping The desired ordered mapping.
+     *
+     * @return JSONResponse The persisted mapping, or a 422 validation error.
+     *
+     * @spec openspec/specs/per-group-theming/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setGroupTheming(array $mapping=[]): JSONResponse
+    {
+        $before = $this->groupThemingService->getMapping();
+
+        try {
+            $after = $this->groupThemingService->setMapping(entries: $mapping);
+        } catch (GroupThemingValidationException $e) {
+            return new JSONResponse(
+                [
+                    'error'  => 'invalid_mapping',
+                    'entry'  => $e->getEntry(),
+                    'reason' => $e->getReason(),
+                ],
+                422
+            );
+        }
+
+        $this->auditService->log(
+            action: 'group_theming_changed',
+            context: [
+                'old' => $before,
+                'new' => $after,
+            ]
+        );
+
+        return new JSONResponse(
+            [
+                'status'  => 'ok',
+                'mapping' => $after,
+            ]
+        );
+    }//end setGroupTheming()
 }//end class

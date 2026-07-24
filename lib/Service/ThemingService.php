@@ -123,10 +123,17 @@ class ThemingService
      * @return string|null An error message if validation fails, or null on success.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-42
+     * @spec openspec/specs/theming-sync/spec.md
      */
     public function validateImagePaths(array $params): ?string
     {
-        foreach (['logo', 'background'] as $imageKey) {
+        // `logo_dark` follows the exact same traversal/prefix/existence rules
+        // as `logo` (see the theming-sync spec's dark-logo requirement), even
+        // though it is deliberately never passed to applyImages()/core
+        // theming — Nextcloud core has a single logo slot
+        // (nextcloud/server#47357); the dark logo is delivered by nldesign's
+        // own generated dark stylesheet instead.
+        foreach (['logo', 'background', 'logo_dark'] as $imageKey) {
             if (isset($params[$imageKey]) === true && $params[$imageKey] !== '') {
                 $error = $this->validateSinglePath(
                     imageKey: $imageKey,

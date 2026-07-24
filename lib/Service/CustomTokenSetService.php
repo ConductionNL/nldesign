@@ -38,6 +38,7 @@ use RuntimeException;
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.2
+ * @spec openspec/specs/dark-mode/spec.md
  */
 class CustomTokenSetService
 {
@@ -85,23 +86,36 @@ class CustomTokenSetService
     private ContrastService $contrast;
 
     /**
+     * The dark-variant derivation/generation service — generates
+     * `css/tokens/dark/custom-{slug}.css` at upload time and removes it on
+     * delete (see openspec/specs/dark-mode/spec.md). Appended last so no
+     * existing constructor call site needs reordering.
+     *
+     * @var DarkPaletteService
+     */
+    private DarkPaletteService $darkPalette;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager             $appManager The app manager.
-     * @param IConfig                 $config     The config service.
-     * @param CustomTokenSetValidator $validator  The CSS validator.
-     * @param ContrastService         $contrast   The contrast service.
+     * @param IAppManager             $appManager  The app manager.
+     * @param IConfig                 $config      The config service.
+     * @param CustomTokenSetValidator $validator   The CSS validator.
+     * @param ContrastService         $contrast    The contrast service.
+     * @param DarkPaletteService      $darkPalette The dark-variant generation service.
      */
     public function __construct(
         IAppManager $appManager,
         IConfig $config,
         CustomTokenSetValidator $validator,
-        ContrastService $contrast
+        ContrastService $contrast,
+        DarkPaletteService $darkPalette
     ) {
-        $this->appManager = $appManager;
-        $this->config     = $config;
-        $this->validator  = $validator;
-        $this->contrast   = $contrast;
+        $this->appManager  = $appManager;
+        $this->config      = $config;
+        $this->validator   = $validator;
+        $this->contrast    = $contrast;
+        $this->darkPalette = $darkPalette;
     }//end __construct()
 
     /**
@@ -132,7 +146,9 @@ class CustomTokenSetService
      * with code 409), writes the canonical CSS atomically, persists the
      * manifest entry (name, description, derived theming, contrast warnings,
      * and — for a DTCG import — the declared package `version` and any
-     * `importWarnings`, e.g. `$deprecated` notices).
+     * `importWarnings`, e.g. `$deprecated` notices). Best-effort generates
+     * `css/tokens/dark/{id}.css` in the same operation (never fails the
+     * upload itself — see openspec/specs/dark-mode/spec.md).
      *
      * `$version` and `$importWarnings` are DTCG-import concerns and are
      * deliberately named apart from the pre-existing `warnings` key (WCAG
@@ -203,6 +219,16 @@ class CustomTokenSetService
         $manifest[$id] = $entry;
         $this->saveManifest(manifest: $manifest);
 
+        // Best-effort dark-variant generation at upload time (never allowed
+        // to fail the upload itself — theming is presentation, not a hard
+        // dependency; see openspec/specs/dark-mode/spec.md).
+        try {
+            $this->darkPalette->generateAndWrite(setId: $id, force: true);
+        } catch (\Throwable $e) {
+            // Swallow: a dark-variant generation failure must never break
+            // the (already-persisted) custom token set upload.
+        }
+
         return [
             'id'       => $id,
             'warnings' => $warnings,
@@ -210,7 +236,41 @@ class CustomTokenSetService
     }//end store()
 
     /**
-     * Delete a custom token set: its CSS file and manifest entry.
+     * Create or replace a custom token set by an already-known id, writing
+     * the canonical CSS content and manifest entry verbatim.
+     *
+     * Unlike {@see store()} — which derives the id from a display name and
+     * rejects a collision (409, first-upload contract) — this is the
+     * OTAP-promotion path (`config-portability` bundle import): the target
+     * environment may already have an id-matching custom set (replace) or
+     * may never have seen it before (create), and either outcome is
+     * expected and valid. The caller MUST have already re-serialised `$css`
+     * from validated declarations (e.g. via
+     * {@see CustomTokenSetValidator::serialize()}) — this method never
+     * re-validates, it only writes.
+     *
+     * @param string               $id    The custom set id (already `isCustomId()`-checked by the caller).
+     * @param array<string, mixed> $entry The manifest entry to persist verbatim (name, description, theming, warnings, …).
+     * @param string               $css   The canonical CSS file content to write verbatim.
+     *
+     * @return void
+     *
+     * @throws RuntimeException When the file cannot be written (500).
+     *
+     * @spec openspec/specs/config-portability/spec.md
+     */
+    public function replace(string $id, array $entry, string $css): void
+    {
+        $this->writeFile(path: $this->getCssPath(id: $id), contents: $css);
+
+        $manifest      = $this->getManifest();
+        $manifest[$id] = $entry;
+        $this->saveManifest(manifest: $manifest);
+    }//end replace()
+
+    /**
+     * Delete a custom token set: its CSS file, manifest entry, and any
+     * generated dark variant.
      *
      * When the deleted set is the active token set, the active set is reset to
      * `nextcloud` in the same operation.
@@ -220,6 +280,7 @@ class CustomTokenSetService
      * @return bool True when something was removed, false when nothing matched.
      *
      * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.1
+     * @spec openspec/specs/dark-mode/spec.md
      */
     public function delete(string $id): bool
     {
@@ -241,6 +302,8 @@ class CustomTokenSetService
             $this->saveManifest(manifest: $manifest);
             $removed = true;
         }
+
+        $this->darkPalette->deleteDarkVariant(setId: $id);
 
         $active = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
         if ($active === $id) {

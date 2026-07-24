@@ -147,6 +147,24 @@ class DesignSystemService
     }//end getTokenSetMeta()
 
     /**
+     * Whether a generated `css/tokens/dark/{id}.css` file exists for a token
+     * set. Reuses this service's existing `IAppManager` dependency so the
+     * bootstrap-time injection point (`Application::injectThemeCSS()`) does
+     * not need its own path-resolving dependency (see
+     * openspec/specs/dark-mode/spec.md).
+     *
+     * @param string $tokenSetId The token set identifier.
+     *
+     * @return bool True when the generated dark variant file exists.
+     *
+     * @spec openspec/specs/dark-mode/spec.md
+     */
+    public function hasGeneratedDarkVariant(string $tokenSetId): bool
+    {
+        return is_file($this->getAppPath().'/css/tokens/dark/'.$tokenSetId.'.css');
+    }//end hasGeneratedDarkVariant()
+
+    /**
      * Get all design systems as a flat list (for API responses).
      *
      * @return array<array{id: string, name: string, description: string, stylesheets: string[]}> List of design systems.
