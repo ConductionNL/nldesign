@@ -75,6 +75,11 @@ return [
 		// Dark-mode variants — instance-wide admin toggle (openspec/specs/dark-mode/spec.md).
 		['name' => 'settings#getDarkVariants', 'url' => '/settings/dark-variants', 'verb' => 'GET'],
 		['name' => 'settings#setDarkVariants', 'url' => '/settings/dark-variants', 'verb' => 'POST'],
+		// Marianne (French State typeface) admin acknowledgement gate — default
+		// off; enabling it is the operator's affirmation of French-state
+		// eligibility (openspec/specs/marianne-font/spec.md).
+		['name' => 'settings#getMarianneEnabled', 'url' => '/settings/marianne', 'verb' => 'GET'],
+		['name' => 'settings#setMarianneEnabled', 'url' => '/settings/marianne', 'verb' => 'POST'],
 		// Complete configuration bundle (config-portability) — OTAP promotion
 		// download/upload, admin-only (AuthorizedAdminSetting).
 		['name' => 'configBundle#export', 'url' => '/settings/config/export', 'verb' => 'GET'],

@@ -20,6 +20,7 @@
  * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.3
  * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.4
  * @spec openspec/changes/fix-readiness-claims/tasks.md#task-5.5
+ * @spec openspec/specs/marianne-font/spec.md
  */
 
 declare(strict_types=1);
@@ -338,5 +339,77 @@ class ClaimAccuracyTest extends TestCase
                 'Any remaining APPROVED FOR PRODUCTION mention must be scoped to the five reviewed sets.'
             );
         }
+    }
+
+    /**
+     * README.md and the font-delivery compliance doc describe Marianne's
+     * real, legally-restricted situation honestly: bundled self-hosted under
+     * Etalab-2.0, restricted to French State agencies, off by default until
+     * an admin acknowledges eligibility, Inter used otherwise — and never
+     * claim it is unconditionally free/open, nor that no Marianne file ships.
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    public function testMarianneDocumentationDescribesTheGatedRestrictedSituationHonestly(): void
+    {
+        $readme     = $this->readFile('README.md');
+        $compliance = $this->readFile('docs/reference/compliance.md');
+
+        foreach (['README.md' => $readme, 'docs/reference/compliance.md' => $compliance] as $label => $doc) {
+            $this->assertMatchesRegularExpression(
+                '/Etalab.{0,10}2\.0/i',
+                $doc,
+                "{$label} must state Marianne is bundled under the Etalab Open Licence 2.0."
+            );
+            $this->assertMatchesRegularExpression(
+                "/French State agenc(y|ies)|administration de l'[ÉE]tat/i",
+                $doc,
+                "{$label} must state Marianne is restricted to French State agencies."
+            );
+            $this->assertMatchesRegularExpression(
+                '/off by default|default[- ]off|inert by default/i',
+                $doc,
+                "{$label} must state Marianne is off by default."
+            );
+
+            // Must not claim Marianne is unconditionally free/open.
+            $this->assertDoesNotMatchRegularExpression(
+                '/Marianne is (a |an )?(unconditionally )?(free|open)[- ]?(source|font)?\b(?!.{0,20}(French State|reserved|restricted))/i',
+                $doc,
+                "{$label} must not describe Marianne as an unconditionally free/open font."
+            );
+
+            // Must not claim (pre-change wording) that no Marianne file exists.
+            $this->assertDoesNotMatchRegularExpression(
+                '/no (such )?Marianne file exists|no Marianne file (anywhere )?ships/i',
+                $doc,
+                "{$label} must not claim that no Marianne file ships in the app."
+            );
+
+            // Must not claim CDN / external-host delivery for Marianne (mirrors
+            // testFontDocumentationMatchesBundledDelivery's Fira Sans guard).
+            $this->assertDoesNotMatchRegularExpression(
+                '/Marianne is (loaded|served|fetched) (via|from) (a )?(CDN|external)/i',
+                $doc,
+                "{$label} must not claim Marianne loads from a CDN or external host."
+            );
+        }
+    }
+
+    /**
+     * `css/systems/lasuite/marianne.css` never uses an `http://`/`https://`
+     * scheme — the gated Marianne layer is self-hosted, app-relative only.
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    public function testGatedMarianneStylesheetNeverUsesAnExternalScheme(): void
+    {
+        $css = $this->readFile('css/systems/lasuite/marianne.css');
+
+        $this->assertDoesNotMatchRegularExpression(
+            '#url\(\s*[\'"]?https?://#i',
+            $css,
+            'css/systems/lasuite/marianne.css must not load Marianne from an external http(s):// URL.'
+        );
     }
 }

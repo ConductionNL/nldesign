@@ -730,6 +730,54 @@ class SettingsController extends Controller
     }//end setDarkVariants()
 
     /**
+     * Get the Marianne (French State typeface) acknowledgement gate state.
+     *
+     * @return JSONResponse The `{ enabled }` state (default disabled).
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function getMarianneEnabled(): JSONResponse
+    {
+        $enabled = ($this->config->getAppValue(Application::APP_ID, 'marianne_enabled', '0') === '1');
+
+        return new JSONResponse(['enabled' => $enabled]);
+    }//end getMarianneEnabled()
+
+    /**
+     * Set the Marianne acknowledgement gate. Enabling it is the operator's
+     * affirmation that their organisation is a French State agency
+     * (administration de l'État) entitled to use the Marianne typeface (see
+     * AGREEMENT-MARIANNE.md) — `CssInjectionService` only emits the
+     * self-hosted `@font-face Marianne` layer while this flag is `'1'` AND
+     * the active design system is `lasuite`. Disabling it reverts every
+     * subsequent render to Inter without deleting the bundled font files.
+     *
+     * @param bool $enabled Whether the Marianne gate should be active.
+     *
+     * @return JSONResponse The response with the persisted state.
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    #[AuthorizedAdminSetting(Admin::class)]
+    public function setMarianneEnabled(bool $enabled): JSONResponse
+    {
+        $previous = ($this->config->getAppValue(Application::APP_ID, 'marianne_enabled', '0') === '1');
+        $this->saveBooleanSetting(key: 'marianne_enabled', value: $enabled);
+
+        $this->auditService->log(
+            action: 'toggle_changed',
+            context: [
+                'key' => 'marianne_enabled',
+                'old' => $previous,
+                'new' => $enabled,
+            ]
+        );
+
+        return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+    }//end setMarianneEnabled()
+
+    /**
      * Get the group theming mapping plus the picker option lists.
      *
      * @return JSONResponse The ordered mapping, available groups, and available token sets.

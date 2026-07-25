@@ -1,1 +1,10 @@
-{}
+{
+	"css/systems/lasuite/fonts/marianne/Marianne-Light.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Light_Italic.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Regular.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Regular_Italic.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Medium.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Medium_Italic.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Bold.woff2": "Etalab-2.0",
+	"css/systems/lasuite/fonts/marianne/Marianne-Bold_Italic.woff2": "Etalab-2.0"
+}
