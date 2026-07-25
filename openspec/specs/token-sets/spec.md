@@ -269,7 +269,8 @@ The app MUST expose admin-only API endpoints for listing, getting, and setting t
 ### Requirement: Token Set Count and Coverage
 
 The app MUST support at minimum the documented set of Dutch government organizations as token
-sets, plus the `lasuite` set for European sovereign-workplace (MijnBureau/EDIC) bundles.
+sets, plus the `lasuite` set for European sovereign-workplace (MijnBureau/EDIC) bundles, and MAY
+additionally ship the published Cunningham blue base as a `cunningham` set.
 
 #### Scenario: All required token sets present
 
@@ -299,7 +300,7 @@ sets, plus the `lasuite` set for European sovereign-workplace (MijnBureau/EDIC) 
 - GIVEN the `token-sets.json` manifest
 - WHEN the `lasuite` entry is read
 - THEN it MUST declare `design_system: "lasuite"`
-- AND its `theming` object MUST contain `primary_color: "#4844AD"` and
+- AND its `theming` object MUST contain `primary_color: "#4844AD"` (the deployed violet brand) and
   `background_color: "#FFFFFF"`
 - AND it MUST NOT contain a `logo` key (no La Suite/state logos are bundled — the logo slot
   stays empty for trademark reasons)
@@ -311,6 +312,20 @@ sets, plus the `lasuite` set for European sovereign-workplace (MijnBureau/EDIC) 
 - THEN it MUST declare only `--nldesign-*` custom properties on `:root` (REQ-TSET-005 rules
   apply unchanged)
 - AND undefined tokens MUST fall through to the lasuite bridge/defaults values
+
+#### Scenario: Cunningham blue-base set manifest entry (optional sibling)
+
+- GIVEN the app ships the optional `cunningham` sibling set
+- WHEN the `cunningham` entry in `token-sets.json` is read
+- THEN it MUST declare `design_system: "cunningham"`
+- AND its `theming` object MUST contain `primary_color: "#1A509F"` (brand-650 of the published
+  Cunningham blue base — the same scale step the shared bridge/element-overrides derive
+  `--color-primary` from for lasuite's violet `#4844AD`, so the swatch matches what actually
+  renders) and `background_color: "#FFFFFF"`
+- AND it MUST NOT contain a `logo` key
+- AND `css/tokens/cunningham.css` MUST exist as a standard Layer-3 `--nldesign-*` set pinning the blue
+  identity, reusing the shared generated `defaults.css` via its design system bundle
+- AND shipping or omitting this set MUST NOT change any `lasuite` behaviour
 
 ### Requirement: Design System Association
 Each token set MUST be associated with a design system that determines which CSS layers are loaded.

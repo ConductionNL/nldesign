@@ -341,7 +341,8 @@ All color token combinations used for text-on-background MUST meet WCAG 2.1 AA m
 ### Requirement: Design System Resolution
 
 The app MUST support multiple design systems and resolve the correct one for each token set.
-Shipped design systems are `none`, `nldesign`, `summer-breeze`, `high-contrast`, and `lasuite`.
+Shipped design systems are `none`, `nldesign`, `summer-breeze`, `high-contrast`, `lasuite`, and
+(optionally) `cunningham`.
 
 #### Scenario: Design system resolved from token set metadata
 
@@ -354,10 +355,21 @@ Shipped design systems are `none`, `nldesign`, `summer-breeze`, `high-contrast`,
 
 - GIVEN `token-sets.json` contains the `lasuite` entry with `design_system: "lasuite"`
 - WHEN `DesignSystemService::getDesignSystem("lasuite")` is called
-- THEN it MUST return the lasuite bundle with exactly four stylesheets in order:
-  `systems/lasuite/fonts`, `systems/lasuite/defaults`, `systems/lasuite/bridge`,
-  `systems/lasuite/element-overrides`
+- THEN it MUST return the lasuite bundle with exactly five stylesheets in order:
+  `systems/lasuite/fonts`, `systems/lasuite/defaults`, `systems/lasuite/brand-override`,
+  `systems/lasuite/bridge`, `systems/lasuite/element-overrides`
 - AND activating the `lasuite` token set MUST load that bundle followed by `tokens/lasuite`
+
+#### Scenario: Cunningham blue-base design system resolves
+
+- GIVEN `token-sets.json` contains a `cunningham` entry with `design_system: "cunningham"`
+- WHEN `DesignSystemService::getDesignSystem("cunningham")` is called
+- THEN it MUST return a bundle of exactly four stylesheets in order: `systems/lasuite/fonts`,
+  `systems/lasuite/defaults`, `systems/lasuite/bridge`, `systems/lasuite/element-overrides`
+  (the same shared files as `lasuite`, **without** `systems/lasuite/brand-override`)
+- AND activating the `cunningham` token set MUST resolve the blue base (`--color-primary #1A509F`
+  — brand-650, the same scale step the shared bridge/element-overrides derive `--color-primary`
+  from for lasuite's violet `#4844AD`; `#0659C5` is brand-600, a different, unrendered step)
 
 #### Scenario: Unknown design system falls back safely
 
@@ -376,7 +388,9 @@ Shipped design systems are `none`, `nldesign`, `summer-breeze`, `high-contrast`,
 ### Requirement: CSS Files in Systems Directory Structure
 
 Design system CSS files MUST be organized in a `css/systems/{designSystemId}/` directory
-structure, one directory per shipped design system.
+structure, one directory per shipped design system. The `lasuite` and `cunningham` design systems
+share a single `css/systems/lasuite/` directory (the `cunningham` bundle reuses the lasuite files
+minus the brand override); no separate `css/systems/cunningham/` directory is required.
 
 #### Scenario: NL Design system files in correct directory
 
@@ -391,9 +405,18 @@ structure, one directory per shipped design system.
 - GIVEN the lasuite design system is active
 - WHEN stylesheets are loaded
 - THEN all CSS files MUST be located in `css/systems/lasuite/` (fonts.css, defaults.css,
-  bridge.css, element-overrides.css) with its font binaries under `css/systems/lasuite/fonts/`
-- AND the lasuite files MUST NOT conflict with any other system's files (the `--lasuite-*`
-  namespace is exclusive to this directory)
+  brand-override.css, bridge.css, element-overrides.css) with its font binaries under
+  `css/systems/lasuite/fonts/`
+- AND the lasuite files MUST NOT conflict with any other system's files (the `--lasuite-*` and
+  `--lasuite--*` namespaces are exclusive to this directory)
+
+#### Scenario: Cunningham reuses the lasuite directory
+
+- GIVEN the cunningham design system is active
+- WHEN stylesheets are loaded
+- THEN they MUST resolve to files under `css/systems/lasuite/` (fonts, defaults, bridge,
+  element-overrides), reusing the shared generated defaults
+- AND `systems/lasuite/brand-override` MUST NOT be loaded for the cunningham bundle
 
 #### Scenario: Future design systems have separate directories
 
