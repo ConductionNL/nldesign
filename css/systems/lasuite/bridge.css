@@ -9,15 +9,24 @@
  *   2. Nextcloud's own `--color-*` custom properties (so core chrome and the
  *      Cn* component library pick up the theme without touching source).
  *
- * Load order: fonts → defaults → [bridge] → element-overrides, then
- * tokens/lasuite.
+ * Load order: fonts → defaults → brand-override → [bridge] →
+ * element-overrides, then tokens/lasuite.
+ *
+ * COVERAGE: every one of the 68 audited Nextcloud `--color-*` variables (the
+ * `nextcloud-variable-mapping` canonical surface — the same set
+ * css/systems/nldesign/overrides.css covers) appears below, either as an
+ * active mapping or as a commented line stating why it is not overridden.
+ * `npm run test:lasuite-bridge-coverage` (tests/css/check-lasuite-bridge-
+ * coverage.js) asserts this by diffing the variable name sets and fails on
+ * any audited variable that is neither mapped nor commented here.
  *
  * css-architecture invariants honoured here (REQ-CSS-005/007, ADR-CSS-002):
  *   - !important is used ONLY where Nextcloud's own `body[data-themes]` CSS
  *     sets the same variable at equal specificity and must be beaten.
  *   - --color-main-background, --color-main-background-rgb,
- *     --color-main-background-translucent and --color-background-plain are
- *     NEVER set here (dark-mode auto-derivation depends on them).
+ *     --color-main-background-translucent, --color-main-background-blur,
+ *     --color-background-plain and --color-background-plain-text are NEVER
+ *     set here (dark-mode auto-derivation depends on them).
  *   - --background-invert-if-dark / --background-invert-if-bright are NEVER
  *     set here (Nextcloud's dark-theme header-icon logic depends on them).
  *   - Every fallback resolves to a concrete value or a --lasuite-* token
@@ -38,15 +47,20 @@
 	--nldesign-color-primary-light: var(--lasuite-color-brand-050);
 	--nldesign-color-primary-light-hover: var(--lasuite-color-brand-100);
 
+	/* -*-rgb literal triples below MUST stay in sync with the hex value of
+	 * the corresponding --lasuite-color-*-550 token (plain CSS custom
+	 * properties cannot derive an rgba() triple from a hex var() at
+	 * declaration time). Recomputed against the generated defaults.css —
+	 * see css/systems/lasuite/defaults.css for the current hex values. */
 	--nldesign-color-error: var(--lasuite-color-error-550);
-	--nldesign-color-error-rgb: 215, 1, 14;
+	--nldesign-color-error-rgb: 216, 0, 0; /* #d80000 */
 	--nldesign-color-error-hover: var(--lasuite-color-error-650);
 	--nldesign-color-warning: var(--lasuite-color-warning-550);
-	--nldesign-color-warning-rgb: 188, 66, 0;
+	--nldesign-color-warning-rgb: 131, 103, 3; /* #836703 */
 	--nldesign-color-success: var(--lasuite-color-success-550);
-	--nldesign-color-success-rgb: 2, 123, 62;
+	--nldesign-color-success-rgb: 66, 120, 22; /* #427816 */
 	--nldesign-color-info: var(--lasuite-color-info-550);
-	--nldesign-color-info-rgb: 0, 105, 207;
+	--nldesign-color-info-rgb: 17, 103, 212; /* #1167d4 */
 
 	--nldesign-color-text: var(--lasuite-color-gray-900);
 	--nldesign-color-text-muted: var(--lasuite-color-gray-500);
@@ -58,8 +72,8 @@
 	/* Focus ring — semi-transparent info blue, same DELIBERATE-EXCEPTION
 	 * rationale as ADR-CSS-003: translucency keeps the ring visible on any
 	 * background without needing separate light/dark variants. */
-	--nldesign-color-focus: rgba(0, 105, 207, 0.5);
-	--nldesign-color-focus-rgb: 0, 105, 207;
+	--nldesign-color-focus: rgba(17, 103, 212, 0.5); /* #1167d4 */
+	--nldesign-color-focus-rgb: 17, 103, 212; /* #1167d4 */
 
 	--nldesign-color-header-background: var(--lasuite-color-gray-000);
 	--nldesign-color-header-text: var(--lasuite-color-gray-900);
@@ -97,53 +111,168 @@
 }
 
 /* ===================================================================
- * NEXTCLOUD --color-* MAPPING
+ * NEXTCLOUD --color-* MAPPING (68/68 audited variables — see COVERAGE
+ * note in the file header)
  * Applied at body[data-themes] to beat NC's own equal-specificity
  * assignment of the same variables (ADR-CSS-002 category 1).
  * =================================================================== */
 
 body[data-themes],
 body {
+
+	/* ===================================================================
+	 * PRIMARY COLORS
+	 * =================================================================== */
+
 	--color-primary: var(--lasuite-color-brand-650) !important;
 	--color-primary-text: var(--lasuite-color-gray-000) !important;
 	--color-primary-hover: var(--lasuite-color-brand-750) !important;
 	--color-primary-light: var(--lasuite-color-brand-050) !important;
+	--color-primary-light-hover: var(--lasuite-color-brand-100) !important;
+	--color-primary-light-text: var(--lasuite-color-brand-650) !important;
 	--color-primary-element: var(--lasuite-color-brand-650) !important;
 	--color-primary-element-text: var(--lasuite-color-gray-000) !important;
 	--color-primary-element-hover: var(--lasuite-color-brand-750) !important;
 	--color-primary-element-light: var(--lasuite-color-brand-050) !important;
 	--color-primary-element-light-text: var(--lasuite-color-brand-650) !important;
 	--color-primary-element-light-hover: var(--lasuite-color-brand-100) !important;
+	/* --color-primary-element-text-dark: intentionally not overridden — dark variant auto-calculated by Nextcloud */
 
-	/* Surfaces — background-hover/dark/darker only. --color-main-background
-	 * and --color-background-plain are intentionally NOT set here: Nextcloud
-	 * derives its dark-mode calculations from them (REQ-CSS-007). */
+	/* ===================================================================
+	 * MAIN BACKGROUND — REQ-CSS-007
+	 * Intentionally not overridden — core to Nextcloud's dark/light mode
+	 * auto-derivation and admin/user configuration.
+	 * =================================================================== */
+
+	/* --color-main-background: intentionally not overridden — overriding breaks dark mode (REQ-CSS-007) */
+	/* --color-main-background-rgb: intentionally not overridden — depends on main-background (REQ-CSS-007) */
+	/* --color-main-background-translucent: intentionally not overridden — depends on main-background-rgb (REQ-CSS-007) */
+	/* --color-main-background-blur: intentionally not overridden — depends on main-background-rgb (REQ-CSS-007) */
+	/* --color-background-plain: intentionally not overridden — admin/user configured, entangled with dark-mode background derivation (REQ-CSS-007) */
+	/* --color-background-plain-text: intentionally not overridden — auto-calculated by Nextcloud */
+
+	/* ===================================================================
+	 * BACKGROUND STATES
+	 * =================================================================== */
+
 	--color-background-hover: var(--lasuite-color-gray-050) !important;
 	--color-background-dark: var(--lasuite-color-gray-100) !important;
 	--color-background-darker: var(--lasuite-color-gray-200) !important;
 
+	/* ===================================================================
+	 * PLACEHOLDER COLORS
+	 * Skeleton-loader shimmer gradient — two adjacent tones from the
+	 * Cunningham greyscale, same theme regardless of light/dark.
+	 * =================================================================== */
+
+	--color-placeholder-light: var(--lasuite-color-gray-025) !important;
+	--color-placeholder-dark: var(--lasuite-color-gray-100) !important;
+
+	/* ===================================================================
+	 * TEXT COLORS
+	 * =================================================================== */
+
 	--color-main-text: var(--lasuite-color-gray-900) !important;
 	--color-text-maxcontrast: var(--lasuite-color-gray-500) !important;
+	/* --color-text-maxcontrast-default: unmapped — auto-calculated per theme by Nextcloud */
+	/* --color-text-maxcontrast-background-blur: unmapped — blur-adjusted maxcontrast, auto-calculated */
 	--color-text-light: var(--lasuite-color-gray-000) !important;
+	--color-text-lighter: var(--lasuite-color-gray-500) !important;
+	--color-text-error: var(--lasuite-color-error-550) !important;
+	--color-text-success: var(--lasuite-color-success-550) !important;
+	--color-text-warning: var(--lasuite-color-warning-550) !important;
+
+	/* ===================================================================
+	 * STATUS: ERROR
+	 * =================================================================== */
 
 	--color-error: var(--lasuite-color-error-550) !important;
+	--color-error-hover: var(--lasuite-color-error-650) !important;
+	/* --color-error-text: unmapped — auto-calculated for contrast by Nextcloud */
+	--color-error-rgb: var(--nldesign-color-error-rgb) !important;
+	--color-element-error: var(--lasuite-color-error-550) !important;
+	--color-border-error: var(--lasuite-color-error-550) !important;
+
+	/* ===================================================================
+	 * STATUS: WARNING
+	 * =================================================================== */
+
 	--color-warning: var(--lasuite-color-warning-550) !important;
+	--color-warning-hover: var(--lasuite-color-warning-650) !important;
+	/* --color-warning-text: unmapped — auto-calculated for contrast by Nextcloud */
+	--color-warning-rgb: var(--nldesign-color-warning-rgb) !important;
+	--color-element-warning: var(--lasuite-color-warning-550) !important;
+
+	/* ===================================================================
+	 * STATUS: SUCCESS
+	 * =================================================================== */
+
 	--color-success: var(--lasuite-color-success-550) !important;
+	--color-success-hover: var(--lasuite-color-success-650) !important;
+	/* --color-success-text: unmapped — auto-calculated for contrast by Nextcloud */
+	--color-success-rgb: var(--nldesign-color-success-rgb) !important;
+	--color-element-success: var(--lasuite-color-success-550) !important;
+	--color-border-success: var(--lasuite-color-success-550) !important;
+
+	/* ===================================================================
+	 * STATUS: INFO
+	 * =================================================================== */
+
 	--color-info: var(--lasuite-color-info-550) !important;
+	--color-info-hover: var(--lasuite-color-info-650) !important;
+	/* --color-info-text: unmapped — auto-calculated for contrast by Nextcloud */
+	/* --color-info-rgb: unmapped — deprecated, RGB for rgba() (mirrors the nldesign bridge's own audit in overrides.css) */
+	--color-element-info: var(--lasuite-color-info-550) !important;
+
+	/* ===================================================================
+	 * BORDERS
+	 * =================================================================== */
 
 	--color-border: var(--lasuite-color-gray-200) !important;
 	--color-border-dark: var(--lasuite-color-gray-500) !important;
 	--color-border-maxcontrast: var(--lasuite-color-gray-500) !important;
+
+	/* ===================================================================
+	 * BORDER RADIUS
+	 * =================================================================== */
 
 	--border-radius: var(--lasuite-border-radius) !important;
 	--border-radius-small: var(--lasuite-border-radius) !important;
 	--border-radius-large: var(--lasuite-border-radius) !important;
 	--border-radius-element: var(--lasuite-border-radius) !important;
 
+	/* ===================================================================
+	 * SPECIAL COLORS
+	 * =================================================================== */
+
+	/* --color-favorite: unmapped — no Cunningham equivalent; Nextcloud's default gold favorite-star colour is used */
+	/* --color-loading-light: unmapped — NC loading animation internal */
+	/* --color-loading-dark: unmapped — NC loading animation internal */
+	/* --color-scrollbar: intentionally not overridden — depends on --color-border-maxcontrast, already mapped above */
+
+	/* ===================================================================
+	 * SHADOWS
+	 * =================================================================== */
+
+	/* --color-box-shadow-rgb: unmapped — auto-calculated from background */
+	/* --color-box-shadow: unmapped — depends on --color-box-shadow-rgb */
+
+	/* ===================================================================
+	 * ASSISTANT (AI)
+	 * Intentionally not overridden — NC-specific feature, no Cunningham
+	 * equivalent.
+	 * =================================================================== */
+
+	/* --color-background-assistant: intentionally not overridden — NC-specific */
+	/* --color-border-assistant: intentionally not overridden — NC-specific */
+	/* --color-element-assistant: intentionally not overridden — NC-specific */
+	/* --color-element-assistant-icon: intentionally not overridden — NC-specific */
+
 	/* --color-main-background, --color-main-background-rgb,
-	 * --color-main-background-translucent, --color-background-plain,
-	 * --background-invert-if-dark and --background-invert-if-bright are
-	 * deliberately absent from this rule — see file header (REQ-CSS-007). */
+	 * --color-main-background-translucent, --color-main-background-blur,
+	 * --color-background-plain and --color-background-plain-text are
+	 * deliberately absent from active mapping above — see file header
+	 * (REQ-CSS-007). */
 }
 
 /* Font — applied via inheritance from body (ADR-CSS-001), no !important and

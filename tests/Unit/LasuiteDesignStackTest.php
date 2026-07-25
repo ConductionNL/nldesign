@@ -16,6 +16,7 @@
  *
  * @spec openspec/specs/css-architecture/spec.md
  * @spec openspec/specs/token-sets/spec.md
+ * @spec openspec/specs/lasuite-parity/spec.md
  */
 
 declare(strict_types=1);
@@ -83,12 +84,14 @@ class LasuiteDesignStackTest extends TestCase
     }//end tokenSetService()
 
     /**
-     * `DesignSystemService::getDesignSystem('lasuite')` resolves the four
-     * stylesheets in the exact declared order.
+     * `DesignSystemService::getDesignSystem('lasuite')` resolves the five
+     * stylesheets in the exact declared order (fonts → defaults →
+     * brand-override → bridge → element-overrides).
      *
      * @spec openspec/specs/css-architecture/spec.md
+     * @spec openspec/specs/lasuite-parity/spec.md
      */
-    public function testLasuiteDesignSystemResolvesFourStylesheetsInOrder(): void
+    public function testLasuiteDesignSystemResolvesFiveStylesheetsInOrder(): void
     {
         $system = $this->designSystemService()->getDesignSystem('lasuite');
 
@@ -97,13 +100,45 @@ class LasuiteDesignStackTest extends TestCase
             [
                 'systems/lasuite/fonts',
                 'systems/lasuite/defaults',
+                'systems/lasuite/brand-override',
                 'systems/lasuite/bridge',
                 'systems/lasuite/element-overrides',
             ],
             $system['stylesheets'],
-            'The lasuite bundle must declare exactly these four stylesheets, in this order.'
+            'The lasuite bundle must declare exactly these five stylesheets, in this order.'
         );
-    }//end testLasuiteDesignSystemResolvesFourStylesheetsInOrder()
+    }//end testLasuiteDesignSystemResolvesFiveStylesheetsInOrder()
+
+    /**
+     * `DesignSystemService::getDesignSystem('cunningham')` resolves the same
+     * shared fonts/defaults/bridge/element-overrides files as lasuite, but
+     * WITHOUT brand-override — so it stays on the published Cunningham blue
+     * base instead of the deployed violet.
+     *
+     * @spec openspec/specs/css-architecture/spec.md
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testCunninghamDesignSystemResolvesFourStylesheetsWithoutBrandOverride(): void
+    {
+        $system = $this->designSystemService()->getDesignSystem('cunningham');
+
+        $this->assertSame('cunningham', $system['id']);
+        $this->assertSame(
+            [
+                'systems/lasuite/fonts',
+                'systems/lasuite/defaults',
+                'systems/lasuite/bridge',
+                'systems/lasuite/element-overrides',
+            ],
+            $system['stylesheets'],
+            'The cunningham bundle must reuse the shared lasuite files, minus brand-override.'
+        );
+        $this->assertNotContains(
+            'systems/lasuite/brand-override',
+            $system['stylesheets'],
+            'The cunningham bundle must never load the violet brand-override layer.'
+        );
+    }//end testCunninghamDesignSystemResolvesFourStylesheetsWithoutBrandOverride()
 
     /**
      * Every stylesheet declared in the lasuite bundle has a backing CSS file
@@ -129,6 +164,192 @@ class LasuiteDesignStackTest extends TestCase
             'The lasuite Layer-3 token file must exist.'
         );
     }//end testDeclaredStylesheetsHaveBackingFiles()
+
+    /**
+     * Every stylesheet declared in the cunningham bundle has a backing CSS
+     * file, and the cunningham Layer-3 token file exists.
+     *
+     * @spec openspec/specs/css-architecture/spec.md
+     * @spec openspec/specs/token-sets/spec.md
+     */
+    public function testCunninghamDeclaredStylesheetsHaveBackingFiles(): void
+    {
+        $system = $this->designSystemService()->getDesignSystem('cunningham');
+
+        foreach ($system['stylesheets'] as $stylesheet) {
+            $path = $this->repoRoot().'/css/'.$stylesheet.'.css';
+            $this->assertFileExists($path, "Declared stylesheet '{$stylesheet}' has no backing CSS file.");
+        }
+
+        $this->assertFileExists(
+            $this->repoRoot().'/css/tokens/cunningham.css',
+            'The cunningham Layer-3 token file must exist.'
+        );
+    }//end testCunninghamDeclaredStylesheetsHaveBackingFiles()
+
+    /**
+     * `token-sets.json`'s `cunningham` entry declares `design_system:
+     * "cunningham"` and the published blue base, distinct from lasuite's
+     * deployed violet. The swatch is brand-650 (#1A509F), not brand-600
+     * (#0659C5): the shared bridge.css/element-overrides.css (reused as-is
+     * from the lasuite bundle) derive `--color-primary` from
+     * `--lasuite-color-brand-650` specifically — the same step that
+     * resolves to lasuite's deployed violet #4844AD — so the swatch must
+     * match what actually renders, not Cunningham's own "-600" named step.
+     *
+     * @spec openspec/specs/token-sets/spec.md
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testTokenSetMetaDeclaresCunninghamDesignSystem(): void
+    {
+        $meta = $this->designSystemService()->getTokenSetMeta('cunningham');
+
+        $this->assertSame('cunningham', $meta['design_system'] ?? null);
+        $this->assertSame('#1A509F', $meta['theming']['primary_color'] ?? null);
+        $this->assertSame('#FFFFFF', $meta['theming']['background_color'] ?? null);
+        $this->assertArrayNotHasKey(
+            'logo',
+            $meta['theming'] ?? [],
+            'The cunningham theming block must not carry a logo key.'
+        );
+    }//end testTokenSetMetaDeclaresCunninghamDesignSystem()
+
+    /**
+     * The generated defaults.css defines the published Cunningham BLUE base
+     * (brand-600) — the violet deployment values live only in
+     * brand-override.css, never here.
+     *
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testGeneratedDefaultsDefineTheBlueBaseNotTheViolet(): void
+    {
+        $defaults = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/defaults.css');
+
+        $this->assertStringContainsString(
+            '--lasuite--globals--colors--brand-600: #0659c5;',
+            $defaults,
+            'defaults.css must define the published Cunningham blue brand-600.'
+        );
+        // Checked as an active DECLARATION VALUE (": #hex;"), not a blanket
+        // substring — the file's own provenance header legitimately mentions
+        // these violet hex values in PROSE (documenting what brand-override.css
+        // changes), which must not trip this guard.
+        $this->assertDoesNotMatchRegularExpression(
+            '/:\s*#534fc2\s*;/i',
+            $defaults,
+            'defaults.css must never hard-code the deployed violet brand-600 (#534fc2) as a declaration value — that belongs in brand-override.css.'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/:\s*#4844ad\s*;/i',
+            $defaults,
+            'defaults.css must never hard-code the deployed violet brand-650/logo (#4844ad) as a declaration value — that belongs in brand-override.css.'
+        );
+    }//end testGeneratedDefaultsDefineTheBlueBaseNotTheViolet()
+
+    /**
+     * The generated defaults.css carries a provenance header naming the
+     * source package, its version, the token count and the mapping rule.
+     *
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testGeneratedDefaultsCarryProvenanceHeader(): void
+    {
+        $defaults = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/defaults.css');
+
+        $this->assertStringContainsString('@openfun/cunningham-tokens@', $defaults);
+        $this->assertStringContainsString('MIT licence', $defaults);
+        $this->assertStringContainsString('Token count: 1167', $defaults);
+        $this->assertStringContainsString('--c--<rest>', $defaults);
+        $this->assertStringContainsString('--lasuite--<rest>', $defaults);
+    }//end testGeneratedDefaultsCarryProvenanceHeader()
+
+    /**
+     * `brand-override.css` is sourced (not generated) and carries a
+     * provenance comment naming the observed live bundle, the block, and the
+     * observation date; loading it after defaults.css resolves the brand
+     * scale and logo tokens to the deployed violet.
+     *
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testBrandOverrideIsSourcedAndResolvesViolet(): void
+    {
+        $override = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/brand-override.css');
+
+        $this->assertStringContainsString('docs.numerique.gouv.fr', $override);
+        $this->assertStringContainsString('block 5', $override);
+        $this->assertStringContainsString('2026-07-24', $override);
+        $this->assertStringContainsString(
+            '--lasuite--globals--colors--brand-600: #534fc2;',
+            $override,
+            'brand-override.css must redeclare brand-600 to the deployed violet.'
+        );
+        $this->assertStringContainsString(
+            '--lasuite--globals--colors--brand-650: #4844ad;',
+            $override,
+            'brand-override.css must redeclare brand-650 (also the logo colour) to the deployed violet.'
+        );
+    }//end testBrandOverrideIsSourcedAndResolvesViolet()
+
+    /**
+     * The lasuite bridge accounts for every one of the 68 audited Nextcloud
+     * `--color-*` variables (the `nextcloud-variable-mapping` canonical
+     * surface, the same set css/systems/nldesign/overrides.css covers) as
+     * either an active mapping or a commented, reasoned line. Mirrors
+     * `tests/css/check-lasuite-bridge-coverage.js` (the Node drift-style
+     * check `npm run test:lasuite-bridge-coverage` runs) as a PHPUnit
+     * regression so the same invariant is enforced from both toolchains.
+     *
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testBridgeAccountsForEveryAuditedColorVariable(): void
+    {
+        $overrides = (string) file_get_contents($this->repoRoot().'/css/systems/nldesign/overrides.css');
+        $bridge    = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/bridge.css');
+
+        preg_match_all('/^\s*(--color-[a-zA-Z0-9-]+)\s*:/m', $overrides, $mappedMatches);
+        preg_match_all('/\/\*\s*(--color-[a-zA-Z0-9-]+)\s*:/', $overrides, $commentedMatches);
+        $audited = array_unique(array_merge($mappedMatches[1], $commentedMatches[1]));
+
+        $this->assertGreaterThanOrEqual(
+            68,
+            \count($audited),
+            'The audited --color-* surface in overrides.css must be at least 68 variables.'
+        );
+
+        preg_match_all('/^\s*(--color-[a-zA-Z0-9-]+)\s*:/m', $bridge, $bridgeMapped);
+        preg_match_all('/\/\*\s*(--color-[a-zA-Z0-9-]+)\s*:/', $bridge, $bridgeCommented);
+        $bridgeCovered = array_unique(array_merge($bridgeMapped[1], $bridgeCommented[1]));
+
+        $missing = array_values(array_diff($audited, $bridgeCovered));
+
+        $this->assertSame(
+            [],
+            $missing,
+            'Every audited --color-* variable must appear in bridge.css as a mapping or a reasoned comment. Missing: '.implode(', ', $missing)
+        );
+    }//end testBridgeAccountsForEveryAuditedColorVariable()
+
+    /**
+     * The shared bridge.css derives `--color-primary` (and every brand-accent
+     * rule in element-overrides.css) from `--lasuite-color-brand-650`
+     * specifically. This is the load-bearing fact behind the brand-650 (not
+     * brand-600) swatch choice for the cunningham sibling — pinned as a
+     * regression guard so a future edit that switches the mapping to a
+     * different scale step does not silently strand token-sets.json's
+     * cunningham/lasuite swatches out of sync with what actually renders.
+     *
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testBridgeDerivesColorPrimaryFromBrand650(): void
+    {
+        $bridge = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/bridge.css');
+
+        $this->assertMatchesRegularExpression(
+            '/--color-primary:\s*var\(--lasuite-color-brand-650\)\s*!important;/',
+            $bridge,
+            'bridge.css must derive --color-primary from --lasuite-color-brand-650 (both lasuite and cunningham share this file).'
+        );
+    }//end testBridgeDerivesColorPrimaryFromBrand650()
 
     /**
      * `token-sets.json`'s `lasuite` entry declares `design_system: "lasuite"`
@@ -211,9 +432,12 @@ class LasuiteDesignStackTest extends TestCase
      * `--nldesign-color-{error,warning,success,info}` (Cunningham's own
      * "-550" background token, not the raw "-500" swatch) carry white text
      * at WCAG AA. Guards the deliberate -550-over-500 choice documented in
-     * css/systems/lasuite/defaults.css.
+     * css/systems/lasuite/bridge.css. Values are the GENERATED Cunningham
+     * package's own "-550" step (css/systems/lasuite/defaults.css) — status
+     * colours are untouched by the violet brand-override.
      *
      * @spec openspec/specs/css-architecture/spec.md
+     * @spec openspec/specs/lasuite-parity/spec.md
      */
     public function testStatusFillsCarryWhiteTextAtAa(): void
     {
@@ -222,10 +446,10 @@ class LasuiteDesignStackTest extends TestCase
         $this->assertNotNull($white);
 
         $fills = [
-            'error-550'   => '#D7010E',
-            'warning-550' => '#BC4200',
-            'success-550' => '#027B3E',
-            'info-550'    => '#0069CF',
+            'error-550'   => '#D80000',
+            'warning-550' => '#836703',
+            'success-550' => '#427816',
+            'info-550'    => '#1167D4',
         ];
 
         foreach ($fills as $name => $hex) {
@@ -330,23 +554,56 @@ class LasuiteDesignStackTest extends TestCase
     {
         $bridge = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/bridge.css');
 
+        // Since the bridge-coverage completion (lasuite-parity), these six
+        // variables are individually documented as commented, reasoned lines
+        // (task 4.3) rather than only mentioned in the file's header prose —
+        // so the check below must distinguish an ACTIVE declaration
+        // (forbidden) from a commented one (required, and asserted present).
         foreach (
             [
-                '--color-main-background:',
-                '--color-main-background-rgb:',
-                '--color-main-background-translucent:',
-                '--color-background-plain:',
-                '--background-invert-if-dark:',
-                '--background-invert-if-bright:',
-            ] as $forbidden
+                '--color-main-background',
+                '--color-main-background-rgb',
+                '--color-main-background-translucent',
+                '--color-background-plain',
+                '--background-invert-if-dark',
+                '--background-invert-if-bright',
+            ] as $name
         ) {
-            $this->assertStringNotContainsString(
-                $forbidden,
+            $this->assertDoesNotMatchRegularExpression(
+                '/^\s*'.preg_quote($name, '/').'\s*:/m',
                 $bridge,
-                "bridge.css must not set {$forbidden} (REQ-CSS-007 dark-mode compatibility)."
+                "bridge.css must not ACTIVELY set {$name} (REQ-CSS-007 dark-mode compatibility)."
             );
         }
     }//end testBridgeNeverSetsDarkModeCompatibilityVariables()
+
+    /**
+     * The four dark-mode-compat `--color-*` variables that ARE part of the
+     * 68-variable audited surface (`--background-invert-if-*` are not
+     * `--color-*` prefixed, so they fall outside that surface) are present
+     * as commented, reasoned lines — not silently absent.
+     *
+     * @spec openspec/specs/lasuite-parity/spec.md
+     */
+    public function testBridgeDocumentsDarkModeCompatVariablesWithAReason(): void
+    {
+        $bridge = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/bridge.css');
+
+        foreach (
+            [
+                '--color-main-background',
+                '--color-main-background-rgb',
+                '--color-main-background-translucent',
+                '--color-background-plain',
+            ] as $name
+        ) {
+            $this->assertMatchesRegularExpression(
+                '/\/\*\s*'.preg_quote($name, '/').'\s*:/',
+                $bridge,
+                "bridge.css must document {$name} as a commented, reasoned line."
+            );
+        }
+    }//end testBridgeDocumentsDarkModeCompatVariablesWithAReason()
 
     /**
      * The fonts layer never declares a `url()` source for Marianne — only

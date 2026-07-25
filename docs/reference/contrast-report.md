@@ -17,6 +17,7 @@ system reads `--nldesign-*` tokens, computed by `ContrastService` over
 | bodegraven-reeuwijk | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | borne | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | buren | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
+| cunningham | 7.80:1 | 4.5:1 | 7.80:1 | 3.0:1 | pass |
 | demodam | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | denhaag | 5.39:1 | 4.5:1 | 5.39:1 | 3.0:1 | pass |
 | dinkelland | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |

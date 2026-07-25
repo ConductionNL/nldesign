@@ -21,6 +21,9 @@
 		"test:l10n:write": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js --write",
 		"test:l10n:completeness": "node tests/l10n/check-l10n-completeness.js",
 		"test:l10n:completeness:write": "node tests/l10n/check-l10n-completeness.js --write",
+		"generate:lasuite-tokens": "node scripts/generate-lasuite-tokens.mjs",
+		"test:lasuite-tokens": "node scripts/generate-lasuite-tokens.mjs --check",
+		"test:lasuite-bridge-coverage": "node tests/css/check-lasuite-bridge-coverage.js",
 		"build": "npm run build:fonts && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:icons": "node scripts/build-icons.js",
@@ -40,6 +43,7 @@
 	"devDependencies": {
 		"@conduction/nextcloud-vue": "^1.0.0-beta.218",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
+		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",
 		"@vitest/coverage-v8": "^1.6.1",
 		"jsdom": "^29.1.1",

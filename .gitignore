@@ -73,3 +73,8 @@ tests/e2e/test-results/
 tests/e2e/.auth/
 /coverage-vitest/
 /coverage/
+
+# Scratch research inputs for the lasuite-token-completeness change — captured
+# facts about the LIVE docs.numerique.gouv.fr bundle, not app source. The
+# authoritative, committed output is css/systems/lasuite/brand-override.css.
+/.lasuite-src/

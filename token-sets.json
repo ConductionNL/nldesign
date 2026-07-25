@@ -405,5 +405,15 @@
 			"primary_color": "#4844AD",
 			"background_color": "#FFFFFF"
 		}
+	},
+	{
+		"id": "cunningham",
+		"name": "Cunningham (blue base)",
+		"description": "The published Cunningham design system (MIT, @openfun/cunningham-tokens) as distributed — blue base (brand-650 #1A509F, the same scale step the shared bridge/element-overrides derive --color-primary from for lasuite's violet #4844AD), self-hosted Inter. Secondary/optional sibling of lasuite: same generated token base, without the deployed violet La Suite brand override. No logo bundled.",
+		"design_system": "cunningham",
+		"theming": {
+			"primary_color": "#1A509F",
+			"background_color": "#FFFFFF"
+		}
 	}
 ]

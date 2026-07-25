@@ -63,7 +63,15 @@ bundle simply omits `brand-override`, so it resolves to blue from the same `defa
 
 `token-sets.json` `lasuite.primary_color` stays `#4844AD` — it is display metadata for the admin
 dropdown/preview, and `#4844AD` is the violet brand-650/logo, which is the correct swatch to show for
-the deployed theme. `cunningham.primary_color` is `#0659C5` (blue brand-600).
+the deployed theme. `cunningham.primary_color` is `#1A509F` (blue brand-650, NOT brand-600
+`#0659C5`): the shared `bridge.css`/`element-overrides.css` (reused as-is, unmodified, from the
+lasuite bundle — see "Rewrite bridge/element-overrides to canonical names now" under Alternatives)
+derive `--color-primary` and every brand-accent rule from `--lasuite-color-brand-650` specifically,
+the same step that resolves to lasuite's deployed violet `#4844AD`. Pinning `cunningham.primary_color`
+to brand-650's blue value keeps the swatch honest about what the design system actually renders,
+matching the pattern `lasuite.primary_color` already establishes. (`brand-600 #0659C5` remains the
+correct value for the raw *generated token* `--lasuite--globals--colors--brand-600` in
+`defaults.css` — that fact is unrelated to and unaffected by this correction.)
 
 ## Bridge coverage model
 
@@ -93,8 +101,10 @@ Issue #181: the e2e instance falls over under heavy parallel navigation. The par
   the audit flagged).
 
 Reference values come from the Cunningham build for the **active** set: violet for `lasuite`
-(brand-650 `#4844ad`, radius `4px`, Inter/Marianne stack), blue for `cunningham` (brand-600 `#0659C5`).
-The spec reads the active token set and selects the matching reference table.
+(brand-650 `#4844ad`, radius `4px`, Inter/Marianne stack), blue for `cunningham` (brand-650
+`#1a509f`, same radius/font stack — the shared bridge/element-overrides derive every rendered
+brand-accent from brand-650, not brand-600). The spec reads the active token set and selects the
+matching reference table.
 
 ## Drift guard
 
