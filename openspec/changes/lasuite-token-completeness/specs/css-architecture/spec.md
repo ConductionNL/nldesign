@@ -34,7 +34,9 @@ Shipped design systems are `none`, `nldesign`, `summer-breeze`, `high-contrast`,
 - THEN it MUST return a bundle of exactly four stylesheets in order: `systems/lasuite/fonts`,
   `systems/lasuite/defaults`, `systems/lasuite/bridge`, `systems/lasuite/element-overrides`
   (the same shared files as `lasuite`, **without** `systems/lasuite/brand-override`)
-- AND activating the `cunningham` token set MUST resolve the blue base (`--color-primary #0659C5`)
+- AND activating the `cunningham` token set MUST resolve the blue base (`--color-primary #1A509F`
+  — brand-650, the same scale step the shared bridge/element-overrides derive `--color-primary`
+  from for lasuite's violet `#4844AD`; `#0659C5` is brand-600, a different, unrendered step)
 
 #### Scenario: Unknown design system falls back safely
 

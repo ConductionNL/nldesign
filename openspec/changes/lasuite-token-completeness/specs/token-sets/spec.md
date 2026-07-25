@@ -57,8 +57,10 @@ additionally ship the published Cunningham blue base as a `cunningham` set.
 - GIVEN the app ships the optional `cunningham` sibling set
 - WHEN the `cunningham` entry in `token-sets.json` is read
 - THEN it MUST declare `design_system: "cunningham"`
-- AND its `theming` object MUST contain `primary_color: "#0659C5"` (the published Cunningham blue
-  base) and `background_color: "#FFFFFF"`
+- AND its `theming` object MUST contain `primary_color: "#1A509F"` (brand-650 of the published
+  Cunningham blue base — the same scale step the shared bridge/element-overrides derive
+  `--color-primary` from for lasuite's violet `#4844AD`, so the swatch matches what actually
+  renders) and `background_color: "#FFFFFF"`
 - AND it MUST NOT contain a `logo` key
 - AND `css/tokens/cunningham.css` MUST exist as a standard Layer-3 `--nldesign-*` set pinning the blue
   identity, reusing the shared generated `defaults.css` via its design system bundle

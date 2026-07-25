@@ -1,0 +1,96 @@
+/**
+ * La Suite numérique — Sourced Brand Override Layer (VIOLET, deployed theme)
+ *
+ * PROVENANCE: observed in the live docs.numerique.gouv.fr La Suite Docs
+ * bundle, `:root` block 5 (the VIOLET override block that wins the cascade
+ * over block 0's blue Cunningham base), observed 2026-07-24. These values
+ * are NOT present in any published Cunningham npm package — neither
+ * `@openfun/cunningham-tokens@3.0.0` nor `@gouvfr-lasuite/ui-kit@0.27.0`
+ * ship anything but the blue base (brand-600 #0659c5 / #1a509f respectively).
+ * The violet La Suite users actually see exists only as this app-level
+ * deployment override, so it is hand-authored and sourced here rather than
+ * generated — see css/systems/lasuite/defaults.css for the generated blue
+ * base this file redeclares over.
+ *
+ * SCOPE: only the brand colour scale and the logo tokens the live block-5
+ * override actually changes. The live bundle's block 5 also touches a
+ * `--c--components--*` namespace (badge/alert component tokens) that does
+ * not exist at all in the published npm packages (a newer/live-only
+ * Cunningham build) — those are out of scope here; this file only overrides
+ * tokens the generated defaults.css already defines.
+ *
+ * Load order: fonts → defaults → [brand-override] → bridge →
+ * element-overrides, then tokens/lasuite. Both this file and defaults.css
+ * write plain `:root`, so — loaded after defaults — this file's
+ * declarations win the cascade for every token it redeclares; the
+ * compatibility-alias short names in defaults.css (`--lasuite-color-brand-*`)
+ * reference the canonical `--lasuite--globals--colors--brand-*` tokens via
+ * var(), so overriding the canonical tokens here is sufficient for the alias
+ * names to resolve violet too — the four aliases the bridge/element-overrides
+ * layers actually read are ALSO redeclared explicitly below for robustness
+ * (belt-and-braces, not reliance on var() indirection alone).
+ *
+ * NOT generator output: scripts/generate-lasuite-tokens.mjs must never write
+ * to this file, and the drift guard (`npm run test:lasuite-tokens`) does not
+ * touch it.
+ */
+
+:root {
+	/* ===================================================================
+	 * BRAND SCALE (violet) — full 19-step scale, block-5 observed values.
+	 * =================================================================== */
+
+	--lasuite--globals--colors--brand-050: #eef1fa;
+	--lasuite--globals--colors--brand-100: #dde2f5;
+	--lasuite--globals--colors--brand-150: #ced3f1;
+	--lasuite--globals--colors--brand-200: #bec5f0;
+	--lasuite--globals--colors--brand-250: #afb5f1;
+	--lasuite--globals--colors--brand-300: #a0a5f6;
+	--lasuite--globals--colors--brand-350: #8f94fd;
+	--lasuite--globals--colors--brand-400: #8184fc;
+	--lasuite--globals--colors--brand-450: #7576ee;
+	--lasuite--globals--colors--brand-500: #6969df;
+	--lasuite--globals--colors--brand-550: #5e5cd0;
+	--lasuite--globals--colors--brand-600: #534fc2;
+	--lasuite--globals--colors--brand-650: #4844ad; /* La Suite brand — also the logo colour */
+	--lasuite--globals--colors--brand-700: #3e3b98;
+	--lasuite--globals--colors--brand-750: #36347d;
+	--lasuite--globals--colors--brand-800: #2d2f5f;
+	--lasuite--globals--colors--brand-850: #262848;
+	--lasuite--globals--colors--brand-900: #1c1e32;
+	--lasuite--globals--colors--brand-950: #11131f;
+
+	/* ===================================================================
+	 * LOGO TOKENS
+	 * The base Cunningham package defines --c--globals--colors--logo-1/-2
+	 * (no "-light" suffix) and --logo-1-dark/--logo-2-dark. The live violet
+	 * override INTRODUCES a "-light" variant (not present in the base
+	 * package at all) and redirects --c--contextuals--content--logo1/logo2
+	 * to point at it — both reproduced below. It also changes the existing
+	 * dark variants from the base's blue #95abff to a violet-scale #bec5f0
+	 * (brand-200); reproduced for upstream fidelity even though nldesign
+	 * does not currently activate the .cunningham-theme--dark block.
+	 * =================================================================== */
+
+	--lasuite--globals--colors--logo-1-light: #4844ad;
+	--lasuite--globals--colors--logo-2-light: #4844ad;
+	--lasuite--globals--colors--logo-1-dark: #bec5f0;
+	--lasuite--globals--colors--logo-2-dark: #bec5f0;
+
+	--lasuite--contextuals--content--logo1: var(--lasuite--globals--colors--logo-1-light);
+	--lasuite--contextuals--content--logo2: var(--lasuite--globals--colors--logo-2-light);
+
+	/* ===================================================================
+	 * SHORT-ALIAS COUNTERPARTS
+	 * The four --lasuite-color-brand-* short names bridge.css and
+	 * element-overrides.css actually read. Already implied by the canonical
+	 * overrides above via var() indirection (defaults.css's compatibility
+	 * aliases reference these canonical names) — redeclared explicitly here
+	 * so this file is self-contained and does not rely on that indirection.
+	 * =================================================================== */
+
+	--lasuite-color-brand-050: var(--lasuite--globals--colors--brand-050);
+	--lasuite-color-brand-100: var(--lasuite--globals--colors--brand-100);
+	--lasuite-color-brand-650: var(--lasuite--globals--colors--brand-650);
+	--lasuite-color-brand-750: var(--lasuite--globals--colors--brand-750);
+}

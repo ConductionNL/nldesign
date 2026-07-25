@@ -64,7 +64,9 @@ adds a **drift guard**. It also (secondarily) ships the published blue base as i
   brand-override → bridge → element-overrides`.
 - **Ship the blue base as an optional sibling set (secondary).** Add a `cunningham` design system
   (bundle `fonts → defaults → bridge → element-overrides`, **no** brand-override) and a `cunningham`
-  token set (`primary_color #0659C5`) that **reuses the same generated `defaults.css`**. This is the
+  token set (`primary_color #1A509F` — brand-650 of the blue base, the step the shared bridge/
+  element-overrides actually derive `--color-primary` from) that **reuses the same generated
+  `defaults.css`**. This is the
   artifact the npm packages actually publish; it is optional/secondary to `lasuite` and adds no new
   CSS beyond one token file + two manifest entries.
 - **Complete the bridge with provable coverage.** Audit every Nextcloud `--color-*` variable in the

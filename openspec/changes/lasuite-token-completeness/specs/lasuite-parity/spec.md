@@ -92,7 +92,11 @@ behaviour.
 
 - GIVEN the `cunningham` token set is active
 - WHEN `--color-primary` is resolved
-- THEN it MUST resolve to the blue `#0659C5` from the shared generated `defaults.css`
+- THEN it MUST resolve to the blue base's brand-650 `#1A509F` from the shared generated
+  `defaults.css` (the same scale step `--color-primary` resolves to for lasuite's violet
+  `#4844AD` — the shared bridge/element-overrides derive `--color-primary` from
+  `--lasuite-color-brand-650` specifically, not brand-600; brand-600 `#0659C5` is the value of the
+  raw generated token `--lasuite--globals--colors--brand-600`, a different, unrendered step)
 - AND no `--lasuite/brand-override` stylesheet MUST be loaded for this set
 - AND activating `lasuite` afterwards MUST still resolve to the violet `#4844AD`
 
@@ -151,7 +155,9 @@ element) rather than heavy parallel navigation.
   header, and table
 - THEN each asserted property MUST equal the Cunningham reference value for the active set (violet
   brand-650 `#4844ad`, radius `4px`, the Inter/Marianne stack), after notation normalisation
-- AND for the `cunningham` set the reference table MUST use the blue base (brand-600 `#0659C5`)
+- AND for the `cunningham` set the reference table MUST use the blue base's brand-650 (`#1A509F` —
+  the same scale step the shared bridge/element-overrides derive every rendered brand-accent from
+  for lasuite's violet `#4844AD`; brand-600 `#0659C5` is a different, unrendered step)
 
 #### Scenario: Mismatch names the property and delta
 
