@@ -25,18 +25,21 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 - **No Build Required**: Tokens are pre-compiled CSS and fonts are bundled and self-hosted (no external CDN)
 
-- **NL-Government Icons**: Includes 1488 SVG icons sourced from `@conduction/nextcloud-vue`'s EUPL-compatible NL-government packs (RVO, OpenGemeenten, Gemeente Den Haag), plus 23 organization logos, for use across all Nextcloud apps
+- **NL-Government and French-Government Icons**: Includes 1488 SVG icons sourced from `@conduction/nextcloud-vue`'s EUPL-compatible NL-government packs (RVO, OpenGemeenten, Gemeente Den Haag) plus 1038 SVG icons from the French-government DSFR pack (`@gouvfr/dsfr`, Etalab-2.0) — 2526 icons total — plus 23 organization logos, for use across all Nextcloud apps
+
+- **Theme-switchable iconography**: The icon pack an app resolves through nldesign travels with the active design system — a French-government (`lasuite`) theme serves the DSFR pack, a Dutch-government theme serves the RVO/OpenGemeenten/Den Haag packs — resolved via `DesignSystemService` and advertised on the public capability (`iconPacks`). See `img/ICONS.md`.
 
 ## Icons
 
-The app includes **1488 icons** across three NL-government sets (RVO, OpenGemeenten, Gemeente Den Haag — CC0-1.0 / CC0-1.0 / EUPL-1.2) and **23 logos**:
+The app includes **2526 icons** across four government icon sets and **23 logos**:
 
-- Search, navigation, and UI icons materialized from `@conduction/nextcloud-vue`
+- RVO, OpenGemeenten, Gemeente Den Haag — **1488 icons** (CC0-1.0 / CC0-1.0 / EUPL-1.2), materialized from `@conduction/nextcloud-vue`
+- DSFR (Système de Design de l'État) — **1038 icons** (**Etalab-2.0**), materialized from `@gouvfr/dsfr`
 - Government and municipal organization logos
 - SVG format for scalability
-- Accessible via Nextcloud's image path API
+- Accessible via Nextcloud's image path API, or via the theme-switchable icon-pack resolver (active design system's pack)
 
-Icon and logo filenames are a public API: other apps reference them by name (e.g. `icons/rvo/rvo-zoek.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and licensing contract. The proprietary City-of-Amsterdam icon set is **not** bundled — see `img/ICONS.md` for the licensing rationale.
+Icon and logo filenames are a public API: other apps reference them by name (e.g. `icons/rvo/rvo-zoek.svg`, `icons/dsfr/arrow-right-line.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and licensing contract. The proprietary City-of-Amsterdam icon set is **not** bundled — see `img/ICONS.md` for the licensing rationale.
 
 **[View Icon Documentation →](img/ICONS.md)**
 
@@ -346,7 +349,10 @@ Dependencies with licenses not on this list will fail CI unless explicitly appro
 
 ### License exceptions
 
-`@gouvfr/dsfr` (Etalab-2.0, devDependency, build-time Marianne font source only via `scripts/build-fonts-marianne.js`) is approved via `.license-overrides.json`, which maps every bundled `css/systems/lasuite/fonts/marianne/*.woff2` file to the `Etalab-2.0` SPDX identifier (full text: [`LICENSES/Etalab-2.0.txt`](LICENSES/Etalab-2.0.txt)) — see [`MARIANNE-LICENCE.md`](MARIANNE-LICENCE.md) for the accompanying French-State-only usage restriction, which the [Marianne acknowledgement gate](#marianne-font-la-suite-numérique--restricted-off-by-default) enforces at runtime.
+`@gouvfr/dsfr` (Etalab-2.0, devDependency, build-time only) is the source for **two** distinct, separately-governed assets, both approved via [`.license-overrides.json`](.license-overrides.json) — the Etalab Open Licence 2.0 is a free/open, attribution-only redistribution licence not yet on the general SPDX allowlist above:
+
+- **DSFR icons** (`scripts/build-icons.js` → `img/icons/dsfr/`) — freely redistributable, bundled unconditionally.
+- **Marianne typeface** (`scripts/build-fonts-marianne.js` → `css/systems/lasuite/fonts/marianne/*.woff2`, each mapped to `Etalab-2.0`; full text: [`LICENSES/Etalab-2.0.txt`](LICENSES/Etalab-2.0.txt)) — the FR-State-**restricted** typeface, bundled behind an admin acknowledgement gate ([off by default](#marianne-font-la-suite-numérique--restricted-off-by-default)); see [`MARIANNE-LICENCE.md`](MARIANNE-LICENCE.md) and [`AGREEMENT-MARIANNE.md`](AGREEMENT-MARIANNE.md) for the usage restriction.
 
 `@conduction/nextcloud-vue` (EUPL-1.2, devDependency, build-time icon source only) is already covered by the EUPL-1.1/1.2 allowlist entry above, and the proprietary `@amsterdam/design-system-assets` / `@amsterdam/design-system-react-icons` packages that previously required an exception here have been removed — see [CHANGELOG.md](CHANGELOG.md).
 

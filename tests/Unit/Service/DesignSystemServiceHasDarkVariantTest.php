@@ -15,6 +15,7 @@ namespace OCA\NLDesign\Tests\Unit\Service;
 
 use OCA\NLDesign\Service\DesignSystemService;
 use OCP\App\IAppManager;
+use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -53,7 +54,10 @@ class DesignSystemServiceHasDarkVariantTest extends TestCase
         $appManager = $this->createMock(IAppManager::class);
         $appManager->method('getAppPath')->willReturn($this->appDir);
 
-        $this->service = new DesignSystemService($appManager);
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturn('');
+
+        $this->service = new DesignSystemService($appManager, $config);
     }//end setUp()
 
     /**

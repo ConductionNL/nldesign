@@ -33,7 +33,7 @@ class CapabilitiesTest extends TestCase
 {
 
     /**
-     * The seven-key allowlist the payload MUST match exactly.
+     * The eight-key allowlist the payload MUST match exactly.
      *
      * @var array<int, string>
      */
@@ -41,6 +41,7 @@ class CapabilitiesTest extends TestCase
         'version',
         'tokenSet',
         'designSystem',
+        'iconPacks',
         'wcagLevel',
         'logos',
         'hideSlogan',
@@ -145,6 +146,9 @@ class CapabilitiesTest extends TestCase
                 'theming'       => ['logo' => 'img/logos/rijkshuisstijl.svg'],
             ]
         );
+        $designSystemService->method('resolveActiveIconPacks')->with('rijkshuisstijl')->willReturn(
+            ['rvo', 'open-gemeenten', 'den-haag']
+        );
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         $tokenSetService->method('getAvailableTokenSets')->willReturn(
@@ -160,10 +164,11 @@ class CapabilitiesTest extends TestCase
         $this->assertArrayHasKey('nldesign', $payload);
         $nldesign = $payload['nldesign'];
 
-        $this->assertSame(self::ALLOWED_KEYS, array_keys($nldesign), 'Payload must contain exactly the seven allowlisted keys, in shape.');
+        $this->assertSame(self::ALLOWED_KEYS, array_keys($nldesign), 'Payload must contain exactly the eight allowlisted keys, in shape.');
         $this->assertSame('3.4.0', $nldesign['version']);
         $this->assertSame(['id' => 'rijkshuisstijl', 'name' => 'Rijkshuisstijl', 'version' => null], $nldesign['tokenSet']);
         $this->assertSame('nldesign', $nldesign['designSystem']);
+        $this->assertSame(['rvo', 'open-gemeenten', 'den-haag'], $nldesign['iconPacks']);
         $this->assertSame('https://cloud.example/apps/nldesign/img/logos/rijkshuisstijl.svg', $nldesign['logos']['default']);
         $this->assertTrue($nldesign['hideSlogan']);
         $this->assertFalse($nldesign['showMenuLabels']);
@@ -191,6 +196,7 @@ class CapabilitiesTest extends TestCase
                 'theming'       => ['primary_color' => '#0082c9', 'background_color' => '#FFFFFF'],
             ]
         );
+        $designSystemService->method('resolveActiveIconPacks')->with('nextcloud')->willReturn([]);
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         $tokenSetService->method('getAvailableTokenSets')->willReturn(
@@ -205,12 +211,48 @@ class CapabilitiesTest extends TestCase
 
         $this->assertSame('nextcloud', $nldesign['tokenSet']['id']);
         $this->assertSame('none', $nldesign['designSystem']);
+        $this->assertSame([], $nldesign['iconPacks']);
         $this->assertEquals(new \stdClass(), $nldesign['logos']);
         $this->assertSame('{}', json_encode($nldesign['logos']), 'Empty logos must serialize as a JSON object, never an array.');
         $this->assertNull($nldesign['wcagLevel']);
         $this->assertFalse($nldesign['hideSlogan']);
         $this->assertFalse($nldesign['showMenuLabels']);
     }//end testDefaultConfigNoTokenSet()
+
+    /**
+     * A `lasuite`-active instance advertises the resolved `["dsfr"]` pack on
+     * the public capability (`openspec/specs/icon-packs/spec.md`).
+     */
+    public function testLasuiteActiveInstanceAdvertisesDsfrPack(): void
+    {
+        $config = $this->configWith(['token_set' => 'lasuite']);
+
+        $appManager = $this->createMock(IAppManager::class);
+        $appManager->method('getAppVersion')->willReturn('3.4.0');
+        $appManager->method('getAppPath')->willReturn('/app');
+
+        $urlGenerator = $this->createMock(IURLGenerator::class);
+
+        $designSystemService = $this->createMock(DesignSystemService::class);
+        $designSystemService->method('getTokenSetMeta')->with('lasuite')->willReturn(
+            ['id' => 'lasuite', 'design_system' => 'lasuite', 'theming' => []]
+        );
+        $designSystemService->method('resolveActiveIconPacks')->with('lasuite')->willReturn(['dsfr']);
+
+        $tokenSetService = $this->createMock(TokenSetService::class);
+        $tokenSetService->method('getAvailableTokenSets')->willReturn(
+            [['id' => 'lasuite', 'name' => 'La Suite numérique']]
+        );
+
+        $auditService = $this->createMock(ShippedTokenSetAuditService::class);
+        $auditService->method('auditSet')->willReturn(['verdict' => 'pass']);
+
+        $capabilities = $this->buildCapabilities($config, $appManager, $urlGenerator, $designSystemService, $tokenSetService, $auditService);
+        $nldesign     = $capabilities->getCapabilities()['nldesign'];
+
+        $this->assertSame('lasuite', $nldesign['designSystem']);
+        $this->assertSame(['dsfr'], $nldesign['iconPacks']);
+    }//end testLasuiteActiveInstanceAdvertisesDsfrPack()
 
     /**
      * A custom/unknown token set id degrades name/version/wcagLevel, never lies.
@@ -229,6 +271,7 @@ class CapabilitiesTest extends TestCase
         // Not in token-sets.json (shipped manifest) — empty array, matching
         // DesignSystemService::getTokenSetMeta()'s real not-found return value.
         $designSystemService->method('getTokenSetMeta')->with('custom-onbekend')->willReturn([]);
+        $designSystemService->method('resolveActiveIconPacks')->with('custom-onbekend')->willReturn([]);
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         // Not discovered on disk either — absent from the available-sets list.
@@ -264,6 +307,7 @@ class CapabilitiesTest extends TestCase
         $designSystemService->method('getTokenSetMeta')->willReturn(
             ['id' => 'rijkshuisstijl', 'design_system' => 'nldesign', 'theming' => []]
         );
+        $designSystemService->method('resolveActiveIconPacks')->willReturn(['rvo', 'open-gemeenten', 'den-haag']);
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         $tokenSetService->method('getAvailableTokenSets')->willReturn(
@@ -300,6 +344,7 @@ class CapabilitiesTest extends TestCase
         $designSystemService->method('getTokenSetMeta')->willReturn(
             ['id' => 'hoog-contrast', 'design_system' => 'high-contrast', 'contrast_level' => 'AAA', 'theming' => []]
         );
+        $designSystemService->method('resolveActiveIconPacks')->willReturn([]);
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         $tokenSetService->method('getAvailableTokenSets')->willReturn(
@@ -332,6 +377,7 @@ class CapabilitiesTest extends TestCase
         $designSystemService->method('getTokenSetMeta')->willReturn(
             ['id' => 'noaberkracht', 'design_system' => 'nldesign', 'theming' => []]
         );
+        $designSystemService->method('resolveActiveIconPacks')->willReturn(['rvo', 'open-gemeenten', 'den-haag']);
 
         $tokenSetService = $this->createMock(TokenSetService::class);
         $tokenSetService->method('getAvailableTokenSets')->willReturn(
@@ -380,6 +426,7 @@ class CapabilitiesTest extends TestCase
         $this->assertSame('rijkshuisstijl', $nldesign['tokenSet']['name']);
         $this->assertNull($nldesign['tokenSet']['version']);
         $this->assertNull($nldesign['designSystem']);
+        $this->assertSame([], $nldesign['iconPacks']);
         $this->assertNull($nldesign['wcagLevel']);
         $this->assertEquals(new \stdClass(), $nldesign['logos']);
         $this->assertFalse($nldesign['hideSlogan']);

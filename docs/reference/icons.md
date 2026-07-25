@@ -2,13 +2,25 @@
 sidebar_position: 7
 ---
 
-# NL-Government Icons Integration
+# NL-Government and French-Government Icons Integration
 
 ## Overview
 
 The NL Design app includes **1488 icons** materialized from `@conduction/nextcloud-vue`'s
 EUPL-compatible NL-government icon packs (RVO, OpenGemeenten, Gemeente Den Haag), plus
-**23 logos**, making them available for use across all Nextcloud apps.
+**1038 icons** materialized from `@gouvfr/dsfr`'s French-government DSFR pack
+(**Etalab-2.0**) — **2526 icons** total — plus **23 logos**, making them available for use
+across all Nextcloud apps.
+
+### Theme-switchable iconography
+
+The icon pack an app should serve travels with the active **design system**, driven by
+`design-systems.json`'s optional `icon_pack` field: `nldesign` ->
+`["rvo", "open-gemeenten", "den-haag"]`, `lasuite` -> `["dsfr"]`. Resolve the active
+pack via `DesignSystemService::resolveActiveIconPacks()` / `resolveIconPath()`, or read it
+from the public capability (`capabilities.nldesign.iconPacks`) — see
+`openspec/specs/icon-packs/spec.md`. This does **not** replace Nextcloud core's built-in
+icons; it only switches nldesign's own bundled assets served through `imagePath`.
 
 **The proprietary City-of-Amsterdam icon set (`@amsterdam/design-system-assets`) is NOT
 bundled.** Its `LICENSE.md` marks the set proprietary to the City of Amsterdam,
@@ -23,12 +35,13 @@ These icon and logo URLs only resolve while the nldesign app is installed **and 
 
 ## Naming stability
 
-Icon and logo filenames are a public API consumed by other apps. Within an installed nc-vue pack version, renaming or removing a bundled icon or logo is a **breaking change**: it MUST be recorded in the changelog naming both the old and new filename, and `img/ICONS.md` MUST be regenerated in the same change so the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Upgrading the `@conduction/nextcloud-vue` dependency (which can change pack contents) MUST be an explicit, reviewed change whose diff of added/removed keys is listed in the changelog — never a silent regenerate.
+Icon and logo filenames are a public API consumed by other apps. Within an installed source pack version, renaming or removing a bundled icon or logo is a **breaking change**: it MUST be recorded in the changelog naming both the old and new filename, and `img/ICONS.md` MUST be regenerated in the same change so the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Upgrading a source dependency that can change pack contents — `@conduction/nextcloud-vue` (the `rvo`/`open-gemeenten`/`den-haag` packs) or `@gouvfr/dsfr` (the `dsfr` pack) — MUST be an explicit, reviewed change whose diff of added/removed keys is listed in the changelog — never a silent regenerate.
 
 ## Available Icons
 
 View all available icons in the [icon documentation](https://codeberg.org/Conduction/nldesign/src/branch/main/img/ICONS.md) or browse the files in:
-- **Icons:** `img/icons/{rvo,open-gemeenten,den-haag}/` (1488 SVG files across 3 sets)
+- **NL-government icons:** `img/icons/{rvo,open-gemeenten,den-haag}/` (1488 SVG files across 3 sets)
+- **DSFR (French-government) icons:** `img/icons/dsfr/` (1038 SVG files)
 - **Legacy aliases:** `img/icons/*.svg` (77 one-release compatibility files — see CHANGELOG.md, removed next minor release)
 - **Logos:** `img/logos/` (23 SVG files, static checked-in huisstijl assets — not build output)
 
@@ -85,6 +98,7 @@ import { rvoIcons } from '@conduction/nextcloud-vue/src/icons/rvo.js'
 | RVO / ROOS | `img/icons/rvo/` | Rijksdienst voor Ondernemend Nederland | CC0-1.0 | 1163 |
 | OpenGemeenten | `img/icons/open-gemeenten/` | OpenGemeenten Iconenset ("Line" style) | CC0-1.0 | 256 |
 | Gemeente Den Haag | `img/icons/den-haag/` | Gemeente Den Haag icon set | EUPL-1.2 | 69 |
+| DSFR | `img/icons/dsfr/` | Système de Design de l'État (`@gouvfr/dsfr`) | Etalab-2.0 | 1038 |
 
 Filenames are the pack entry keys (kebab-case slugs already carrying a short set prefix,
 e.g. `rvo-zoek`, `dh-functional-search`, `og-zoeken`) — confirm the exact filename in
@@ -188,10 +202,15 @@ When using icons, always provide appropriate alt text or aria-labels:
 
 ## License
 
-Icons are sourced from `@conduction/nextcloud-vue`:
+Icons are sourced from `@conduction/nextcloud-vue` and `@gouvfr/dsfr`:
 - **Package:** `@conduction/nextcloud-vue` (devDependency, build-time only)
 - **Canonical licence record:** `src/icons/ATTRIBUTION.md` (https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md)
 - **Licences:** RVO CC0-1.0, OpenGemeenten CC0-1.0, Gemeente Den Haag EUPL-1.2
+- **Package:** `@gouvfr/dsfr` (devDependency, build-time only) — Système de Design de
+  l'État, licensed under the Etalab Open Licence 2.0
+  (https://github.com/etalab/licence-ouverte/blob/master/LO.md). Icons only: the
+  Marianne typeface files shipped in the same package are FR-state-restricted and are
+  never bundled by `scripts/build-icons.js`.
 
 The proprietary `@amsterdam/design-system-assets` package is **not** a dependency of this
 app and no shipped asset derives from it.
@@ -205,10 +224,33 @@ app and no shipped asset derives from it.
 
 ## Building Icons
 
-Icons are automatically built from `@conduction/nextcloud-vue`'s bundled icon packs. To rebuild:
+Icons are automatically built from `@conduction/nextcloud-vue`'s and `@gouvfr/dsfr`'s bundled icon packs. To rebuild:
 
 ```bash
 npm run build:icons
 ```
 
-This decodes the data-URI icon packs at `node_modules/@conduction/nextcloud-vue/src/icons/{rvo,openGemeenten,denHaag}.js` into standalone SVG files under `img/icons/{set}/`, materializes the one-release legacy aliases from `scripts/icon-aliases.json`, and regenerates `img/ICONS.md`. It never touches `img/logos/`.
+This decodes the data-URI icon packs at `node_modules/@conduction/nextcloud-vue/src/icons/{rvo,openGemeenten,denHaag}.js` into standalone SVG files under `img/icons/{set}/`, copies every DSFR source SVG (`@gouvfr/dsfr/dist/icons/**/*.svg`, falling back to the pre-fetched `.dsfr-src/icons/` scratch source when the package cannot be installed) into `img/icons/dsfr/{basename}.svg`, materializes the one-release legacy aliases from `scripts/icon-aliases.json`, and regenerates `img/ICONS.md`. It never touches `img/logos/`.
+
+## Theme-Switchable Icon Packs
+
+Beyond the fixed `imagePath('nldesign', 'icons/{set}/{key}.svg')` contract above, the icon
+pack an app should serve can also travel with the **active design system**:
+
+- `design-systems.json` carries an optional `icon_pack` field per design system
+  (string or ordered array): `nldesign` -> `["rvo", "open-gemeenten", "den-haag"]`,
+  `lasuite` -> `["dsfr"]`. A design system without the field serves no pack (Nextcloud
+  stock icons).
+- `DesignSystemService::resolveActiveIconPacks(tokenSetId)` resolves the chain `active
+  token set -> its design_system -> that design system's icon_pack`, honoring an
+  appconfig `icon_pack` admin override (`occ config:app:set nldesign icon_pack
+  --value=dsfr`) when it names a real pack directory.
+- `DesignSystemService::resolveIconPath($name, $tokenSetId)` returns the
+  `imagePath`-relative path of `$name` in the first pack of the resolved list that
+  contains it, or `null`.
+- The resolved list is advertised on the public capability:
+  `/ocs/v2.php/cloud/capabilities` -> `capabilities.nldesign.iconPacks`.
+
+See `openspec/specs/icon-packs/spec.md` for the full contract. **Honest limitation:**
+this only switches nldesign's own bundled icon assets — it does not force-replace
+Nextcloud core's built-in icon set beyond what the active theme's CSS already restyles.

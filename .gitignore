@@ -24,6 +24,13 @@
 # whole instance the moment the app is activated).
 /css/custom-overrides.css
 
+# Scratch input for scripts/build-icons.js's DSFR pack — the pre-fetched
+# @gouvfr/dsfr dist/icons/**/*.svg tree (that package cannot be npm-installed:
+# broken optional deps upstream). The build script materializes it into the
+# COMMITTED img/icons/dsfr/ output; this scratch source directory is never
+# itself committed (see openspec/changes/theme-switchable-iconography).
+/.dsfr-src/
+
 # Build artifacts
 # admin.js + its extracted pure helpers (js/lib/) are hand-authored SOURCE
 # (no JS bundler in this app — served directly as <script>), so they are

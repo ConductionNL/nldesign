@@ -83,6 +83,24 @@
 	color: var(--color-text-maxcontrast, #767676);
 }
 
+/* Active icon pack — read-only indicator (theme-switchable iconography,
+   openspec/specs/icon-packs/spec.md). */
+.nldesign-icon-pack-indicator {
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	background: var(--color-main-background);
+	margin-bottom: 1em;
+}
+
+.nldesign-icon-pack-indicator h3 {
+	margin-top: 0;
+}
+
+.nldesign-icon-pack-value {
+	font-weight: 600;
+}
+
 /* Options section */
 .nldesign-option {
 	display: flex;
@@ -517,6 +535,8 @@
 .nldesign-active-preview .settings-hint {
 	margin-bottom: 0;
 	flex: 1;
+}
+
 /* ==========================================================================
  * Group theming — group -> token-set mapping rows (openspec/specs/per-group-theming/spec.md)
  * Row order IS priority order; up/down buttons are keyboard-operable

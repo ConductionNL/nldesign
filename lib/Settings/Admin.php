@@ -17,6 +17,7 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-56
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-57
  * @spec openspec/specs/admin-settings/spec.md#requirement-session-preview-controls
+ * @spec openspec/specs/icon-packs/spec.md
  */
 
 declare(strict_types=1);
@@ -24,6 +25,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\ThemePreviewService;
 use OCA\NLDesign\Service\TokenSetService;
@@ -90,6 +92,14 @@ class Admin implements IDelegatedSettings
     private IUserSession $userSession;
 
     /**
+     * Resolves the active icon pack (icon-packs spec) for the read-only
+     * admin indicator.
+     *
+     * @var DesignSystemService
+     */
+    private DesignSystemService $designSystemService;
+
+    /**
      * Constructor.
      *
      * @param IConfig             $config              The config service.
@@ -98,6 +108,7 @@ class Admin implements IDelegatedSettings
      * @param EmailThemingService $emailThemingService The email theming service.
      * @param ThemePreviewService $previewService      The theme preview service.
      * @param IUserSession        $userSession         The user session.
+     * @param DesignSystemService $designSystemService Resolves the active icon pack.
      */
     public function __construct(
         IConfig $config,
@@ -105,7 +116,8 @@ class Admin implements IDelegatedSettings
         TokenSetService $tokenSetService,
         EmailThemingService $emailThemingService,
         ThemePreviewService $previewService,
-        IUserSession $userSession
+        IUserSession $userSession,
+        DesignSystemService $designSystemService
     ) {
         $this->config = $config;
         $this->l      = $l;
@@ -113,6 +125,7 @@ class Admin implements IDelegatedSettings
         $this->emailThemingService = $emailThemingService;
         $this->previewService      = $previewService;
         $this->userSession         = $userSession;
+        $this->designSystemService = $designSystemService;
     }//end __construct()
 
     /**
@@ -177,6 +190,8 @@ class Admin implements IDelegatedSettings
 
         $activePreview = $this->getActivePreviewForCurrentUser();
 
+        [$activeIconPacks, $iconPackSource] = $this->getActiveIconPackIndicator(tokenSetId: $currentTokenSet);
+
         return new TemplateResponse(
             Application::APP_ID,
                 'settings/admin',
@@ -193,9 +208,37 @@ class Admin implements IDelegatedSettings
                     'occEnableCommand'    => EmailThemingService::OCC_ENABLE_COMMAND,
                     'occDisableCommand'   => EmailThemingService::OCC_DISABLE_COMMAND,
                     'activePreview'       => $activePreview,
+                    'activeIconPacks'     => $activeIconPacks,
+                    'iconPackSource'      => $iconPackSource,
                 ]
         );
     }//end getForm()
+
+    /**
+     * Resolve the read-only "active icon pack" indicator: the resolved
+     * ordered pack list for the currently persisted token set, and whether
+     * that resolution came from the design system default or an admin
+     * override (`openspec/specs/icon-packs/spec.md`).
+     *
+     * @param string $tokenSetId The currently persisted (instance-wide) token set id.
+     *
+     * @return array{0: string[], 1: 'design-system'|'override'} `[activeIconPacks, iconPackSource]`.
+     *
+     * @spec openspec/specs/icon-packs/spec.md
+     */
+    private function getActiveIconPackIndicator(string $tokenSetId): array
+    {
+        $activeIconPacks = $this->designSystemService->resolveActiveIconPacks(tokenSetId: $tokenSetId);
+
+        $override = trim($this->config->getAppValue(Application::APP_ID, 'icon_pack', ''));
+
+        $iconPackSource = 'design-system';
+        if ($override !== '' && $activeIconPacks === [$override]) {
+            $iconPackSource = 'override';
+        }
+
+        return [$activeIconPacks, $iconPackSource];
+    }//end getActiveIconPackIndicator()
 
     /**
      * Resolve the requesting admin's active preview (name + token set id), or

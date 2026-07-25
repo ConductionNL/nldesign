@@ -17,27 +17,38 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
+ * @spec openspec/specs/icon-packs/spec.md
  */
 
 declare(strict_types=1);
 
 namespace OCA\NLDesign\Service;
 
+use OCA\NLDesign\AppInfo\Application;
 use OCP\App\IAppManager;
+use OCP\IConfig;
 
 /**
- * Service for resolving design system stylesheet bundles.
+ * Service for resolving design system stylesheet bundles and icon packs.
  *
  * Reads design-systems.json and token-sets.json to determine which CSS
- * stylesheets should be loaded for a given token set.
+ * stylesheets should be loaded for a given token set, and which icon pack(s)
+ * (openspec/specs/icon-packs/spec.md) the active design system serves.
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-37
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-38
+ * @spec openspec/specs/icon-packs/spec.md
  */
 class DesignSystemService
 {
+
+    /**
+     * The appconfig key holding the (optional) instance-wide icon-pack
+     * override — a directory name under img/icons/, e.g. "dsfr".
+     */
+    private const ICON_PACK_CONFIG_KEY = 'icon_pack';
 
     /**
      * The app manager for resolving paths.
@@ -45,6 +56,13 @@ class DesignSystemService
      * @var IAppManager
      */
     private IAppManager $appManager;
+
+    /**
+     * Reads the appconfig icon-pack override.
+     *
+     * @var IConfig
+     */
+    private IConfig $config;
 
     /**
      * Cached design systems (indexed by id).
@@ -64,10 +82,12 @@ class DesignSystemService
      * Constructor.
      *
      * @param IAppManager $appManager The app manager for resolving paths.
+     * @param IConfig     $config     Reads the appconfig icon-pack override.
      */
-    public function __construct(IAppManager $appManager)
+    public function __construct(IAppManager $appManager, IConfig $config)
     {
         $this->appManager = $appManager;
+        $this->config     = $config;
     }//end __construct()
 
     /**
@@ -83,7 +103,7 @@ class DesignSystemService
     /**
      * Get all available design systems.
      *
-     * @return array<string, array{id: string, name: string, description: string, stylesheets: string[]}> Indexed by id.
+     * @return array<string, array{id: string, name: string, description: string, stylesheets: string[], icon_pack?: string|string[]}> Indexed by id.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */
@@ -106,7 +126,7 @@ class DesignSystemService
      *
      * @param string $id The design system identifier.
      *
-     * @return array{id: string, name: string, description: string, stylesheets: string[]} The design system.
+     * @return array{id: string, name: string, description: string, stylesheets: string[], icon_pack?: string|string[]} The design system.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-36
      */
@@ -147,6 +167,171 @@ class DesignSystemService
     }//end getTokenSetMeta()
 
     /**
+     * Get a design system's icon pack, normalized to an ordered list.
+     *
+     * The `icon_pack` manifest field accepts either a single pack directory
+     * name (a string, one-element-list shorthand) or an ordered array of
+     * pack directory names. A design system with no `icon_pack` field (or an
+     * unknown design system id) returns `[]` — no pack served, Nextcloud
+     * stock icons apply.
+     *
+     * @param string $designSystemId The design system identifier.
+     *
+     * @return string[] The ordered pack directory list (empty when no pack is declared).
+     *
+     * @spec openspec/specs/icon-packs/spec.md
+     */
+    public function getIconPacks(string $designSystemId): array
+    {
+        $system = $this->getDesignSystem(id: $designSystemId);
+
+        return $this->normalizeIconPack(pack: $system['icon_pack'] ?? null);
+    }//end getIconPacks()
+
+    /**
+     * Resolve the active icon pack for a token set, highest precedence first:
+     * (1) a valid appconfig `icon_pack` admin override, (2) the token set's
+     * own `icon_pack` (a reserved per-set override field, honored when
+     * present — not shipped on any token set today), (3) the `icon_pack` of
+     * the token set's `design_system`, (4) `[]` (no pack).
+     *
+     * Always safe: an unknown token set, an unknown design system, or an
+     * override naming a non-existent pack directory degrades to falling
+     * through the chain rather than throwing.
+     *
+     * @param string $tokenSetId The active token set identifier.
+     *
+     * @return string[] The resolved ordered pack directory list (possibly empty).
+     *
+     * @spec openspec/specs/icon-packs/spec.md
+     */
+    public function resolveActiveIconPacks(string $tokenSetId): array
+    {
+        $override = trim((string) $this->config->getAppValue(appName: Application::APP_ID, key: self::ICON_PACK_CONFIG_KEY, default: ''));
+        if ($override !== '' && $this->packDirectoryExists(pack: $override) === true) {
+            return [$override];
+        }
+
+        $tokenSetMeta = $this->getTokenSetMeta(tokenSetId: $tokenSetId);
+
+        // Reserved per-token-set override (future field) — honored when present.
+        $tokenSetPack = $this->normalizeIconPack(pack: $tokenSetMeta['icon_pack'] ?? null);
+        if ($tokenSetPack !== []) {
+            return $tokenSetPack;
+        }
+
+        $designSystemId = ($tokenSetMeta['design_system'] ?? null);
+        if (is_string($designSystemId) === false || $designSystemId === '') {
+            return [];
+        }
+
+        return $this->getIconPacks(designSystemId: $designSystemId);
+    }//end resolveActiveIconPacks()
+
+    /**
+     * Resolve an icon name to its `imagePath`-relative path within the
+     * active pack(s) for a token set — the first pack (in declared order)
+     * whose `img/icons/{pack}/{name}.svg` exists on disk wins.
+     *
+     * Rejects a `$name` containing a path separator or `..` by returning
+     * `null` (no path traversal outside `img/icons/`), and returns `null`
+     * when no active pack contains the name (or no pack is active).
+     *
+     * @param string $name       The icon's basename, without the `.svg` suffix.
+     * @param string $tokenSetId The active token set identifier.
+     *
+     * @return string|null The `icons/{pack}/{name}.svg` path, or null.
+     *
+     * @spec openspec/specs/icon-packs/spec.md
+     */
+    public function resolveIconPath(string $name, string $tokenSetId): ?string
+    {
+        if ($this->isSafeIconName(name: $name) === false) {
+            return null;
+        }
+
+        foreach ($this->resolveActiveIconPacks(tokenSetId: $tokenSetId) as $pack) {
+            $file = $this->getAppPath().'/img/icons/'.$pack.'/'.$name.'.svg';
+            if (is_file($file) === true) {
+                return 'icons/'.$pack.'/'.$name.'.svg';
+            }
+        }
+
+        return null;
+    }//end resolveIconPath()
+
+    /**
+     * Normalize an `icon_pack` manifest value to an ordered string list.
+     *
+     * @param mixed $pack The raw `icon_pack` value (string, array, or absent/null).
+     *
+     * @return string[] The normalized ordered pack list.
+     */
+    private function normalizeIconPack(mixed $pack): array
+    {
+        if (is_string($pack) === true && $pack !== '') {
+            return [$pack];
+        }
+
+        if (is_array($pack) === true) {
+            return array_values(
+                array_filter(
+                    $pack,
+                    static fn ($entry): bool => is_string($entry) === true && $entry !== ''
+                )
+            );
+        }
+
+        return [];
+    }//end normalizeIconPack()
+
+    /**
+     * Whether `img/icons/{pack}/` exists on disk, rejecting a `$pack`
+     * containing a path separator or `..` (no traversal outside img/icons/).
+     *
+     * @param string $pack The candidate pack directory name.
+     *
+     * @return bool True when the pack directory exists.
+     */
+    private function packDirectoryExists(string $pack): bool
+    {
+        if ($this->isSafePathSegment(segment: $pack) === false) {
+            return false;
+        }
+
+        return is_dir($this->getAppPath().'/img/icons/'.$pack);
+    }//end packDirectoryExists()
+
+    /**
+     * Whether an icon name is safe to interpolate into a filesystem path
+     * (non-empty, no path separators, no `..`).
+     *
+     * @param string $name The candidate icon name.
+     *
+     * @return bool True when safe.
+     */
+    private function isSafeIconName(string $name): bool
+    {
+        return $name !== '' && $this->isSafePathSegment(segment: $name);
+    }//end isSafeIconName()
+
+    /**
+     * Whether a string is safe to use as a single path segment (no `/`, `\`,
+     * or `..`).
+     *
+     * @param string $segment The candidate path segment.
+     *
+     * @return bool True when safe.
+     */
+    private function isSafePathSegment(string $segment): bool
+    {
+        return $segment !== ''
+            && str_contains($segment, '/') === false
+            && str_contains($segment, '\\') === false
+            && str_contains($segment, '..') === false;
+    }//end isSafePathSegment()
+
+    /**
      * Whether a generated `css/tokens/dark/{id}.css` file exists for a token
      * set. Reuses this service's existing `IAppManager` dependency so the
      * bootstrap-time injection point (`Application::injectThemeCSS()`) does
@@ -167,7 +352,7 @@ class DesignSystemService
     /**
      * Get all design systems as a flat list (for API responses).
      *
-     * @return array<array{id: string, name: string, description: string, stylesheets: string[]}> List of design systems.
+     * @return array<array{id: string, name: string, description: string, stylesheets: string[], icon_pack?: string|string[]}> List of design systems.
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-35
      */

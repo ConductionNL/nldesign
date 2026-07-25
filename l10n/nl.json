@@ -202,7 +202,12 @@
         "Enable dark mode variants for the active token set": "Donkeremodusvarianten inschakelen voor de actieve tokenset",
         "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.": "Indien ingeschakeld volgt een gegenereerd donkeremodus-stylesheet het licht-, donker- of systeemthema dat Nextcloud al gebruikt — het wijzigt nooit uw Nextcloud-themakeuze zelf.",
         "Marianne is the official typeface of the French State and is reserved for French State administrations. Enable it only if your organisation is a French State agency. Otherwise Inter is used.": "Marianne is het officiële lettertype van de Franse staat en is voorbehouden aan Franse staatsinstellingen. Schakel dit alleen in als uw organisatie een Franse staatsinstelling is. Anders wordt Inter gebruikt.",
-        "Our organisation is a French State agency (administration de l'État)": "Onze organisatie is een Franse staatsinstelling (administration de l'État)"
+        "Our organisation is a French State agency (administration de l'État)": "Onze organisatie is een Franse staatsinstelling (administration de l'État)",
+        "Active icon pack": "Actieve iconenset",
+        "Nextcloud stock icons (no custom pack)": "Standaard Nextcloud-iconen (geen aangepaste set)",
+        "Source: admin override (occ config:app:set nldesign icon_pack)": "Bron: beheerdersoverschrijving (occ config:app:set nldesign icon_pack)",
+        "Source: the active design system": "Bron: het actieve designsysteem",
+        "This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud's built-in core icons beyond what the active theme's CSS already restyles.": "Dit wijzigt alleen de iconenassets die nldesign zelf levert via imagePath. Het vervangt niet de ingebouwde kern-iconen van Nextcloud, afgezien van wat de CSS van het actieve thema al herstylet."
     },
     "plurals": {}
 }

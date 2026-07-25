@@ -4,19 +4,21 @@
  * Inventory regression test for the nc-vue-sourced NL-government icon and logo assets.
  *
  * Guards the icon-assets capability contract: the on-disk SVG set under img/icons/{set}/
- * (materialized from @conduction/nextcloud-vue's rvo/openGemeenten/denHaag packs) and
- * img/logos/ must match the inventory documented in img/ICONS.md (counts and sampled
- * names), every legacy Amsterdam alias in scripts/icon-aliases.json must resolve to a
- * byte-identical copy of its mapped replacement, assets must be safe standalone SVG (no
- * <script>/event handlers), the CC0-1.0/EUPL-1.2 attribution must remain co-located with
- * the assets (never MPL-2.0 / @amsterdam/design-system-assets as a current source), and
- * the icon/logo counts must agree across README.md, docs/reference/icons.md and
- * img/ICONS.md. A rename, removal, or drift between docs and filesystem fails this test.
+ * (materialized from @conduction/nextcloud-vue's rvo/openGemeenten/denHaag packs, plus the
+ * dsfr pack materialized from @gouvfr/dsfr) and img/logos/ must match the inventory
+ * documented in img/ICONS.md (counts and sampled names), every legacy Amsterdam alias in
+ * scripts/icon-aliases.json must resolve to a byte-identical copy of its mapped
+ * replacement, assets must be safe standalone SVG (no <script>/event handlers), the
+ * CC0-1.0/EUPL-1.2/Etalab-2.0 attribution must remain co-located with the assets (never
+ * MPL-2.0 / @amsterdam/design-system-assets as a current source), and the icon/logo
+ * counts must agree across README.md, docs/reference/icons.md and img/ICONS.md. A rename,
+ * removal, or drift between docs and filesystem fails this test.
  *
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @spec openspec/changes/icons-from-ncvue/specs/icon-assets/spec.md
+ * @spec openspec/specs/icon-assets/spec.md
  */
 
 declare(strict_types=1);
@@ -306,6 +308,7 @@ class IconAssetsTest extends TestCase
         $this->assertArrayNotHasKey('@amsterdam/design-system-assets', $allDeps, 'package.json must not depend on @amsterdam/design-system-assets.');
         $this->assertArrayNotHasKey('@amsterdam/design-system-react-icons', $allDeps, 'package.json must not depend on @amsterdam/design-system-react-icons.');
         $this->assertArrayHasKey('@conduction/nextcloud-vue', $decoded['devDependencies'] ?? [], '@conduction/nextcloud-vue must be a devDependency.');
+        $this->assertArrayHasKey('@gouvfr/dsfr', $decoded['devDependencies'] ?? [], '@gouvfr/dsfr must be a devDependency.');
     }
 
     /**
@@ -361,6 +364,111 @@ class IconAssetsTest extends TestCase
     }
 
     /**
+     * The dsfr pack directory holds the count documented in img/ICONS.md's
+     * "### dsfr (N icons)" heading, and the pack is non-empty.
+     */
+    public function testDsfrCountMatchesDocumentedTotal(): void
+    {
+        $icons = $this->readDoc('img/ICONS.md');
+
+        $this->assertDirectoryExists($this->iconsDir() . '/dsfr');
+
+        $pattern = '/###\s*dsfr\s*\((\d+)\s*icons\)/i';
+        $this->assertMatchesRegularExpression(
+            $pattern,
+            $icons,
+            'img/ICONS.md must state a count heading for set "dsfr".'
+        );
+        preg_match($pattern, $icons, $m);
+        $documentedCount = (int) $m[1];
+
+        $this->assertGreaterThan(0, $documentedCount, 'The dsfr pack must not be documented as empty.');
+        $this->assertSame(
+            $documentedCount,
+            \count($this->diskSetIconNames('dsfr')),
+            "On-disk icon count for set \"dsfr\" must equal the documented total ({$documentedCount})."
+        );
+    }
+
+    /**
+     * A sample of dsfr assets are well-formed standalone SVG with no scriptable content.
+     */
+    public function testDsfrSampledAssetsAreSafeStandaloneSvg(): void
+    {
+        $icons = glob($this->iconsDir() . '/dsfr/*.svg') ?: [];
+        $this->assertNotEmpty($icons, 'No dsfr icon SVG files found to sample.');
+
+        sort($icons);
+        $sample = [];
+        $step = (int) max(1, floor(\count($icons) / 40));
+        for ($i = 0; $i < \count($icons); $i += $step) {
+            $sample[] = $icons[$i];
+        }
+
+        foreach ($sample as $file) {
+            $svg = file_get_contents($file);
+            $this->assertIsString($svg, "Could not read {$file}");
+            $rel = basename($file);
+
+            $this->assertMatchesRegularExpression(
+                '/<svg[\s>]/i',
+                $svg,
+                "{$rel} must contain an <svg> root element."
+            );
+            $this->assertDoesNotMatchRegularExpression(
+                '/<script[\s>]/i',
+                $svg,
+                "{$rel} must not contain a <script> element."
+            );
+            $this->assertDoesNotMatchRegularExpression(
+                '/\son[a-z]+\s*=/i',
+                $svg,
+                "{$rel} must not contain inline event-handler attributes."
+            );
+
+            $previous = libxml_use_internal_errors(true);
+            $doc = simplexml_load_string($svg);
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+            $this->assertNotFalse($doc, "{$rel} must be well-formed XML/SVG.");
+        }
+    }
+
+    /**
+     * The dsfr pack basenames are all unique — the flat, category-free
+     * `img/icons/dsfr/{basename}.svg` layout the build script relies on is
+     * only collision-free because DSFR names are unique across the whole
+     * source set (guards the invariant documented in icon-packs/spec.md).
+     */
+    public function testDsfrBasenamesAreUnique(): void
+    {
+        $names = $this->diskSetIconNames('dsfr');
+        $this->assertNotEmpty($names, 'No dsfr icons found on disk.');
+        $this->assertSame(
+            \count($names),
+            \count(array_unique($names)),
+            'img/icons/dsfr/ must contain no duplicate basenames.'
+        );
+    }
+
+    /**
+     * The dsfr icon and its Etalab-2.0 attribution are documented in
+     * README.md and docs/reference/icons.md, not just img/ICONS.md.
+     */
+    public function testDsfrCountAndLicenceDocumentedInReadmeAndDocs(): void
+    {
+        $dsfrCount = \count($this->diskSetIconNames('dsfr'));
+
+        $readme = $this->readDoc('README.md');
+        $docs = $this->readDoc('docs/reference/icons.md');
+
+        $this->assertStringContainsString((string) $dsfrCount, $readme, 'README.md must state the actual dsfr icon count.');
+        $this->assertStringContainsString((string) $dsfrCount, $docs, 'docs/reference/icons.md must state the actual dsfr icon count.');
+        $this->assertStringContainsString('Etalab-2.0', $readme, 'README.md must attribute the dsfr set as Etalab-2.0.');
+        $this->assertStringContainsString('Etalab-2.0', $docs, 'docs/reference/icons.md must attribute the dsfr set as Etalab-2.0.');
+    }
+
+    /**
      * img/ICONS.md attributes each set with its correct upstream licence, references
      * nc-vue's ATTRIBUTION.md as the canonical record, and never claims MPL-2.0.
      */
@@ -379,6 +487,12 @@ class IconAssetsTest extends TestCase
             'ATTRIBUTION.md',
             $icons,
             'img/ICONS.md must reference nc-vue\'s src/icons/ATTRIBUTION.md as the canonical licence record.'
+        );
+        $this->assertStringContainsString('Etalab-2.0', $icons, 'img/ICONS.md must attribute the dsfr set as Etalab-2.0.');
+        $this->assertStringContainsString(
+            '@gouvfr/dsfr',
+            $icons,
+            'img/ICONS.md must reference @gouvfr/dsfr as the dsfr icon source.'
         );
         $this->assertDoesNotMatchRegularExpression(
             '/Mozilla Public License 2\.0|MPL[\s-]?2\.0/i',
@@ -461,7 +575,7 @@ class IconAssetsTest extends TestCase
         $haveLogo = array_flip($this->diskLogoNames());
         $haveTopLevel = array_flip($this->diskTopLevelIconNames());
         $haveNested = [];
-        foreach (self::ICON_SETS as $set) {
+        foreach (array_merge(self::ICON_SETS, ['dsfr']) as $set) {
             foreach ($this->diskSetIconNames($set) as $key) {
                 $haveNested[$set . '/' . $key] = true;
             }
@@ -470,7 +584,7 @@ class IconAssetsTest extends TestCase
         foreach ($docs as $doc) {
             $contents = $this->readDoc($doc);
 
-            preg_match_all('#icons/((?:rvo|open-gemeenten|den-haag)/[a-z0-9-]+|[A-Za-z0-9_-]+)\.svg#', $contents, $iconRefs);
+            preg_match_all('#icons/((?:rvo|open-gemeenten|den-haag|dsfr)/[a-z0-9-]+|[A-Za-z0-9_-]+)\.svg#', $contents, $iconRefs);
             foreach (array_unique($iconRefs[1]) as $name) {
                 $resolves = isset($haveNested[$name]) || isset($haveTopLevel[$name]);
                 $this->assertTrue(

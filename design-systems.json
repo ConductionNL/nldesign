@@ -16,7 +16,8 @@
 			"systems/nldesign/theme",
 			"systems/nldesign/overrides",
 			"systems/nldesign/element-overrides"
-		]
+		],
+		"icon_pack": ["rvo", "open-gemeenten", "den-haag"]
 	},
 	{
 		"id": "summer-breeze",
@@ -48,7 +49,8 @@
 			"systems/lasuite/brand-override",
 			"systems/lasuite/bridge",
 			"systems/lasuite/element-overrides"
-		]
+		],
+		"icon_pack": "dsfr"
 	},
 	{
 		"id": "cunningham",

@@ -170,6 +170,38 @@ function nldesignAdminMain() {
 		badge.className = 'nldesign-badge' + (dsId === 'none' ? ' nldesign-badge--stock' : ' nldesign-badge--system');
 	}
 
+	// Icon-pack indicator (theme-switchable iconography,
+	// openspec/specs/icon-packs/spec.md): mirrors design-systems.json's
+	// `icon_pack` field for a design system, kept in sync manually (same
+	// "inline fallback" pattern as designSystemNames above — the server-
+	// rendered value at page load is the source of truth; see
+	// lib/Settings/Admin.php::getActiveIconPackIndicator()).
+	var designSystemIconPacks = {
+		'nldesign': ['rvo', 'open-gemeenten', 'den-haag'],
+		'lasuite': ['dsfr']
+	};
+
+	// Preview what the icon-pack indicator WOULD become for the currently
+	// selected (not yet published) token set — a non-authoritative preview,
+	// like updateDesignSystemBadge() above. When an admin override is active
+	// (appconfig `icon_pack`, server-rendered at page load), the override
+	// always wins regardless of the selected token set, so the indicator is
+	// left untouched.
+	function updateIconPackIndicator(tokenSetId) {
+		var indicator = document.getElementById('nldesign-icon-pack-indicator');
+		var valueEl = document.getElementById('nldesign-icon-pack-value');
+		if (!indicator || !valueEl) return;
+		if (indicator.getAttribute('data-icon-pack-source') === 'override') return;
+
+		var option = tokenSetSelect ? tokenSetSelect.querySelector('option[value="' + tokenSetId + '"]') : null;
+		var dsId = option ? (option.getAttribute('data-design-system') || 'nldesign') : 'nldesign';
+		var packs = designSystemIconPacks[dsId] || [];
+
+		valueEl.textContent = packs.length > 0
+			? packs.join(', ')
+			: t('nldesign', 'Nextcloud stock icons (no custom pack)');
+	}
+
 	// Show/hide the Marianne (French State typeface) acknowledgement gate —
 	// only meaningful for the lasuite design system (openspec/specs/marianne-font/spec.md).
 	// Mirrors updateDesignSystemBadge()'s data-design-system lookup so it
@@ -197,6 +229,7 @@ function nldesignAdminMain() {
 			// Update preview and design system badge optimistically
 			updatePreview(newTokenSet);
 			updateDesignSystemBadge(newTokenSet);
+			updateIconPackIndicator(newTokenSet);
 			updateMarianneVisibility(newTokenSet);
 
 			// Open the token overrides apply dialog.
@@ -206,6 +239,7 @@ function nldesignAdminMain() {
 		// Set initial preview for selected item and remember initial value.
 		updatePreview(tokenSetSelect.value);
 		updateDesignSystemBadge(tokenSetSelect.value);
+		updateIconPackIndicator(tokenSetSelect.value);
 		updateMarianneVisibility(tokenSetSelect.value);
 		tokenSetSelect.dataset.previousValue = tokenSetSelect.value;
 	}

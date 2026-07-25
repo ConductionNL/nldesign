@@ -64,7 +64,10 @@ class LasuiteDesignStackTest extends TestCase
         $appManager = $this->createMock(IAppManager::class);
         $appManager->method('getAppPath')->willReturn($this->repoRoot());
 
-        return new DesignSystemService($appManager);
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturn('');
+
+        return new DesignSystemService($appManager, $config);
     }//end designSystemService()
 
     /**

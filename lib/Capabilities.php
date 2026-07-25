@@ -5,12 +5,13 @@
  *
  * Contributes an `nldesign` entry to the Nextcloud capabilities document
  * (`/ocs/v2.php/cloud/capabilities`) describing the instance's active huisstijl:
- * the active token set, resolved design system, audited WCAG contrast level,
- * available logo variants, and the slogan/menu-label presentation toggles.
- * Implements `IPublicCapability` (not merely `ICapability`) so unauthenticated
- * clients — login pages, portals, mobile/desktop clients pre-session — can read
- * it, mirroring core `apps/theming`'s public capability. Everything exposed
- * here is already visible to anyone loading the themed login page.
+ * the active token set, resolved design system, resolved icon pack(s), audited
+ * WCAG contrast level, available logo variants, and the slogan/menu-label
+ * presentation toggles. Implements `IPublicCapability` (not merely
+ * `ICapability`) so unauthenticated clients — login pages, portals,
+ * mobile/desktop clients pre-session — can read it, mirroring core
+ * `apps/theming`'s public capability. Everything exposed here is already
+ * visible to anyone loading the themed login page.
  *
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
@@ -107,11 +108,12 @@ class Capabilities implements IPublicCapability
     }//end getCapabilities()
 
     /**
-     * Build the full seven-key payload from live appconfig + manifest state.
+     * Build the full eight-key payload from live appconfig + manifest state.
      *
-     * @return array<string, mixed> The payload (allowlisted to exactly seven keys).
+     * @return array<string, mixed> The payload (allowlisted to exactly eight keys).
      *
      * @spec openspec/specs/theming-capability/spec.md
+     * @spec openspec/specs/icon-packs/spec.md
      */
     private function buildPayload(): array
     {
@@ -126,6 +128,7 @@ class Capabilities implements IPublicCapability
             'version'        => $this->appManager->getAppVersion(appId: Application::APP_ID),
             'tokenSet'       => $this->buildTokenSet(tokenSetId: $tokenSetId),
             'designSystem'   => $designSystemId,
+            'iconPacks'      => $this->designSystemService->resolveActiveIconPacks(tokenSetId: $tokenSetId),
             'wcagLevel'      => $this->computeWcagLevel(tokenSetId: $tokenSetId, tokenSetMeta: $tokenSetMeta),
             'logos'          => $this->buildLogos(tokenSetMeta: $tokenSetMeta),
             'hideSlogan'     => $hideSlogan,
@@ -286,11 +289,12 @@ class Capabilities implements IPublicCapability
      * `version` and `tokenSet.id` are re-derived from raw appconfig (best
      * effort — a nested failure here still falls back to a safe literal rather
      * than propagating); `name` falls back to the id; every other field is
-     * `null`, `{}`, or `false`. Never includes exception details.
+     * `null`, `{}`, `[]`, or `false`. Never includes exception details.
      *
      * @return array<string, mixed> The minimal payload.
      *
      * @spec openspec/specs/theming-capability/spec.md
+     * @spec openspec/specs/icon-packs/spec.md
      */
     private function minimalPayload(): array
     {
@@ -316,6 +320,7 @@ class Capabilities implements IPublicCapability
                 'version' => null,
             ],
             'designSystem'   => null,
+            'iconPacks'      => [],
             'wcagLevel'      => null,
             'logos'          => new stdClass(),
             'hideSlogan'     => false,

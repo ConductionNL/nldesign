@@ -10,6 +10,8 @@
  * @var string $occEnableCommand
  * @var string $occDisableCommand
  * @var array{tokenSet: string, name: string}|null $activePreview
+ * @var string[] $activeIconPacks
+ * @var 'design-system'|'override' $iconPackSource
  */
 
 // Load the pure token/colour transforms first so admin.js can consume them via
@@ -49,6 +51,32 @@ style('nldesign', 'admin');
 		<button type="button" id="nldesign-preview-btn" class="button">
 			<?php p($l->t('Preview in my session')); ?>
 		</button>
+	</div>
+
+	<!-- Active icon pack — read-only indicator (theme-switchable iconography,
+	     openspec/specs/icon-packs/spec.md). Reflects the currently PERSISTED
+	     token set (not an unpublished dropdown selection); no write control
+	     for the appconfig `icon_pack` override in this change. -->
+	<div class="nldesign-icon-pack-indicator" id="nldesign-icon-pack-indicator"
+		 data-icon-pack-source="<?php p($_['iconPackSource']); ?>">
+		<h3><?php p($l->t('Active icon pack')); ?></h3>
+		<p class="nldesign-icon-pack-value" id="nldesign-icon-pack-value">
+			<?php if (empty($_['activeIconPacks'])): ?>
+				<?php p($l->t('Nextcloud stock icons (no custom pack)')); ?>
+			<?php else: ?>
+				<?php p(implode(', ', $_['activeIconPacks'])); ?>
+			<?php endif; ?>
+		</p>
+		<p class="settings-hint" id="nldesign-icon-pack-source">
+			<?php if ($_['iconPackSource'] === 'override'): ?>
+				<?php p($l->t('Source: admin override (occ config:app:set nldesign icon_pack)')); ?>
+			<?php else: ?>
+				<?php p($l->t('Source: the active design system')); ?>
+			<?php endif; ?>
+		</p>
+		<p class="settings-hint">
+			<?php p($l->t('This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud\'s built-in core icons beyond what the active theme\'s CSS already restyles.')); ?>
+		</p>
 	</div>
 
 	<!-- Marianne (French State typeface) — restricted, gated, off by default.
