@@ -22,6 +22,8 @@ namespace OCA\NLDesign\Service;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCP\App\IAppManager;
+use OCP\ICache;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 
@@ -83,30 +85,44 @@ class TokenSetService
     private LoggerInterface $logger;
 
     /**
-     * The shipped-set contrast audit service (runtime warning surface).
+     * The shipped-set contrast audit service (runtime warning surface, and
+     * the `wcagLevel` audit path the public catalogue projection reuses).
      *
      * @var ShippedTokenSetAuditService
      */
     private ShippedTokenSetAuditService $audit;
 
     /**
+     * Distributed cache for the resolved WCAG level, keyed by set id.
+     * Deliberately the same `ICache` prefix (`nldesign_wcag_level`)
+     * `Capabilities` uses, so the public catalogue and the active-theme
+     * capability share one cache entry per set id.
+     *
+     * @var ICache
+     */
+    private ICache $wcagCache;
+
+    /**
      * Constructor.
      *
-     * @param IAppManager                 $appManager The app manager for resolving paths.
-     * @param IConfig                     $config     The config service.
-     * @param LoggerInterface             $logger     The logger.
-     * @param ShippedTokenSetAuditService $audit      The shipped-set contrast audit service.
+     * @param IAppManager                 $appManager   The app manager for resolving paths.
+     * @param IConfig                     $config       The config service.
+     * @param LoggerInterface             $logger       The logger.
+     * @param ShippedTokenSetAuditService $audit        The shipped-set contrast audit service.
+     * @param ICacheFactory               $cacheFactory Creates the distributed WCAG-level cache.
      */
     public function __construct(
         IAppManager $appManager,
         IConfig $config,
         LoggerInterface $logger,
-        ShippedTokenSetAuditService $audit
+        ShippedTokenSetAuditService $audit,
+        ICacheFactory $cacheFactory
     ) {
         $this->appManager = $appManager;
         $this->config     = $config;
         $this->logger     = $logger;
         $this->audit      = $audit;
+        $this->wcagCache  = $cacheFactory->createDistributed(prefix: 'nldesign_wcag_level');
     }//end __construct()
 
     /**
@@ -187,6 +203,56 @@ class TokenSetService
 
         return $tokenSets;
     }//end getAvailableTokenSets()
+
+    /**
+     * Project the catalogue to the closed, non-admin, 5-field public shape:
+     * `{ id, name, design_system, theming: {primary_color, background_color,
+     * logo?}, wcagLevel }`.
+     *
+     * Reuses `getAvailableTokenSets()` verbatim for discovery — no second
+     * scan, no second manifest-merge logic — and deliberately omits
+     * `description`, `custom`, `warnings`, `upstreamVersion`, and
+     * `upstreamRef`, which are internal/admin-only fields. `wcagLevel` is
+     * computed via the same `ShippedTokenSetAuditService::auditSet()` path
+     * `Capabilities::computeWcagLevel()` already uses for the active set,
+     * cached under the same `ICache` prefix (`nldesign_wcag_level`).
+     *
+     * @return array<int, array{id: string, name: string, design_system: string, theming: array<string, string>, wcagLevel: string|null}>
+     *     The public catalogue entries.
+     *
+     * @spec openspec/specs/app-token-set-selection/spec.md
+     */
+    public function getPublicCatalogue(): array
+    {
+        $appPath = $this->getAppPath();
+
+        $catalogue = [];
+        foreach ($this->getAvailableTokenSets() as $entry) {
+            $theming = [
+                'primary_color'    => ($entry['theming']['primary_color'] ?? null),
+                'background_color' => ($entry['theming']['background_color'] ?? null),
+            ];
+            $logo    = ($entry['theming']['logo'] ?? null);
+            if (is_string($logo) === true && $logo !== '') {
+                $theming['logo'] = $logo;
+            }
+
+            $catalogue[] = [
+                'id'            => $entry['id'],
+                'name'          => $entry['name'],
+                'design_system' => $entry['design_system'],
+                'theming'       => $theming,
+                'wcagLevel'     => $this->audit->computeCachedWcagLevel(
+                    cache: $this->wcagCache,
+                    appPath: $appPath,
+                    tokenSetId: $entry['id'],
+                    tokenSetMeta: $entry
+                ),
+            ];
+        }//end foreach
+
+        return $catalogue;
+    }//end getPublicCatalogue()
 
     /**
      * Apply optional upstream provenance fields (upstream-freshness spec)

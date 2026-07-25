@@ -21,6 +21,8 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\Service;
 
+use OCP\ICache;
+
 /**
  * Audits the shipped token sets for WCAG contrast, reusing the existing
  * ContrastService WCAG relative-luminance math.
@@ -57,6 +59,13 @@ class ShippedTokenSetAuditService
      * WCAG AAA non-text/UI-contrast threshold (used for high-contrast sets).
      */
     public const AAA_UI = 4.5;
+
+    /**
+     * TTL (seconds) for a cached per-set WCAG level — matches
+     * `Capabilities::WCAG_CACHE_TTL` exactly so a set that is both the active
+     * theme and a catalogue entry shares one cache entry rather than two.
+     */
+    public const WCAG_CACHE_TTL = 3600;
 
     /**
      * The WCAG contrast service (relative-luminance math).
@@ -171,6 +180,66 @@ class ShippedTokenSetAuditService
             'verdict'       => $verdict,
         ];
     }//end auditSet()
+
+    /**
+     * Compute and cache the WCAG level for one token set, sharing the exact
+     * cache namespace/key/TTL `Capabilities::computeWcagLevel()` uses for the
+     * active set (`ICache` prefix `nldesign_wcag_level`, key `level-<id>`,
+     * TTL 3600s), so a set that is both the active theme (warmed by
+     * `Capabilities` on every capabilities-document read) and a catalogue
+     * entry (read by the public catalogue endpoint) hits one cache entry
+     * rather than computing the audit twice. `Capabilities.php` itself is
+     * unmodified by this change — its own private `computeWcagLevel()`/
+     * `auditWcagLevel()` pair keeps working exactly as before, resolving the
+     * same cache key this method writes.
+     *
+     * Null for a stock (`none` design system) or custom/unknown set — the
+     * audit has nothing to evaluate and MUST NOT fabricate a conformance
+     * claim, matching `Capabilities`' own null case exactly.
+     *
+     * @param ICache               $cache        Distributed cache created with prefix `nldesign_wcag_level`.
+     * @param string               $appPath      The app root path.
+     * @param string               $tokenSetId   The token set id.
+     * @param array<string, mixed> $tokenSetMeta The set's manifest entry (design_system, theming, contrast_level).
+     *
+     * @return string|null One of `AAA`, `AA`, `fail`, or null.
+     *
+     * @spec openspec/specs/app-token-set-selection/spec.md
+     */
+    public function computeCachedWcagLevel(ICache $cache, string $appPath, string $tokenSetId, array $tokenSetMeta): ?string
+    {
+        $designSystemId = ($tokenSetMeta['design_system'] ?? null);
+        if (empty($tokenSetMeta) === true || $designSystemId === 'none') {
+            return null;
+        }
+
+        $cacheKey = 'level-'.$tokenSetId;
+        $cached   = $cache->get(key: $cacheKey);
+        if (is_string($cached) === true) {
+            return $cached;
+        }
+
+        $theming     = ($tokenSetMeta['theming'] ?? []);
+        $declaresAaa = ($designSystemId === 'high-contrast' || ($tokenSetMeta['contrast_level'] ?? null) === 'AAA');
+
+        $passesAa = $this->auditSet(appPath: $appPath, id: $tokenSetId, theming: $theming, level: 'AA')['verdict'] === 'pass';
+
+        $level = 'fail';
+        if ($declaresAaa === true) {
+            $passesAaa = $this->auditSet(appPath: $appPath, id: $tokenSetId, theming: $theming, level: 'AAA')['verdict'] === 'pass';
+            if ($passesAaa === true) {
+                $level = 'AAA';
+            }
+        }
+
+        if ($level !== 'AAA' && $passesAa === true) {
+            $level = 'AA';
+        }
+
+        $cache->set(key: $cacheKey, value: $level, ttl: self::WCAG_CACHE_TTL);
+
+        return $level;
+    }//end computeCachedWcagLevel()
 
     /**
      * Audit every shipped token set with a non-`none` design system.

@@ -19,6 +19,14 @@ return [
 		// {status, app, version, checks} contract.
 		['name' => 'health#index', 'url' => '/api/health', 'verb' => 'GET'],
 
+		// Non-admin, read-only token-set catalogue + shared contrast
+		// evaluation (app-token-set-selection) — #[NoAdminRequired] on both
+		// controller methods (authenticated non-admin user, not
+		// #[PublicPage]); deliberately outside the /settings/* prefix this
+		// app reserves for admin-gated routes, alongside metrics/health.
+		['name' => 'catalog#tokenSets', 'url' => '/api/token-sets', 'verb' => 'GET'],
+		['name' => 'contrast#evaluate', 'url' => '/api/contrast/evaluate', 'verb' => 'POST'],
+
 		['name' => 'settings#getAvailableTokenSets', 'url' => '/settings/tokensets', 'verb' => 'GET'],
 		['name' => 'settings#setTokenSet', 'url' => '/settings/tokenset', 'verb' => 'POST'],
 		['name' => 'settings#getTokenSet', 'url' => '/settings/tokenset', 'verb' => 'GET'],

@@ -29,6 +29,8 @@ use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\ShippedTokenSetAuditService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\App\IAppManager;
+use OCP\ICache;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -78,9 +80,11 @@ class LasuiteDesignStackTest extends TestCase
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturn('{}');
 
-        $audit = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
+        $audit        = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
+        $cacheFactory = $this->createMock(ICacheFactory::class);
+        $cacheFactory->method('createDistributed')->willReturn($this->createMock(ICache::class));
 
-        return new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit);
+        return new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit, $cacheFactory);
     }//end tokenSetService()
 
     /**

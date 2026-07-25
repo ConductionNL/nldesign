@@ -68,3 +68,10 @@ When an admin opens the token-set apply dialog for a shipped set whose audit ver
 - WHEN the admin opens its apply dialog
 - THEN no contrast warning MUST be shown for that set
 
+**See also**: `app-token-set-selection`'s `GET /api/token-sets` `wcagLevel`
+field reuses this exact audit path (`ShippedTokenSetAuditService::auditSet()`)
+and cache namespace (`ICache` prefix `nldesign_wcag_level`) to expose the
+same per-set verdict to a leaf app's own non-admin picker, and its "Selection
+Contrast Is Non-Blocking" requirement extends the non-blocking policy this
+spec already applies in the apply dialog to that new consumption path.
+
