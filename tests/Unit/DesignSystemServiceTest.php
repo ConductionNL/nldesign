@@ -86,6 +86,9 @@ class DesignSystemServiceTest extends TestCase
                     ['id' => 'lasuite', 'design_system' => 'lasuite'],
                     ['id' => 'nextcloud', 'design_system' => 'none'],
                     ['id' => 'ghost-system', 'design_system' => 'does-not-exist'],
+                    // A real Dutch municipality set: the manifest OMITS
+                    // design_system, relying on the app-wide 'nldesign' default.
+                    ['id' => 'gemeente-zonder-ds'],
                 ]
             )
         );
@@ -199,6 +202,21 @@ class DesignSystemServiceTest extends TestCase
     {
         $this->assertSame(['rvo', 'open-gemeenten', 'den-haag'], $this->service()->resolveActiveIconPacks('rijkshuisstijl'));
     }//end testResolveActiveIconPacksNldesignDefault()
+
+    /**
+     * A token set that OMITS design_system (the ~33 Dutch municipality sets)
+     * must default to the `nldesign` design system — and therefore resolve
+     * the Dutch icon packs, not an empty list. Regression: the resolver
+     * previously returned [] for a missing field, silently stripping the
+     * Dutch government's own icons.
+     */
+    public function testResolveActiveIconPacksDefaultsMissingDesignSystemToNldesign(): void
+    {
+        $this->assertSame(
+            ['rvo', 'open-gemeenten', 'den-haag'],
+            $this->service()->resolveActiveIconPacks('gemeente-zonder-ds')
+        );
+    }//end testResolveActiveIconPacksDefaultsMissingDesignSystemToNldesign()
 
     /**
      * A `none` (stock) design system resolves to no pack.
