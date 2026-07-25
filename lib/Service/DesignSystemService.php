@@ -220,9 +220,22 @@ class DesignSystemService
             return $tokenSetPack;
         }
 
-        $designSystemId = ($tokenSetMeta['design_system'] ?? null);
-        if (is_string($designSystemId) === false || $designSystemId === '') {
+        // An UNKNOWN token set (no manifest entry at all → empty meta) is not
+        // themed, so it resolves to no pack.
+        if ($tokenSetMeta === []) {
             return [];
+        }
+
+        // A KNOWN token set that merely OMITS design_system defaults to
+        // `nldesign` — the same fallback TokenSetService::getAvailableTokenSets()
+        // and Capabilities apply. Without this, the ~33 Dutch-government sets
+        // that omit the field (rijkshuisstijl and the municipality sets carry
+        // id/name/description/theming but no design_system) would resolve to NO
+        // icon pack instead of the Dutch packs, silently breaking the
+        // "Dutch government → Dutch icons" contract.
+        $designSystemId = ($tokenSetMeta['design_system'] ?? '');
+        if (is_string($designSystemId) === false || $designSystemId === '') {
+            $designSystemId = 'nldesign';
         }
 
         return $this->getIconPacks(designSystemId: $designSystemId);
