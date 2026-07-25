@@ -128,6 +128,37 @@ This app uses **Fira Sans** as an open-source alternative to the proprietary gov
 - Similar characteristics to official government fonts
 - Officially recommended by Rijkshuisstijl Community as open-source alternative
 
+## Marianne Font (La Suite numérique) — restricted, off by default
+
+> ⚠️ **Marianne is the official typeface of the French State, reserved for
+> French State administrations ("réservée aux administrations de l'État").**
+> This app bundles it self-hosted, but it is **inert until an admin
+> explicitly enables it** — enabling it is the operator's affirmation that
+> their organisation is a French State agency. Every other instance, and
+> every instance with the gate left off (the default), renders **Inter**.
+
+The `lasuite` token set's own configured font stack is `Marianne, Inter,
+Roboto Flex Variable, sans-serif` (Cunningham design system). This app:
+
+- **Bundles** the 8 Marianne `woff2` weights (Light, Regular, Medium, Bold +
+  italics) from `@gouvfr/dsfr@1.15.1` (the official French government Design
+  System) under `css/systems/lasuite/fonts/marianne/`, self-hosted, no
+  external request — licensed **Etalab Open Licence 2.0**, see
+  [`MARIANNE-LICENCE.md`](MARIANNE-LICENCE.md).
+- **Keeps Marianne inert by default.** The real `@font-face Marianne`
+  declarations live in a separate stylesheet
+  (`css/systems/lasuite/marianne.css`) that only loads when BOTH the
+  `lasuite` design system is active AND an admin has ticked *"Our
+  organisation is a French State agency (administration de l'État)"* in
+  Administration Settings. Until then, no Marianne byte is ever requested
+  and the `lasuite` set renders **Inter** (SIL OFL 1.1, also self-hosted).
+- **Requires an explicit agreement** to enable — see
+  [`AGREEMENT-MARIANNE.md`](AGREEMENT-MARIANNE.md) for the operator user
+  agreement that ticking the checkbox constitutes.
+
+This is **not** an unconditionally free/open font: do not enable it unless
+your organisation is a French State agency.
+
 ## Architecture
 
 ```
@@ -309,13 +340,15 @@ All dependencies (PHP and JavaScript) are automatically checked against an appro
 
 - **Permissive:** MIT, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Apache-2.0, Unlicense, CC0-1.0, CC-BY-3.0, CC-BY-4.0, Zlib, BlueOak-1.0.0, Artistic-2.0, BSL-1.0
 - **Copyleft (EUPL-compatible):** LGPL-2.0/2.1/3.0, GPL-2.0/3.0, AGPL-3.0, EUPL-1.1/1.2, MPL-2.0
-- **Font licenses:** OFL-1.0, OFL-1.1
+- **Font licenses:** OFL-1.0, OFL-1.1, Etalab-2.0 (Marianne only, see below)
 
 Dependencies with licenses not on this list will fail CI unless explicitly approved in `.license-overrides.json` with a documented justification.
 
 ### License exceptions
 
-No current exceptions. `@conduction/nextcloud-vue` (EUPL-1.2, devDependency, build-time icon source only) is already covered by the EUPL-1.1/1.2 allowlist entry above, and the proprietary `@amsterdam/design-system-assets` / `@amsterdam/design-system-react-icons` packages that previously required an exception here have been removed — see [CHANGELOG.md](CHANGELOG.md).
+`@gouvfr/dsfr` (Etalab-2.0, devDependency, build-time Marianne font source only via `scripts/build-fonts-marianne.js`) is approved via `.license-overrides.json`, which maps every bundled `css/systems/lasuite/fonts/marianne/*.woff2` file to the `Etalab-2.0` SPDX identifier (full text: [`LICENSES/Etalab-2.0.txt`](LICENSES/Etalab-2.0.txt)) — see [`MARIANNE-LICENCE.md`](MARIANNE-LICENCE.md) for the accompanying French-State-only usage restriction, which the [Marianne acknowledgement gate](#marianne-font-la-suite-numérique--restricted-off-by-default) enforces at runtime.
+
+`@conduction/nextcloud-vue` (EUPL-1.2, devDependency, build-time icon source only) is already covered by the EUPL-1.1/1.2 allowlist entry above, and the proprietary `@amsterdam/design-system-assets` / `@amsterdam/design-system-react-icons` packages that previously required an exception here have been removed — see [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 

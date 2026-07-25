@@ -1,17 +1,25 @@
 /**
- * La Suite numérique — Fonts Layer (open fallback, zero Marianne bytes)
+ * La Suite numérique — Fonts Layer (open fallback, gated Marianne)
  *
  * La Suite's own configured stack is `Marianne, Inter, Roboto Flex Variable,
  * sans-serif` (Cunningham design system). Marianne is the French-state
  * typeface — suitenumerique/meet#426 ("Marianne font compatible with MIT
- * license?") records that it "cannot be proposed as is for self-hosters", so
- * it is restricted to French-administration machines with the font already
- * installed at OS level. Inter (SIL Open Font License 1.1) is the first open
- * font in La Suite's own stack and is what every non-French deployment
- * actually renders — so this layer self-hosts Inter and keeps `Marianne`
- * first in the family list as a local()-only name: French-state machines with
- * Marianne installed get it, nobody else receives a single Marianne byte from
- * this app (no such file exists anywhere in css/systems/lasuite/fonts/).
+ * license?") records that it "cannot be proposed as is for self-hosters".
+ * Inter (SIL Open Font License 1.1) is the first open font in La Suite's own
+ * stack and is what every deployment renders BY DEFAULT — this layer
+ * self-hosts Inter and keeps `Marianne` first in the family list below.
+ *
+ * Marianne itself is NOW bundled and self-hosted (see
+ * css/systems/lasuite/fonts/marianne/ and MARIANNE-LICENCE.md /
+ * AGREEMENT-MARIANNE.md at the repository root), but its real, url()-sourced
+ * `@font-face Marianne` declarations live in a SEPARATE stylesheet —
+ * css/systems/lasuite/marianne.css — which `CssInjectionService` emits ONLY
+ * when the active design system is `lasuite` AND an admin has ticked the
+ * `marianne_enabled` acknowledgement gate (default '0': off). While that
+ * gate is off, marianne.css is never loaded, so THIS file remains the whole
+ * font layer — no `@font-face` for `Marianne` exists anywhere in it, no
+ * `url()` ever references Marianne, and the family stack below simply falls
+ * through to the self-hosted Inter. See openspec/specs/marianne-font/spec.md.
  *
  * Font source: @fontsource/inter (npm, v5.3.0), itself repackaging the
  * upstream Inter release (https://github.com/rsms/inter) under the Inter
@@ -74,9 +82,11 @@
 }
 
 :root {
-	/* Marianne resolves ONLY when already installed at OS level (French
-	 * administration devices) — no `url()` source is declared for it above,
-	 * so the browser can never fetch Marianne bytes from this app. Every
-	 * other machine falls through to the self-hosted Inter declared above. */
+	/* Marianne resolves when EITHER the gated css/systems/lasuite/marianne.css
+	 * layer has been loaded (marianne_enabled='1', a self-hosted @font-face)
+	 * OR the font happens to be installed at OS level. No `@font-face` /
+	 * `url()` source for Marianne is declared in THIS file — so when the gate
+	 * is off, this app never causes a Marianne byte to be fetched, and every
+	 * machine falls through to the self-hosted Inter declared above. */
 	--lasuite-font-family: Marianne, Inter, sans-serif;
 }

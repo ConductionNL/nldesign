@@ -170,6 +170,21 @@ function nldesignAdminMain() {
 		badge.className = 'nldesign-badge' + (dsId === 'none' ? ' nldesign-badge--stock' : ' nldesign-badge--system');
 	}
 
+	// Show/hide the Marianne (French State typeface) acknowledgement gate —
+	// only meaningful for the lasuite design system (openspec/specs/marianne-font/spec.md).
+	// Mirrors updateDesignSystemBadge()'s data-design-system lookup so it
+	// stays in sync with whichever token set is currently selected, without
+	// a page reload.
+	function updateMarianneVisibility(tokenSetId) {
+		var gate = document.getElementById('nldesign-marianne-gate');
+		if (!gate) return;
+
+		var option = tokenSetSelect ? tokenSetSelect.querySelector('option[value="' + tokenSetId + '"]') : null;
+		var dsId = option ? (option.getAttribute('data-design-system') || 'nldesign') : 'nldesign';
+
+		gate.style.display = (dsId === 'lasuite') ? '' : 'none';
+	}
+
 	// Handle token set dropdown selection — open apply dialog first
 	if (tokenSetSelect) {
 		tokenSetSelect.addEventListener('change', function() {
@@ -182,6 +197,7 @@ function nldesignAdminMain() {
 			// Update preview and design system badge optimistically
 			updatePreview(newTokenSet);
 			updateDesignSystemBadge(newTokenSet);
+			updateMarianneVisibility(newTokenSet);
 
 			// Open the token overrides apply dialog.
 			openTokenSetApplyDialog(newTokenSet, prevTokenSet);
@@ -190,6 +206,7 @@ function nldesignAdminMain() {
 		// Set initial preview for selected item and remember initial value.
 		updatePreview(tokenSetSelect.value);
 		updateDesignSystemBadge(tokenSetSelect.value);
+		updateMarianneVisibility(tokenSetSelect.value);
 		tokenSetSelect.dataset.previousValue = tokenSetSelect.value;
 	}
 
@@ -688,6 +705,42 @@ function nldesignAdminMain() {
 		})
 		.catch(function(error) {
 			console.error('Error saving dark variants setting:', error);
+			notify(t('nldesign', 'Failed to save setting.'));
+		});
+	}
+
+	// Handle the Marianne (French State typeface) acknowledgement checkbox —
+	// ticking it is the operator's affirmation of French-state eligibility
+	// (openspec/specs/marianne-font/spec.md, AGREEMENT-MARIANNE.md).
+	var marianneCheckbox = document.getElementById('nldesign-marianne-enabled');
+	if (marianneCheckbox) {
+		marianneCheckbox.addEventListener('change', function() {
+			saveMarianneSetting(this.checked);
+		});
+	}
+
+	// Save the Marianne acknowledgement gate to server
+	function saveMarianneSetting(enabled) {
+		var url = OC.generateUrl('/apps/nldesign/settings/marianne');
+
+		fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'requesttoken': OC.requestToken
+			},
+			body: JSON.stringify({ enabled: enabled })
+		})
+		.then(function(response) { return response.json(); })
+		.then(function(data) {
+			if (data.status === 'ok') {
+				notify(t('nldesign', 'Setting saved successfully. reload the page to see changes.'));
+			} else {
+				notify(t('nldesign', 'Failed to save setting.'));
+			}
+		})
+		.catch(function(error) {
+			console.error('Error saving Marianne setting:', error);
 			notify(t('nldesign', 'Failed to save setting.'));
 		});
 	}
