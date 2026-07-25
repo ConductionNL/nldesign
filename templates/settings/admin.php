@@ -2,7 +2,9 @@
 /**
  * @var array $tokenSets
  * @var string $currentTokenSet
+ * @var string $currentDesignSystem
  * @var bool $darkVariantsEnabled
+ * @var bool $marianneEnabled
  * @var array{state: string, configReadOnly: bool, foreignClass: ?string} $emailThemingState
  * @var array{orgName: string, accessibilityUrl: string, privacyUrl: string} $emailFooterConfig
  * @var string $occEnableCommand
@@ -75,6 +77,30 @@ style('nldesign', 'admin');
 		<p class="settings-hint">
 			<?php p($l->t('This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud\'s built-in core icons beyond what the active theme\'s CSS already restyles.')); ?>
 		</p>
+	</div>
+
+	<!-- Marianne (French State typeface) — restricted, gated, off by default.
+	     Only meaningful for the lasuite design system: server-rendered
+	     hidden otherwise for the initial paint, and toggled live by
+	     admin.js on token-set selection (same data-design-system option
+	     attribute updateDesignSystemBadge() already reads). Notice text is
+	     unmissable at this point-of-selection per
+	     openspec/specs/marianne-font/spec.md. -->
+	<div class="nldesign-marianne-gate" id="nldesign-marianne-gate"
+		 style="<?php echo ($_['currentDesignSystem'] !== 'lasuite') ? 'display:none' : ''; ?>">
+		<p class="nldesign-license-notice" id="nldesign-marianne-notice">
+			<?php p($l->t('Marianne is the official typeface of the French State and is reserved for French State administrations. Enable it only if your organisation is a French State agency. Otherwise Inter is used.')); ?>
+		</p>
+		<div class="nldesign-option">
+			<input type="checkbox"
+				   name="nldesign-marianne-enabled"
+				   id="nldesign-marianne-enabled"
+				   class="checkbox"
+				   <?php if ($_['marianneEnabled']): ?>checked<?php endif; ?>>
+			<label for="nldesign-marianne-enabled">
+				<?php p($l->t('Our organisation is a French State agency (administration de l\'État)')); ?>
+			</label>
+		</div>
 	</div>
 
 	<!-- Active theme preview ("proefdraaien") — only rendered for the

@@ -17,6 +17,7 @@
  * @spec openspec/specs/css-architecture/spec.md
  * @spec openspec/specs/token-sets/spec.md
  * @spec openspec/specs/lasuite-parity/spec.md
+ * @spec openspec/specs/marianne-font/spec.md
  */
 
 declare(strict_types=1);
@@ -29,6 +30,8 @@ use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\ShippedTokenSetAuditService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\App\IAppManager;
+use OCP\ICache;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -81,9 +84,11 @@ class LasuiteDesignStackTest extends TestCase
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturn('{}');
 
-        $audit = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
+        $audit        = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
+        $cacheFactory = $this->createMock(ICacheFactory::class);
+        $cacheFactory->method('createDistributed')->willReturn($this->createMock(ICache::class));
 
-        return new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit);
+        return new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit, $cacheFactory);
     }//end tokenSetService()
 
     /**
@@ -494,38 +499,101 @@ class LasuiteDesignStackTest extends TestCase
     }//end testFontsDirectoryCarriesOflLicenceAndExpectedWeights()
 
     /**
-     * License compliance: no file anywhere in the app matches the name
-     * Marianne (case-insensitive) — the French-state font is never shipped.
+     * License compliance (UPDATED by marianne-font-restricted — Marianne MAY
+     * now be bundled, gated, per openspec/specs/marianne-font/spec.md; the
+     * previous blanket "no Marianne file anywhere" assertion is replaced by a
+     * scoped invariant): within the static-asset delivery surface (css/,
+     * img/, js/ — where an accidental extra bundle would actually reach the
+     * browser), a file matching the name Marianne may exist ONLY under the
+     * sanctioned `css/systems/lasuite/fonts/marianne/` directory or as the
+     * single gated stylesheet `css/systems/lasuite/marianne.css`. Governance
+     * docs (MARIANNE-LICENCE.md, AGREEMENT-MARIANNE.md), LICENSES/, l10n/
+     * notice strings, tests/, scripts/, and openspec/ legitimately reference
+     * "Marianne" by name and are out of scope for this asset-delivery check.
      *
-     * @spec openspec/specs/css-architecture/spec.md
+     * @spec openspec/specs/marianne-font/spec.md
      */
-    public function testNoMarianneFileExistsAnywhereInTheApp(): void
+    public function testMarianneAssetsAreScopedToTheGatedDirectoryAndStylesheet(): void
     {
-        $root     = $this->repoRoot();
-        $skipDirs = ['/vendor/', '/node_modules/', '/.git/'];
+        $root = $this->repoRoot();
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
-        );
+        $sanctionedFontDir    = $root.'/css/systems/lasuite/fonts/marianne';
+        $sanctionedStylesheet = $root.'/css/systems/lasuite/marianne.css';
 
-        $matches = [];
-        foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
-            $path = $file->getPathname();
-
-            foreach ($skipDirs as $skip) {
-                if (str_contains($path, $skip) === true) {
-                    continue 2;
-                }
+        $violations = [];
+        foreach (['css', 'img', 'js'] as $dir) {
+            $absDir = $root.'/'.$dir;
+            if (is_dir($absDir) === false) {
+                continue;
             }
 
-            if (preg_match('/marianne/i', $file->getFilename()) === 1) {
-                $matches[] = str_replace($root.'/', '', $path);
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($absDir, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                /** @var \SplFileInfo $file */
+                $path = $file->getPathname();
+
+                if (preg_match('/marianne/i', $file->getFilename()) !== 1) {
+                    continue;
+                }
+
+                if (str_starts_with($path, $sanctionedFontDir.'/') === true || $path === $sanctionedStylesheet) {
+                    continue;
+                }
+
+                $violations[] = str_replace($root.'/', '', $path);
             }
         }
 
-        $this->assertSame([], $matches, 'No file may match the name Marianne (case-insensitive): '.implode(', ', $matches));
-    }//end testNoMarianneFileExistsAnywhereInTheApp()
+        $this->assertSame(
+            [],
+            $violations,
+            'A Marianne-named file was found outside the sanctioned gated location '
+            .'(css/systems/lasuite/fonts/marianne/ or css/systems/lasuite/marianne.css): '.implode(', ', $violations)
+        );
+    }//end testMarianneAssetsAreScopedToTheGatedDirectoryAndStylesheet()
+
+    /**
+     * No CSS file other than the gated `css/systems/lasuite/marianne.css`
+     * `url()`-sources anything matching Marianne — so an accidental
+     * un-gated `@font-face` cannot slip into any other stylesheet.
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    public function testNoUrlSourceForMarianneOutsideTheGatedStylesheet(): void
+    {
+        $root      = $this->repoRoot();
+        $cssDir    = $root.'/css';
+        $sanctioned = $root.'/css/systems/lasuite/marianne.css';
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($cssDir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            /** @var \SplFileInfo $file */
+            if ($file->getExtension() !== 'css') {
+                continue;
+            }
+
+            $path = $file->getPathname();
+            if ($path === $sanctioned) {
+                continue;
+            }
+
+            $contents = (string) file_get_contents($path);
+            preg_match_all('/url\([^)]*\)/i', $contents, $matches);
+            foreach ($matches[0] as $url) {
+                $this->assertDoesNotMatchRegularExpression(
+                    '/marianne/i',
+                    $url,
+                    str_replace($root.'/', '', $path)." must not url()-source Marianne outside the gated marianne.css: {$url}"
+                );
+            }
+        }
+    }//end testNoUrlSourceForMarianneOutsideTheGatedStylesheet()
 
     /**
      * License compliance: the `lasuite` entry in `token-sets.json` carries no

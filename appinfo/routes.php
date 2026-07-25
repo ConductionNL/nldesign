@@ -19,6 +19,14 @@ return [
 		// {status, app, version, checks} contract.
 		['name' => 'health#index', 'url' => '/api/health', 'verb' => 'GET'],
 
+		// Non-admin, read-only token-set catalogue + shared contrast
+		// evaluation (app-token-set-selection) — #[NoAdminRequired] on both
+		// controller methods (authenticated non-admin user, not
+		// #[PublicPage]); deliberately outside the /settings/* prefix this
+		// app reserves for admin-gated routes, alongside metrics/health.
+		['name' => 'catalog#tokenSets', 'url' => '/api/token-sets', 'verb' => 'GET'],
+		['name' => 'contrast#evaluate', 'url' => '/api/contrast/evaluate', 'verb' => 'POST'],
+
 		['name' => 'settings#getAvailableTokenSets', 'url' => '/settings/tokensets', 'verb' => 'GET'],
 		['name' => 'settings#setTokenSet', 'url' => '/settings/tokenset', 'verb' => 'POST'],
 		['name' => 'settings#getTokenSet', 'url' => '/settings/tokenset', 'verb' => 'GET'],
@@ -67,6 +75,11 @@ return [
 		// Dark-mode variants — instance-wide admin toggle (openspec/specs/dark-mode/spec.md).
 		['name' => 'settings#getDarkVariants', 'url' => '/settings/dark-variants', 'verb' => 'GET'],
 		['name' => 'settings#setDarkVariants', 'url' => '/settings/dark-variants', 'verb' => 'POST'],
+		// Marianne (French State typeface) admin acknowledgement gate — default
+		// off; enabling it is the operator's affirmation of French-state
+		// eligibility (openspec/specs/marianne-font/spec.md).
+		['name' => 'settings#getMarianneEnabled', 'url' => '/settings/marianne', 'verb' => 'GET'],
+		['name' => 'settings#setMarianneEnabled', 'url' => '/settings/marianne', 'verb' => 'POST'],
 		// Complete configuration bundle (config-portability) — OTAP promotion
 		// download/upload, admin-only (AuthorizedAdminSetting).
 		['name' => 'configBundle#export', 'url' => '/settings/config/export', 'verb' => 'GET'],

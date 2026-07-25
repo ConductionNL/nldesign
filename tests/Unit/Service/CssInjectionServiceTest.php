@@ -421,6 +421,115 @@ class CssInjectionServiceTest extends TestCase
     }//end testCustomFontsNotInjectedForNoneDesignSystem()
 
     /**
+     * When the active design system is `lasuite` AND `marianne_enabled` is
+     * `'1'`, `systems/lasuite/marianne` is emitted immediately after the
+     * declared lasuite stylesheets (which already include the base
+     * `systems/lasuite/fonts` layer).
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    public function testMarianneEmittedWhenLasuiteAndGateEnabled(): void
+    {
+        $this->configureAppValues(['token_set' => 'lasuite', 'marianne_enabled' => '1']);
+        $this->designSystemService->method('getTokenSetMeta')->with('lasuite')
+            ->willReturn(['design_system' => 'lasuite']);
+        $this->designSystemService->method('getDesignSystem')->with('lasuite')->willReturn(
+            [
+                'id'          => 'lasuite',
+                'name'        => 'La Suite numérique',
+                'description' => '',
+                'stylesheets' => [
+                    'systems/lasuite/fonts',
+                    'systems/lasuite/defaults',
+                    'systems/lasuite/brand-override',
+                    'systems/lasuite/bridge',
+                    'systems/lasuite/element-overrides',
+                ],
+            ]
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertSame(
+            [
+                'systems/lasuite/fonts',
+                'systems/lasuite/defaults',
+                'systems/lasuite/brand-override',
+                'systems/lasuite/bridge',
+                'systems/lasuite/element-overrides',
+                'systems/lasuite/marianne',
+                'tokens/lasuite',
+                'icon-contrast',
+                'error-contrast',
+                'custom-overrides',
+            ],
+            $styleLog
+        );
+
+        $fontsIndex    = array_search('systems/lasuite/fonts', $styleLog, true);
+        $marianneIndex = array_search('systems/lasuite/marianne', $styleLog, true);
+        $this->assertGreaterThan($fontsIndex, $marianneIndex, 'marianne.css must load after the base fonts layer.');
+    }//end testMarianneEmittedWhenLasuiteAndGateEnabled()
+
+    /**
+     * `systems/lasuite/marianne` is NOT emitted when the gate is off (the
+     * default), even for the `lasuite` design system.
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    public function testMarianneNotEmittedWhenGateDisabled(): void
+    {
+        $this->configureAppValues(['token_set' => 'lasuite', 'marianne_enabled' => '0']);
+        $this->designSystemService->method('getTokenSetMeta')->willReturn(['design_system' => 'lasuite']);
+        $this->designSystemService->method('getDesignSystem')->willReturn(
+            [
+                'id'          => 'lasuite',
+                'name'        => 'La Suite numérique',
+                'description' => '',
+                'stylesheets' => ['systems/lasuite/fonts'],
+            ]
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertNotContains('systems/lasuite/marianne', $styleLog);
+    }//end testMarianneNotEmittedWhenGateDisabled()
+
+    /**
+     * `systems/lasuite/marianne` is NOT emitted for a non-lasuite design
+     * system, even when `marianne_enabled` is `'1'` (a stray flag from a
+     * previous lasuite session must not leak into another design system).
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    public function testMarianneNotEmittedForNonLasuiteDesignSystem(): void
+    {
+        $this->configureAppValues(['token_set' => 'rijkshuisstijl', 'marianne_enabled' => '1']);
+        $this->designSystemService->method('getTokenSetMeta')->willReturn(['design_system' => 'nldesign']);
+        $this->designSystemService->method('getDesignSystem')->willReturn(
+            [
+                'id'          => 'nldesign',
+                'name'        => 'NL Design System',
+                'description' => '',
+                'stylesheets' => ['systems/nldesign/fonts'],
+            ]
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertNotContains('systems/lasuite/marianne', $styleLog);
+    }//end testMarianneNotEmittedForNonLasuiteDesignSystem()
+
+    /**
      * Absent `themed_contexts` themes every context (byte-identical default).
      */
     public function testAbsentThemedContextsThemesEveryContext(): void

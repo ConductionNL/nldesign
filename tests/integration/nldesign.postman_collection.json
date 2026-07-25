@@ -2379,6 +2379,245 @@
       ]
     },
     {
+      "name": "6. Public catalogue + contrast evaluation (app-token-set-selection)",
+      "item": [
+        {
+          "name": "GET token-sets catalogue (200, closed 5-field shape)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('catalogue (200)', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has tokenSets array', () => pm.expect(b.tokenSets).to.be.an('array'));",
+                  "pm.test('at least one entry', () => pm.expect(b.tokenSets.length).to.be.above(0));",
+                  "const first = b.tokenSets[0];",
+                  "pm.test('entry has exactly the 5 allowlisted keys', () => {",
+                  "  const keys = Object.keys(first).sort();",
+                  "  pm.expect(keys).to.eql(['design_system', 'id', 'name', 'theming', 'wcagLevel']);",
+                  "});",
+                  "pm.test('theming has primary_color and background_color', () => {",
+                  "  pm.expect(first.theming).to.have.property('primary_color');",
+                  "  pm.expect(first.theming).to.have.property('background_color');",
+                  "});",
+                  "pm.test('no admin-only fields leak', () => {",
+                  "  pm.expect(first).to.not.have.property('description');",
+                  "  pm.expect(first).to.not.have.property('custom');",
+                  "  pm.expect(first).to.not.have.property('warnings');",
+                  "  pm.expect(first).to.not.have.property('upstreamVersion');",
+                  "  pm.expect(first).to.not.have.property('upstreamRef');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{adminUser}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "OCS-APIRequest",
+                "value": "true"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/index.php/apps/nldesign/api/token-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "token-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET token-sets AUTHZ: anonymous -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('anonymous rejected 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{noAuthBase}}/index.php/apps/nldesign/api/token-sets",
+              "host": [
+                "{{noAuthBase}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "token-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST contrast/evaluate (200, ratio shape, no verdict field)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('contrast evaluate (200)', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has results array', () => pm.expect(b.results).to.be.an('array'));",
+                  "pm.test('one result per candidate', () => pm.expect(b.results.length).to.eql(2));",
+                  "const primary = b.results.find(r => r.name === 'primary');",
+                  "pm.test('primary (text role) uses 4.5 threshold', () => pm.expect(primary.threshold).to.eql(4.5));",
+                  "pm.test('primary ratio and pass are present', () => {",
+                  "  pm.expect(primary.ratio).to.be.a('number');",
+                  "  pm.expect(primary).to.have.property('pass');",
+                  "});",
+                  "pm.test('no blocked/allowed/verdict field anywhere', () => {",
+                  "  const raw = JSON.stringify(b);",
+                  "  pm.expect(raw).to.not.include('\"blocked\"');",
+                  "  pm.expect(raw).to.not.include('\"allowed\"');",
+                  "  pm.expect(raw).to.not.include('\"verdict\"');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{adminUser}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "OCS-APIRequest",
+                "value": "true"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/index.php/apps/nldesign/api/contrast/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "contrast",
+                "evaluate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidates\": [\n    { \"name\": \"primary\", \"value\": \"#154273\", \"role\": \"text\" },\n    { \"name\": \"accent\", \"value\": \"#e8f0f8\", \"role\": \"ui\" }\n  ],\n  \"background\": \"#F5F6F7\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST contrast/evaluate AUTHZ: anonymous -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('anonymous rejected 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{noAuthBase}}/index.php/apps/nldesign/api/contrast/evaluate",
+              "host": [
+                "{{noAuthBase}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "contrast",
+                "evaluate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidates\": [\n    { \"name\": \"primary\", \"value\": \"#154273\", \"role\": \"text\" }\n  ],\n  \"background\": \"#F5F6F7\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "9. Teardown: restore captured state",
       "item": [
         {

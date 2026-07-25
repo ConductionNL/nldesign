@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 ---
 
 # app-token-set-selection Specification

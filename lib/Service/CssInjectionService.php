@@ -188,6 +188,7 @@ class CssInjectionService
      *
      * @spec openspec/specs/css-architecture/spec.md
      * @spec openspec/specs/custom-fonts/spec.md
+     * @spec openspec/specs/marianne-font/spec.md
      */
     public function inject(string $context): void
     {
@@ -212,6 +213,13 @@ class CssInjectionService
         foreach ($designSystem['stylesheets'] as $stylesheet) {
             $this->emitStyle(file: $stylesheet);
         }
+
+        // 2b. Marianne (French State typeface) — gated, inert-by-default
+        // self-hosted font layer, emitted directly after the design-system
+        // stylesheets above (which already include the base
+        // systems/lasuite/fonts layer) so its real @font-face declarations
+        // exist. See injectMarianneStylesheet() for the gate condition.
+        $this->injectMarianneStylesheet(designSystemId: $designSystemId);
 
         // 3. Load token values (only when a design system reads --nldesign-* vars).
         if ($designSystemId !== 'none') {
@@ -345,6 +353,33 @@ class CssInjectionService
 
         $this->emitStyle(file: 'tokens/dark/'.$tokenSet);
     }//end injectDarkVariantStyle()
+
+    /**
+     * Add the gated, self-hosted Marianne (French State typeface) stylesheet,
+     * when BOTH the active design system is `lasuite` AND an admin has
+     * acknowledged eligibility via the `marianne_enabled` appconfig flag
+     * (default `'0'`). While the flag is off — or the design system is not
+     * `lasuite` — this adds nothing, so no `@font-face` `url()` source for
+     * Marianne exists and the fonts.css family stack falls through to Inter.
+     *
+     * @param string $designSystemId The resolved design system id for the active token set.
+     *
+     * @return void
+     *
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    private function injectMarianneStylesheet(string $designSystemId): void
+    {
+        if ($designSystemId !== 'lasuite') {
+            return;
+        }
+
+        if ($this->config->getAppValue(Application::APP_ID, 'marianne_enabled', '0') !== '1') {
+            return;
+        }
+
+        $this->emitStyle(file: 'systems/lasuite/marianne');
+    }//end injectMarianneStylesheet()
 
     /**
      * Whether a render context must receive nldesign CSS.

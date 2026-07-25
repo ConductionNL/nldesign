@@ -285,6 +285,41 @@ approval from the Rijkshuisstijl website and cannot be redistributed).
 - [ ] Safari (latest)
 - [ ] Mobile browsers
 
+## La Suite numérique — Marianne Font Compliance
+
+The `lasuite` token set (Cunningham design system, La Suite numérique
+parity) is a separate compliance situation from the Rijkshuisstijl checklist
+above — it targets French State visual identity, not Dutch.
+
+**Marianne is the official typeface of the French State, reserved for
+French State administrations.** This app bundles the Marianne `woff2` font
+files (self-hosted, `Etalab-2.0` licensed, from `@gouvfr/dsfr@1.15.1`) under
+`css/systems/lasuite/fonts/marianne/`, but they are **off by default**:
+
+- The real, `url()`-sourced `@font-face Marianne` declarations live in a
+  separate stylesheet, `css/systems/lasuite/marianne.css`, which
+  `CssInjectionService` loads **only** when BOTH the active design system is
+  `lasuite` AND an admin has ticked the *"Our organisation is a French State
+  agency (administration de l'État)"* acknowledgement in Administration
+  Settings (`nldesign` / `marianne_enabled` app config, default `'0'`).
+- While that gate is off (the default), **no Marianne byte is ever
+  requested** and the `lasuite` set renders the self-hosted **Inter** font
+  (SIL Open Font License 1.1) instead — the family stack
+  (`--lasuite-font-family: Marianne, Inter, sans-serif`) simply falls
+  through.
+- Enabling the gate is the operator's affirmation of French-State
+  eligibility — see [`AGREEMENT-MARIANNE.md`](../../AGREEMENT-MARIANNE.md)
+  for the full operator agreement and
+  [`MARIANNE-LICENCE.md`](../../MARIANNE-LICENCE.md) for the licence text
+  and restriction, verbatim.
+- Marianne is bundled and self-hosted from this app's own directory only —
+  **no CDN, no external host is ever contacted** for the font, gate on or
+  off.
+
+This is **not** an unconditionally free/open font, and this app never claims
+otherwise: do not enable the Marianne gate unless the organisation operating
+this instance is itself a French State agency.
+
 ## Resources and References
 
 ### Official Rijkshuisstijl

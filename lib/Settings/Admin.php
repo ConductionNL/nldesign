@@ -135,6 +135,7 @@ class Admin implements IDelegatedSettings
      *
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
      * @spec openspec/specs/dark-mode/spec.md
+     * @spec openspec/specs/marianne-font/spec.md
      */
     public function getForm(): TemplateResponse
     {
@@ -164,6 +165,26 @@ class Admin implements IDelegatedSettings
             '1'
         ) === '1';
 
+        $marianneEnabled = $this->config->getAppValue(
+            Application::APP_ID,
+            'marianne_enabled',
+            '0'
+        ) === '1';
+
+        // The design system backing the current token set — resolved from the
+        // already-fetched $tokenSets inventory (TokenSetService surfaces
+        // `design_system` per entry), so no new service dependency is needed
+        // just to gate the Marianne notice's initial server-rendered
+        // visibility (js/admin.js re-derives it client-side on selection
+        // change from the same `data-design-system` option attribute).
+        $currentDesignSystem = 'nldesign';
+        foreach ($tokenSets as $tokenSet) {
+            if ($tokenSet['id'] === $currentTokenSet) {
+                $currentDesignSystem = $tokenSet['design_system'];
+                break;
+            }
+        }
+
         $emailThemingState = $this->emailThemingService->getState();
         $emailFooterConfig = $this->emailThemingService->getFooterConfig();
 
@@ -177,9 +198,11 @@ class Admin implements IDelegatedSettings
                 [
                     'tokenSets'           => $tokenSets,
                     'currentTokenSet'     => $currentTokenSet,
+                    'currentDesignSystem' => $currentDesignSystem,
                     'hideSlogan'          => $hideSlogan,
                     'showMenuLabels'      => $showMenuLabels,
                     'darkVariantsEnabled' => $darkVariantsEnabled,
+                    'marianneEnabled'     => $marianneEnabled,
                     'emailThemingState'   => $emailThemingState,
                     'emailFooterConfig'   => $emailFooterConfig,
                     'occEnableCommand'    => EmailThemingService::OCC_ENABLE_COMMAND,
@@ -302,6 +325,7 @@ class Admin implements IDelegatedSettings
      * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-55
      * @spec openspec/specs/upstream-freshness/spec.md
      * @spec openspec/specs/per-group-theming/spec.md
+     * @spec openspec/specs/marianne-font/spec.md
      */
     public function getAuthorizedAppConfig(): array
     {
@@ -311,6 +335,7 @@ class Admin implements IDelegatedSettings
                 '/hide_slogan/',
                 '/show_menu_labels/',
                 '/dark_variants/',
+                '/marianne_enabled/',
                 '/disabled_apps/',
                 '/theming_syncs_total/',
                 // Per-group theming mapping (openspec/specs/per-group-theming/spec.md):
