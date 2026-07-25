@@ -191,6 +191,12 @@ The server MUST compute WCAG 2.1 relative-luminance contrast ratios for the fixe
 - WHEN the admin uploads it
 - THEN the response `warnings` array MUST be empty
 
+**See also**: `app-token-set-selection`'s "Selection Contrast Is Non-Blocking"
+requirement extends this same warn-only policy to a leaf app's own picker
+selecting one of this app's catalogue entries (via `GET /api/token-sets` and
+`POST /api/contrast/evaluate`) — selecting an existing catalogue entry is
+always warn-only, consistent with the upload-time policy above.
+
 ### Requirement: Custom Set Metadata and Theming Bridge
 Custom-set metadata (display name, description, `theming.primary_color`, `theming.background_color`) MUST be stored in the `nldesign` appconfig key `custom_token_sets` as a JSON object indexed by set id. `theming.primary_color` and `theming.background_color` MUST be derived from the uploaded `--nldesign-color-primary` / `--nldesign-color-background` values when present so the theming-sync dialog works for custom sets exactly as for shipped sets.
 

@@ -54,6 +54,16 @@ class ContrastService
     ];
 
     /**
+     * WCAG AA threshold (ratio) for `evaluate()` `role: "text"` candidates.
+     */
+    public const ROLE_TEXT_THRESHOLD = 4.5;
+
+    /**
+     * WCAG AA threshold (ratio) for `evaluate()` `role: "ui"` candidates.
+     */
+    public const ROLE_UI_THRESHOLD = 3.0;
+
+    /**
      * Compute contrast warnings for the supplied token declarations.
      *
      * Returns one warning per fixed pair whose computed ratio is below the
@@ -109,6 +119,67 @@ class ContrastService
 
         return $warnings;
     }//end check()
+
+    /**
+     * Evaluate an arbitrary list of candidate colors against one background,
+     * generalising `check()` beyond its two fixed token pairs.
+     *
+     * Reuses `relativeLuminance()`/`ratio()`/`parseColor()` unchanged — only
+     * the pairing/threshold selection is generalised, so this method can
+     * never disagree with `check()`'s underlying math. Threshold by role:
+     * `text` → 4.5:1, `ui` → 3.0:1. A candidate (or the background) that is
+     * not a parseable literal color is reported `unevaluated: true`,
+     * `ratio: null`, and is NEVER reported as `pass: true` — an unresolvable
+     * value must never be treated as passing. The response never contains a
+     * `blocked`/`allowed`/`verdict` field: this method reports facts only,
+     * the caller decides what to do with them.
+     *
+     * @param array<int, array{name: string, value: string, role: string}> $candidates The candidate colors to evaluate.
+     * @param string                                                       $background The background color (hex or rgb()/rgba()).
+     *
+     * @return array<int, array{name: string, ratio: float|null, threshold: float, level: string, pass: bool, unevaluated?: bool}>
+     *     One result per candidate, in the given order.
+     *
+     * @spec openspec/specs/app-token-set-selection/spec.md
+     */
+    public function evaluate(array $candidates, string $background): array
+    {
+        $backgroundRgb = $this->parseColor(value: $background);
+
+        $results = [];
+        foreach ($candidates as $candidate) {
+            $threshold = self::ROLE_UI_THRESHOLD;
+            if ($candidate['role'] === 'text') {
+                $threshold = self::ROLE_TEXT_THRESHOLD;
+            }
+
+            $candidateRgb = $this->parseColor(value: (string) $candidate['value']);
+
+            if ($candidateRgb === null || $backgroundRgb === null) {
+                $results[] = [
+                    'name'        => $candidate['name'],
+                    'ratio'       => null,
+                    'threshold'   => $threshold,
+                    'level'       => 'AA',
+                    'pass'        => false,
+                    'unevaluated' => true,
+                ];
+                continue;
+            }
+
+            $ratio = round($this->ratio(first: $candidateRgb, second: $backgroundRgb), 2);
+
+            $results[] = [
+                'name'      => $candidate['name'],
+                'ratio'     => $ratio,
+                'threshold' => $threshold,
+                'level'     => 'AA',
+                'pass'      => ($ratio >= $threshold),
+            ];
+        }//end foreach
+
+        return $results;
+    }//end evaluate()
 
     /**
      * Compute the WCAG 2.1 contrast ratio between two RGB colours.

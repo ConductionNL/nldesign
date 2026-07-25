@@ -18,6 +18,8 @@ use OCA\NLDesign\Service\CssParserService;
 use OCA\NLDesign\Service\ShippedTokenSetAuditService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\App\IAppManager;
+use OCP\ICache;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -70,8 +72,11 @@ class TokenSetServiceMergeTest extends TestCase
             fn (string $app, string $key, $default='') => ($key === 'custom_token_sets' ? $this->customManifest : $default)
         );
 
-        $audit         = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
-        $this->service = new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit);
+        $audit        = new ShippedTokenSetAuditService(new ContrastService(), new CssParserService());
+        $cacheFactory = $this->createMock(ICacheFactory::class);
+        $cacheFactory->method('createDistributed')->willReturn($this->createMock(ICache::class));
+
+        $this->service = new TokenSetService($appManager, $config, $this->createMock(LoggerInterface::class), $audit, $cacheFactory);
     }//end setUp()
 
     /**

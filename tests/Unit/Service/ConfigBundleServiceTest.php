@@ -29,6 +29,8 @@ use OCA\NLDesign\Service\TokenSetService;
 use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCP\App\IAppManager;
 use OCP\Http\Client\IClientService;
+use OCP\ICache;
+use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
@@ -137,11 +139,15 @@ class ConfigBundleServiceTest extends TestCase
             $contrast,
             new DarkPaletteService($contrast, $cssParser, $appManager, $logger)
         );
+        $cacheFactory = $this->createMock(ICacheFactory::class);
+        $cacheFactory->method('createDistributed')->willReturn($this->createMock(ICache::class));
+
         $this->tokenSetService       = new TokenSetService(
             $appManager,
             $config,
             $logger,
-            new ShippedTokenSetAuditService($contrast, $cssParser)
+            new ShippedTokenSetAuditService($contrast, $cssParser),
+            $cacheFactory
         );
 
         $appThemingService = new AppThemingService($config, $appManager);

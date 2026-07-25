@@ -65,3 +65,10 @@ To add support for a new organization:
 The admin dropdown picks up new token sets automatically — no PHP changes needed.
 
 For detailed information on the token variable namespace, see the [Token Architecture reference](../reference/tokens).
+
+A leaf app's own picker (a builder tool inside another Conduction app, not
+the admin dropdown above) can enumerate this same catalogue and evaluate
+WCAG contrast without admin privileges via a small, closed, non-admin API —
+see the [App Token-Set Selection contract](../reference/app-token-scope-contract.md)
+for the endpoints, response shapes, and the scoped-application contract a
+shared client-side applier implements against.
