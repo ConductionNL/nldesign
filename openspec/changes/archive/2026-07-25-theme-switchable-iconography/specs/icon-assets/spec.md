@@ -35,9 +35,9 @@ deprecation window lasts.
 - AND it MUST NOT contain `<script>` elements or event-handler attributes (assets are served from
   the app directory to all users)
 
-### Requirement: Build-Time Materialization from Government Icon Packs
+### Requirement: Build-Time Materialization from nc-vue Icon Packs
 
-The icon inventory MUST be generated at build time from redistributable government icon packs by
+The icon inventory MUST be generated at build time from redistributable government icon packs (the nc-vue NL packs and the DSFR French pack) by
 `scripts/build-icons.js`, which MUST support two pack kinds. (1) The EUPL-compatible NL-government
 packs bundled in `@conduction/nextcloud-vue` (`src/icons/rvo.js`, `src/icons/openGemeenten.js`,
 `src/icons/denHaag.js` — data-URI catalogue modules): the script MUST decode each pack entry's
