@@ -200,7 +200,12 @@
         "Dark logo": "Dark logo",
         "This token set also ships a dark-surface logo. Nextcloud core has no dark logo slot, so it is applied by nldesign's own dark-mode stylesheet, not synced to Nextcloud theming.": "This token set also ships a dark-surface logo. Nextcloud core has no dark logo slot, so it is applied by nldesign's own dark-mode stylesheet, not synced to Nextcloud theming.",
         "Enable dark mode variants for the active token set": "Enable dark mode variants for the active token set",
-        "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.": "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself."
+        "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.": "When enabled, a generated dark-mode stylesheet follows whichever Nextcloud dark/light/system theme is already active — it never changes your Nextcloud theme choice itself.",
+        "Active icon pack": "Active icon pack",
+        "Nextcloud stock icons (no custom pack)": "Nextcloud stock icons (no custom pack)",
+        "Source: admin override (occ config:app:set nldesign icon_pack)": "Source: admin override (occ config:app:set nldesign icon_pack)",
+        "Source: the active design system": "Source: the active design system",
+        "This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud's built-in core icons beyond what the active theme's CSS already restyles.": "This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud's built-in core icons beyond what the active theme's CSS already restyles."
     },
     "plurals": {}
 }

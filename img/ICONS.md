@@ -1,8 +1,9 @@
-# NL-Government Icons & Logos
+# NL-Government & French-Government Icons, and Logos
 
 This directory contains SVG icons materialized from the EUPL-compatible NL-government
 icon packs bundled in `@conduction/nextcloud-vue` (`src/icons/{rvo,openGemeenten,denHaag}.js`),
-plus the organisation logos in `img/logos/`.
+the French-government DSFR pack from `@gouvfr/dsfr` (`dist/icons/**/*.svg`), plus the
+organisation logos in `img/logos/`.
 
 **The proprietary City-of-Amsterdam icon set (`@amsterdam/design-system-assets`) is NOT
 bundled.** Its `LICENSE.md` marks the set proprietary to the City of Amsterdam ("The
@@ -97,16 +98,76 @@ Available in: `img/icons/den-haag/`
 - den-haag/dh-functional-list
 ... and 49 more
 
+### dsfr (1038 icons)
+
+Upstream: Système de Design de l'État (DSFR) — @gouvfr/dsfr
+Licence: **Etalab-2.0**
+Available in: `img/icons/dsfr/`
+
+- dsfr/arrow-down-circle-fill
+- dsfr/arrow-down-circle-line
+- dsfr/arrow-down-fill
+- dsfr/arrow-down-line
+- dsfr/arrow-down-s-fill
+- dsfr/arrow-down-s-line
+- dsfr/arrow-go-back-fill
+- dsfr/arrow-go-back-line
+- dsfr/arrow-go-forward-fill
+- dsfr/arrow-go-forward-line
+- dsfr/arrow-left-circle-fill
+- dsfr/arrow-left-circle-line
+- dsfr/arrow-left-down-fill
+- dsfr/arrow-left-down-line
+- dsfr/arrow-left-fill
+- dsfr/arrow-left-line
+- dsfr/arrow-left-right-fill
+- dsfr/arrow-left-right-line
+- dsfr/arrow-left-s-fill
+- dsfr/arrow-left-s-line
+... and 1018 more
+
+DSFR filenames (`dsfr/{basename}.svg`) are the source SVG's basename with its category
+prefix dropped (e.g. `dist/icons/arrows/arrow-right-line.svg` -> `dsfr/arrow-right-line.svg`):
+DSFR icon names are unique across the whole set (referenced globally in DSFR CSS as
+`.fr-icon-<name>`), so this flat, category-free layout is collision-free — the build fails
+on any duplicate basename.
+
+## Icon-pack resolution (theme-switchable iconography)
+
+The icon pack an app should serve travels with the active **design system**, not a fixed
+set: `design-systems.json` carries an optional `icon_pack` field per design system
+(`nldesign` -> `["rvo", "open-gemeenten", "den-haag"]`, `lasuite` -> `["dsfr"]`; a design
+system without the field serves no pack — Nextcloud stock icons apply). Resolution is
+`active token set -> its design_system -> that design system's icon_pack`, with an
+appconfig `icon_pack` admin override taking precedence when it names a real pack
+directory. Consumers who want a **fixed** pack keep using
+`imagePath('nldesign', 'icons/{set}/{key}.svg')` exactly as before (unchanged, non-breaking).
+Consumers who want the **active theme's** pack should resolve it through
+`DesignSystemService::resolveActiveIconPacks()` / `resolveIconPath()`, or read the
+resolved list from the public capability (`/ocs/v2.php/cloud/capabilities` ->
+`capabilities.nldesign.iconPacks`) — see `openspec/specs/icon-packs/spec.md`.
+
+**Honest limitation:** this only switches nldesign's own bundled icon assets (the ones
+served through `imagePath` and the capability above). It does NOT force-replace
+Nextcloud core's built-in icon set (navigation, files, the Material-style core icons)
+beyond what the active theme's CSS already restyles.
+
 ## Licence attribution
 
-Canonical licence record: `@conduction/nextcloud-vue`'s
+Canonical licence record for the NL packs: `@conduction/nextcloud-vue`'s
 `src/icons/ATTRIBUTION.md` (https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md).
+The DSFR pack is licensed under the Etalab Open Licence 2.0
+(https://github.com/etalab/licence-ouverte/blob/master/LO.md), redistributed via
+`@gouvfr/dsfr` — Système de Design de l'État (https://www.systeme-de-design.gouv.fr/).
+This materialization is **icons only**: the Marianne typeface files shipped in the same
+`@gouvfr/dsfr` package are FR-state-restricted and are never bundled by this script.
 
 | Set | Upstream | Licence |
 | --- | --- | --- |
 | `rvo` | RVO / ROOS (Rijksdienst voor Ondernemend Nederland) | **CC0-1.0** |
 | `open-gemeenten` | OpenGemeenten Iconenset ("Line" style) | **CC0-1.0** |
 | `den-haag` | Gemeente Den Haag icon set | **EUPL-1.2** |
+| `dsfr` | Système de Design de l'État (DSFR) — @gouvfr/dsfr | **Etalab-2.0** |
 
 ## Legacy Amsterdam filename aliases (one-release deprecation)
 
@@ -200,11 +261,12 @@ CHANGELOG.md for the full list of names removed without a replacement.
 ## Usage in Nextcloud
 
 ```php
-// In your template or controller
+// In your template or controller — a FIXED pack, regardless of the active theme
 <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/rvo/rvo-zoek.svg')); ?>" alt="Search">
+<img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/dsfr/arrow-right-line.svg')); ?>" alt="Next">
 ```
 
-Vue-based consumers SHOULD prefer importing the packs from `@conduction/nextcloud-vue`
+Vue-based consumers SHOULD prefer importing the NL packs from `@conduction/nextcloud-vue`
 directly (e.g. `CnIconBrowser` `url-icons`); the `imagePath` contract above exists for
 PHP/template and other non-Vue consumers.
 
@@ -245,10 +307,11 @@ organisation's own identity on that organisation's own instance. **Not build out
 ## Naming stability (public API)
 
 Icon and logo filenames are a public API consumed by other apps. Within an installed
-nc-vue pack version, renaming or removing a bundled icon or logo is a **breaking change**:
+source pack version, renaming or removing a bundled icon or logo is a **breaking change**:
 record it in the changelog (old + new name) and regenerate this file in the same change so
-the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Upgrading
-the `@conduction/nextcloud-vue` dependency (which can change pack contents) MUST be an
+the inventory regression test (`tests/Unit/IconAssetsTest.php`) keeps passing. Upgrading a
+source dependency that can change pack contents — `@conduction/nextcloud-vue` (the
+`rvo`/`open-gemeenten`/`den-haag` packs) or `@gouvfr/dsfr` (the `dsfr` pack) — MUST be an
 explicit, reviewed change whose diff of added/removed keys is listed in the changelog —
 never a silent regenerate. Removing the legacy Amsterdam aliases at the end of the
 deprecation window is a planned, pre-announced break that references the release that

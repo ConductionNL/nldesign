@@ -388,6 +388,50 @@ All notable changes to this project will be documented in this file.
 - `img/logos/` (23 organisation logos) is unaffected — those are static, checked-in
   huisstijl assets tied to `token-sets.json` `theming.logo` entries, not icon-library
   redistribution, and `scripts/build-icons.js` no longer touches that directory at all.
+
+### Added
+- **Theme-switchable iconography — new `dsfr` icon pack + resolver.** The bundled icon
+  set an app resolves through nldesign now travels with the active **design system**, so
+  a French-government (`lasuite`) instance serves French-government icons and a
+  Dutch-government (`nldesign`) instance keeps serving the existing Dutch icons — driven
+  by the active design system / token set, not hardcoded per consumer. This is purely
+  **additive**: no `rvo`/`open-gemeenten`/`den-haag` icon key is renamed or removed, and
+  every existing `imagePath('nldesign', 'icons/{set}/{key}.svg')` URL keeps resolving
+  byte-for-byte.
+  - **New icon source: `@gouvfr/dsfr` (devDependency, build-time only).**
+    `scripts/build-icons.js` gained a `glob` pack kind materializing the French-government
+    DSFR icon set (`dist/icons/**/*.svg`, real SVG files, category subdirectories dropped)
+    into `img/icons/dsfr/{basename}.svg`:
+    - `img/icons/dsfr/` — 1038 icons, Système de Design de l'État (DSFR), **Etalab-2.0**
+    - This is **icons only** — the Marianne typeface files shipped in the same
+      `@gouvfr/dsfr` package are FR-state-restricted and are never bundled.
+    - `@gouvfr/dsfr` currently cannot be `npm install`-ed (broken optional dependencies
+      upstream); the build script reads the DSFR source SVGs from the real npm package
+      path when present, falling back to a pre-fetched, gitignored scratch directory
+      (`.dsfr-src/icons/`) otherwise. Either way the *committed* output is the same
+      `img/icons/dsfr/` tree.
+  - **`icon_pack` field on `design-systems.json`.** An optional ordered pack-directory
+    list (or single-string shorthand) per design system: `nldesign` ->
+    `["rvo", "open-gemeenten", "den-haag"]` (the pre-existing Dutch default — no behaviour
+    change for any current NL theme), `lasuite` -> `"dsfr"`. `none`/`summer-breeze`/
+    `high-contrast`/`cunningham` declare no `icon_pack` — Nextcloud stock icons apply,
+    unchanged from today.
+  - **`DesignSystemService::getIconPacks()` / `resolveActiveIconPacks()` /
+    `resolveIconPath()`.** Resolution chain: active token set -> its `design_system` ->
+    that design system's `icon_pack`, with an appconfig `icon_pack` admin override taking
+    precedence when it names a real pack directory (`occ config:app:set nldesign
+    icon_pack --value=dsfr`). Always degrades safely to `[]` (no pack) — never throws.
+  - **Public capability:** `Capabilities` now advertises the resolved pack list as
+    `iconPacks` (`/ocs/v2.php/cloud/capabilities` -> `capabilities.nldesign.iconPacks`),
+    so other apps can read the active pack without duplicating the resolution logic. The
+    degrade (minimal) payload sets `iconPacks: []`.
+  - **Read-only admin indicator** on the nldesign settings page showing the active pack,
+    its source (design system vs. admin override), and the honest limitation that this
+    switches nldesign's own bundled icon assets — it does not force-replace Nextcloud
+    core's built-in icons beyond what the active theme's CSS already restyles.
+  - See `openspec/specs/icon-packs/spec.md` (new) and `openspec/specs/icon-assets/spec.md`
+    (extended) for the full contract.
+
 ### Changed
 - Style injection moved from `Application::boot()` (every request) to a `ThemeInjectionListener` on `BeforeTemplateRenderedEvent`/`BeforeLoginTemplateRenderedEvent` (only actual template renders) — same stylesheets, same cascade order, same excluded-app behavior by default. Adds an occ-only `themed_contexts` appconfig key to selectively unthemed a render context (`user`/`login`/`guest`/`public`/`error`); absent (the default) themes every context exactly as before. See `openspec/changes/render-event-injection/`.
 

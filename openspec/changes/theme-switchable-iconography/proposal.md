@@ -106,5 +106,9 @@ the icon pack, with the same build-time materialization + attribution discipline
 - `lib/Settings/Admin.php` (initial-state) — provide the resolved pack list to the admin panel.
 - `openspec/specs/icon-packs/spec.md` — NEW canonical spec.
 - `openspec/specs/icon-assets/spec.md` — MODIFIED (dsfr in materialization / naming / attribution).
+- `openspec/specs/theming-capability/spec.md` — MODIFIED (the `Theming Capability Payload`
+  requirement's key allowlist grows from seven to eight keys — `iconPacks` — and the degrade-path
+  requirement's `[]` case is documented; discovered while implementing task 4, not called out in
+  the original Impact list above).
 - Tests: `tests/Unit/DesignSystemServiceTest.php` (resolver + override), `tests/Unit/IconAssetsTest.php`
   (dsfr inventory), `tests/Unit/CapabilitiesTest.php` (`iconPacks` key), build-script check.

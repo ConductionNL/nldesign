@@ -42,6 +42,7 @@
 	},
 	"devDependencies": {
 		"@conduction/nextcloud-vue": "^1.0.0-beta.218",
+		"@gouvfr/dsfr": "^1.15.1",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",
