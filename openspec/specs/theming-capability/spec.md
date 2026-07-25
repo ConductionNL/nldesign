@@ -45,6 +45,9 @@ The `nldesign` capability value MUST be an object with exactly these keys:
   field, `null` when undeclared);
 - `designSystem` (string) — the resolved design-system id for the active set (via
   `DesignSystemService::getTokenSetMeta()`; `"none"` for stock Nextcloud);
+- `iconPacks` (array of strings) — the resolved ordered icon-pack list for the active set, via
+  `DesignSystemService::resolveActiveIconPacks()` (`openspec/specs/icon-packs/spec.md`); an empty
+  array when no pack is active;
 - `wcagLevel` (string|null) — the audited contrast conformance of the active set per the WCAG
   Audit Level requirement;
 - `logos` (object) — available logo variant web paths for the active set, keyed by variant name;
@@ -68,6 +71,8 @@ filesystem paths outside web asset paths.
   (no version declared in the manifest today)
 - AND `logos.default` MUST be the web path resolving to `img/logos/rijkshuisstijl.svg`
 - AND `hideSlogan` MUST be `true` and `showMenuLabels` MUST be `false`
+- AND `iconPacks` MUST equal the resolved pack list for `rijkshuisstijl`'s design system
+  (`["rvo", "open-gemeenten", "den-haag"]`)
 
 #### Scenario: Payload for stock Nextcloud
 @e2e exclude default-config branch — PHPUnit on Capabilities
@@ -75,6 +80,7 @@ filesystem paths outside web asset paths.
 - WHEN the capability payload is computed
 - THEN `tokenSet.id` MUST be `"nextcloud"`
 - AND `designSystem` MUST be `"none"`
+- AND `iconPacks` MUST be an empty array
 - AND `logos` MUST be an empty object
 
 #### Scenario: Payload for a custom or unknown set degrades, never lies
@@ -85,12 +91,13 @@ filesystem paths outside web asset paths.
 - THEN `tokenSet.name` MUST fall back to the id and `tokenSet.version` MUST be `null`
 - AND `wcagLevel` MUST be `null` (unaudited — the capability MUST NOT fabricate a conformance
   claim)
+- AND `iconPacks` MUST be an empty array (no design system to resolve a pack from)
 
 #### Scenario: No admin-only data leaks
 @e2e exclude security assertion — PHPUnit asserts payload key allowlist
 - GIVEN any configuration state
 - WHEN the capability payload is serialized
-- THEN it MUST contain only the seven specified keys
+- THEN it MUST contain only the eight specified keys
 - AND it MUST NOT contain the per-app theming exclusion list, custom override CSS, custom
   token-set contents, or any server filesystem path
 
@@ -135,14 +142,15 @@ token set MUST yield the new set's level on the next capabilities read (new cach
 aggregates every app's capability, so one throwing provider breaks the document for all clients.
 On any internal failure (unreadable manifest, throwing service), the method MUST degrade to a
 minimal payload — `version` and `tokenSet.id` from raw appconfig, with `name` falling back to the
-id and the remaining fields `null`, `{}`, or `false` — and MUST NOT expose exception details in
-the payload.
+id and the remaining fields `null`, `{}`, `[]`, or `false` — and MUST NOT expose exception details
+in the payload.
 
 #### Scenario: Throwing dependency degrades gracefully
 @e2e exclude error-path branch — PHPUnit with throwing service mocks
 - GIVEN an injected service throws during payload computation
 - WHEN `getCapabilities()` is called
 - THEN it MUST return the `nldesign` key with the minimal payload
+- AND `iconPacks` MUST be an empty array
 - AND no exception MUST propagate to the OCS layer
 - AND no exception message MUST appear in the payload
 
