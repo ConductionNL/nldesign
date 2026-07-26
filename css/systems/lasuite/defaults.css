@@ -22,10 +22,12 @@
  *
  * BASE, NOT DEPLOYED THEME: this file is the published Cunningham
  * BLUE base (brand-600 #0659c5). The deployed La Suite VIOLET theme
- * (brand-600 #534fc2, brand-650/logo #4844ad) is a separate,
- * hand-authored, sourced override — see brand-override.css — layered
- * after this file in the lasuite design-system bundle. This file must
- * never hard-code the violet values.
+ * (brand-600 #534fc2, brand-650/logo #4844ad + violet-tinted neutrals
+ * and vivid semantic palettes) is a separate GENERATED colour-delta
+ * override — see brand-override.css (regenerate with --override) —
+ * layered after this file in the lasuite design-system bundle. This file
+ * must never hard-code the violet values, and is SHARED with the
+ * `cunningham` design system, which loads it WITHOUT brand-override.
  *
  * Only the `:root` (light) block below is active in the nldesign
  * lasuite/cunningham bundles today; `.cunningham-theme--dark` is

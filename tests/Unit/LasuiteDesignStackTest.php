@@ -272,20 +272,24 @@ class LasuiteDesignStackTest extends TestCase
     }//end testGeneratedDefaultsCarryProvenanceHeader()
 
     /**
-     * `brand-override.css` is sourced (not generated) and carries a
-     * provenance comment naming the observed live bundle, the block, and the
-     * observation date; loading it after defaults.css resolves the brand
-     * scale and logo tokens to the deployed violet.
+     * `brand-override.css` is GENERATED (scripts/generate-lasuite-tokens.mjs
+     * --override) as the colour delta between La Suite's deployed VIOLET
+     * Cunningham build and the published BLUE npm base; it carries a
+     * provenance header naming the vendored deployed source, and loading it
+     * after defaults.css resolves the brand scale, the violet-tinted neutrals,
+     * the vivid semantic palettes and the logo tokens to the deployed violet.
      *
      * @spec openspec/specs/lasuite-parity/spec.md
      */
-    public function testBrandOverrideIsSourcedAndResolvesViolet(): void
+    public function testBrandOverrideIsGeneratedAndResolvesViolet(): void
     {
         $override = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/brand-override.css');
 
-        $this->assertStringContainsString('docs.numerique.gouv.fr', $override);
-        $this->assertStringContainsString('block 5', $override);
-        $this->assertStringContainsString('2026-07-24', $override);
+        // Provenance: generated from the vendored deployed source, not hand-authored.
+        $this->assertStringContainsString('GENERATED', $override);
+        $this->assertStringContainsString('suitenumerique/docs', $override);
+        $this->assertStringContainsString('--override', $override);
+        // Brand ramp — the deployed violet.
         $this->assertStringContainsString(
             '--lasuite--globals--colors--brand-600: #534fc2;',
             $override,
@@ -296,7 +300,19 @@ class LasuiteDesignStackTest extends TestCase
             $override,
             'brand-override.css must redeclare brand-650 (also the logo colour) to the deployed violet.'
         );
-    }//end testBrandOverrideIsSourcedAndResolvesViolet()
+        // Violet-tinted neutrals — the delta now goes beyond the brand ramp.
+        $this->assertStringContainsString(
+            '--lasuite--globals--colors--gray-300: #a9a9bf;',
+            $override,
+            'brand-override.css must redeclare the gray ramp to the deployed violet-tinted neutrals.'
+        );
+        // La Suite's vivid semantic palette (distinct hue, not a tint).
+        $this->assertStringContainsString(
+            '--lasuite--globals--colors--success-500: #1e884a;',
+            $override,
+            "brand-override.css must redeclare the semantic palettes to La Suite's deployed values."
+        );
+    }//end testBrandOverrideIsGeneratedAndResolvesViolet()
 
     /**
      * The lasuite bridge accounts for every one of the 68 audited Nextcloud
@@ -440,9 +456,11 @@ class LasuiteDesignStackTest extends TestCase
      * `--nldesign-color-{error,warning,success,info}` (Cunningham's own
      * "-550" background token, not the raw "-500" swatch) carry white text
      * at WCAG AA. Guards the deliberate -550-over-500 choice documented in
-     * css/systems/lasuite/bridge.css. Values are the GENERATED Cunningham
-     * package's own "-550" step (css/systems/lasuite/defaults.css) — status
-     * colours are untouched by the violet brand-override.
+     * css/systems/lasuite/bridge.css — for BOTH design systems: the
+     * `cunningham` set resolves the blue npm base's "-550" step
+     * (defaults.css), while the `lasuite` set resolves La Suite's DEPLOYED
+     * semantic palette (brand-override.css), which repaints these fills to
+     * distinct, more vivid hues. Both must stay legible with white text.
      *
      * @spec openspec/specs/css-architecture/spec.md
      * @spec openspec/specs/lasuite-parity/spec.md
@@ -453,23 +471,35 @@ class LasuiteDesignStackTest extends TestCase
         $white    = $contrast->parseColor('#FFFFFF');
         $this->assertNotNull($white);
 
-        $fills = [
-            'error-550'   => '#D80000',
-            'warning-550' => '#836703',
-            'success-550' => '#427816',
-            'info-550'    => '#1167D4',
+        $fillSets = [
+            // cunningham set — the blue npm base (defaults.css, no brand-override).
+            'cunningham' => [
+                'error-550'   => '#D80000',
+                'warning-550' => '#836703',
+                'success-550' => '#427816',
+                'info-550'    => '#1167D4',
+            ],
+            // lasuite set — La Suite's deployed semantic palette (brand-override.css).
+            'lasuite' => [
+                'error-550'   => '#d7010e',
+                'warning-550' => '#bc4200',
+                'success-550' => '#027b3e',
+                'info-550'    => '#0069cf',
+            ],
         ];
 
-        foreach ($fills as $name => $hex) {
-            $rgb = $contrast->parseColor($hex);
-            $this->assertNotNull($rgb, "Could not parse {$name} ({$hex}).");
+        foreach ($fillSets as $set => $fills) {
+            foreach ($fills as $name => $hex) {
+                $rgb = $contrast->parseColor($hex);
+                $this->assertNotNull($rgb, "Could not parse {$set} {$name} ({$hex}).");
 
-            $ratio = $contrast->ratio($rgb, $white);
-            $this->assertGreaterThanOrEqual(
-                4.5,
-                $ratio,
-                sprintf('%s (%s) vs white must be >= 4.5:1 for WCAG AA text; got %.2f:1.', $name, $hex, $ratio)
-            );
+                $ratio = $contrast->ratio($rgb, $white);
+                $this->assertGreaterThanOrEqual(
+                    4.5,
+                    $ratio,
+                    sprintf('%s %s (%s) vs white must be >= 4.5:1 for WCAG AA text; got %.2f:1.', $set, $name, $hex, $ratio)
+                );
+            }
         }
     }//end testStatusFillsCarryWhiteTextAtAa()
 

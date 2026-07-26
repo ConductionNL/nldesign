@@ -67,6 +67,14 @@ const SOURCE_CSS_PATH = join(PACKAGE_DIR, 'dist', 'cunningham-tokens.css')
 const PACKAGE_JSON_PATH = join(PACKAGE_DIR, 'package.json')
 const DEFAULT_OUTPUT_PATH = join(REPO_ROOT, 'css', 'systems', 'lasuite', 'defaults.css')
 
+// The deployed La Suite VIOLET Cunningham build, vendored verbatim from
+// suitenumerique/docs (see the file's own provenance header for repo/commit).
+// Its `:root` block is the theme users see on docs.numerique.gouv.fr; the
+// brand-override generator diffs it against the blue npm base above.
+const DEPLOYED_SOURCE_PATH = join(REPO_ROOT, 'scripts', 'sources', 'lasuite-deployed-cunningham-tokens.css')
+const DEPLOYED_SOURCE_COMMIT = '61c2183390b92e0c6d4e00efd7f0915412ffd625'
+const BRAND_OVERRIDE_OUTPUT_PATH = join(REPO_ROOT, 'css', 'systems', 'lasuite', 'brand-override.css')
+
 /**
  * The reversible mapping rule: a prefix swap only, every `--` hierarchy
  * separator preserved, no segment collapsing.
@@ -301,10 +309,12 @@ export function generate({ sourceCss, packageVersion, generationDate }) {
 		' *',
 		' * BASE, NOT DEPLOYED THEME: this file is the published Cunningham',
 		' * BLUE base (brand-600 #0659c5). The deployed La Suite VIOLET theme',
-		' * (brand-600 #534fc2, brand-650/logo #4844ad) is a separate,',
-		' * hand-authored, sourced override — see brand-override.css — layered',
-		' * after this file in the lasuite design-system bundle. This file must',
-		' * never hard-code the violet values.',
+		' * (brand-600 #534fc2, brand-650/logo #4844ad + violet-tinted neutrals',
+		' * and vivid semantic palettes) is a separate GENERATED colour-delta',
+		' * override — see brand-override.css (regenerate with --override) —',
+		' * layered after this file in the lasuite design-system bundle. This file',
+		' * must never hard-code the violet values, and is SHARED with the',
+		' * `cunningham` design system, which loads it WITHOUT brand-override.',
 		' *',
 		' * Only the `:root` (light) block below is active in the nldesign',
 		' * lasuite/cunningham bundles today; `.cunningham-theme--dark` is',
@@ -317,38 +327,207 @@ export function generate({ sourceCss, packageVersion, generationDate }) {
 	return [header, rootLines.join('\n'), '', darkLines.join('\n'), ''].join('\n')
 }
 
+/* =======================================================================
+ * BRAND-OVERRIDE LAYER (the deployed La Suite VIOLET colour delta)
+ *
+ * defaults.css is the published Cunningham BLUE base and is SHARED by the
+ * `cunningham` design system, so it must stay blue. The `lasuite` bundle
+ * additionally loads brand-override.css, which redeclares only the tokens
+ * where the DEPLOYED violet build differs from that blue base — the brand
+ * ramp, the violet-tinted gray/white/black neutrals, La Suite's vivid
+ * semantic palettes (info/success/warning/error/…) and the logo tokens.
+ *
+ * Scope = `globals--colors` + any `contextuals--*` whose declaration TEXT
+ * differs (e.g. a semantic repointed at a different palette). That is exactly
+ * what the lasuite theme consumes: bridge.css / element-overrides.css read
+ * the `--lasuite-color-*` short aliases (→ `globals--colors`), and every
+ * `contextuals--*` in defaults.css is a `var(--…globals--colors--…)`
+ * reference that follows the overridden globals automatically. Cunningham
+ * `components--*` tokens are NOT consumed (nldesign themes native Nextcloud
+ * components, not `.c__*`), and structural globals (spacings/font/
+ * breakpoints) are deliberately excluded so the override never shifts layout
+ * or type scale — only colour.
+ * ======================================================================= */
+
+/** Structural globals we never override — colour parity must not move layout. */
+function isStructuralToken(name) {
+	return /^--c--globals--(spacings|spacing|font|breakpoints)\b/.test(name)
+}
+
+/** The two colour namespaces the deployed violet delta is drawn from. */
+function isColourNamespace(name) {
+	return name.startsWith('--c--globals--colors--') || name.startsWith('--c--contextuals--')
+}
+
+/**
+ * Normalise a value for equality comparison only (the EMITTED value keeps its
+ * original notation via lowercaseHex): lower-case, expand 3/4-digit hex to
+ * 6/8 so `#fff` and `#ffffff` compare equal (notation-only differences must
+ * not produce no-op overrides), and collapse internal whitespace.
+ */
+export function normaliseForCompare(value) {
+	return value
+		.replace(/#[0-9a-fA-F]{3,8}\b/g, (m) => {
+			let h = m.slice(1).toLowerCase()
+			if (h.length === 3 || h.length === 4) h = h.split('').map((c) => c + c).join('')
+			return '#' + h
+		})
+		.toLowerCase()
+		.replace(/\s+/g, ' ')
+		.trim()
+}
+
+/**
+ * Compute the deployed-violet-vs-blue-base delta: every colour-namespace,
+ * non-structural token in `deployedDecls` that is ABSENT from the base or
+ * carries a genuinely different value. Returns renamed+sorted
+ * `{ name, value }` pairs in canonical `--lasuite--*` form.
+ */
+export function computeOverrideDelta(deployedDecls, baseDecls) {
+	const baseByName = new Map(baseDecls.map((d) => [d.name, d.value]))
+	const delta = deployedDecls.filter((d) => {
+		if (isStructuralToken(d.name) || !isColourNamespace(d.name)) return false
+		const baseValue = baseByName.get(d.name)
+		if (baseValue === undefined) return true // token new in the deployed build
+		return normaliseForCompare(baseValue) !== normaliseForCompare(d.value)
+	})
+	return renameAndSort(delta)
+}
+
+/**
+ * The short `--lasuite-color-*` aliases bridge.css / element-overrides.css
+ * read — re-asserted here pointing at their canonical `--lasuite--globals--
+ * colors--*` tokens (belt-and-braces: they already resolve violet via
+ * defaults.css's own alias → the canonical we override, but re-declaring
+ * keeps this file self-contained regardless of bundle order). Derived from
+ * COMPAT_ALIASES so the two lists never drift.
+ */
+function overrideAliasEntries() {
+	return COMPAT_ALIASES.filter((a) => a.canonical && a.canonical.startsWith('--lasuite--globals--colors--'))
+}
+
+/**
+ * Build the full generated brand-override.css text.
+ */
+export function generateBrandOverride({ deployedCss, baseCss, packageVersion, generationDate }) {
+	// Strip CSS comments first: the vendored deployed source carries a leading
+	// provenance comment, and extractBlock's selector run ([^{}]+ before `{`)
+	// would otherwise fold that comment into the first block's "selector" and
+	// fail to match /^:root$/.
+	const deployedRoot = extractBlock(deployedCss.replace(/\/\*[\s\S]*?\*\//g, ''), /^:root$/)
+	const baseLight = extractBlock(baseCss, /^html$/)
+	if (deployedRoot === null) {
+		throw new Error('generateBrandOverride: could not find the ":root { ... }" block in the deployed source CSS')
+	}
+	if (baseLight === null) {
+		throw new Error('generateBrandOverride: could not find the base "html { ... }" block in the source CSS')
+	}
+
+	const delta = computeOverrideDelta(parseDeclarations(deployedRoot), parseDeclarations(baseLight))
+	const aliases = overrideAliasEntries()
+
+	const rootLines = [
+		':root {',
+		...renderDeclarationLines(delta),
+		'',
+		'\t/* ===================================================================',
+		'\t * SHORT-ALIAS COUNTERPARTS',
+		'\t * The --lasuite-color-* short names bridge.css and element-overrides.css',
+		'\t * read, re-asserted against the canonical tokens overridden above so',
+		'\t * this file resolves violet independently of bundle order. Derived',
+		'\t * from COMPAT_ALIASES in scripts/generate-lasuite-tokens.mjs.',
+		'\t * =================================================================== */',
+		...aliases.map((a) => `\t${a.alias}: var(${a.canonical});`),
+		'}',
+	]
+
+	const header = [
+		'/**',
+		' * La Suite numérique — Deployed VIOLET Colour Override Layer (GENERATED)',
+		' *',
+		' * Do not hand-edit — regenerate with:',
+		' *   node scripts/generate-lasuite-tokens.mjs --override',
+		' * A committed-file drift check runs as `npm run test:lasuite-override`.',
+		' *',
+		' * WHAT: the colour delta between the DEPLOYED La Suite violet Cunningham',
+		' * build and the published BLUE npm base (defaults.css). Redeclares only',
+		' * the tokens that actually differ — the violet brand ramp, the violet-',
+		' * tinted gray/white/black neutrals, La Suite\'s vivid semantic palettes',
+		' * (info/success/warning/error/red/orange/…) and the logo tokens.',
+		' *',
+		' * WHY A SEPARATE LAYER: defaults.css is the shared blue Cunningham base,',
+		' * also loaded by the `cunningham` design system, so it must stay blue.',
+		' * Only the `lasuite` bundle loads this file (fonts → defaults →',
+		' * [brand-override] → bridge → element-overrides); loaded after',
+		' * defaults.css, every declaration here wins the cascade for the token it',
+		' * redeclares. The short `--lasuite-color-*` aliases resolve violet via',
+		' * the overridden canonicals.',
+		' *',
+		' * SCOPE: `globals--colors` + text-differing `contextuals--*` only.',
+		' * Structural globals (spacings/font/breakpoints) and Cunningham',
+		' * `components--*` tokens are excluded — the former to never move layout,',
+		' * the latter because nldesign themes native Nextcloud components, not',
+		' * `.c__*`, so those tokens are not consumed.',
+		' *',
+		` * Base package:    @openfun/cunningham-tokens@${packageVersion} (MIT) — the blue base`,
+		` * Deployed source: suitenumerique/docs @ ${DEPLOYED_SOURCE_COMMIT} (MIT)`,
+		' *   scripts/sources/lasuite-deployed-cunningham-tokens.css (vendored)',
+		` * Generated: ${generationDate}`,
+		` * Override token count: ${delta.length}`,
+		' */',
+		'',
+	].join('\n')
+
+	return [header, rootLines.join('\n'), ''].join('\n')
+}
+
 /**
  * CLI entry point.
  */
 function main() {
 	const args = process.argv.slice(2)
 	const checkMode = args.includes('--check')
+	const overrideMode = args.includes('--override')
 	const positional = args.find((a) => !a.startsWith('--'))
-	const outputPath = positional
-		? resolve(process.cwd(), positional)
-		: (process.env.LASUITE_TOKENS_OUTPUT ? resolve(process.cwd(), process.env.LASUITE_TOKENS_OUTPUT) : DEFAULT_OUTPUT_PATH)
 
-	const sourceCss = readFileSync(SOURCE_CSS_PATH, 'utf-8')
 	const packageVersion = readPackageVersion()
 	const generationDate = (process.env.LASUITE_TOKENS_GENERATION_DATE || new Date().toISOString().slice(0, 10))
 
-	const output = generate({ sourceCss, packageVersion, generationDate })
+	// Which artefact this invocation targets: the shared blue base defaults.css,
+	// or the lasuite-only violet brand-override.css.
+	const label = overrideMode ? 'test:lasuite-override' : 'test:lasuite-tokens'
+	const committedPath = overrideMode ? BRAND_OVERRIDE_OUTPUT_PATH : DEFAULT_OUTPUT_PATH
+	const artefactName = overrideMode ? 'brand-override.css' : 'defaults.css'
+
+	let output
+	if (overrideMode) {
+		output = generateBrandOverride({
+			deployedCss: readFileSync(DEPLOYED_SOURCE_PATH, 'utf-8'),
+			baseCss: readFileSync(SOURCE_CSS_PATH, 'utf-8'),
+			packageVersion,
+			generationDate,
+		})
+	} else {
+		output = generate({ sourceCss: readFileSync(SOURCE_CSS_PATH, 'utf-8'), packageVersion, generationDate })
+	}
 
 	if (!checkMode) {
+		const outputPath = positional
+			? resolve(process.cwd(), positional)
+			: (process.env.LASUITE_TOKENS_OUTPUT ? resolve(process.cwd(), process.env.LASUITE_TOKENS_OUTPUT) : committedPath)
 		writeFileSync(outputPath, output)
 		console.log(`[generate-lasuite-tokens] wrote ${outputPath}`)
 		return
 	}
 
-	// --check: generate into a temp file, diff against the committed file
-	// (ignoring only the "Generated: <date>" line, which legitimately
-	// changes every run), report, exit non-zero on any real difference.
-	const committedPath = DEFAULT_OUTPUT_PATH
+	// --check: diff against the committed file (ignoring only the
+	// "Generated: <date>" line, which legitimately changes every run), report,
+	// exit non-zero on any real difference.
 	let committed
 	try {
 		committed = readFileSync(committedPath, 'utf-8')
 	} catch {
-		console.error(`[test:lasuite-tokens] committed file not found: ${committedPath}`)
+		console.error(`[${label}] committed file not found: ${committedPath}`)
 		process.exit(1)
 	}
 
@@ -357,15 +536,15 @@ function main() {
 	const normalisedGenerated = stripDate(output)
 
 	if (normalisedCommitted === normalisedGenerated) {
-		console.log('[test:lasuite-tokens] OK — committed defaults.css matches the generator output.')
+		console.log(`[${label}] OK — committed ${artefactName} matches the generator output.`)
 		process.exit(0)
 	}
 
 	const tmpDir = mkdtempSync(join(tmpdir(), 'lasuite-tokens-'))
-	const tmpPath = join(tmpDir, 'defaults.css')
+	const tmpPath = join(tmpDir, artefactName)
 	writeFileSync(tmpPath, output)
 
-	console.error('[test:lasuite-tokens] DRIFT DETECTED — committed defaults.css does not match the generator.')
+	console.error(`[${label}] DRIFT DETECTED — committed ${artefactName} does not match the generator.`)
 	const committedLines = normalisedCommitted.split('\n')
 	const generatedLines = normalisedGenerated.split('\n')
 	const maxLines = Math.max(committedLines.length, generatedLines.length)
@@ -378,7 +557,7 @@ function main() {
 			printed++
 		}
 	}
-	console.error(`[test:lasuite-tokens] full generated output written to ${tmpPath} for inspection`)
+	console.error(`[${label}] full generated output written to ${tmpPath} for inspection`)
 	console.error(`  diff ${tmpPath} ${committedPath}`)
 	process.exit(1)
 }

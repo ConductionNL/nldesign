@@ -23,6 +23,8 @@
 		"test:l10n:completeness:write": "node tests/l10n/check-l10n-completeness.js --write",
 		"generate:lasuite-tokens": "node scripts/generate-lasuite-tokens.mjs",
 		"test:lasuite-tokens": "node scripts/generate-lasuite-tokens.mjs --check",
+		"generate:lasuite-override": "node scripts/generate-lasuite-tokens.mjs --override",
+		"test:lasuite-override": "node scripts/generate-lasuite-tokens.mjs --override --check",
 		"test:lasuite-bridge-coverage": "node tests/css/check-lasuite-bridge-coverage.js",
 		"build": "npm run build:fonts && npm run build:fonts:marianne && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",

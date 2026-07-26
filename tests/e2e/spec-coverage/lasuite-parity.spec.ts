@@ -54,12 +54,22 @@ interface ElementRef {
 }
 
 // Reference values sourced from css/systems/lasuite/{defaults,brand-override,
-// bridge,element-overrides}.css. gray-200/gray-300 are unaffected by
-// brand-override.css (only brand-*/logo-* are overridden), so they are IDENTICAL
-// across both sets; only the brand-650-derived colours differ.
-const GRAY_200 = '#c4c7cb' // --lasuite-color-gray-200 (hairline borders)
-const GRAY_300 = '#a7acb2' // --lasuite-color-gray-300 (input borders)
-const GRAY_000 = '#ffffff' // --lasuite-color-gray-000
+// bridge,element-overrides}.css. brand-override.css redeclares La Suite's FULL
+// deployed colour system — not just the brand ramp but the violet-TINTED
+// gray/white/black neutrals and its vivid semantic palettes (generated from the
+// deployed build; see scripts/generate-lasuite-tokens.mjs --override). So the
+// grays differ per set: the lasuite bundle loads brand-override.css (violet-
+// tinted), the cunningham bundle does not (neutral npm base). White (gray-000)
+// is #ffffff in both.
+const GRAY_200: Record<'lasuite' | 'cunningham', string> = {
+	lasuite: '#c5c6d5', // brand-override.css — deployed violet-tinted (hairline borders)
+	cunningham: '#c4c7cb', // defaults.css neutral npm base
+}
+const GRAY_300: Record<'lasuite' | 'cunningham', string> = {
+	lasuite: '#a9a9bf', // brand-override.css — deployed violet-tinted (input borders)
+	cunningham: '#a7acb2', // defaults.css neutral npm base
+}
+const GRAY_000 = '#ffffff' // --lasuite-color-gray-000 (white — identical in both sets)
 const BORDER_RADIUS = '4px' // --lasuite-border-radius (literal — no upstream token)
 const FONT_STACK = ['marianne', 'inter', 'sans-serif'] // --lasuite-font-family
 
@@ -86,6 +96,8 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 	const brand650 = BRAND_650[set]
 	const brand550 = BRAND_550[set]
 	const brand050 = BRAND_050[set]
+	const gray200 = GRAY_200[set]
+	const gray300 = GRAY_300[set]
 	return [
 		{
 			name: 'primary button',
@@ -107,7 +119,7 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			// templates/settings/admin.php.
 			selector: '#nldesign-upload-name',
 			ref: {
-				borderColor: GRAY_300,
+				borderColor: gray300,
 				borderWidth: '1px',
 				borderStyle: 'solid',
 				borderRadius: BORDER_RADIUS,
@@ -129,7 +141,7 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			selector: '#header',
 			ref: {
 				backgroundColor: GRAY_000,
-				borderColor: GRAY_200, // border-bottom-color
+				borderColor: gray200, // border-bottom-color
 				borderWidth: '1px', // border-bottom-width
 				borderStyle: 'solid', // border-bottom-style
 			},

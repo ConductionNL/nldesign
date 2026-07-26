@@ -194,6 +194,33 @@ button.primary:hover,
 	border-color: var(--lasuite-color-brand-650) !important;
 }
 
+/* ============================================
+   SECONDARY BUTTONS — La Suite's .c__button--brand--secondary is a flat,
+   BORDERLESS button: a pale brand-100 tinted fill with brand-600 text and no
+   outline. Mapped to the same brand-secondary contextuals it uses upstream
+   (background→brand-100, content→brand-600), verified 2026-07-26 against the
+   shipped Cunningham CSS. Our theme previously left NC secondary buttons
+   unstyled, so they fell back to Nextcloud's default grey treatment.
+   ============================================ */
+
+.button-vue--vue-secondary,
+button.secondary,
+.button-vue.button-vue--vue-secondary,
+button[class*="secondary"] {
+	background-color: var(--lasuite--contextuals--background--semantic--brand--secondary) !important;
+	border-color: transparent !important;
+	border-radius: var(--lasuite-border-radius) !important;
+}
+
+.button-vue--vue-secondary,
+.button-vue--vue-secondary *,
+.button-vue--vue-secondary span,
+button.secondary,
+button.secondary *,
+button[class*="secondary"] {
+	color: var(--lasuite--contextuals--content--semantic--brand--secondary) !important;
+}
+
 /* Buttons/inputs/dropdowns share the flat 4px radius everywhere. */
 .button,
 button,

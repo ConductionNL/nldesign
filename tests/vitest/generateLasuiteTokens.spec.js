@@ -21,6 +21,9 @@ import {
 	extractBlock,
 	parseDeclarations,
 	generate,
+	normaliseForCompare,
+	computeOverrideDelta,
+	generateBrandOverride,
 	COMPAT_ALIASES,
 } from '../../scripts/generate-lasuite-tokens.mjs'
 
@@ -185,5 +188,116 @@ describe('generate', () => {
 		expect(() =>
 			generate({ sourceCss: 'html{ --c--x: 1; }', packageVersion: '3.0.0', generationDate: '2026-07-24' }),
 		).toThrow(/dark ".cunningham-theme--dark/)
+	})
+})
+
+describe('normaliseForCompare', () => {
+	it('expands 3-digit hex so #fff and #ffffff compare equal (no no-op overrides)', () => {
+		expect(normaliseForCompare('#fff')).toBe(normaliseForCompare('#ffffff'))
+		expect(normaliseForCompare('#000')).toBe(normaliseForCompare('#000000'))
+	})
+
+	it('expands 4-digit hex (with alpha) too', () => {
+		expect(normaliseForCompare('#abcd')).toBe(normaliseForCompare('#aabbccdd'))
+	})
+
+	it('is case-insensitive and whitespace-insensitive', () => {
+		expect(normaliseForCompare('  var( --c--x )')).toBe(normaliseForCompare('VAR( --c--x )'))
+	})
+
+	it('keeps genuinely different colours distinct', () => {
+		expect(normaliseForCompare('#a7acb2')).not.toBe(normaliseForCompare('#a9a9bf'))
+	})
+})
+
+describe('computeOverrideDelta', () => {
+	const base = parseDeclarations(`html {
+	--c--globals--colors--gray-300: #a7acb2;
+	--c--globals--colors--gray-000: #ffffff;
+	--c--globals--colors--brand-600: #0659c5;
+	--c--globals--spacings--b: 4px;
+	--c--globals--font--families--base: Roboto;
+}`)
+
+	it('emits only colour tokens whose value genuinely differs', () => {
+		const deployed = parseDeclarations(`:root {
+	--c--globals--colors--gray-300: #a9a9bf;
+	--c--globals--colors--gray-000: #fff;
+	--c--globals--colors--brand-600: #534fc2;
+}`)
+		const delta = computeOverrideDelta(deployed, base)
+		const names = delta.map((d) => d.name)
+		// gray-300 and brand-600 differ → included; gray-000 (#fff == #ffffff) → excluded.
+		expect(names).toContain('--lasuite--globals--colors--gray-300')
+		expect(names).toContain('--lasuite--globals--colors--brand-600')
+		expect(names).not.toContain('--lasuite--globals--colors--gray-000')
+	})
+
+	it('never emits structural globals (spacings/font/breakpoints) even when they differ', () => {
+		const deployed = parseDeclarations(`:root {
+	--c--globals--spacings--b: 8px;
+	--c--globals--font--families--base: Inter;
+}`)
+		expect(computeOverrideDelta(deployed, base)).toEqual([])
+	})
+
+	it('includes contextuals whose declaration text differs (a repointed semantic)', () => {
+		const b2 = parseDeclarations('html {\n\t--c--contextuals--content--logo1: var(--c--globals--colors--brand-600);\n}')
+		const d2 = parseDeclarations(':root {\n\t--c--contextuals--content--logo1: var(--c--globals--colors--logo-1-light);\n}')
+		const delta = computeOverrideDelta(d2, b2)
+		expect(delta.map((d) => d.name)).toEqual(['--lasuite--contextuals--content--logo1'])
+	})
+
+	it('includes tokens new in the deployed build (absent from the base)', () => {
+		const d3 = parseDeclarations(':root {\n\t--c--globals--colors--logo-1-light: #4844ad;\n}')
+		expect(computeOverrideDelta(d3, base).map((d) => d.name)).toContain(
+			'--lasuite--globals--colors--logo-1-light',
+		)
+	})
+})
+
+describe('generateBrandOverride', () => {
+	const baseCss = `html {
+	--c--globals--colors--gray-300: #a7acb2;
+	--c--globals--colors--brand-550: #1167d4;
+}`
+	const deployedCss = `:root {
+	--c--globals--colors--gray-300: #a9a9bf;
+	--c--globals--colors--brand-550: #5e5cd0;
+}`
+
+	function build() {
+		return generateBrandOverride({ deployedCss, baseCss, packageVersion: '3.0.0', generationDate: '2026-07-26' })
+	}
+
+	it('emits the violet delta as canonical --lasuite--* overrides in a :root block', () => {
+		const out = build()
+		expect(out).toContain(':root {')
+		expect(out).toContain('--lasuite--globals--colors--gray-300: #a9a9bf;')
+		expect(out).toContain('--lasuite--globals--colors--brand-550: #5e5cd0;')
+	})
+
+	it('re-asserts the consumed short colour aliases pointing at their canonicals', () => {
+		const out = build()
+		expect(out).toContain('--lasuite-color-brand-550: var(--lasuite--globals--colors--brand-550);')
+		// The literal border-radius alias is NOT a colour → not re-asserted here.
+		expect(out).not.toContain('--lasuite-border-radius:')
+	})
+
+	it('records both the base package and the deployed source provenance + delta count', () => {
+		const out = build()
+		expect(out).toContain('@openfun/cunningham-tokens@3.0.0')
+		expect(out).toContain('suitenumerique/docs @ 61c2183')
+		expect(out).toContain('Override token count: 2')
+	})
+
+	it('strips the vendored source\'s leading provenance comment before extracting :root', () => {
+		const withHeader = `/**\n * provenance header, no braces\n */\n${deployedCss}`
+		const out = generateBrandOverride({ deployedCss: withHeader, baseCss, packageVersion: '3.0.0', generationDate: '2026-07-26' })
+		expect(out).toContain('--lasuite--globals--colors--brand-550: #5e5cd0;')
+	})
+
+	it('is deterministic — regenerating from the same input yields byte-identical output', () => {
+		expect(build()).toBe(build())
 	})
 })
