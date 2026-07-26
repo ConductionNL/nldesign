@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: EUPL-1.2
  *
  * @category Service
- * @package  OCA\NlDesign\Service\Config
+ * @package  OCA\NLDesign\Service\Config
  *
  * @author    Conduction Development Team <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
@@ -31,10 +31,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NlDesign\Service\Config;
+namespace OCA\NLDesign\Service\Config;
 
-use OCA\NlDesign\Service\ConfigBundleService;
+use OCA\NLDesign\Service\ConfigBundleService;
 use OCA\OpenRegister\Service\Config\IShareableConfigType;
+use Psr\Container\ContainerInterface;
 
 /**
  * Shares an NL Design theme through the federated-config engine.
@@ -44,12 +45,30 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
     /**
      * Constructor.
      *
-     * @param ConfigBundleService $bundle Exports and imports the theme config.
+     * The `ConfigBundleService` is resolved lazily rather than injected: this
+     * type is constructed whenever the shareable-type catalogue is read (which a
+     * cross-app request does), but the bundle service — with its deep theming
+     * dependency chain — is only needed when a theme is actually serialised or
+     * installed. Resolving it eagerly would drag that whole chain into every
+     * catalogue read, in a container context that may not autowire it.
+     *
+     * @param ContainerInterface $container Resolves the bundle service on demand.
      */
-    public function __construct(private readonly ConfigBundleService $bundle)
+    public function __construct(private readonly ContainerInterface $container)
     {
 
     }//end __construct()
+
+    /**
+     * The theme export/import service, resolved on first use.
+     *
+     * @return ConfigBundleService The bundle service.
+     */
+    private function bundle(): ConfigBundleService
+    {
+        return $this->container->get(ConfigBundleService::class);
+
+    }//end bundle()
 
     /**
      * The type id.
@@ -102,7 +121,7 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
         return [
             'type'    => $this->getId(),
             'version' => '1.0',
-            'bundle'  => $this->bundle->export(),
+            'bundle'  => $this->bundle()->export(),
         ];
 
     }//end serialise()
@@ -118,7 +137,7 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      */
     public function deserialise(array $bundle): array
     {
-        $result = $this->bundle->import((array) ($bundle['bundle'] ?? []), false);
+        $result = $this->bundle()->import((array) ($bundle['bundle'] ?? []), false);
 
         return [
             'installed' => ['nldesign-theme'],

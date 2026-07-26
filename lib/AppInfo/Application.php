@@ -109,7 +109,7 @@ class Application extends App implements IBootstrap
         if (class_exists(\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class) === true) {
             $context->registerEventListener(
                 \OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class,
-                \OCA\NlDesign\Listener\ShareableConfigTypeListener::class
+                \OCA\NLDesign\Listener\ShareableConfigTypeListener::class
             );
         }
     }//end register()
