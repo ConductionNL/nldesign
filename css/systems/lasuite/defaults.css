@@ -10,7 +10,7 @@
  *   Cunningham is the design system behind La Suite numérique
  *   (Docs/Meet/Chat) — https://github.com/suitenumerique/cunningham
  * Read from: dist/cunningham-tokens.css
- * Generated: 2026-07-25
+ * Generated: 2026-07-26
  * Token count: 1167 (584 light + 583 dark —
  *   see the module header comment in generate-lasuite-tokens.mjs for
  *   why the source splits into these two blocks instead of one).
@@ -635,6 +635,7 @@
 	 * =================================================================== */
 	--lasuite-color-brand-050: var(--lasuite--globals--colors--brand-050);
 	--lasuite-color-brand-100: var(--lasuite--globals--colors--brand-100);
+	--lasuite-color-brand-550: var(--lasuite--globals--colors--brand-550);
 	--lasuite-color-brand-650: var(--lasuite--globals--colors--brand-650);
 	--lasuite-color-brand-750: var(--lasuite--globals--colors--brand-750);
 	--lasuite-color-error-550: var(--lasuite--globals--colors--error-550);

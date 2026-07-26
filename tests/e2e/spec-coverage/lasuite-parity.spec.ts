@@ -64,23 +64,40 @@ const BORDER_RADIUS = '4px' // --lasuite-border-radius (literal — no upstream 
 const FONT_STACK = ['marianne', 'inter', 'sans-serif'] // --lasuite-font-family
 
 const BRAND_650: Record<'lasuite' | 'cunningham', string> = {
-	lasuite: '#4844ad', // brand-override.css — deployed violet
+	lasuite: '#4844ad', // brand-override.css — deployed violet (logo / button hover)
 	cunningham: '#1a509f', // defaults.css blue base (brand-override.css not loaded)
+}
+
+// La Suite's .c__button--brand--primary fills with brand-550 at REST and
+// brand-650 on HOVER (verified 2026-07-26 against the shipped Cunningham CSS via
+// a local computed-style comparison). Filling brand-650 at rest previously made
+// our button-at-rest match La Suite's HOVER — one step too dark.
+const BRAND_550: Record<'lasuite' | 'cunningham', string> = {
+	lasuite: '#5e5cd0', // brand-override.css — deployed violet (primary button rest)
+	cunningham: '#1167d4', // defaults.css blue base
+}
+// On-brand button text is brand-050 (a pale violet-white), not pure white.
+const BRAND_050: Record<'lasuite' | 'cunningham', string> = {
+	lasuite: '#eef1fa', // brand-override.css — deployed violet
+	cunningham: '#eaf1fb', // defaults.css blue base
 }
 
 function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 	const brand650 = BRAND_650[set]
+	const brand550 = BRAND_550[set]
+	const brand050 = BRAND_050[set]
 	return [
 		{
 			name: 'primary button',
 			// #nldesign-group-theming-save ships class="button primary" in
 			// templates/settings/admin.php, matching element-overrides.css's
-			// `button[class*="primary"]` / `button.primary` rules.
+			// `button[class*="primary"]` / `button.primary` rules. Fill and
+			// border are brand-550 at REST (brand-650 on hover); text is brand-050.
 			selector: '#nldesign-group-theming-save',
 			ref: {
-				backgroundColor: brand650,
-				color: GRAY_000,
-				borderColor: brand650,
+				backgroundColor: brand550,
+				color: brand050,
+				borderColor: brand550,
 				borderRadius: BORDER_RADIUS,
 			},
 		},

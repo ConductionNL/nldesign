@@ -185,6 +185,9 @@ function renderDeclarationLines(declarations) {
 export const COMPAT_ALIASES = [
 	{ alias: '--lasuite-color-brand-050', canonical: '--lasuite--globals--colors--brand-050' },
 	{ alias: '--lasuite-color-brand-100', canonical: '--lasuite--globals--colors--brand-100' },
+	// La Suite's primary interactive fill (button rest) is brand-550; brand-650
+	// is its logo/hover step. The bridge maps --color-primary-element to this.
+	{ alias: '--lasuite-color-brand-550', canonical: '--lasuite--globals--colors--brand-550' },
 	{ alias: '--lasuite-color-brand-650', canonical: '--lasuite--globals--colors--brand-650' },
 	{ alias: '--lasuite-color-brand-750', canonical: '--lasuite--globals--colors--brand-750' },
 	{ alias: '--lasuite-color-error-550', canonical: '--lasuite--globals--colors--error-550' },

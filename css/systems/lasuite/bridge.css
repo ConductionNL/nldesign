@@ -130,9 +130,15 @@ body {
 	--color-primary-light: var(--lasuite-color-brand-050) !important;
 	--color-primary-light-hover: var(--lasuite-color-brand-100) !important;
 	--color-primary-light-text: var(--lasuite-color-brand-650) !important;
-	--color-primary-element: var(--lasuite-color-brand-650) !important;
-	--color-primary-element-text: var(--lasuite-color-gray-000) !important;
-	--color-primary-element-hover: var(--lasuite-color-brand-750) !important;
+	/* La Suite's primary button is brand-550 at REST and brand-650 on HOVER
+	   (.c__button--brand--primary → --c--contextuals--background--semantic--brand--primary
+	   = brand-550; :hover = brand-650). Mapping --color-primary-element to
+	   brand-650 made our button-at-rest match La Suite's HOVER state — one step
+	   too dark. Verified by a local computed-style comparison against La Suite's
+	   own shipped Cunningham CSS (2026-07-26). */
+	--color-primary-element: var(--lasuite-color-brand-550) !important;
+	--color-primary-element-text: var(--lasuite-color-brand-050) !important;
+	--color-primary-element-hover: var(--lasuite-color-brand-650) !important;
 	--color-primary-element-light: var(--lasuite-color-brand-050) !important;
 	--color-primary-element-light-text: var(--lasuite-color-brand-650) !important;
 	--color-primary-element-light-hover: var(--lasuite-color-brand-100) !important;

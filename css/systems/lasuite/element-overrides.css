@@ -156,7 +156,11 @@ header#header {
 }
 
 /* ============================================
-   PRIMARY BUTTONS — brand-650 fill, white text, 4px radius
+   PRIMARY BUTTONS — brand-550 fill at rest, brand-650 on hover, white text, 4px radius
+   La Suite's .c__button--brand--primary fills with brand-550 at REST and
+   brand-650 on HOVER (verified 2026-07-26 against La Suite's own shipped
+   Cunningham CSS via a local computed-style comparison). Filling brand-650 at
+   rest made our button-at-rest match La Suite's HOVER — one step too dark.
    ============================================ */
 
 .button-vue--vue-primary,
@@ -164,8 +168,8 @@ button.primary,
 input.primary,
 .button-vue.button-vue--vue-primary,
 button[class*="primary"] {
-	background-color: var(--lasuite-color-brand-650) !important;
-	border-color: var(--lasuite-color-brand-650) !important;
+	background-color: var(--lasuite-color-brand-550) !important;
+	border-color: var(--lasuite-color-brand-550) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
@@ -174,15 +178,20 @@ button[class*="primary"] {
 .button-vue--vue-primary span,
 button.primary,
 button.primary *,
-input.primary {
-	color: var(--lasuite-color-gray-000) !important;
+input.primary,
+button[class*="primary"] {
+	/* La Suite's on-brand button text is brand-050 (#eef1fa), a pale violet-white,
+	   not pure white — matched to the shipped Cunningham CSS (2026-07-26).
+	   Selector kept symmetric with the fill rule above so any primary-classed
+	   button gets both the brand-550 fill AND the brand-050 text. */
+	color: var(--lasuite-color-brand-050) !important;
 }
 
 .button-vue--vue-primary:hover,
 button.primary:hover,
 .button-vue.button-vue--vue-primary:hover {
-	background-color: var(--lasuite-color-brand-750) !important;
-	border-color: var(--lasuite-color-brand-750) !important;
+	background-color: var(--lasuite-color-brand-650) !important;
+	border-color: var(--lasuite-color-brand-650) !important;
 }
 
 /* Buttons/inputs/dropdowns share the flat 4px radius everywhere. */
