@@ -16,6 +16,11 @@
     </projectFiles>
     <stubs>
         <file name="vendor/nextcloud/ocp/OCP/Capabilities/ICapability.php" preloadClasses="true" />
+        <!-- OpenRegister's federated-config contract (soft runtime dependency,
+             absent during analysis). Resolves the IShareableConfigType
+             interface and the RegisterShareableConfigTypesEvent generic in
+             lib/Service/Config/ + lib/Listener/. Never autoloaded at runtime. -->
+        <file name="stubs/openregister-config.php" />
     </stubs>
     <issueHandlers>
         <UndefinedDocblockClass errorLevel="suppress"/>

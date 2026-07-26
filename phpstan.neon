@@ -35,6 +35,13 @@ parameters:
         - lib/Controller/HealthController.php
     scanDirectories:
         - vendor/nextcloud/ocp
+        # Declaration-only stubs for OpenRegister's federated-config contract
+        # (IShareableConfigType + RegisterShareableConfigTypesEvent), a soft
+        # runtime dependency absent during analysis. Lets phpstan resolve the
+        # interface NlDesignThemeShareableConfigType implements and the event
+        # ShareableConfigTypeListener dispatches on — without excludePaths.
+        # See stubs/openregister-config.php. Never autoloaded at runtime.
+        - stubs
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         # Nextcloud server internals (\OC, OC_App, OC\) not stubbed in nextcloud/ocp.
@@ -59,13 +66,17 @@ parameters:
         # OCA\DAV is server-internal and not in nextcloud/ocp stubs
         - '#unknown class OCA\\DAV\\#'
         - '#Class OCA\\DAV\\#'
-        # OCA classes from other apps (OpenRegister) not available during static analysis
+        # OCA classes from other apps (OpenRegister) not available during static
+        # analysis. NOTE: the federated-config contract (IShareableConfigType +
+        # RegisterShareableConfigTypesEvent) is resolved instead via the
+        # stubs/ scanDirectories above, so no "implements unknown interface"
+        # entry is needed here — phpstan treats that category as non-ignorable
+        # (it demands excludePaths), and the stub removes the error at its root.
         - '#unknown class OCA\\OpenRegister\\#'
         - '#OCA\\OpenRegister\\[a-zA-Z\\]+.*not found#'
         - '#on an unknown class OCA\\OpenRegister\\#'
         - '#has invalid return type OCA\\OpenRegister\\#'
         - '#has invalid type OCA\\OpenRegister\\#'
-        - '#implements unknown interface OCA\\OpenRegister\\#'
         # GuzzleHttp is available at runtime via Nextcloud but not in composer require
         - '#unknown class GuzzleHttp\\#'
         - '#GuzzleHttp\\[a-zA-Z\\]+.*not found#'

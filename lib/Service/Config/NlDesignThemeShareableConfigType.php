@@ -114,6 +114,9 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      *
      * @return array `{type, version, bundle}`.
      *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - $selection is required by
+     * the IShareableConfigType::serialise() contract; a theme has no selection.
+     *
      * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
      */
     public function serialise(array $selection): array
