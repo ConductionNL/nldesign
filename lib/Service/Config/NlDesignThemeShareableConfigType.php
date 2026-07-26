@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * NL Design themes as a shareable configuration type.
+ *
+ * This is the case that proves the federated-config standard is genuinely
+ * storage-agnostic. Every other shareable type so far stores its configuration
+ * as OpenRegister objects; NL Design's theme configuration lives in Nextcloud's
+ * own `IConfig`, exported and imported by this app's `ConfigBundleService`. Yet
+ * a theme shares exactly the same way a flow or a register does — because a type
+ * owns its own (de)serialisation, and OpenRegister owns only the engine.
+ *
+ * So an admin can publish their NL Design theme (token sets, overrides, footer
+ * and email theming, custom fonts) to GitHub and another instance can install
+ * it, over the one fleet mechanism, with no migration onto OpenRegister objects.
+ *
+ * SPDX-FileCopyrightText: 2026 Conduction B.V. <info@conduction.nl>
+ * SPDX-License-Identifier: EUPL-1.2
+ *
+ * @category Service
+ * @package  OCA\NlDesign\Service\Config
+ *
+ * @author    Conduction Development Team <info@conduction.nl>
+ * @copyright 2026 Conduction B.V.
+ * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * @link https://conduction.nl
+ *
+ * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+ */
+
+declare(strict_types=1);
+
+namespace OCA\NlDesign\Service\Config;
+
+use OCA\NlDesign\Service\ConfigBundleService;
+use OCA\OpenRegister\Service\Config\IShareableConfigType;
+
+/**
+ * Shares an NL Design theme through the federated-config engine.
+ */
+class NlDesignThemeShareableConfigType implements IShareableConfigType
+{
+    /**
+     * Constructor.
+     *
+     * @param ConfigBundleService $bundle Exports and imports the theme config.
+     */
+    public function __construct(private readonly ConfigBundleService $bundle)
+    {
+
+    }//end __construct()
+
+    /**
+     * The type id.
+     *
+     * @return string The id.
+     */
+    public function getId(): string
+    {
+        return 'nldesign.theme';
+
+    }//end getId()
+
+    /**
+     * The display name.
+     *
+     * @return string The name.
+     */
+    public function getDisplayName(): string
+    {
+        return 'NL Design theme';
+
+    }//end getDisplayName()
+
+    /**
+     * The discovery topic.
+     *
+     * @return string The topic.
+     */
+    public function getTopic(): string
+    {
+        return 'nldesign-theme';
+
+    }//end getTopic()
+
+    /**
+     * Package the instance's NL Design theme into a portable bundle.
+     *
+     * The selection is ignored: a theme is the instance's one theme
+     * configuration, which `ConfigBundleService` already exports as a
+     * self-describing, portable bundle (no secrets — theming carries none).
+     *
+     * @param array $selection Unused for themes.
+     *
+     * @return array `{type, version, bundle}`.
+     *
+     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     */
+    public function serialise(array $selection): array
+    {
+        return [
+            'type'    => $this->getId(),
+            'version' => '1.0',
+            'bundle'  => $this->bundle->export(),
+        ];
+
+    }//end serialise()
+
+    /**
+     * Apply a shared NL Design theme to this instance.
+     *
+     * @param array $bundle A bundle produced by this type.
+     *
+     * @return array `{installed: ['nldesign-theme'], import: {...}}`.
+     *
+     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     */
+    public function deserialise(array $bundle): array
+    {
+        $result = $this->bundle->import((array) ($bundle['bundle'] ?? []), false);
+
+        return [
+            'installed' => ['nldesign-theme'],
+            'import'    => $result,
+        ];
+
+    }//end deserialise()
+}//end class
