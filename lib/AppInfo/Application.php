@@ -87,6 +87,12 @@ class Application extends App implements IBootstrap
      */
     public function register(IRegistrationContext $context): void
     {
+        // Load the app's composer autoloader so this app's classes are resolvable
+        // process-wide, not only inside this app's own container — required so a
+        // cross-app event listener (e.g. the OpenRegister federated-config type)
+        // can be constructed by another app's dispatcher. Mirrors hermiq.
+        include_once __DIR__.'/../../vendor/autoload.php';
+
         // Health endpoint served by the thin Controller\HealthController
         // subclass of the AppHost engine — no explicit registration needed.
         // Public huisstijl capability — see lib/Capabilities.php.
@@ -95,6 +101,17 @@ class Application extends App implements IBootstrap
         // Event-driven CSS injection — see lib/Listener/ThemeInjectionListener.php.
         $context->registerEventListener(BeforeTemplateRenderedEvent::class, ThemeInjectionListener::class);
         $context->registerEventListener(BeforeLoginTemplateRenderedEvent::class, ThemeInjectionListener::class);
+
+        // Federated configuration sharing (openregister): contribute the NL Design
+        // theme as a shareable config type so a theme can be published to and
+        // installed from GitHub over OpenRegister's one fleet mechanism. Guarded
+        // on the event class so an instance without OpenRegister still boots.
+        if (class_exists(\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class) === true) {
+            $context->registerEventListener(
+                \OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class,
+                \OCA\NLDesign\Listener\ShareableConfigTypeListener::class
+            );
+        }
     }//end register()
 
     /**
