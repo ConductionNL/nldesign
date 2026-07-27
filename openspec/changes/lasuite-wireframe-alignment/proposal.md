@@ -50,6 +50,16 @@ existing `--lasuite-*` tokens).
 list/detail layouts). These are Nextcloud component metrics and information-architecture
 decisions, not design-system theming, and are not touched by this change.
 
+**Scope correction (verified live during implementation)**: the rules land in
+`css/systems/lasuite/element-overrides.css`, which the `cunningham` design system **also loads**
+(its bundle is fonts → defaults → bridge → element-overrides, i.e. the same layer minus the
+violet `brand-override`). The wireframe therefore applies to `cunningham` too. This is correct
+rather than a leak: `cunningham` is the same Cunningham design system in its unbranded blue form,
+and layout is not brand-specific. Verified on the live instance — under `cunningham` the canvas
+resolves to `#f7f8f8` (the neutral npm-base gray-025) instead of `#f8f8f9`, with the same 0px gap,
+flush sidebar and white 4px card. `nldesign`, `summer-breeze` and `high-contrast` are untouched,
+as are the generated `defaults.css` / `brand-override.css` layers.
+
 **ADR-031 declarative-vs-imperative behaviour**: not applicable. This change is pure CSS layout
 theming with no lifecycle, aggregation, or notification behaviour involved.
 
