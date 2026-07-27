@@ -178,8 +178,12 @@ body {
 	 * TEXT COLORS
 	 * =================================================================== */
 
-	--color-main-text: var(--lasuite-color-gray-900) !important;
-	--color-text-maxcontrast: var(--lasuite-color-gray-500) !important;
+	/* La Suite's primary text is gray-850 (#25252f) — sampled live from the
+	   deployed app's nav items and document-row titles — and its muted/secondary
+	   text (column headers, labels) is gray-600 (#5d5d70). The theme previously
+	   used gray-900/gray-500, one step too dark and one step too light. */
+	--color-main-text: var(--lasuite-color-gray-850) !important;
+	--color-text-maxcontrast: var(--lasuite-color-gray-600) !important;
 	/* --color-text-maxcontrast-default: unmapped — auto-calculated per theme by Nextcloud */
 	/* --color-text-maxcontrast-background-blur: unmapped — blur-adjusted maxcontrast, auto-calculated */
 	--color-text-light: var(--lasuite-color-gray-000) !important;
@@ -234,7 +238,10 @@ body {
 	 * BORDERS
 	 * =================================================================== */
 
-	--color-border: var(--lasuite-color-gray-200) !important;
+	/* La Suite's structural dividers (sidebar edge, table rules) are gray-100
+	   (#e2e2ea), a lighter hairline than the gray-200 the theme used before —
+	   measured on the deployed app's sidebar border-right. */
+	--color-border: var(--lasuite-color-gray-100) !important;
 	--color-border-dark: var(--lasuite-color-gray-500) !important;
 	--color-border-maxcontrast: var(--lasuite-color-gray-500) !important;
 

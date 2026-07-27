@@ -22,7 +22,9 @@ header#header {
 	background-color: var(--lasuite-color-gray-000) !important;
 	background-image: none !important;
 	background: var(--lasuite-color-gray-000) !important;
-	border-bottom: 1px solid var(--lasuite-color-gray-200) !important;
+	/* gray-100 — the same hairline La Suite uses for every structural divider
+	   (measured on its sidebar border-right, 2026-07-27). */
+	border-bottom: 1px solid var(--lasuite-color-gray-100) !important;
 	position: relative !important;
 	overflow: visible !important;
 }
@@ -112,7 +114,9 @@ header#header {
 .app-navigation,
 #app-navigation-vue {
 	background: var(--lasuite-color-gray-000) !important;
-	border-right: 1px solid var(--lasuite-color-gray-200) !important;
+	/* gray-100 — matches the sidebar border-right measured on the live La Suite
+	   app (2026-07-27); every structural hairline uses this step. */
+	border-right: 1px solid var(--lasuite-color-gray-100) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 	box-shadow: none !important;
 	margin-right: 16px !important;

@@ -398,6 +398,8 @@
 	--lasuite-color-gray-200: var(--lasuite--globals--colors--gray-200);
 	--lasuite-color-gray-300: var(--lasuite--globals--colors--gray-300);
 	--lasuite-color-gray-500: var(--lasuite--globals--colors--gray-500);
+	--lasuite-color-gray-600: var(--lasuite--globals--colors--gray-600);
+	--lasuite-color-gray-850: var(--lasuite--globals--colors--gray-850);
 	--lasuite-color-gray-900: var(--lasuite--globals--colors--gray-900);
 	--lasuite-color-info-550: var(--lasuite--globals--colors--info-550);
 	--lasuite-color-info-650: var(--lasuite--globals--colors--info-650);

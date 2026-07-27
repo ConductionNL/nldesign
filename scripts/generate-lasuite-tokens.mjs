@@ -224,6 +224,12 @@ export const COMPAT_ALIASES = [
 	{ alias: '--lasuite-color-gray-200', canonical: '--lasuite--globals--colors--gray-200' },
 	{ alias: '--lasuite-color-gray-300', canonical: '--lasuite--globals--colors--gray-300' },
 	{ alias: '--lasuite-color-gray-500', canonical: '--lasuite--globals--colors--gray-500' },
+	// gray-600 is La Suite's MUTED text step (#5d5d70 — column headers, secondary
+	// labels) and gray-850 its PRIMARY text step (#25252f — nav items and row
+	// titles). Both sampled from the live deployed app (2026-07-27); the theme
+	// previously used gray-500/gray-900, one step off in each direction.
+	{ alias: '--lasuite-color-gray-600', canonical: '--lasuite--globals--colors--gray-600' },
+	{ alias: '--lasuite-color-gray-850', canonical: '--lasuite--globals--colors--gray-850' },
 	{ alias: '--lasuite-color-gray-900', canonical: '--lasuite--globals--colors--gray-900' },
 	{ alias: '--lasuite-color-info-550', canonical: '--lasuite--globals--colors--info-550' },
 	{ alias: '--lasuite-color-info-650', canonical: '--lasuite--globals--colors--info-650' },

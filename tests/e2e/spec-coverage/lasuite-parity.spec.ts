@@ -61,9 +61,12 @@ interface ElementRef {
 // grays differ per set: the lasuite bundle loads brand-override.css (violet-
 // tinted), the cunningham bundle does not (neutral npm base). White (gray-000)
 // is #ffffff in both.
-const GRAY_200: Record<'lasuite' | 'cunningham', string> = {
-	lasuite: '#c5c6d5', // brand-override.css — deployed violet-tinted (hairline borders)
-	cunningham: '#c4c7cb', // defaults.css neutral npm base
+// Structural hairlines (header rule, sidebar edge) are gray-100 — the divider
+// step measured on the live La Suite app (2026-07-27); the theme previously
+// used the darker gray-200.
+const GRAY_100: Record<'lasuite' | 'cunningham', string> = {
+	lasuite: '#e2e2ea', // brand-override.css — deployed violet-tinted (hairline borders)
+	cunningham: '#e1e2e5', // defaults.css neutral npm base
 }
 const GRAY_300: Record<'lasuite' | 'cunningham', string> = {
 	lasuite: '#a9a9bf', // brand-override.css — deployed violet-tinted (input borders)
@@ -96,7 +99,7 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 	const brand650 = BRAND_650[set]
 	const brand550 = BRAND_550[set]
 	const brand050 = BRAND_050[set]
-	const gray200 = GRAY_200[set]
+	const gray100 = GRAY_100[set]
 	const gray300 = GRAY_300[set]
 	return [
 		{
@@ -141,7 +144,7 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			selector: '#header',
 			ref: {
 				backgroundColor: GRAY_000,
-				borderColor: gray200, // border-bottom-color
+				borderColor: gray100, // border-bottom-color
 				borderWidth: '1px', // border-bottom-width
 				borderStyle: 'solid', // border-bottom-style
 			},
