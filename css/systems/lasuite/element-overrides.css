@@ -221,6 +221,46 @@ button[class*="secondary"] {
 	color: var(--lasuite--contextuals--content--semantic--brand--secondary) !important;
 }
 
+/* ============================================
+   BUTTON LABEL WEIGHT — La Suite sets --c--components--button--font-weight to
+   500 (medium); Nextcloud's own .button-vue ships 700 (bold), which reads
+   noticeably heavier than La Suite's buttons at the same size. Sampled live
+   from the running La Suite app (2026-07-27), not from the npm base.
+   ============================================ */
+
+.button-vue,
+.button-vue span,
+.button-vue__text,
+button.primary,
+button.secondary {
+	font-weight: 500 !important;
+}
+
+/* ============================================
+   TERTIARY BUTTONS — La Suite's .c__button--brand--tertiary is a transparent
+   button with BRAND text (--c--contextuals--content--semantic--brand--tertiary
+   = brand-550 #5e5cd0), plus a faint neutral wash on hover. Our theme left NC
+   tertiary buttons on the default near-black, so they read as plain body text
+   instead of an action.
+
+   SCOPED DELIBERATELY to text-bearing tertiary buttons OUTSIDE the header:
+   NC's header uses --vue-tertiary-no-background for icon buttons that sit on
+   the coloured header band and must stay white for contrast, and icon-only row
+   actions (the "…" menus) stay neutral — colouring every icon violet is not
+   what La Suite does and would be visually noisy.
+   ============================================ */
+
+:not(#header) > .button-vue--vue-tertiary.button-vue--text-only,
+:not(#header) .button-vue--vue-tertiary.button-vue--icon-and-text {
+	color: var(--lasuite--contextuals--content--semantic--brand--tertiary) !important;
+	background-color: transparent !important;
+}
+
+:not(#header) > .button-vue--vue-tertiary.button-vue--text-only span,
+:not(#header) .button-vue--vue-tertiary.button-vue--icon-and-text span {
+	color: inherit !important;
+}
+
 /* Buttons/inputs/dropdowns share the flat 4px radius everywhere. */
 .button,
 button,

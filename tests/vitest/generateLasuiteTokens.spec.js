@@ -129,6 +129,38 @@ describe('parseDeclarations', () => {
 			{ name: '--c--contextuals--content--logo1', value: 'var(--c--globals--colors--logo-1)' },
 		])
 	})
+
+	// Regression: La Suite's DEPLOYED build is prettier-formatted and wraps long
+	// values across lines. A line-anchored parser silently skipped 157 of that
+	// source's 593 declarations — mostly the semantic `contextuals` — so the
+	// generated brand-override delta lost them (e.g. the tertiary button colour
+	// repointed to brand-550 never made it into the theme).
+	it('parses a declaration whose value is wrapped across lines', () => {
+		const block = [
+			'\t--c--contextuals--content--semantic--brand--tertiary: var(',
+			'\t    --c--globals--colors--brand-550',
+			'\t);',
+		].join('\n')
+		expect(parseDeclarations(block)).toEqual([
+			{
+				name: '--c--contextuals--content--semantic--brand--tertiary',
+				value: 'var(--c--globals--colors--brand-550)',
+			},
+		])
+	})
+
+	it('normalises a wrapped value so it compares equal to the single-line form', () => {
+		const wrapped = parseDeclarations('--c--x--y: var(\n  --c--a--b\n);')[0].value
+		const inline = parseDeclarations('--c--x--y: var(--c--a--b);')[0].value
+		expect(wrapped).toBe(inline)
+	})
+
+	it('never parses a declaration that only appears inside a comment', () => {
+		const block = '/* --c--globals--colors--brand-600: #ffffff; */\n\t--c--globals--colors--brand-650: #1A509F;\n'
+		expect(parseDeclarations(block)).toEqual([
+			{ name: '--c--globals--colors--brand-650', value: '#1A509F' },
+		])
+	})
 })
 
 describe('generate', () => {

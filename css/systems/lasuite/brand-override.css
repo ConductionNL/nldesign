@@ -28,13 +28,23 @@
  * Base package:    @openfun/cunningham-tokens@3.0.0 (MIT) — the blue base
  * Deployed source: suitenumerique/docs @ 61c2183390b92e0c6d4e00efd7f0915412ffd625 (MIT)
  *   scripts/sources/lasuite-deployed-cunningham-tokens.css (vendored)
- * Generated: 2026-07-26
- * Override token count: 333
+ * Generated: 2026-07-27
+ * Override token count: 343
  */
 
 :root {
+	--lasuite--contextuals--background--semantic--overlay--primary: var(--lasuite--globals--colors--black-050);
+	--lasuite--contextuals--background--semantic--overlay--primary-hover: var(--lasuite--globals--colors--black-100);
+	--lasuite--contextuals--border--semantic--overlay--primary: var(--lasuite--globals--colors--white-200);
 	--lasuite--contextuals--content--logo1: var(--lasuite--globals--colors--logo-1-light);
 	--lasuite--contextuals--content--logo2: var(--lasuite--globals--colors--logo-2-light);
+	--lasuite--contextuals--content--semantic--brand--tertiary: var(--lasuite--globals--colors--brand-550);
+	--lasuite--contextuals--content--semantic--error--tertiary: var(--lasuite--globals--colors--error-550);
+	--lasuite--contextuals--content--semantic--info--tertiary: var(--lasuite--globals--colors--info-550);
+	--lasuite--contextuals--content--semantic--neutral--tertiary: var(--lasuite--globals--colors--gray-550);
+	--lasuite--contextuals--content--semantic--overlay--primary: var(--lasuite--globals--colors--white-950);
+	--lasuite--contextuals--content--semantic--success--tertiary: var(--lasuite--globals--colors--success-550);
+	--lasuite--contextuals--content--semantic--warning--tertiary: var(--lasuite--globals--colors--warning-550);
 	--lasuite--globals--colors--black-000: #1b1b2300;
 	--lasuite--globals--colors--black-050: #1b1b230d;
 	--lasuite--globals--colors--black-100: #1b1b231a;

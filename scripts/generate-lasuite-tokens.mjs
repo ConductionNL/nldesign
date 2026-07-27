@@ -136,14 +136,31 @@ export function extractBlock(cssText, selectorPattern) {
  * happens in the caller so this function stays a pure, testable parser).
  */
 export function parseDeclarations(blockText) {
+	// Comments are stripped first so a commented-out declaration is never
+	// parsed as a real one.
+	const text = blockText.replace(/\/\*[\s\S]*?\*\//g, '')
+
+	// MULTI-LINE TOLERANT. The published npm build prints one declaration per
+	// line, but La Suite's DEPLOYED build is prettier-formatted and wraps long
+	// values across lines:
+	//     --c--contextuals--content--semantic--brand--tertiary: var(
+	//         --c--globals--colors--brand-550
+	//     );
+	// A line-anchored regex silently skipped every one of those — 157 of the
+	// deployed source's 593 declarations, mostly the semantic `contextuals`,
+	// which then went missing from the generated brand-override delta. Match
+	// across newlines instead, and normalise the captured value's internal
+	// whitespace so `var(\n  --x\n)` and `var(--x)` render and compare equal.
 	const declarations = []
-	const lines = blockText.split('\n')
-	const lineRe = /^\s*(--c--[a-zA-Z0-9-]+)\s*:\s*(.+?);\s*$/
-	for (const line of lines) {
-		const m = line.match(lineRe)
-		if (m) {
-			declarations.push({ name: m[1], value: m[2] })
-		}
+	const re = /(--c--[a-zA-Z0-9-]+)\s*:\s*([^;]+);/g
+	let m
+	while ((m = re.exec(text)) !== null) {
+		const value = m[2]
+			.replace(/\s+/g, ' ')
+			.replace(/\(\s+/g, '(')
+			.replace(/\s+\)/g, ')')
+			.trim()
+		declarations.push({ name: m[1], value })
 	}
 	return declarations
 }
