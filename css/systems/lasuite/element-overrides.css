@@ -14,7 +14,18 @@
  */
 
 /* ============================================
-   HEADER — white surface, hairline border, brand accents
+   HEADER — La Suite Messages' top bar: white, flat, no rule
+   Measured on the live Messages app (localhost:8900, 2026-07-27): height 52px,
+   background #ffffff, box-shadow none, border-bottom 1px but TRANSPARENT (i.e.
+   no visible rule), padding 0 18px. Nextcloud's own 50px header height is a
+   platform given and is deliberately not changed.
+
+   ⚠️ position is NOT overridden here. Nextcloud ships #header as
+   `position: absolute; top: 0; z-index: 2000` — out of flow — so
+   #content-vue's `margin-top: 50px` clears it exactly and stock NC has a 0px
+   gap. Forcing `position: relative` put the header back INTO flow, so that
+   margin stacked on top of the header and produced ~54px of dead space that
+   neither La Suite (0px) nor stock Nextcloud (0px) has.
    ============================================ */
 
 #header,
@@ -22,10 +33,9 @@ header#header {
 	background-color: var(--lasuite-color-gray-000) !important;
 	background-image: none !important;
 	background: var(--lasuite-color-gray-000) !important;
-	/* gray-100 — the same hairline La Suite uses for every structural divider
-	   (measured on its sidebar border-right, 2026-07-27). */
-	border-bottom: 1px solid var(--lasuite-color-gray-100) !important;
-	position: relative !important;
+	border-bottom: 1px solid transparent !important;
+	box-shadow: none !important;
+	padding-inline: 18px !important;
 	overflow: visible !important;
 }
 
@@ -117,9 +127,12 @@ header#header {
 	/* gray-100 — matches the sidebar border-right measured on the live La Suite
 	   app (2026-07-27); every structural hairline uses this step. */
 	border-right: 1px solid var(--lasuite-color-gray-100) !important;
-	border-radius: var(--lasuite-border-radius) !important;
-	box-shadow: none !important;
-	margin-right: 16px !important;
+	/* La Suite's sidebar is flush and square (x=0, y=0, border-radius 0) with a
+	   soft right shadow rather than a rounded card. Pairs with the full-bleed
+	   #content-vue rule below. */
+	border-radius: 0 !important;
+	box-shadow: 10px 0 10px rgba(0, 0, 0, 0.05) !important;
+	margin-right: 0 !important;
 }
 
 #app-navigation.app-navigation--close,
@@ -152,11 +165,45 @@ header#header {
 }
 
 /* App content — flat white card, no shadow (Cunningham surfaces are flat). */
+/* ============================================
+   CANVAS + CARD — La Suite's figure/ground
+
+   La Suite paints its <main> grey (#f8f8f9 = gray-025, measured on the live
+   Docs app) and floats a WHITE card (border-radius 4px, no shadow, inset ~22px)
+   on top of it. Nextcloud paints the app content white, so a white list sits on
+   a white canvas and needs a hairline to be legible at all. Inverting the ground
+   is what makes the two read alike — it is the single highest-impact rule here.
+
+   The card targets the app's content root generically (`> *`) rather than an
+   app-specific class: verified on the live DOM that #app-content-vue has exactly
+   one full-width child per app (Files: `.files-list`). Using `> *` keeps this a
+   theme rule instead of a per-app hack.
+   ============================================ */
+
+/* The GREY canvas lives on the shell, not on .app-content. Putting it here means
+   the white sidebar and the white content card both sit ON the grey — exactly
+   La Suite's arrangement — and it yields ONE card rather than one per child.
+   (Carding `#app-content-vue > *` was tried and rejected: Nextcloud emits
+   several siblings there — `.hidden-visually`, `.files-list__header`,
+   `.files-list` — so it produced four disconnected cards.) */
+#content-vue.content,
+#content.content {
+	background-color: var(--lasuite-color-gray-025) !important;
+	border-radius: 0 !important;
+	margin: 50px 0 0 !important;
+	/* Nextcloud sizes this with a calc() that subtracts its own 8px side
+	   margins. Dropping the margins without resetting the width left a 16px
+	   strip of --color-background-plain showing down the right edge. */
+	width: 100% !important;
+}
+
+/* The single white card: the app's content area, inset from the grey. */
 #app-content,
 .app-content,
 #app-content-vue {
 	background: var(--lasuite-color-gray-000) !important;
 	border-radius: var(--lasuite-border-radius) !important;
+	margin: 16px 16px 16px 0 !important;
 }
 
 /* ============================================

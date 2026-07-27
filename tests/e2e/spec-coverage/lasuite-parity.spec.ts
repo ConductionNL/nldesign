@@ -61,13 +61,11 @@ interface ElementRef {
 // grays differ per set: the lasuite bundle loads brand-override.css (violet-
 // tinted), the cunningham bundle does not (neutral npm base). White (gray-000)
 // is #ffffff in both.
-// Structural hairlines (header rule, sidebar edge) are gray-100 — the divider
-// step measured on the live La Suite app (2026-07-27); the theme previously
-// used the darker gray-200.
-const GRAY_100: Record<'lasuite' | 'cunningham', string> = {
-	lasuite: '#e2e2ea', // brand-override.css — deployed violet-tinted (hairline borders)
-	cunningham: '#e1e2e5', // defaults.css neutral npm base
-}
+// NOTE on gray-100: it remains the structural hairline the sidebar draws as its
+// border-RIGHT. It is not asserted below because readComputedStyle() reads
+// border-BOTTOM only, and the header — the one element that used to carry a
+// gray-100 bottom rule — is now deliberately rule-less to match La Suite
+// Messages' flat top bar.
 const GRAY_300: Record<'lasuite' | 'cunningham', string> = {
 	lasuite: '#a9a9bf', // brand-override.css — deployed violet-tinted (input borders)
 	cunningham: '#a7acb2', // defaults.css neutral npm base
@@ -99,7 +97,6 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 	const brand650 = BRAND_650[set]
 	const brand550 = BRAND_550[set]
 	const brand050 = BRAND_050[set]
-	const gray100 = GRAY_100[set]
 	const gray300 = GRAY_300[set]
 	return [
 		{
@@ -141,12 +138,29 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 		},
 		{
 			name: 'header bar',
+			// La Suite Messages' top bar is white, flat and RULE-LESS: measured on
+			// the live app (localhost:8900, 2026-07-27) it carries a 1px bottom
+			// border whose colour is transparent, and box-shadow: none. The theme
+			// reproduces that, so there is deliberately no visible hairline here —
+			// only the border-box metrics are asserted, plus the white surface.
 			selector: '#header',
 			ref: {
 				backgroundColor: GRAY_000,
-				borderColor: gray100, // border-bottom-color
 				borderWidth: '1px', // border-bottom-width
 				borderStyle: 'solid', // border-bottom-style
+			},
+		},
+		{
+			name: 'app navigation sidebar',
+			// La Suite's sidebar is flush and SQUARE (measured x=0, y=0,
+			// border-radius 0) on a white surface, with a soft right shadow
+			// instead of a rounded card. Radius 0 is the assertable half of that;
+			// the shadow and the x=0 flush position are covered by the layout
+			// checks below rather than this colour/metric table.
+			selector: '#app-navigation-vue',
+			ref: {
+				backgroundColor: GRAY_000,
+				borderRadius: '0px',
 			},
 		},
 		{

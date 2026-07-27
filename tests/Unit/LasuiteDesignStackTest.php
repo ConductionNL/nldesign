@@ -732,4 +732,64 @@ class LasuiteDesignStackTest extends TestCase
             );
         }
     }//end testFontsLayerNeverUrlSourcesMarianne()
+
+
+    /**
+     * REGRESSION GUARD: the element-overrides layer must never force
+     * `position` on `#header`.
+     *
+     * Nextcloud ships `#header` as `position: absolute` (out of flow, z-index
+     * 2000), which is exactly what lets `#content-vue`'s `margin-top: 50px`
+     * clear it — stock Nextcloud therefore has a 0px gap between the header and
+     * the app content. An earlier revision of this layer forced
+     * `position: relative`, putting the header back INTO flow so that margin
+     * stacked on top of it and produced ~54px of dead space that neither
+     * La Suite (measured 0px) nor stock Nextcloud (measured 0px) has.
+     *
+     * @spec openspec/specs/lasuite-stack/spec.md
+     */
+    public function testElementOverridesNeverForcesHeaderPosition(): void
+    {
+        $overrides = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/element-overrides.css');
+
+        // Isolate the #header rule block and assert it declares no `position`.
+        $matched = preg_match('/^#header,\s*\n\s*header#header\s*\{(.*?)\}/ms', $overrides, $m);
+        $this->assertSame(1, $matched, 'Could not locate the #header rule block in element-overrides.css.');
+
+        $this->assertDoesNotMatchRegularExpression(
+            '/^\s*position\s*:/m',
+            $m[1],
+            'element-overrides.css must not set `position` on #header — Nextcloud needs it to stay '
+            .'`absolute` (out of flow) or a ~54px gap reappears between the header and app content.'
+        );
+    }//end testElementOverridesNeverForcesHeaderPosition()
+
+
+    /**
+     * The La Suite canvas/card inversion: the shell carries the grey ground and
+     * the app content is the white card floated on it.
+     *
+     * Measured on the live La Suite Docs app (2026-07-27): `<main>` is
+     * #f8f8f9 (gray-025) and the content card is #ffffff with a 4px radius.
+     * Nextcloud paints app content white on white, so without this inversion a
+     * list needs a hairline to be legible at all.
+     *
+     * @spec openspec/specs/lasuite-stack/spec.md
+     */
+    public function testElementOverridesInvertsCanvasAndCard(): void
+    {
+        $overrides = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/element-overrides.css');
+
+        $this->assertMatchesRegularExpression(
+            '/#content-vue\.content[^{]*\{[^}]*background-color:\s*var\(--lasuite-color-gray-025\)/ms',
+            $overrides,
+            'The shell (#content-vue.content) must carry the grey gray-025 canvas.'
+        );
+
+        $this->assertMatchesRegularExpression(
+            '/#app-content-vue\s*\{[^}]*background:\s*var\(--lasuite-color-gray-000\)/ms',
+            $overrides,
+            'The app content must be the white card floated on the grey canvas.'
+        );
+    }//end testElementOverridesInvertsCanvasAndCard()
 }//end class
