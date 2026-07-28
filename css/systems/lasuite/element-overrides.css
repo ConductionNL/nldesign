@@ -61,45 +61,72 @@ header#header {
 	opacity: 1 !important;
 }
 
-#header .header-end svg,
+/* Nextcloud ships every header glyph WHITE, because its own header is normally
+   a dark brand colour. On our white bar they render white-on-white and the bar
+   looks empty. Nextcloud's own mechanism for this is
+   --background-invert-if-bright, but that variable is reserved by REQ-CSS-007
+   (the dark-mode derivation depends on it), so the colour is set here directly.
+
+   These glyphs are Material SVGs whose `fill` resolves to `currentColor`, so
+   setting `color` recolours them exactly — and, unlike a filter, colour
+   INHERITS, which means a descendant can opt back out.
+
+   An earlier revision used `filter: invert(1) brightness(0) contrast(100)`
+   here. That was wrong twice over:
+
+     1. `brightness(0)` forces every glyph to PURE BLACK. Measured against La
+        Suite Messages, nothing in its header is #000: actionable icons are
+        brand violet rgb(94,92,208) and text is gray-850 rgb(37,37,47).
+
+     2. A filter on an ancestor rasterises its ENTIRE subtree, and no
+        descendant `filter: none` can undo that. `.button-vue__icon` wraps the
+        user-menu trigger, so the avatar inside it was flattened to a solid
+        black disc — the exclusion list below it could never have worked, no
+        matter which avatar selector it named. Colour inherits; filters do not
+        un-inherit. */
 #header .header-end .button-vue__icon,
-#header .header-end .icon-vue {
-	filter: invert(1) brightness(0) contrast(100) !important;
-	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
-}
-
-/* Preserve avatar / user-status colour on the white bar. */
-#header .header-end .avatardiv img,
-#header .header-end .user-status-icon svg {
-	filter: none !important;
-	-webkit-filter: none !important;
-}
-
-/* LEFT of the bar — the Nextcloud logo, the app-menu waffle and the current
-   app's icon. Nextcloud ships all three WHITE because its own header is a dark
-   brand colour; on our white bar they render white-on-white and the top-left
-   corner looks empty. The same inversion the header-end icons already get is
-   applied here so the logo / menu / app icon are visible again.
-
-   Nextcloud's own mechanism for this is --background-invert-if-bright, but
-   that variable is reserved by REQ-CSS-007 (its dark-mode derivation depends
-   on it), so the filter is applied directly to the elements instead. */
-#header .logo,
-#header .header-start svg,
+#header .header-end .icon-vue,
+#header .header-end svg,
 #header .header-start .button-vue__icon,
 #header .header-start .icon-vue,
-#header nav.app-menu svg,
+#header .header-start svg,
+#header .app-menu__waffle,
 #header .app-menu__waffle svg {
-	filter: invert(1) brightness(0) contrast(100) !important;
-	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
-}
-
-/* …but never invert the user's own avatar or a coloured app icon that already
-   reads correctly on white. */
-#header .header-start .avatardiv img,
-#header .header-start img[src*="avatar"] {
+	color: var(--lasuite-color-brand-550) !important;
 	filter: none !important;
 	-webkit-filter: none !important;
+}
+
+/* The avatar carries Nextcloud's per-user generated colour and the user's own
+   photo. It must inherit nothing from the tinting above — La Suite's own
+   avatar is a coloured disc with near-white initials, never a monochrome
+   glyph. `color` is scoped back to the initials so they stay legible on that
+   generated background. */
+#header .avatardiv,
+#header .avatardiv *,
+#header [class*="avatar" i],
+#header [class*="avatar" i] * {
+	filter: none !important;
+	-webkit-filter: none !important;
+	color: var(--lasuite-color-gray-000) !important;
+}
+
+/* User-status emoji/icon keeps its own colours. */
+#header .user-status-icon,
+#header .user-status-icon * {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
+/* The Nextcloud logo is a background-IMAGE (core/img/logo/logo.svg) shipped in
+   white, so `color` cannot reach it and a filter is the only lever available.
+   It contains no avatar, so the subtree hazard described above does not apply
+   here. `brightness(0)` renders it as a dark wordmark, matching the gray-850
+   header text rather than the brand tint used for actionable icons. */
+#header .logo,
+#header .logo-icon {
+	filter: brightness(0) !important;
+	-webkit-filter: brightness(0) !important;
 }
 
 /* App menu — dark on white, brand-650 active indicator (Cunningham accent). */
@@ -170,6 +197,7 @@ header#header {
 }
 
 #app-navigation.app-navigation--close,
+#app-navigation-vue.app-navigation--close,
 .app-navigation.app-navigation--close {
 	margin-right: 0 !important;
 }
@@ -183,19 +211,119 @@ header#header {
 	background-color: var(--lasuite-color-gray-050) !important;
 }
 
+/* ACTIVE NAVIGATION ENTRY
+
+   La Suite marks the current item with a neutral 5% wash and nothing else.
+   Measured on La Suite Messages (.mailbox__item-row, active):
+
+       background   rgba(27, 27, 35, 0.05)
+       border-radius 4px
+       border-left  0 — none
+       font-weight  400   (identical to the inactive row)
+       color        rgb(37, 37, 47)  (identical to the inactive row)
+
+   Active and inactive differ by the wash ALONE. Nextcloud instead stacks three
+   separate signals: a 16%-alpha brand tint, a label bolded to 600, and a 3px
+   brand rail. Matching La Suite means removing two of the three.
+
+   The wash is deliberately a literal rgba rather than a token: it is a
+   translucent neutral, and the gray ramp only carries opaque steps
+   (gray-050 #f0f0f3 is the nearest, but opaque it reads heavier over the
+   white card and loses the tint of whatever sits beneath it).
+
+   SELECTOR / SPECIFICITY NOTE — why these rules look repetitive:
+
+   Nextcloud 34 renders the navigation into `#app-navigation-vue`. There is no
+   `#app-navigation` element at all, so every `#app-navigation …` rule written
+   against the older DOM matches nothing. That left only the bare
+   `.app-navigation-entry.active` selector (0,2,0) in play, and nc-vue injects a
+   SCOPED rule that outguns it:
+
+       .app-navigation-entry:not(…--legacy).active[data-v-…]  (0,4,0) !important
+           background-color: color-mix(in srgb, var(--color-primary-element) 16%, transparent)
+
+   Both carry `!important`, so specificity decides and nc-vue won — which is why
+   the row kept its brand tint no matter what this file said. The id-prefixed
+   selectors below reach (1,2,0) and win outright; the class-repeated fallback
+   reaches (0,5,0) for any navigation rendered without either id. */
+#app-navigation-vue .app-navigation-entry.active,
+#app-navigation-vue .app-navigation-entry--active,
 #app-navigation .app-navigation-entry.active,
 #app-navigation .app-navigation-entry--active,
-.app-navigation-entry.active,
-.app-navigation-entry--active {
-	background: var(--lasuite-color-brand-050) !important;
+.app-navigation-entry.app-navigation-entry.active.active.active,
+.app-navigation-entry.app-navigation-entry--active.app-navigation-entry--active {
+	background: rgba(27, 27, 35, 0.05) !important;
+	background-color: rgba(27, 27, 35, 0.05) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
+/* The brand rail is a ::before pseudo-element (3px, absolutely positioned at
+   left: 0), NOT a border property — `border-left: none` does not touch it and
+   an earlier attempt to neutralise it that way silently did nothing. It has to
+   be removed as a pseudo-element. */
+#app-navigation-vue .app-navigation-entry.active::before,
+#app-navigation-vue .app-navigation-entry--active::before,
+#app-navigation .app-navigation-entry.active::before,
+#app-navigation .app-navigation-entry--active::before,
+.app-navigation-entry.app-navigation-entry.active.active.active::before,
+.app-navigation-entry.app-navigation-entry--active.app-navigation-entry--active::before {
+	content: none !important;
+	display: none !important;
+}
+
+/* Label keeps the ordinary text colour and weight in BOTH states — the wash is
+   the only affordance, exactly as La Suite does it. */
+#app-navigation-vue .app-navigation-entry.active a,
+#app-navigation-vue .app-navigation-entry.active .app-navigation-entry-link,
+#app-navigation-vue .app-navigation-entry.active .app-navigation-entry__name,
+#app-navigation-vue .app-navigation-entry--active a,
 #app-navigation .app-navigation-entry.active a,
-.app-navigation-entry.active a,
-.app-navigation-entry--active a {
-	color: var(--lasuite-color-brand-650) !important;
-	font-weight: 600 !important;
+#app-navigation .app-navigation-entry.active .app-navigation-entry-link,
+#app-navigation .app-navigation-entry.active .app-navigation-entry__name,
+.app-navigation-entry.app-navigation-entry.active.active a,
+.app-navigation-entry.app-navigation-entry.active.active .app-navigation-entry-link,
+.app-navigation-entry.app-navigation-entry.active.active .app-navigation-entry__name {
+	color: var(--lasuite-color-gray-850) !important;
+	font-weight: 400 !important;
+}
+
+/* Inactive entries: Nextcloud ships these at 500, La Suite at 400. Levelling
+   them is what makes the wash the only difference between the two states. */
+#app-navigation-vue .app-navigation-entry .app-navigation-entry-link,
+#app-navigation-vue .app-navigation-entry .app-navigation-entry__name,
+#app-navigation .app-navigation-entry .app-navigation-entry-link,
+#app-navigation .app-navigation-entry .app-navigation-entry__name,
+.app-navigation-entry.app-navigation-entry .app-navigation-entry-link,
+.app-navigation-entry.app-navigation-entry .app-navigation-entry__name {
+	font-weight: 400 !important;
+}
+
+/* SELECTED LIST ROW (NcListItem)
+
+   The same two divergences as the navigation entry, on a different component.
+   `.list-item` is the shared nc-vue row used by Contacts, Mail and every other
+   list-detail app, so it is the row the user actually spends the day looking
+   at. Selection is marked on the WRAPPER (`.list-item__wrapper--active`), and
+   nc-vue paints the child `.list-item` with `--color-primary-element-light`
+   (#eef1fa here) plus a 3px brand rail via ::before.
+
+   La Suite marks a selected row with the same neutral 5% wash it uses in the
+   sidebar, and no rail. Keeping the two components consistent matters more
+   than either one in isolation: with the sidebar fixed and this left alone,
+   one selected row would read grey and the other lavender on the same screen. */
+.list-item__wrapper--active .list-item,
+.list-item__wrapper.active .list-item,
+.list-item__wrapper--active .list-item:hover,
+.list-item__wrapper--active .list-item:focus-within {
+	background-color: rgba(27, 27, 35, 0.05) !important;
+}
+
+.list-item__wrapper--active .list-item::before,
+.list-item__wrapper.active .list-item::before,
+.list-item__wrapper--active::before,
+.list-item__wrapper.active::before {
+	content: none !important;
+	display: none !important;
 }
 
 /* App content — flat white card, no shadow (Cunningham surfaces are flat). */
