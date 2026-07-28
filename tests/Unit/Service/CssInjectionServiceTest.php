@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Tests\Unit\Service;
 
 use OCA\NLDesign\Service\CssInjectionService;
+use OCA\NLDesign\Service\CustomCssService;
 use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\FontService;
@@ -58,6 +59,13 @@ class CssInjectionServiceTest extends TestCase
      * @var CustomOverridesService&MockObject
      */
     private $customOverridesService;
+
+    /**
+     * Gates and reads the freeform custom CSS layer.
+     *
+     * @var CustomCssService|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $customCssService;
 
     /**
      * The font service mock.
@@ -110,6 +118,7 @@ class CssInjectionServiceTest extends TestCase
         $this->config                 = $this->createMock(IConfig::class);
         $this->designSystemService    = $this->createMock(DesignSystemService::class);
         $this->customOverridesService = $this->createMock(CustomOverridesService::class);
+        $this->customCssService       = $this->createMock(CustomCssService::class);
         $this->fontService            = $this->createMock(FontService::class);
         $this->urlGenerator           = $this->createMock(IURLGenerator::class);
         $this->groupThemingService    = $this->createMock(GroupThemingService::class);
@@ -150,6 +159,7 @@ class CssInjectionServiceTest extends TestCase
                     $this->config,
                     $this->designSystemService,
                     $this->customOverridesService,
+                    $this->customCssService,
                     $this->fontService,
                     $this->urlGenerator,
                     $this->groupThemingService,
@@ -657,4 +667,73 @@ class CssInjectionServiceTest extends TestCase
 
         $this->assertContains('custom-overrides', $styleLog);
     }//end testUnknownContextAlwaysThemed()
+
+    /**
+     * The freeform layer is emitted AFTER custom-overrides so administrator
+     * intent wins the cascade.
+     *
+     * @spec openspec/specs/custom-css-freeform/spec.md
+     */
+    public function testCustomCssEmittedLastWhenEnabledAndPresent(): void
+    {
+        $this->configureAppValues();
+        $this->designSystemService->method('getTokenSetMeta')->willReturn([]);
+        $this->designSystemService->method('getDesignSystem')->willReturn(['stylesheets' => []]);
+        $this->customCssService->method('isEnabled')->willReturn(true);
+        $this->customCssService->method('hasContent')->willReturn(true);
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertContains('custom-css', $styleLog);
+        $this->assertGreaterThan(
+            array_search('custom-overrides', $styleLog, true),
+            array_search('custom-css', $styleLog, true),
+            'custom-css must be emitted AFTER custom-overrides so it wins the cascade.'
+        );
+    }//end testCustomCssEmittedLastWhenEnabledAndPresent()
+
+    /**
+     * An instance that never opted in loads nothing, even if a file exists.
+     *
+     * @spec openspec/specs/custom-css-freeform/spec.md
+     */
+    public function testCustomCssNotEmittedWhenDisabled(): void
+    {
+        $this->configureAppValues();
+        $this->designSystemService->method('getTokenSetMeta')->willReturn([]);
+        $this->designSystemService->method('getDesignSystem')->willReturn(['stylesheets' => []]);
+        $this->customCssService->method('isEnabled')->willReturn(false);
+        $this->customCssService->method('hasContent')->willReturn(true);
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertNotContains('custom-css', $styleLog);
+    }//end testCustomCssNotEmittedWhenDisabled()
+
+    /**
+     * Enabled but empty must not emit a pointless <link>.
+     *
+     * @spec openspec/specs/custom-css-freeform/spec.md
+     */
+    public function testCustomCssNotEmittedWhenEmpty(): void
+    {
+        $this->configureAppValues();
+        $this->designSystemService->method('getTokenSetMeta')->willReturn([]);
+        $this->designSystemService->method('getDesignSystem')->willReturn(['stylesheets' => []]);
+        $this->customCssService->method('isEnabled')->willReturn(true);
+        $this->customCssService->method('hasContent')->willReturn(false);
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertNotContains('custom-css', $styleLog);
+    }//end testCustomCssNotEmittedWhenEmpty()
 }//end class

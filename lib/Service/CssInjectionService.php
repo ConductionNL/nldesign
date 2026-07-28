@@ -89,6 +89,13 @@ class CssInjectionService
     private CustomOverridesService $overridesService;
 
     /**
+     * Gates and reads the freeform custom CSS layer.
+     *
+     * @var CustomCssService
+     */
+    private CustomCssService $customCssService;
+
+    /**
      * Resolves admin-uploaded custom fonts.
      *
      * @var FontService
@@ -137,6 +144,7 @@ class CssInjectionService
      * @param IConfig                $config              The config service.
      * @param DesignSystemService    $designSystemService The design system resolver.
      * @param CustomOverridesService $overridesService    The custom overrides file service.
+     * @param CustomCssService       $customCssService    The freeform custom CSS service.
      * @param FontService            $fontService         The custom font resolver.
      * @param IURLGenerator          $urlGenerator        The URL generator.
      * @param GroupThemingService    $groupThemingService The per-group token-set resolver.
@@ -153,6 +161,7 @@ class CssInjectionService
         IConfig $config,
         DesignSystemService $designSystemService,
         CustomOverridesService $overridesService,
+        CustomCssService $customCssService,
         FontService $fontService,
         IURLGenerator $urlGenerator,
         GroupThemingService $groupThemingService,
@@ -163,6 +172,7 @@ class CssInjectionService
         $this->config = $config;
         $this->designSystemService = $designSystemService;
         $this->overridesService    = $overridesService;
+        $this->customCssService    = $customCssService;
         $this->fontService         = $fontService;
         $this->urlGenerator        = $urlGenerator;
         $this->groupThemingService = $groupThemingService;
@@ -243,6 +253,16 @@ class CssInjectionService
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
         $this->overridesService->ensureExists();
         $this->emitStyle(file: 'custom-overrides');
+
+        // 4.1 Freeform custom CSS — admin-authored arbitrary rules. Emitted
+        // AFTER custom-overrides so administrator intent wins the cascade, and
+        // only when the feature is switched on AND something is actually
+        // stored, so an instance that never opts in loads nothing at all.
+        if ($this->customCssService->isEnabled() === true
+            && $this->customCssService->hasContent() === true
+        ) {
+            $this->emitStyle(file: 'custom-css');
+        }
 
         // 4.5 Custom fonts — admin-uploaded, self-hosted webfonts. Injected as
         // a <link rel="stylesheet"> (not \OCP\Util::addStyle(), because the

@@ -2761,5 +2761,84 @@ function nldesignAdminMain() {
 	// Initialise the upstream freshness panel on page load.
 	initUpstreamFreshness();
 
+	/**
+	 * Freeform custom CSS panel.
+	 *
+	 * The server is the authority on what is acceptable: this only relays the
+	 * payload and renders whatever validation errors come back. Rejections
+	 * arrive as HTTP 422 with an `errors` array and nothing is written, so the
+	 * textarea keeps the admin's text for correction rather than clearing it.
+	 */
+	function initCustomCss() {
+		var textarea = document.getElementById('nldesign-custom-css-input');
+		var toggle = document.getElementById('nldesign-custom-css-enabled');
+		var saveBtn = document.getElementById('nldesign-custom-css-save');
+		var feedback = document.getElementById('nldesign-custom-css-feedback');
+
+		if (!textarea || !toggle || !saveBtn) {
+			return;
+		}
+
+		var url = OC.generateUrl('/apps/nldesign/settings/custom-css');
+
+		function setFeedback(message, isError) {
+			if (!feedback) {
+				return;
+			}
+			feedback.textContent = message;
+			feedback.style.color = isError ? 'var(--color-error, #d80000)' : '';
+		}
+
+		fetch(url, { headers: { 'requesttoken': OC.requestToken } })
+			.then(function(res) { return res.json(); })
+			.then(function(data) {
+				textarea.value = data.css || '';
+				toggle.checked = !!data.enabled;
+			})
+			.catch(function(err) {
+				console.error('Error loading custom CSS:', err);
+			});
+
+		saveBtn.addEventListener('click', function() {
+			setFeedback('', false);
+			saveBtn.disabled = true;
+
+			fetch(url, {
+				method: 'POST',
+				headers: {
+					'requesttoken': OC.requestToken,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ css: textarea.value, enabled: toggle.checked })
+			})
+				.then(function(res) {
+					return res.json().then(function(body) {
+						return { status: res.status, body: body };
+					});
+				})
+				.then(function(result) {
+					if (result.status === 422 && result.body.errors) {
+						// Fail-closed: nothing was written. Show every reason.
+						setFeedback(result.body.errors.join(' '), true);
+						return;
+					}
+					if (result.status !== 200) {
+						setFeedback(result.body.error || 'Could not save custom CSS.', true);
+						return;
+					}
+					setFeedback(t('nldesign', 'Saved. Reload to see the change.'), false);
+				})
+				.catch(function(err) {
+					console.error('Error saving custom CSS:', err);
+					setFeedback('Could not save custom CSS.', true);
+				})
+				.then(function() {
+					saveBtn.disabled = false;
+				});
+		});
+	}
+
+	initCustomCss();
+
 }
 })();

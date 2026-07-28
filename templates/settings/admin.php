@@ -423,6 +423,30 @@ style('nldesign', 'admin');
 			 aria-label="<?php p($l->t('Upstream token updates')); ?>"></div>
 	</div>
 
+	<!-- Freeform custom CSS — admin-authored arbitrary rules, sanitised
+	     server-side and emitted after every other theming layer. -->
+	<div class="nldesign-custom-css" id="nldesign-custom-css" style="margin-top:2em">
+		<h3><?php p($l->t('Custom CSS')); ?></h3>
+		<p class="settings-hint">
+			<?php p($l->t('Freeform CSS applied after every other theming layer, so it always wins. Use it for tweaks the token editor cannot express.')); ?>
+		</p>
+		<p class="settings-hint">
+			<?php p($l->t('For safety this is checked before it is saved: @import, external url() references, script-execution vectors and HTML tags are refused, as are the background variables Nextcloud needs for dark mode. Relative paths and data: URIs are allowed. Every save is written to the audit log.')); ?>
+		</p>
+		<p>
+			<input type="checkbox" id="nldesign-custom-css-enabled" class="checkbox">
+			<label for="nldesign-custom-css-enabled"><?php p($l->t('Enable custom CSS')); ?></label>
+		</p>
+		<label for="nldesign-custom-css-input" class="hidden-visually"><?php p($l->t('Custom CSS')); ?></label>
+		<textarea id="nldesign-custom-css-input" rows="10" spellcheck="false"
+				  style="width:100%;font-family:monospace;font-size:13px"
+				  placeholder=".app-content { padding: 8px; }"></textarea>
+		<button type="button" id="nldesign-custom-css-save" class="button primary">
+			<?php p($l->t('Save custom CSS')); ?>
+		</button>
+		<span id="nldesign-custom-css-feedback" role="status" aria-live="polite"></span>
+	</div>
+
 	<!-- Theming audit log — who changed which theming setting, from what, to
 	     what, and when. Evidence for accessibility/WCAG-EM audits. -->
 	<div class="nldesign-audit-log" id="nldesign-audit-log" style="margin-top:2em">

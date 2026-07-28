@@ -44,6 +44,11 @@ return [
 		['name' => 'overrides#getOverrides', 'url' => '/settings/overrides', 'verb' => 'GET'],
 		['name' => 'overrides#setOverrides', 'url' => '/settings/overrides', 'verb' => 'POST'],
 		// Import/export.
+		// Freeform custom CSS — admin-authored arbitrary rules, sanitised
+		// server-side before persisting. Separate from the token overrides
+		// above: different trust profile, different audit actions.
+		['name' => 'customCss#getCustomCss', 'url' => '/settings/custom-css', 'verb' => 'GET'],
+		['name' => 'customCss#setCustomCss', 'url' => '/settings/custom-css', 'verb' => 'POST'],
 		['name' => 'overrides#exportOverrides', 'url' => '/settings/overrides/export', 'verb' => 'GET'],
 		['name' => 'overrides#importOverrides', 'url' => '/settings/overrides/import', 'verb' => 'POST'],
 		// Token set preview for apply dialog.
