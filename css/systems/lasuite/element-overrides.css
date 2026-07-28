@@ -75,10 +75,44 @@ header#header {
 	-webkit-filter: none !important;
 }
 
+/* LEFT of the bar — the Nextcloud logo, the app-menu waffle and the current
+   app's icon. Nextcloud ships all three WHITE because its own header is a dark
+   brand colour; on our white bar they render white-on-white and the top-left
+   corner looks empty. The same inversion the header-end icons already get is
+   applied here so the logo / menu / app icon are visible again.
+
+   Nextcloud's own mechanism for this is --background-invert-if-bright, but
+   that variable is reserved by REQ-CSS-007 (its dark-mode derivation depends
+   on it), so the filter is applied directly to the elements instead. */
+#header .logo,
+#header .header-start svg,
+#header .header-start .button-vue__icon,
+#header .header-start .icon-vue,
+#header nav.app-menu svg,
+#header .app-menu__waffle svg {
+	filter: invert(1) brightness(0) contrast(100) !important;
+	-webkit-filter: invert(1) brightness(0) contrast(100) !important;
+}
+
+/* …but never invert the user's own avatar or a coloured app icon that already
+   reads correctly on white. */
+#header .header-start .avatardiv img,
+#header .header-start img[src*="avatar"] {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
+
 /* App menu — dark on white, brand-650 active indicator (Cunningham accent). */
 #header nav.app-menu a,
 #header nav.app-menu .app-menu-entry__link,
-#header nav.app-menu .app-menu-entry__label {
+#header nav.app-menu .app-menu-entry__label,
+/* NC34 renders the CURRENT app's name through these classes rather than
+   .app-menu-entry__label. They inherit Nextcloud's white header foreground, so
+   without them the app name ("Files") is present in the DOM but invisible on
+   our white bar — the top-left corner just looks empty. */
+#header .app-menu__current-app,
+#header .app-menu__current-app-name,
+#header .app-menu__current-app .button-vue__text {
 	color: var(--lasuite-color-gray-900) !important;
 	font-weight: 400 !important;
 }
@@ -197,13 +231,36 @@ header#header {
 	width: 100% !important;
 }
 
-/* The single white card: the app's content area, inset from the grey. */
+/* The single white card: the app's content area, inset from the grey.
+   22px on every side — measured on the live La Suite app, whose <main> starts
+   at x=300 and whose card starts at x=322, with the same 22px on the right.
+   The LEFT inset matters as much as the others: without it the card butts
+   straight against the sidebar and no grey shows between them, which is the
+   most visible way the two layouts diverge. */
 #app-content,
 .app-content,
 #app-content-vue {
 	background: var(--lasuite-color-gray-000) !important;
 	border-radius: var(--lasuite-border-radius) !important;
-	margin: 16px 16px 16px 0 !important;
+	margin: 22px !important;
+}
+
+/* CARD HEADER BAND — La Suite separates the card's title row from the content
+   beneath it with a 1px gray-100 rule and 12px/24px padding (measured live: the
+   "All docs" title sits in a div with exactly that border and padding).
+   Nextcloud's equivalent row is the breadcrumb — its own <h1> is
+   .hidden-visually — so the rule is applied there.
+
+   Deliberately NOT restyled: the breadcrumb's 15px/400 type. La Suite's title
+   is 22px/700, but a Nextcloud breadcrumb is a PATH that can run several levels
+   deep ("All files › Documents › 2026"); rendering that at title weight would
+   misrepresent it as a heading. The rule and the spacing are the transferable
+   part of La Suite's treatment — the type scale is not. */
+#app-content-vue .breadcrumb,
+#app-content-vue [class*="__breadcrumbs"],
+.app-content .breadcrumb {
+	border-bottom: 1px solid var(--lasuite-color-gray-100) !important;
+	padding: 12px 24px !important;
 }
 
 /* ============================================
