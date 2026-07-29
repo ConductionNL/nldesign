@@ -118,28 +118,110 @@ header#header {
 	-webkit-filter: none !important;
 }
 
-/* The Nextcloud logo is a background-IMAGE (core/img/logo/logo.svg) shipped in
-   white, so `color` cannot reach it and a filter is the only lever available.
-   It contains no avatar, so the subtree hazard described above does not apply
-   here. `brightness(0)` renders it as a dark wordmark, matching the gray-850
-   header text rather than the brand tint used for actionable icons. */
+/* The Nextcloud logo is a background-IMAGE (core/img/logo/logo.svg), so `color`
+   cannot reach it. An earlier revision used `filter: brightness(0)`, which
+   renders it PURE BLACK — the same complaint as the glyphs above, and nothing
+   in La Suite's header is black: its wordmark is brand violet.
+
+   A filter cannot tint an arbitrary image to an exact colour (the usual
+   hue-rotate chains are approximations that drift). Masking can: the SVG
+   becomes the alpha channel and the background paints the colour, so the result
+   is exactly brand-550 with no colour maths at all.
+
+   The URL is relative to THIS stylesheet
+   (css/systems/lasuite/ → five levels up is the server root), so it keeps
+   working on instances installed under a sub-path, where a root-relative
+   `/core/…` would break. */
 #header .logo,
 #header .logo-icon {
-	filter: brightness(0) !important;
-	-webkit-filter: brightness(0) !important;
+	background-color: var(--lasuite-color-brand-550) !important;
+	background-image: none !important;
+	filter: none !important;
+	-webkit-filter: none !important;
+	-webkit-mask: url('../../../../../core/img/logo/logo.svg') no-repeat center / contain !important;
+	mask: url('../../../../../core/img/logo/logo.svg') no-repeat center / contain !important;
 }
 
-/* App menu — dark on white, brand-650 active indicator (Cunningham accent). */
+/* CURRENT APP NAME — La Suite sets its product wordmark noticeably larger than
+   Nextcloud sets its app name (measured: the Messages wordmark reads ~20px
+   semibold violet, against Nextcloud's 15px regular gray-900). Matching the
+   visual weight is what makes the two headers read alike; the two strings are
+   not structurally the same thing (product name vs current app), so this is a
+   deliberate visual match rather than a like-for-like mapping. */
+#header .app-menu__current-app-name,
+#header .app-menu__current-app .button-vue__text,
+#header .header-start .header-appname {
+	color: var(--lasuite-color-brand-550) !important;
+	font-size: 20px !important;
+	font-weight: 600 !important;
+	letter-spacing: -0.01em !important;
+}
+
+/* UNIFIED SEARCH — Nextcloud styles this for a dark header, so on our white bar
+   the placeholder rendered WHITE-ON-WHITE and the control had no visible edge
+   at all. Measured on La Suite Messages:
+
+       container   background #f8f8f9 (gray-025), 1px solid #d3d4e0,
+                   border-radius 4px, height 34
+       input       transparent, colour gray-850, 14px / weight 500
+       placeholder rgb(117,117,117)
+
+   The border uses gray-100, the step this file already uses for every
+   structural hairline (see the sidebar rule), rather than the measured
+   #d3d4e0 — that value falls between two ramp steps and consistency with the
+   rest of the theme is worth more than matching one control exactly. */
+#header .unified-search-input,
+#header .unified-search-input__button,
+#header .unified-search__input {
+	background-color: var(--lasuite-color-gray-025) !important;
+	border: 1px solid var(--lasuite-color-gray-100) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+	color: var(--lasuite-color-gray-850) !important;
+	box-shadow: none !important;
+	/* Nextcloud stretches the control to the full 50px header height; La Suite's
+	   is a 34px field centred in the bar. Height alone is not enough — the
+	   element is absolutely positioned, so it also has to be re-centred. */
+	block-size: 34px !important;
+	inset-block-start: 8px !important;
+	min-block-size: 0 !important;
+}
+
+#header .unified-search-input__label,
+#header .unified-search-input input::placeholder,
+#header .unified-search__input::placeholder {
+	color: var(--lasuite-color-gray-500) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+}
+
+#header .unified-search-input input,
+#header .unified-search-input__button .button-vue__text {
+	background-color: transparent !important;
+	border: 0 !important;
+	color: var(--lasuite-color-gray-850) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+}
+
+/* The magnifier inside the field is a neutral affordance in La Suite, not a
+   brand-tinted action, so it opts out of the brand colour set above. */
+#header .unified-search-input svg,
+#header .unified-search-input .button-vue__icon {
+	color: var(--lasuite-color-gray-500) !important;
+}
+
+/* App menu — dark on white, brand-650 active indicator (Cunningham accent).
+
+   The CURRENT app's name is deliberately NOT in this list. NC34 renders it
+   through `.app-menu__current-app-name`, and it used to be included here so it
+   would not sit white-on-white — but this block re-declares `color` and
+   `font-weight` with the same specificity LATER in the file than the wordmark
+   rule above, so it silently overrode it and the name stayed 15px gray-900 no
+   matter what that rule said. Sizing and colouring the current app name now
+   happens in exactly one place. */
 #header nav.app-menu a,
 #header nav.app-menu .app-menu-entry__link,
-#header nav.app-menu .app-menu-entry__label,
-/* NC34 renders the CURRENT app's name through these classes rather than
-   .app-menu-entry__label. They inherit Nextcloud's white header foreground, so
-   without them the app name ("Files") is present in the DOM but invisible on
-   our white bar — the top-left corner just looks empty. */
-#header .app-menu__current-app,
-#header .app-menu__current-app-name,
-#header .app-menu__current-app .button-vue__text {
+#header nav.app-menu .app-menu-entry__label {
 	color: var(--lasuite-color-gray-900) !important;
 	font-weight: 400 !important;
 }
