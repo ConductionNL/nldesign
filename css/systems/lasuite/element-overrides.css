@@ -347,15 +347,65 @@ header#header {
    La Suite's arrangement — and it yields ONE card rather than one per child.
    (Carding `#app-content-vue > *` was tried and rejected: Nextcloud emits
    several siblings there — `.hidden-visually`, `.files-list__header`,
-   `.files-list` — so it produced four disconnected cards.) */
-#content-vue.content,
+   `.files-list` — so it produced four disconnected cards.)
+
+   TWO NESTED SHELLS, NOT ONE — and only one of them carries `.content`.
+
+   Nextcloud 34 renders:
+
+       <div id="content" class="app-contacts">          <-- OUTER, no `content` class
+         <div id="content-vue" class="content app-…">   <-- INNER, has it
+
+   An earlier revision selected `#content.content`, which matches NOTHING: the
+   outer shell kept Nextcloud's stock `margin: 50px 8px 8px` and
+   `border-radius: 16px`, so the body colour showed through as an 8px frame down
+   the left and along the bottom. Meanwhile the inner shell DID match and was
+   given `margin-top: 50px` — on top of the 50px the outer shell already has to
+   clear the absolutely-positioned header — so the content started at y=100
+   instead of y=50 and a 50px band of body colour opened up beneath the header.
+
+   Both artefacts were previously mis-attributed to `--color-background-plain`
+   being reserved by REQ-CSS-007. That was wrong. The reserved variable is only
+   ever VISIBLE here because these two shells left it exposed; no other
+   Nextcloud app shows a band under the header. Nothing about dark-mode
+   derivation prevents closing it — the shells simply have to be sized right.
+
+   So: the OUTER shell clears the header and nothing else; the INNER shell adds
+   no offset of its own and paints the grey canvas. */
+#content,
 #content.content {
+	border-radius: 0 !important;
+	/* `position: fixed` with `inset: 0 0 8px` — the 8px is a bottom OFFSET, not
+	   a height, so zeroing the margin alone still left an 8px strip of body
+	   colour along the bottom edge. Zeroing only the bottom inset then
+	   bottom-ANCHORED the box (its height stayed pinned), pushing the top edge
+	   down by the same 8px. Pinning all four insets and letting the height
+	   resolve from them is what actually fills the frame: top 0 + the 50px
+	   margin clears the header, bottom 0 reaches the viewport floor. */
+	height: auto !important;
+	inset: 0 !important;
+	margin: 50px 0 0 !important;
+	width: 100% !important;
+}
+
+#content-vue,
+#content-vue.content {
 	background-color: var(--lasuite-color-gray-025) !important;
 	border-radius: 0 !important;
-	margin: 50px 0 0 !important;
+	/* Fill the outer shell exactly. Nextcloud sizes this 8px short (it expects
+	   the outer shell's 8px bottom inset), which left a strip of body colour
+	   along the bottom edge once the shell itself was made full-bleed.
+	   `height: 100%` is NOT usable here: the outer shell is `position: fixed`,
+	   so the percentage resolves against the initial containing block (the full
+	   viewport) rather than the shell, overflowing 50px past the fold. The
+	   header height is the only offset in play, so subtract it explicitly. */
+	height: calc(100vh - var(--header-height, 50px)) !important;
+	/* No top margin: the outer #content already clears the 50px header. Adding
+	   it here is what produced the band. */
+	margin: 0 !important;
 	/* Nextcloud sizes this with a calc() that subtracts its own 8px side
 	   margins. Dropping the margins without resetting the width left a 16px
-	   strip of --color-background-plain showing down the right edge. */
+	   strip of body colour showing down the right edge. */
 	width: 100% !important;
 }
 
