@@ -106,14 +106,29 @@ function allowedReason(selector: string): string | null {
 
 test.describe('lasuite selector liveness', () => {
 	test('every element-overrides selector matches something on at least one surface', async ({ page }) => {
-		test.slow()
+		// Six surfaces, each a full Vue app boot. test.slow() alone is not enough
+		// on a loaded dev instance, so the budget is set explicitly.
+		test.setTimeout(300_000)
 
 		const liveEverywhere = new Set<string>()
 		let allSelectors: string[] = []
 		let sheetSeenOnce = false
 
+		const unreachable: string[] = []
+
 		for (const surface of SURFACES) {
-			await page.goto(surface.path, { waitUntil: 'domcontentloaded' })
+			// A surface that will not load on a loaded dev box must not fail the
+			// guard: union semantics mean a missing surface can only make the
+			// result MORE conservative (fewer selectors proven live), never produce
+			// a false accusation. Unreachable surfaces are reported, not fatal —
+			// a guard that breaks when the instance is slow gets switched off, and
+			// then it protects nothing.
+			try {
+				await page.goto(surface.path, { waitUntil: 'domcontentloaded', timeout: 45_000 })
+			} catch {
+				unreachable.push(surface.name)
+				continue
+			}
 			// Vue apps mount after load; give the shell a moment to render.
 			await page.waitForTimeout(2500)
 
@@ -170,6 +185,16 @@ test.describe('lasuite selector liveness', () => {
 			!sheetSeenOnce,
 			'lasuite element-overrides.css was not served on any surface — activate the lasuite token set to run this guard',
 		)
+
+		if (unreachable.length > 0) {
+			// Surfaced rather than swallowed: a run that silently surveyed half the
+			// surfaces looks identical to a clean one otherwise.
+			console.warn(`[selector-liveness] surfaces that did not load: ${unreachable.join(', ')}`)
+		}
+		expect(
+			unreachable.length,
+			`Too few surfaces loaded (${unreachable.join(', ')}) — the union would be too narrow to trust`,
+		).toBeLessThan(SURFACES.length - 1)
 
 		const unexplainedDead = allSelectors
 			.filter((sel) => !liveEverywhere.has(sel))
