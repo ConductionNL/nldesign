@@ -95,6 +95,20 @@ const ALLOWED: Array<{ pattern: RegExp; reason: string }> = [
 		pattern: /\.list-item__wrapper\.active/,
 		reason: 'Alternate selection spelling; NC34 uses .list-item__wrapper--active. Both carried.',
 	},
+	{
+		pattern: /app-navigation--close/,
+		reason: 'Collapsed-sidebar state; the class only exists while the navigation is collapsed.',
+	},
+	{
+		pattern: /^(textarea|select|\.button)$|^input\[type=|^h[4-6]$/,
+		reason: 'Base-layer rules for plain form controls and minor headings. The surveyed surfaces are '
+			+ 'Vue apps that render their own components instead, but these still apply on form-bearing '
+			+ 'admin pages and inside dialogs.',
+	},
+	{
+		pattern: /unified-search__input/,
+		reason: 'Pre-NC34 unified-search markup, retained as a fallback for older servers.',
+	},
 ]
 
 function allowedReason(selector: string): string | null {

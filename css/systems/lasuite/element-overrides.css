@@ -186,27 +186,28 @@ header#header {
 	min-block-size: 0 !important;
 }
 
-#header .unified-search-input__label,
-#header .unified-search-input input::placeholder,
-#header .unified-search__input::placeholder {
+/* The control is a BUTTON, not a text field. Nextcloud 34 renders:
+ *
+ *     <search class="unified-search-input">
+ *       <button class="unified-search-input__button">
+ *         <span class="unified-search-input__icon">   <- magnifier
+ *         <span class="unified-search-input__label">  <- the prompt text
+ *
+ * There is no `<input>` and no `::placeholder` anywhere in it. An earlier
+ * revision styled `input`, `input::placeholder` and `.button-vue__icon` here —
+ * all three matched nothing. The visible fix worked only because the container
+ * and label rules happened to be correct; the rest was inert. Caught by
+ * tests/e2e/spec-coverage/selector-liveness.spec.ts. */
+#header .unified-search-input__label {
 	color: var(--lasuite-color-gray-500) !important;
 	font-size: 14px !important;
 	font-weight: 500 !important;
 }
 
-#header .unified-search-input input,
-#header .unified-search-input__button .button-vue__text {
-	background-color: transparent !important;
-	border: 0 !important;
-	color: var(--lasuite-color-gray-850) !important;
-	font-size: 14px !important;
-	font-weight: 500 !important;
-}
-
-/* The magnifier inside the field is a neutral affordance in La Suite, not a
-   brand-tinted action, so it opts out of the brand colour set above. */
-#header .unified-search-input svg,
-#header .unified-search-input .button-vue__icon {
+/* The magnifier is a neutral affordance in La Suite, not a brand-tinted action,
+   so it opts out of the brand colour applied to header glyphs above. */
+#header .unified-search-input__icon,
+#header .unified-search-input svg {
 	color: var(--lasuite-color-gray-500) !important;
 }
 
