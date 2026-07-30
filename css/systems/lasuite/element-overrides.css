@@ -151,6 +151,28 @@ header#header {
 #header .app-menu__current-app-name,
 #header .app-menu__current-app .button-vue__text,
 #header .header-start .header-appname {
+	/* KNOWN DISCREPANCY — this renders brand-550, and lasuite-parity expects
+	   brand-650 (#4844ad).
+
+	   The size and weight here were measured against La Suite; the COLOUR was
+	   not, because Messages renders its wordmark as an image and offers no
+	   computed value to read. brand-550 was an estimate that happens to match
+	   what the browser actually paints.
+
+	   Setting brand-650 was tried and does NOT take effect: the declaration is
+	   present, `!important`, the selector matches the element, and the token
+	   resolves to #4844ad — yet the computed colour stays brand-550, while an
+	   inline `!important` on the same element does apply #4844ad. So some other
+	   rule outranks it, and it is not among the top-level rules of any loaded
+	   sheet; the likely home is inside an at-rule block. Writing brand-650 here
+	   would make this file claim a colour it does not produce, which is worse
+	   than an honest brand-550.
+
+	   Leaving the parity assertion failing on purpose, with the delta recorded,
+	   rather than editing the reference to match the code. Deciding between
+	   brand-550 and brand-650 is a design call, and it should be made against a
+	   measured La Suite value — Docs renders its wordmark as TEXT, so that
+	   value is obtainable. */
 	color: var(--lasuite-color-brand-550) !important;
 	font-size: 20px !important;
 	font-weight: 600 !important;

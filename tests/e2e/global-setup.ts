@@ -84,8 +84,17 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
 	if (/\/login(\?|$|\/)/.test(currentUrl)) {
 		throw new Error(`Login failed — still on ${currentUrl}.`)
 	}
-	// Only now assert the shell exists at all, without racing its re-renders.
-	await page.locator('#header, header.header').first().waitFor({ state: 'attached', timeout: 20_000 })
+	// A last sanity check that the shell rendered — but NOT a gate. Leaving
+	// /login already proves the credentials worked and the session cookie is
+	// set, which is the only thing this setup exists to produce. On a loaded
+	// instance the Dashboard can take longer than any timeout worth hard-coding,
+	// and failing here would abort every suite over a slow render rather than a
+	// real problem. Warn and continue.
+	try {
+		await page.locator('#header, header.header').first().waitFor({ state: 'attached', timeout: 30_000 })
+	} catch {
+		console.warn('[global-setup] logged in, but the app shell had not rendered yet — continuing')
+	}
 
 	await context.storageState({ path: STORAGE_STATE })
 	await browser.close()

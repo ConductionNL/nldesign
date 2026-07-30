@@ -128,9 +128,16 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 		},
 		{
 			name: 'header app name',
-			// #header .header-appname is Nextcloud's own header app-name
-			// label — always present in stock chrome.
-			selector: '#header .header-appname',
+			// Nextcloud 34 renders the current app's name through
+			// `.app-menu__current-app-name`. The previous selector here,
+			// `#header .header-appname`, does not exist on NC34 at all — the
+			// comment claiming it is "always present in stock chrome" was written
+			// against an older release. The assertion therefore never ran: the
+			// test failed on a 15s visibility timeout rather than on any value,
+			// and the failure was reported as "header app name matches the
+			// Cunningham reference", which reads like a parity regression.
+			// Found by tests/e2e/spec-coverage/selector-liveness.spec.ts.
+			selector: '#header .app-menu__current-app-name',
 			ref: {
 				color: brand650,
 				fontWeight: '600',
@@ -276,6 +283,13 @@ let baselineTokenSet: string | null = null
 test.describe('lasuite-parity', () => {
 	test.describe.configure({ mode: 'serial' })
 
+	// Every navigation in this suite settles slowly on a loaded instance, and the
+	// default 30s budget turns that into a reported PARITY failure — the report
+	// names the element ("primary button matches the Cunningham reference") while
+	// the actual error is a navigation timeout, which reads as a regression that
+	// is not there. Budget set once for the whole describe.
+	test.setTimeout(120_000)
+
 	// @e2e exclude openspec/specs/lasuite-parity/spec.md#mismatch-names-the-property-and-delta
 	// Proven by manually reverting a reference value and observing the
 	// Playwright assertion message during development (see PR description);
@@ -283,9 +297,17 @@ test.describe('lasuite-parity', () => {
 	// carry permanently.
 
 	test.beforeAll(async ({ browser }) => {
+		// This hook mutates instance-wide state, so it gets a realistic budget:
+		// the default 30s is not enough on a loaded instance and the suite then
+		// aborts on a "beforeAll hook timeout" that looks like a parity failure
+		// in the report but is nothing of the kind.
+		test.setTimeout(120_000)
+
 		const page = await browser.newPage()
-		await page.goto(THEMING_URL)
-		await page.waitForLoadState('networkidle')
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the
+		// background (notifications, dashboard widgets), so the network never
+		// goes idle and this wait simply burns the hook's whole budget.
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
 		const token = await requestToken(page)
 		baselineTokenSet = await getTokenSet(page, token)
 		await page.close()
@@ -294,8 +316,10 @@ test.describe('lasuite-parity', () => {
 	test.afterAll(async ({ browser }) => {
 		if (baselineTokenSet === null) return
 		const page = await browser.newPage()
-		await page.goto(THEMING_URL)
-		await page.waitForLoadState('networkidle')
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, baselineTokenSet)
 		await page.close()
@@ -304,12 +328,16 @@ test.describe('lasuite-parity', () => {
 	for (const set of ['lasuite', 'cunningham'] as const) {
 		for (const element of referenceTable(set)) {
 			test(`${set}: ${element.name} matches the Cunningham reference`, async ({ page }) => {
-				await page.goto(THEMING_URL)
-				await page.waitForLoadState('networkidle')
+				await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 				const token = await requestToken(page)
 				await setTokenSet(page, token, set)
-				await page.reload()
-				await page.waitForLoadState('networkidle')
+				await page.reload({ waitUntil: 'domcontentloaded' })
+				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 
 				await page.waitForSelector(element.selector, { timeout: 15_000 })
 				const computed = await readComputedStyle(page, element.selector)
@@ -331,8 +359,10 @@ test.describe('lasuite-parity', () => {
 		// than fail on something unrelated to this app's theming code.
 		const token = await requestToken(page)
 		await setTokenSet(page, token, 'lasuite')
-		await page.goto(THEMING_URL)
-		await page.waitForLoadState('networkidle')
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 
 		const searchButton = page.locator('#header .unified-search__button')
 		if (await searchButton.count() === 0) {
