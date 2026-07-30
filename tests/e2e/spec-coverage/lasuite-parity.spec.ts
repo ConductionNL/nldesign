@@ -140,7 +140,11 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			selector: '#header .app-menu__current-app-name',
 			ref: {
 				color: brand650,
-				fontWeight: '600',
+				// 700, not 600. Read off La Suite Docs (localhost:3000), which renders
+				// its wordmark as TEXT and so exposes a computed value — Messages ships
+				// an image and cannot be measured. Live: rgb(72,68,173), 22px, 700.
+				// The colour in this reference was already right; the weight was not.
+				fontWeight: '700',
 			},
 		},
 		{

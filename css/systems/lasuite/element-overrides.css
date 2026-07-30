@@ -30,9 +30,9 @@
 
 #header,
 header#header {
-	background-color: var(--lasuite-color-gray-000) !important;
+	background-color: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
 	background-image: none !important;
-	background: var(--lasuite-color-gray-000) !important;
+	background: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
 	border-bottom: 1px solid transparent !important;
 	box-shadow: none !important;
 	padding-inline: 18px !important;
@@ -48,7 +48,7 @@ header#header {
 /* Header foreground — dark text/icons on the white bar. */
 #header .header-appname,
 #header .header-left a {
-	color: var(--lasuite-color-brand-650) !important;
+	color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
 	font-weight: 600 !important;
 }
 
@@ -56,7 +56,7 @@ header#header {
 #header .header-right button,
 #header .menutoggle,
 #header .unified-search__button {
-	color: var(--lasuite-color-gray-900) !important;
+	color: var(--lasuite-content-primary, var(--lasuite-color-gray-900)) !important;
 	filter: none !important;
 	opacity: 1 !important;
 }
@@ -92,7 +92,7 @@ header#header {
 #header .header-start svg,
 #header .app-menu__waffle,
 #header .app-menu__waffle svg {
-	color: var(--lasuite-color-brand-550) !important;
+	color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
 	filter: none !important;
 	-webkit-filter: none !important;
 }
@@ -134,7 +134,7 @@ header#header {
    `/core/…` would break. */
 #header .logo,
 #header .logo-icon {
-	background-color: var(--lasuite-color-brand-550) !important;
+	background-color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
 	background-image: none !important;
 	filter: none !important;
 	-webkit-filter: none !important;
@@ -151,31 +151,22 @@ header#header {
 #header .app-menu__current-app-name,
 #header .app-menu__current-app .button-vue__text,
 #header .header-start .header-appname {
-	/* KNOWN DISCREPANCY — this renders brand-550, and lasuite-parity expects
-	   brand-650 (#4844ad).
+	/* MEASURED, not estimated. La Suite Docs renders its wordmark as TEXT (unlike
+	   Messages, which ships an image and offers no computed value), so these are
+	   read straight off the live app at localhost:3000:
 
-	   The size and weight here were measured against La Suite; the COLOUR was
-	   not, because Messages renders its wordmark as an image and offers no
-	   computed value to read. brand-550 was an estimate that happens to match
-	   what the browser actually paints.
+	       color        rgb(72, 68, 173)  = #4844ad = brand-650
+	       font-size    22px
+	       font-weight  700
 
-	   Setting brand-650 was tried and does NOT take effect: the declaration is
-	   present, `!important`, the selector matches the element, and the token
-	   resolves to #4844ad — yet the computed colour stays brand-550, while an
-	   inline `!important` on the same element does apply #4844ad. So some other
-	   rule outranks it, and it is not among the top-level rules of any loaded
-	   sheet; the likely home is inside an at-rule block. Writing brand-650 here
-	   would make this file claim a colour it does not produce, which is worse
-	   than an honest brand-550.
-
-	   Leaving the parity assertion failing on purpose, with the delta recorded,
-	   rather than editing the reference to match the code. Deciding between
-	   brand-550 and brand-650 is a design call, and it should be made against a
-	   measured La Suite value — Docs renders its wordmark as TEXT, so that
-	   value is obtainable. */
-	color: var(--lasuite-color-brand-550) !important;
-	font-size: 20px !important;
-	font-weight: 600 !important;
+	   An earlier revision guessed brand-550 / 20px / 600 from the Messages image
+	   and was wrong on all three. It also appeared immovable: setting brand-650
+	   seemed to do nothing, because the tertiary block below was leaking into the
+	   header and forcing `color: inherit` onto this element's children. That leak
+	   is fixed at its own site; see the note there. */
+	color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
+	font-size: 22px !important;
+	font-weight: 700 !important;
 	letter-spacing: -0.01em !important;
 }
 
@@ -195,10 +186,10 @@ header#header {
 #header .unified-search-input,
 #header .unified-search-input__button,
 #header .unified-search__input {
-	background-color: var(--lasuite-color-gray-025) !important;
-	border: 1px solid var(--lasuite-color-gray-100) !important;
+	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+	border: 1px solid var(--lasuite--contextuals--border--surface--primary, var(--lasuite-color-gray-100)) !important;
 	border-radius: var(--lasuite-border-radius) !important;
-	color: var(--lasuite-color-gray-850) !important;
+	color: var(--lasuite-content-primary, var(--lasuite-color-gray-850)) !important;
 	box-shadow: none !important;
 	/* Nextcloud stretches the control to the full 50px header height; La Suite's
 	   is a 34px field centred in the bar. Height alone is not enough — the
@@ -221,7 +212,7 @@ header#header {
  * and label rules happened to be correct; the rest was inert. Caught by
  * tests/e2e/spec-coverage/selector-liveness.spec.ts. */
 #header .unified-search-input__label {
-	color: var(--lasuite-color-gray-500) !important;
+	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
 	font-size: 14px !important;
 	font-weight: 500 !important;
 }
@@ -230,7 +221,7 @@ header#header {
    so it opts out of the brand colour applied to header glyphs above. */
 #header .unified-search-input__icon,
 #header .unified-search-input svg {
-	color: var(--lasuite-color-gray-500) !important;
+	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
 }
 
 /* App menu — dark on white, brand-650 active indicator (Cunningham accent).
@@ -245,14 +236,14 @@ header#header {
 #header nav.app-menu a,
 #header nav.app-menu .app-menu-entry__link,
 #header nav.app-menu .app-menu-entry__label {
-	color: var(--lasuite-color-gray-900) !important;
+	color: var(--lasuite-content-primary, var(--lasuite-color-gray-900)) !important;
 	font-weight: 400 !important;
 }
 
 #header nav.app-menu .app-menu-entry--active a,
 #header nav.app-menu .app-menu-entry--active .app-menu-entry__link,
 #header nav.app-menu .app-menu-entry--active .app-menu-entry__label {
-	color: var(--lasuite-color-brand-650) !important;
+	color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
 	font-weight: 600 !important;
 }
 
@@ -271,7 +262,7 @@ header#header {
 #header nav.app-menu a:hover,
 #header nav.app-menu .app-menu-entry__link:hover {
 	background-color: var(--lasuite-color-gray-050) !important;
-	color: var(--lasuite-color-brand-650) !important;
+	color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
 }
 
 #header nav.app-menu .app-menu-icon img,
@@ -289,7 +280,7 @@ header#header {
 #app-navigation,
 .app-navigation,
 #app-navigation-vue {
-	background: var(--lasuite-color-gray-000) !important;
+	background: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
 	/* gray-100 — matches the sidebar border-right measured on the live La Suite
 	   app (2026-07-27); every structural hairline uses this step. */
 	border-right: 1px solid var(--lasuite-color-gray-100) !important;
@@ -321,7 +312,7 @@ header#header {
    La Suite marks the current item with a neutral 5% wash and nothing else.
    Measured on La Suite Messages (.mailbox__item-row, active):
 
-       background   rgba(27, 27, 35, 0.05)
+       background   var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05))
        border-radius 4px
        border-left  0 — none
        font-weight  400   (identical to the inactive row)
@@ -357,8 +348,8 @@ header#header {
 #app-navigation .app-navigation-entry--active,
 .app-navigation-entry.app-navigation-entry.active.active.active,
 .app-navigation-entry.app-navigation-entry--active.app-navigation-entry--active {
-	background: rgba(27, 27, 35, 0.05) !important;
-	background-color: rgba(27, 27, 35, 0.05) !important;
+	background: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
+	background-color: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
@@ -388,7 +379,7 @@ header#header {
 .app-navigation-entry.app-navigation-entry.active.active a,
 .app-navigation-entry.app-navigation-entry.active.active .app-navigation-entry-link,
 .app-navigation-entry.app-navigation-entry.active.active .app-navigation-entry__name {
-	color: var(--lasuite-color-gray-850) !important;
+	color: var(--lasuite-content-primary, var(--lasuite-color-gray-850)) !important;
 	font-weight: 400 !important;
 }
 
@@ -420,7 +411,7 @@ header#header {
 .list-item__wrapper.active .list-item,
 .list-item__wrapper--active .list-item:hover,
 .list-item__wrapper--active .list-item:focus-within {
-	background-color: rgba(27, 27, 35, 0.05) !important;
+	background-color: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
 }
 
 .list-item__wrapper--active .list-item::before,
@@ -495,7 +486,7 @@ header#header {
 
 #content-vue,
 #content-vue.content {
-	background-color: var(--lasuite-color-gray-025) !important;
+	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
 	border-radius: 0 !important;
 	/* Fill the outer shell exactly. Nextcloud sizes this 8px short (it expects
 	   the outer shell's 8px bottom inset), which left a strip of body colour
@@ -546,7 +537,7 @@ body > #content-vue,
 #app-content,
 .app-content,
 #app-content-vue {
-	background: var(--lasuite-color-gray-000) !important;
+	background: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 	margin: 22px !important;
 }
@@ -582,8 +573,8 @@ button.primary,
 input.primary,
 .button-vue.button-vue--vue-primary,
 button[class*="primary"] {
-	background-color: var(--lasuite-color-brand-550) !important;
-	border-color: var(--lasuite-color-brand-550) !important;
+	background-color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
+	border-color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
@@ -604,8 +595,8 @@ button[class*="primary"] {
 .button-vue--vue-primary:hover,
 button.primary:hover,
 .button-vue.button-vue--vue-primary:hover {
-	background-color: var(--lasuite-color-brand-650) !important;
-	border-color: var(--lasuite-color-brand-650) !important;
+	background-color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
+	border-color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
 }
 
 /* ============================================
@@ -672,20 +663,40 @@ button.secondary {
 
    Both forms are matched below. The same applies to primary and secondary, but
    those blocks already catch either spelling through their
-   `button[class*="primary"]` / `button[class*="secondary"]` fallbacks. */
+   `button[class*="primary"]` / `button[class*="secondary"]` fallbacks.
 
-:not(#header) > .button-vue--tertiary.button-vue--text-only,
-:not(#header) .button-vue--tertiary.button-vue--icon-and-text,
-:not(#header) > .button-vue--vue-tertiary.button-vue--text-only,
-:not(#header) .button-vue--vue-tertiary.button-vue--icon-and-text {
+   HOW THE HEADER EXCLUSION IS WRITTEN, AND WHY IT CHANGED.
+
+   These rules used to start `:not(#header) …`, which does NOT mean "not in the
+   header". It tests the ANCESTOR in the combinator, and for a descendant
+   combinator any non-header ancestor — body, a nav, a div — satisfies it. So
+   `:not(#header) .button-vue--tertiary.button-vue--icon-and-text` matched the
+   header's own current-app button, because `nav.app-menu` is not `#header`.
+
+   The consequence was invisible and specific: the leak coloured that button
+   brand-tertiary, and the `span` rule below forced `color: inherit` onto its
+   children — overriding the current-app-name rule higher in this file no matter
+   what colour it asked for. That is what made the app name look immovable at
+   brand-550 while the parity spec expected brand-650, and it is why setting
+   brand-650 there appeared to do nothing.
+
+   The guard now sits on the BUTTON (`:not(#header *)`), which excludes any
+   element that is a descendant of the header — the thing actually intended.
+   Verified live: the old member matched the header button, the new one does
+   not, and both still match genuine tertiary buttons elsewhere. */
+
+.button-vue--tertiary.button-vue--text-only:not(#header *),
+.button-vue--tertiary.button-vue--icon-and-text:not(#header *),
+.button-vue--vue-tertiary.button-vue--text-only:not(#header *),
+.button-vue--vue-tertiary.button-vue--icon-and-text:not(#header *) {
 	color: var(--lasuite--contextuals--content--semantic--brand--tertiary) !important;
 	background-color: transparent !important;
 }
 
-:not(#header) > .button-vue--tertiary.button-vue--text-only span,
-:not(#header) .button-vue--tertiary.button-vue--icon-and-text span,
-:not(#header) > .button-vue--vue-tertiary.button-vue--text-only span,
-:not(#header) .button-vue--vue-tertiary.button-vue--icon-and-text span {
+.button-vue--tertiary.button-vue--text-only:not(#header *) span,
+.button-vue--tertiary.button-vue--icon-and-text:not(#header *) span,
+.button-vue--vue-tertiary.button-vue--text-only:not(#header *) span,
+.button-vue--vue-tertiary.button-vue--icon-and-text:not(#header *) span {
 	color: inherit !important;
 }
 
@@ -720,7 +731,7 @@ input[type="password"],
 input[type="text"]:focus,
 input[type="search"]:focus,
 input[type="email"]:focus {
-	border-color: var(--lasuite-color-brand-650) !important;
+	border-color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
 	box-shadow: 0 0 0 2px var(--nldesign-color-focus) !important;
 }
 
@@ -741,4 +752,69 @@ label {
 h1, h2, h3, h4, h5, h6 {
 	font-family: var(--lasuite-font-family);
 	color: var(--lasuite-color-gray-900);
+}
+
+/* ============================================
+   DARK MODE
+
+   Until now this design system had NO dark handling at all: every rule above
+   applied unconditionally, and the shell read raw ramp steps
+   (`gray-000`, `gray-025`) that have no dark counterpart. Verified live before
+   this block existed — with `data-themes=dark`, Nextcloud's own
+   `--color-main-background` flipped to #171717 while the header, canvas and
+   card stayed byte-identical to light mode.
+
+   HOW CUNNINGHAM ACTUALLY DOES IT. Reading La Suite's own
+   `.cunningham-theme--dark` block in the vendored source, the dark theme does
+   NOT invert the ramp — `gray-000` is still #fff there. It remaps the
+   CONTEXTUAL surface tokens instead:
+
+       background--surface--primary    → gray-800
+       background--surface--secondary  → gray-850
+       background--surface--tertiary   → gray-900
+       border--surface--primary        → gray-750
+
+   So the shell rules above now read those contextuals (with the raw step as a
+   fallback), and this block remaps them. That is why repointing was the first
+   half of the fix: a dark block cannot reach a rule that hardcodes `gray-000`.
+
+   RAMP COVERAGE. Our generator emits only gray-850 and gray-900 from the dark
+   end of the ramp — 700, 750 and 800 are unset. The mapping below therefore
+   uses the two steps that exist, preserving the figure/ground relationship that
+   matters (card LIGHTER than the canvas it sits on, mirroring white-on-grey in
+   light mode) rather than inventing values. Emitting the missing steps is a
+   generator change and is tracked separately.
+
+   SCOPE SELECTORS mirror css/tokens/dark/lasuite.css exactly, so this block
+   turns on and off with the rest of the dark layer.
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+	body:not([data-theme-light]):not([data-theme-dark]):not([data-theme-light-highcontrast]):not([data-theme-dark-highcontrast]) {
+		--lasuite--contextuals--background--surface--primary: var(--lasuite-color-gray-850);
+		--lasuite--contextuals--background--surface--secondary: var(--lasuite-color-gray-900);
+		--lasuite--contextuals--background--surface--tertiary: var(--lasuite-color-gray-900);
+		/* No gray-750/800 is emitted, so the hairline is a translucent white:
+		   it stays visible against both surface steps without inventing a ramp
+		   value that upstream would disagree with. */
+		--lasuite--contextuals--border--surface--primary: rgba(255, 255, 255, 0.12);
+		--lasuite-active-row-wash: rgba(255, 255, 255, 0.08);
+		--lasuite-content-primary: var(--lasuite-color-gray-050);
+		--lasuite-content-muted: var(--lasuite-color-gray-200);
+		--lasuite-content-brand: var(--lasuite-color-brand-050);
+		--lasuite-content-brand-icon: var(--lasuite-color-brand-050);
+	}
+}
+
+body[data-theme-dark],
+body[data-themes*="dark"] {
+	--lasuite--contextuals--background--surface--primary: var(--lasuite-color-gray-850);
+	--lasuite--contextuals--background--surface--secondary: var(--lasuite-color-gray-900);
+	--lasuite--contextuals--background--surface--tertiary: var(--lasuite-color-gray-900);
+	--lasuite--contextuals--border--surface--primary: rgba(255, 255, 255, 0.12);
+	--lasuite-active-row-wash: rgba(255, 255, 255, 0.08);
+	--lasuite-content-primary: var(--lasuite-color-gray-050);
+	--lasuite-content-muted: var(--lasuite-color-gray-200);
+	--lasuite-content-brand: var(--lasuite-color-brand-050);
+	--lasuite-content-brand-icon: var(--lasuite-color-brand-050);
 }
