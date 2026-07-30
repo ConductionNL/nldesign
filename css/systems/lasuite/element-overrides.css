@@ -878,3 +878,41 @@ body[data-themes*="dark"] {
 	-webkit-filter: var(--background-invert-if-bright, none) !important;
 	opacity: 1 !important;
 }
+
+/* ============================================
+   SETTINGS-DIALOG NAVIGATION — the same rail, a third component
+
+   The active-row work covered `.app-navigation-entry` (app sidebar) and
+   `.list-item` (NcListItem rows). The settings dialog uses a THIRD component
+   with its own markup, and still drew the brand tint plus a 3px rail that La
+   Suite does not use — reported from a screenshot of an app's User settings
+   modal.
+
+   Reached via: app nav → Settings (expands) → Personal settings. Measured on
+   the open dialog rather than guessed — an earlier attempt targeted
+   `.app-settings-navigation .app-settings-button`, which does not exist in this
+   Nextcloud, and was removed before commit rather than shipped. The real
+   structure is:
+
+       nav.dialog__navigation.app-settings__navigation
+         └ ul.navigation-list
+             └ li > a.navigation-list__link.navigation-list__link--active
+                    background rgb(238,241,250)   (brand-050 tint)
+                    ::before   rgb(94,92,208), 3px, left 0   (the rail)
+
+   Both the BEM `--active` and the plain `.active` spelling are covered: this
+   file has now been bitten four separate times by naming only one of two live
+   spellings. */
+.navigation-list__link--active,
+.navigation-list__link.active {
+	background: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+	color: var(--lasuite-content-primary, var(--lasuite-color-gray-850)) !important;
+	font-weight: 400 !important;
+}
+
+.navigation-list__link--active::before,
+.navigation-list__link.active::before {
+	content: none !important;
+	display: none !important;
+}
