@@ -818,3 +818,63 @@ body[data-themes*="dark"] {
 	--lasuite-content-brand: var(--lasuite-color-brand-050);
 	--lasuite-content-brand-icon: var(--lasuite-color-brand-050);
 }
+
+/* ============================================
+   HEADER ICONS — remove Nextcloud's fade-out gradient mask
+
+   Nextcloud applies a gradient MASK to header glyphs and to the current app's
+   icon:
+
+       mask-image: linear-gradient(#fff 25%, rgba(255,255,255,.45) 90%)
+
+   Fully opaque for the top quarter, then fading to 45%. On a 20px icon that
+   reads as a gradient wash — and on a light-coloured app icon it fades far
+   enough to look as though the icon is simply missing. Both were reported from
+   screenshots: "top left header icons have a gradient" and "the app icon
+   disappeared from the header".
+
+   La Suite uses no gradients anywhere in its chrome, so the mask is removed
+   rather than tuned. Note this is NOT a background-image gradient — an earlier
+   pass scanned for those, found none, and wrongly concluded there was no
+   gradient at all. It is a mask, which is why it never showed up.
+
+   The mask has no author rule, no inline style, and no adopted stylesheet
+   behind it, so it is neutralised by property rather than by out-specifying a
+   source that cannot be located. The logo keeps ITS mask — that one is ours,
+   and it is what paints the logo brand violet. */
+#header .app-menu__current-app-icon,
+#header .app-menu-entry__icon,
+#header .header-end svg,
+#header .header-start svg,
+#header .notifications-button__icon svg,
+#header .button-vue__icon svg,
+#header .button-vue__icon img {
+	-webkit-mask-image: none !important;
+	mask-image: none !important;
+}
+
+/* The current app's icon is an <img> pointing at that app's own SVG
+   (e.g. /custom_apps/hermiq/img/app.svg), and Nextcloud ships those icons WHITE
+   because its header is normally dark. Removing the gradient mask above made
+   the element render at full size and opacity — but white-on-white is still
+   invisible, which is why the icon still looked absent after that fix.
+
+   `color` cannot reach an <img>, and the masking trick used for the Nextcloud
+   logo needs a known URL — this src differs per app and is not knowable from
+   CSS. Nextcloud's own answer to exactly this problem is
+   --background-invert-if-bright, which resolves to `invert(100%)` on a bright
+   header and to `no` on a dark one. REQ-CSS-007 reserves that variable against
+   being SET; reading it is what it exists for, and it keeps the icon correct in
+   both light and dark without this file having to know the theme.
+
+   The result is a dark icon rather than a brand-violet one. Tinting an
+   arbitrary per-app image to an exact colour is not expressible in CSS without
+   its URL, and a visible icon in the platform's own idiom beats an invisible
+   one. */
+#header .app-menu__current-app-icon,
+#header .app-menu-entry__icon img,
+#header .app-menu-icon img {
+	filter: var(--background-invert-if-bright, none) !important;
+	-webkit-filter: var(--background-invert-if-bright, none) !important;
+	opacity: 1 !important;
+}
