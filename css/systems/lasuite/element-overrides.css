@@ -508,11 +508,34 @@ header#header {
 	/* No top margin: the outer #content already clears the 50px header. Adding
 	   it here is what produced the band. */
 	margin: 0 !important;
+	/* …but see the body-child rule below: not every app HAS an outer #content. */
 	/* Nextcloud sizes this with a calc() that subtracts its own 8px side
 	   margins. Dropping the margins without resetting the width left a 16px
 	   strip of body colour showing down the right edge. */
 	width: 100% !important;
 }
+
+/* NOT EVERY APP HAS THE OUTER SHELL.
+
+   Contacts, Files and Settings render <div id="content"><div id="content-vue">.
+   Mail renders #content-vue as a DIRECT CHILD OF BODY, with no #content at all.
+   The rule above assumes the outer shell has already cleared the 50px header,
+   so on Mail nothing did: #content-vue sat at y=0 behind the header and, being
+   `calc(100vh - 50px)` tall, stopped 50px short of the bottom — a blue strip
+   along the foot of the window.
+
+   When #content-vue is a body child it has to clear the header itself. Scoped
+   by parentage rather than by app so it holds for any app built the same way. */
+body > #content-vue,
+#body-user > #content-vue {
+	/* Also pin the insets. As a body child this element is `position: fixed`
+	   with Nextcloud's own `inset: 0 8px 8px`, and there is no outer #content
+	   here to have neutralised them — so without this it sits 8px in from each
+	   side and 8px up from the foot, showing body colour down both edges. */
+	inset: 0 !important;
+	margin-block-start: var(--header-height, 50px) !important;
+}
+
 
 /* The single white card: the app's content area, inset from the grey.
    22px on every side — measured on the live La Suite app, whose <main> starts
