@@ -612,18 +612,32 @@ button.secondary {
    instead of an action.
 
    SCOPED DELIBERATELY to text-bearing tertiary buttons OUTSIDE the header:
-   NC's header uses --vue-tertiary-no-background for icon buttons that sit on
-   the coloured header band and must stay white for contrast, and icon-only row
-   actions (the "…" menus) stay neutral — colouring every icon violet is not
-   what La Suite does and would be visually noisy.
-   ============================================ */
+   NC's header uses tertiary-no-background for icon buttons that sit on the
+   header band, and icon-only row actions (the "…" menus) stay neutral —
+   colouring every icon violet is not what La Suite does and would be visually
+   noisy.
 
+   TWO NAMING SCHEMES. Nextcloud 34 emits BOTH `button-vue--tertiary` and
+   `button-vue--vue-tertiary`, depending on the vintage of the component doing
+   the rendering. Measured on one page: 60 elements carry the plain form and
+   exactly 1 carries the `--vue-` form. This block previously listed only the
+   `--vue-` form, so it styled 1 button and missed 60 — which is why tertiary
+   buttons still read as plain body text almost everywhere.
+
+   Both forms are matched below. The same applies to primary and secondary, but
+   those blocks already catch either spelling through their
+   `button[class*="primary"]` / `button[class*="secondary"]` fallbacks. */
+
+:not(#header) > .button-vue--tertiary.button-vue--text-only,
+:not(#header) .button-vue--tertiary.button-vue--icon-and-text,
 :not(#header) > .button-vue--vue-tertiary.button-vue--text-only,
 :not(#header) .button-vue--vue-tertiary.button-vue--icon-and-text {
 	color: var(--lasuite--contextuals--content--semantic--brand--tertiary) !important;
 	background-color: transparent !important;
 }
 
+:not(#header) > .button-vue--tertiary.button-vue--text-only span,
+:not(#header) .button-vue--tertiary.button-vue--icon-and-text span,
 :not(#header) > .button-vue--vue-tertiary.button-vue--text-only span,
 :not(#header) .button-vue--vue-tertiary.button-vue--icon-and-text span {
 	color: inherit !important;
