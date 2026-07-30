@@ -186,7 +186,12 @@ body {
 	--color-text-maxcontrast: var(--lasuite-color-gray-600) !important;
 	/* --color-text-maxcontrast-default: unmapped — auto-calculated per theme by Nextcloud */
 	/* --color-text-maxcontrast-background-blur: unmapped — blur-adjusted maxcontrast, auto-calculated */
-	--color-text-light: var(--lasuite-color-gray-000) !important;
+	/* NOT gray-000. Nextcloud's --color-text-light means DE-EMPHASISED text, not
+	   WHITE text — NC 34 defines it as equal to --color-main-text. Mapping it to
+	   pure white made every component using it invisible on a white surface:
+	   observed on Hermiq's features-roadmap sidebar, where five paragraphs
+	   rendered white-on-white and could only be found by selecting them. */
+	--color-text-light: var(--lasuite-color-gray-850) !important;
 	--color-text-lighter: var(--lasuite-color-gray-500) !important;
 	--color-text-error: var(--lasuite-color-error-550) !important;
 	--color-text-success: var(--lasuite-color-success-550) !important;
@@ -333,7 +338,7 @@ body,
 		--color-text-maxcontrast: var(--lasuite-color-gray-200) !important;
 		/* Inverted pair: on a dark ground the "light" text token is the dark one
 		   and vice versa, otherwise both collapse to the same end of the ramp. */
-		--color-text-light: var(--lasuite-color-gray-850) !important;
+		--color-text-light: var(--lasuite-color-gray-050) !important;
 		--color-text-lighter: var(--lasuite-color-gray-300) !important;
 	}
 }
@@ -342,6 +347,6 @@ body[data-theme-dark],
 body[data-themes*="dark"] {
 	--color-main-text: var(--lasuite-color-gray-050) !important;
 	--color-text-maxcontrast: var(--lasuite-color-gray-200) !important;
-	--color-text-light: var(--lasuite-color-gray-850) !important;
+	--color-text-light: var(--lasuite-color-gray-050) !important;
 	--color-text-lighter: var(--lasuite-color-gray-300) !important;
 }
