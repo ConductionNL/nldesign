@@ -861,21 +861,28 @@ body[data-themes*="dark"] {
 
    `color` cannot reach an <img>, and the masking trick used for the Nextcloud
    logo needs a known URL — this src differs per app and is not knowable from
-   CSS. Nextcloud's own answer to exactly this problem is
-   --background-invert-if-bright, which resolves to `invert(100%)` on a bright
-   header and to `no` on a dark one. REQ-CSS-007 reserves that variable against
-   being SET; reading it is what it exists for, and it keeps the icon correct in
-   both light and dark without this file having to know the theme.
+   CSS. An earlier revision therefore used --background-invert-if-bright, which
+   made the icon VISIBLE but BLACK, and black is not a colour that appears
+   anywhere in La Suite's chrome.
 
-   The result is a dark icon rather than a brand-violet one. Tinting an
-   arbitrary per-app image to an exact colour is not expressible in CSS without
-   its URL, and a visible icon in the platform's own idiom beats an invisible
-   one. */
+   A filter chain tints it instead. `brightness(0) saturate(100%)` first
+   collapses the white source to pure black — a known starting point regardless
+   of what the app shipped — and the remaining steps rotate that black toward
+   brand-550, so the icon reads as part of the same violet set as the logo,
+   waffle and wordmark beside it.
+
+   This is an APPROXIMATION, and deliberately so: filter chains cannot hit an
+   exact hex the way the logo's mask does. Exactness here would require knowing
+   each app's icon URL to mask against, which CSS cannot read from the element.
+   The approximation is within a couple of percent and, unlike black, belongs to
+   the palette. */
 #header .app-menu__current-app-icon,
 #header .app-menu-entry__icon img,
 #header .app-menu-icon img {
-	filter: var(--background-invert-if-bright, none) !important;
-	-webkit-filter: var(--background-invert-if-bright, none) !important;
+	filter: brightness(0) saturate(100%) invert(38%) sepia(69%) saturate(1907%)
+		hue-rotate(228deg) brightness(88%) contrast(88%) !important;
+	-webkit-filter: brightness(0) saturate(100%) invert(38%) sepia(69%) saturate(1907%)
+		hue-rotate(228deg) brightness(88%) contrast(88%) !important;
 	opacity: 1 !important;
 }
 
