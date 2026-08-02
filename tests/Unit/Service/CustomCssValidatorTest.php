@@ -159,6 +159,90 @@ class CustomCssValidatorTest extends TestCase
 
 
     /**
+     * A legitimate data: URI must not disable the block on the OTHER url()
+     * references in the same document (issue #193).
+     *
+     * The original rule asked two DOCUMENT-GLOBAL questions — "is there a
+     * data: anywhere?" and "is there an http(s)/`//` anywhere?" — instead of
+     * asking them of the offending match, so one data: URI earlier in the
+     * stylesheet accepted every non-http(s) scheme after it.
+     *
+     * @return void
+     */
+    public function testRejectsForeignSchemeAfterDataUri(): void
+    {
+        $schemes = [
+            'ftp://evil.test/x.png',
+            'chrome-extension://abcdefghijklmnop/x.png',
+            'file:///etc/passwd',
+            '//evil.test/x.png',
+            'https://evil.test/x.png',
+        ];
+
+        foreach ($schemes as $scheme) {
+            $css = '.a { background: url(data:image/gif;base64,R0lGODlhAQABAAAAACw=); }'."\n"
+                .'.b { background: url('.$scheme.'); }';
+
+            $errors = $this->validator->validate(css: $css);
+
+            $this->assertNotEmpty(
+                $errors,
+                $scheme.' must still be rejected when a data: URI appears earlier in the same document.'
+            );
+            $this->assertStringContainsStringIgnoringCase('url()', implode(' ', $errors));
+        }
+
+    }//end testRejectsForeignSchemeAfterDataUri()
+
+
+    /**
+     * The same bypass in the other order — the data: URI AFTER the offending
+     * reference — must not be accepted either.
+     *
+     * @return void
+     */
+    public function testRejectsForeignSchemeBeforeDataUri(): void
+    {
+        $css = '.b { background: url(ftp://evil.test/x.png); }'."\n"
+            .'.a { background: url(data:image/gif;base64,R0lGODlhAQABAAAAACw=); }';
+
+        $this->assertNotEmpty($this->validator->validate(css: $css));
+
+    }//end testRejectsForeignSchemeBeforeDataUri()
+
+
+    /**
+     * A non-http(s) scheme on its own stays rejected.
+     *
+     * @return void
+     */
+    public function testRejectsForeignSchemeWithoutDataUri(): void
+    {
+        $this->assertNotEmpty($this->validator->validate(css: '.x { background: url(ftp://evil.test/x.png); }'));
+
+    }//end testRejectsForeignSchemeWithoutDataUri()
+
+
+    /**
+     * The counter-control for the fix: legitimate documents that mix several
+     * data: URIs with relative references must STILL be accepted. A rule that
+     * rejects everything is not a fix.
+     *
+     * @return void
+     */
+    public function testAcceptsMultipleDataUrisAndRelativePaths(): void
+    {
+        $css = '.a { background: url(data:image/gif;base64,R0lGODlhAQABAAAAACw=); }'."\n"
+            .'.b { background: url("data:image/svg+xml;base64,PHN2Zy8+"); }'."\n"
+            .".c { background: url('../img/logo.svg'); }\n"
+            .'.d { background: url(/apps/nldesign/img/logo.svg); }';
+
+        $this->assertSame([], $this->validator->validate(css: $css));
+
+    }//end testAcceptsMultipleDataUrisAndRelativePaths()
+
+
+    /**
      * Legacy script-execution vectors are refused.
      *
      * @return void

@@ -112,12 +112,12 @@ class CustomCssValidator
         // background-image, @font-face src, cursor or list-style-image.
         // Relative/same-origin references and data: URIs cannot reach another
         // origin, so those remain available for legitimate theming.
-        if (preg_match('#url\(\s*[\'"]?\s*(?:[a-z][a-z0-9+.-]*:|//)#i', $css, $m) === 1) {
-            if (preg_match('#url\(\s*[\'"]?\s*data:#i', $css) !== 1
-                || preg_match('#url\(\s*[\'"]?\s*(?:https?:|//)#i', $css) === 1
-            ) {
-                $errors[] = 'External url() references are not allowed; use a relative path or a data: URI.';
-            }
+        $offendingScheme = $this->firstDisallowedUrlScheme(css: $css);
+        if ($offendingScheme !== null) {
+            $errors[] = sprintf(
+                'External url() references are not allowed (found "%s"); use a relative path or a data: URI.',
+                $offendingScheme
+            );
         }
 
         // Legacy script-execution vectors. Modern engines ignore them, but
@@ -153,6 +153,51 @@ class CustomCssValidator
         return $errors;
 
     }//end validate()
+
+    /**
+     * Return the first url() scheme in the document that is not permitted.
+     *
+     * EVERY url() occurrence is judged on its own target. The predecessor of
+     * this method asked two DOCUMENT-GLOBAL questions instead — "does a data:
+     * URI appear anywhere?" and "does an http(s)/protocol-relative reference
+     * appear anywhere?" — so a single legitimate data: URI satisfied the first
+     * question and, absent a second http(s)-specific hit, accepted every other
+     * scheme in the same stylesheet (`ftp://`, `chrome-extension://`, …). That
+     * bypass is issue #193; a per-occurrence scan is the only shape that
+     * cannot be disarmed by an unrelated, allowed reference elsewhere.
+     *
+     * Only `data:` is allowed to carry a scheme. Relative and root-relative
+     * references (`../img/logo.svg`, `/apps/nldesign/img/logo.svg`) carry no
+     * scheme at all, so they never match the scan and stay usable.
+     *
+     * @param string $css The admin-submitted CSS.
+     *
+     * @return string|null The first disallowed scheme (e.g. `ftp:` or `//`),
+     *                     or NULL when every url() target is permitted.
+     *
+     * @spec openspec/specs/custom-css-freeform/spec.md
+     */
+    private function firstDisallowedUrlScheme(string $css): ?string
+    {
+        $found = preg_match_all(
+            '#url\(\s*[\'"]?\s*([a-z][a-z0-9+.-]*:|//)#i',
+            $css,
+            $matches
+        );
+
+        if ($found === false || $found === 0) {
+            return null;
+        }
+
+        foreach ($matches[1] as $scheme) {
+            if (strcasecmp($scheme, 'data:') !== 0) {
+                return $scheme;
+            }
+        }
+
+        return null;
+
+    }//end firstDisallowedUrlScheme()
 
     /**
      * Report whether every `{` has a matching `}`.
