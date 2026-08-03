@@ -308,7 +308,24 @@ class IconAssetsTest extends TestCase
         $this->assertArrayNotHasKey('@amsterdam/design-system-assets', $allDeps, 'package.json must not depend on @amsterdam/design-system-assets.');
         $this->assertArrayNotHasKey('@amsterdam/design-system-react-icons', $allDeps, 'package.json must not depend on @amsterdam/design-system-react-icons.');
         $this->assertArrayHasKey('@conduction/nextcloud-vue', $decoded['devDependencies'] ?? [], '@conduction/nextcloud-vue must be a devDependency.');
-        $this->assertArrayHasKey('@gouvfr/dsfr', $decoded['devDependencies'] ?? [], '@gouvfr/dsfr must be a devDependency.');
+
+        // @gouvfr/dsfr is declared OPTIONAL, not dev. Its published dependency tree is
+        // broken upstream — @gouvfr/dsfr@1.15.1 -> @gouvfr/dsfr-nexus -> @gouvfr/dsfr-roller
+        // -> @gouvfr/dsfr-publisher, which is not on the registry (E404), as is
+        // @gouvfr/dsfr-token. Declaring it as a devDependency made `npm ci` impossible and
+        // took every npm-dependent CI job down with it. `optionalDependencies` keeps the
+        // declaration (and its provenance) while letting npm skip the unresolvable subtree;
+        // scripts/build-icons.js already falls back to .dsfr-src/ when the package is absent.
+        $this->assertArrayHasKey(
+            '@gouvfr/dsfr',
+            $decoded['optionalDependencies'] ?? [],
+            '@gouvfr/dsfr must stay declared (as an optionalDependency) as the dsfr pack source.'
+        );
+        $this->assertArrayNotHasKey(
+            '@gouvfr/dsfr',
+            $decoded['devDependencies'] ?? [],
+            '@gouvfr/dsfr must NOT be a devDependency — its upstream tree is unresolvable and it breaks npm ci.'
+        );
     }
 
     /**
