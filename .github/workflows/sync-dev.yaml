@@ -11,6 +11,9 @@ on:
 jobs:
   sync-to-development-release:
     runs-on: ubuntu-latest
+    # A checkout plus a branch push. The comparable shared create-pr job was
+    # observed at max 5.6 min across 152 executions.
+    timeout-minutes: 20
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3

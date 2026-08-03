@@ -12,6 +12,8 @@ jobs:
   deploy:
     name: Deploy Documentation
     runs-on: ubuntu-latest
+    # Observed across 23 executions: median 0.2 min, max 2.5 min.
+    timeout-minutes: 20
     # Only deploy on push, not on pull requests
     if: github.event_name == 'push'
     permissions:

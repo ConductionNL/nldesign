@@ -12,6 +12,9 @@ on:
 jobs:
   create-pr:
     runs-on: ubuntu-latest
+    # Observed across 152 executions: median 0.1 min, max 5.6 min (a slow
+    # full-depth clone). 20 min leaves a wide margin.
+    timeout-minutes: 20
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3

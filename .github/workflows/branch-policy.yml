@@ -8,6 +8,8 @@ jobs:
   check-source-branch:
     name: Branch Policy Check
     runs-on: ubuntu-latest
+    # Observed across 31 executions: max 0.1 min. A bash branch-name check.
+    timeout-minutes: 10
     steps:
       - name: Verify source branch
         run: |

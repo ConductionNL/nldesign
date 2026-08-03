@@ -14,6 +14,10 @@ on:
 jobs:
   release-management:
     runs-on: ubuntu-latest
+    # Observed across 26 executions: median 0.6 min, max 0.7 min. Bounded at 45
+    # to match the shared release jobs — a spuriously failed release is
+    # expensive, and the frontend build alone has hit 211 s under load.
+    timeout-minutes: 45
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -143,6 +147,8 @@ jobs:
 
   update-changelog:
     runs-on: ubuntu-latest
+    # Observed at ~0.2 min. A checkout plus the changelog-ci action.
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
