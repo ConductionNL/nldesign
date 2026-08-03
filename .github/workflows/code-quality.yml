@@ -21,3 +21,26 @@ jobs:
       enable-eslint: true
       enable-sbom: true
       enable-phpunit: true
+      # nldesign ships ZERO .vue files — nc-vue is a build-only devDependency
+      # used for icon generation. That is precisely why this app NEEDS e2e
+      # rather than being exempt from it: nldesign's entire product surface is
+      # runtime CSS — design tokens, token sets, dark mode, high-contrast, the
+      # NL Design System variable mapping onto Nextcloud's own theming. None of
+      # that is observable from a unit test, because there is no component to
+      # mount; it only exists once a browser has resolved the cascade against a
+      # running Nextcloud. tests/e2e/spec-coverage/ holds 31 specs that do
+      # exactly that.
+      #
+      # `playwright-test-path` is left at its default (`tests/e2e`). The shared
+      # workflow uses it twice: to assert tests exist, and to locate a config —
+      # first `tests/e2e/playwright.config.ts`, then the repo root. nldesign has
+      # no config under tests/e2e, so the root `playwright.config.ts` is used,
+      # whose `chromium` project runs spec-coverage/ and testIgnores visual/
+      # (PNG baselines are host-font/GPU specific and cannot gate on a runner).
+      #
+      # workers stays at 1 deliberately. These specs mutate GLOBAL admin
+      # theming state — active token set, dark mode, hidden slogan, custom CSS.
+      # Two workers racing on one Nextcloud would cross-contaminate, so this
+      # suite is not a candidate for the `fullyParallel` treatment used
+      # elsewhere in the fleet.
+      enable-playwright: true
