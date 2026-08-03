@@ -12,12 +12,15 @@ jobs:
   php-checks:
     name: ${{ matrix.check.name }}
     runs-on: ubuntu-latest
-    # Matrix of 6 legs (PHP Lint, PHPCS, PHPMD, Psalm, PHPStan, PHPUnit). The
-    # equivalent shared PHP Quality legs were observed at max 4.0 min across
-    # 1497 executions, and the PHPUnit leg is the slow one (measured up to
-    # 18.9 min while succeeding elsewhere in the fleet). 20 min covers every
-    # leg with margin; the point is to catch a hang, not to enforce speed.
-    timeout-minutes: 20
+    # Matrix of 6 legs (PHP Lint, PHPCS, PHPMD, Psalm, PHPStan, PHPUnit). ONE
+    # job-level bound covers all six, so it has to clear the SLOWEST leg, not
+    # the average. Five of them are static analysis at max 4.0 min (shared PHP
+    # Quality, 1497 executions) — but the PHPUnit leg has been measured at
+    # 18.9 min WHILE SUCCEEDING elsewhere in the fleet, because a full PHPUnit
+    # run installs a Nextcloud server first. A 20-minute bound would leave that
+    # known-good duration only ~6% of headroom, which is exactly how a timeout
+    # turns a slow run into a phantom defect. 30 min instead.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
