@@ -104,26 +104,26 @@ Upstream: Système de Design de l'État (DSFR) — @gouvfr/dsfr
 Licence: **Etalab-2.0**
 Available in: `img/icons/dsfr/`
 
-- dsfr/arrow-down-circle-fill
-- dsfr/arrow-down-circle-line
-- dsfr/arrow-down-fill
-- dsfr/arrow-down-line
-- dsfr/arrow-down-s-fill
-- dsfr/arrow-down-s-line
-- dsfr/arrow-go-back-fill
-- dsfr/arrow-go-back-line
-- dsfr/arrow-go-forward-fill
-- dsfr/arrow-go-forward-line
-- dsfr/arrow-left-circle-fill
-- dsfr/arrow-left-circle-line
-- dsfr/arrow-left-down-fill
-- dsfr/arrow-left-down-line
-- dsfr/arrow-left-fill
-- dsfr/arrow-left-line
-- dsfr/arrow-left-right-fill
-- dsfr/arrow-left-right-line
-- dsfr/arrow-left-s-fill
-- dsfr/arrow-left-s-line
+- dsfr/account-circle-fill
+- dsfr/account-circle-line
+- dsfr/account-pin-circle-fill
+- dsfr/account-pin-circle-line
+- dsfr/add-circle-fill
+- dsfr/add-circle-line
+- dsfr/add-line
+- dsfr/admin-fill
+- dsfr/admin-line
+- dsfr/airplay-fill
+- dsfr/airplay-line
+- dsfr/alarm-warning-fill
+- dsfr/alarm-warning-line
+- dsfr/alert-fill
+- dsfr/alert-line
+- dsfr/align-center
+- dsfr/align-justify
+- dsfr/align-left
+- dsfr/align-right
+- dsfr/anchor-fill
 ... and 1018 more
 
 DSFR filenames (`dsfr/{basename}.svg`) are the source SVG's basename with its category
