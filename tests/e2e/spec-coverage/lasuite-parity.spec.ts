@@ -345,9 +345,19 @@ test.describe('lasuite-parity', () => {
 		// installed NC version does not surface `.modal-container` for it
 		// (implementation detail that varies by NC release), skip rather
 		// than fail on something unrelated to this app's theming code.
+		// Navigate BEFORE reading the CSRF token. `requestToken()` evaluates
+		// `window.OC.requestToken` in the page, and a fresh `page` fixture is on
+		// about:blank, where `OC` is undefined — so this threw
+		// "Cannot read properties of undefined (reading 'requestToken')" before
+		// it reached anything it meant to assert. Every other test in this
+		// describe goes to THEMING_URL first; this one did not. It had never
+		// surfaced because the describe is `mode: 'serial'` and an earlier
+		// failure always stopped the block before this test ran.
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('networkidle')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, 'lasuite')
-		await page.goto(THEMING_URL)
+		await page.reload()
 		await page.waitForLoadState('networkidle')
 
 		const searchButton = page.locator('#header .unified-search__button')
