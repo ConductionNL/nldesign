@@ -123,3 +123,45 @@ jobs:
       # an `extends` cannot be made lazy by DI because it is resolved by the
       # autoloader, not the container. That is tracked separately.
       additional-apps: '[{"repo":"ConductionNL/openregister","app":"openregister","ref":"development"}]'
+
+      # ── Integration tests ────────────────────────────────────────────────
+      # `enable-newman` defaults to FALSE and this caller never set it, so
+      # tests/integration/nldesign.postman_collection.json had never executed in
+      # CI. It sits at the default `newman-collection-path` (tests/integration),
+      # which is both the directory the validator counts collections in and the
+      # directory the run step globs `*.postman_collection.json` in — flat, not
+      # recursively.
+      enable-newman: true
+
+      # ── Frontend Check legs ──────────────────────────────────────────────
+      # `frontend-checks` defaults to `[]`, and an empty list means the shared
+      # workflow emits NO "Frontend Check" job at all — so these two validators
+      # ran nowhere while the run still looked complete. Both are self-contained
+      # `node` scripts, which is what a leg has to be.
+      # Measured on this tree before enabling: BOTH FAIL — `check:manifest` on
+      # `top-level: menu (array) is required` + `pages (array) is required`
+      # (nldesign's src/manifest.json does not carry the fleet manifest shape at
+      # all), `test:l10n` on source strings missing from l10n/en.json. Real
+      # pre-existing defects; the gate is what makes them visible.
+      # `test` / `test:unit` are NOT listed: "Frontend Tests (unit)" runs them.
+      frontend-checks: '["check:manifest", "test:l10n"]'
+
+      # ── Coverage ratchet ─────────────────────────────────────────────────
+      # `enable-coverage-guard` defaults to FALSE, which is why both
+      # "Coverage Baseline Protection" and "Coverage Baseline Check" have only
+      # ever reported `skipped`. It needs two inputs this repo did not have,
+      # both added in this commit: `scripts/coverage-guard.php` (byte-identical
+      # to openregister's) and `.coverage-baseline` = 77.48, this repo's own
+      # measured coverage (3410 of 4401 statements) read from clover.xml in the
+      # `coverage-report` artifact of run 30911331815.
+      enable-coverage-guard: true
+
+      # ── Hydra mechanical gates ───────────────────────────────────────────
+      # `enable-hydra-gates` defaults to FALSE, so this tier has never executed
+      # here — the job reported `skipped`, which the Quality Report renders
+      # identically to a pass. Pinned to v1.0.1 so a change to the gate package
+      # cannot move this repo's verdict without a commit here.
+      # `enable-axe` deliberately NOT set: a vanilla Nextcloud 34 already carries
+      # serious/critical violations from core's own UI.
+      enable-hydra-gates: true
+      hydra-gates-ref: v1.0.1
