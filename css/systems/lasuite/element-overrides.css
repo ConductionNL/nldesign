@@ -923,3 +923,30 @@ body[data-themes*="dark"] {
 	content: none !important;
 	display: none !important;
 }
+
+/* ============================================
+   THE GROUND BENEATH EVERYTHING — what shows before the shell paints
+
+   Nextcloud paints html/body with --color-background-plain (#00679e, its
+   brand blue). Every rule in this file styles elements INSIDE that ground, so
+   until the shell has laid itself out the whole viewport is Nextcloud blue —
+   visible as a full-screen blue flash on every navigation, and permanently on
+   any page whose content does not cover the viewport.
+
+   REQ-CSS-007 reserves --color-background-plain against being SET, because
+   Nextcloud's dark-mode derivation reads it. It does not reserve the body
+   element. Setting the PROPERTY here leaves the variable, and therefore the
+   derivation, untouched — the same distinction that let the Nextcloud-facing
+   text colours be flipped for dark mode without touching the reserved
+   background.
+
+   The theming background IMAGE is deliberately left alone: it paints over this
+   colour where Nextcloud intends a wallpaper (login, guest pages), so admins
+   keep that feature and only the ground beneath it changes. */
+html,
+body,
+body#body-user,
+body#body-login,
+body#body-public {
+	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+}
