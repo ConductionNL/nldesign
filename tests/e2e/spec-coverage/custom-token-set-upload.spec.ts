@@ -138,9 +138,20 @@ test.describe('custom-token-set-upload', () => {
 			// Clean up. Delete opens an OC.dialogs.confirm in-DOM modal; confirm via
 			// its primary button (not a native dialog event).
 			await row.locator('button:has-text("Delete")').click()
-			// NC32 OC.dialogs.confirm renders an @nextcloud/dialogs Vue dialog whose
-			// confirm action is the primary button (aria-label "Yes").
-			const confirmBtn = page.locator('.dialog__modal[role="dialog"] button.button-vue--primary')
+			// OC.dialogs.confirm renders an @nextcloud/dialogs Vue dialog whose
+			// confirm action is the button labelled "Yes".
+			//
+			// Target it by ACCESSIBLE NAME, not by the primary-variant CSS class.
+			// `button.button-vue--primary` is @nextcloud/vue 9 markup; the
+			// @nextcloud/vue 8 that Nextcloud 31 ships emits
+			// `button-vue--vue-primary` for the same button, so the class
+			// selector matched nothing on stable31 and both delete assertions
+			// timed out on a button that was on screen the whole time
+			// (run 30889958278). The role+name query is what the dialog's own
+			// accessibility contract guarantees across both.
+			const dialog = page.locator('.dialog__modal[role="dialog"]')
+			await expect(dialog).toBeVisible({ timeout: 10000 })
+			const confirmBtn = dialog.getByRole('button', { name: 'Yes', exact: true })
 			await expect(confirmBtn).toBeVisible({ timeout: 10000 })
 			await confirmBtn.click()
 			await expect(row).toBeHidden({ timeout: 10000 })
@@ -202,9 +213,20 @@ test.describe('custom-token-set-upload', () => {
 			// in-DOM modal (NOT a native browser confirm), so confirm by clicking
 			// the dialog's primary button rather than handling a `dialog` event.
 			await row.locator('button:has-text("Delete")').click()
-			// NC32 OC.dialogs.confirm renders an @nextcloud/dialogs Vue dialog whose
-			// confirm action is the primary button (aria-label "Yes").
-			const confirmBtn = page.locator('.dialog__modal[role="dialog"] button.button-vue--primary')
+			// OC.dialogs.confirm renders an @nextcloud/dialogs Vue dialog whose
+			// confirm action is the button labelled "Yes".
+			//
+			// Target it by ACCESSIBLE NAME, not by the primary-variant CSS class.
+			// `button.button-vue--primary` is @nextcloud/vue 9 markup; the
+			// @nextcloud/vue 8 that Nextcloud 31 ships emits
+			// `button-vue--vue-primary` for the same button, so the class
+			// selector matched nothing on stable31 and both delete assertions
+			// timed out on a button that was on screen the whole time
+			// (run 30889958278). The role+name query is what the dialog's own
+			// accessibility contract guarantees across both.
+			const dialog = page.locator('.dialog__modal[role="dialog"]')
+			await expect(dialog).toBeVisible({ timeout: 10000 })
+			const confirmBtn = dialog.getByRole('button', { name: 'Yes', exact: true })
 			await expect(confirmBtn).toBeVisible({ timeout: 10000 })
 			await confirmBtn.click()
 			await expect(row).toBeHidden({ timeout: 10000 })

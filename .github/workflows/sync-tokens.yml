@@ -13,6 +13,8 @@ permissions:
 jobs:
   sync-tokens:
     runs-on: ubuntu-latest
+    # Observed n=11 (2026): max 1.9 min, median 0.3 min. Bound loosely at 15.
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

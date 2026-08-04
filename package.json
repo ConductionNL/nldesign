@@ -44,9 +44,11 @@
 	"dependencies": {
 		"@fontsource/fira-sans": "^5.0.0"
 	},
+	"optionalDependencies": {
+		"@gouvfr/dsfr": "^1.15.1"
+	},
 	"devDependencies": {
-		"@conduction/nextcloud-vue": "^1.0.0-beta.218",
-		"@gouvfr/dsfr": "^1.15.1",
+		"@conduction/nextcloud-vue": "3.0.0-vue3.4",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",

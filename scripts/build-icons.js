@@ -111,8 +111,50 @@ function listSvgFilesRecursive(dir) {
 	return results;
 }
 
+/**
+ * Read an already-materialized pack directory back into memory, as
+ * `{ basename -> svg }`, sorted by basename so the regenerated inventory is
+ * byte-stable regardless of readdir order.
+ *
+ * Used to carry a glob pack across `resetDir()` when its upstream source tree
+ * is not installable — see the GLOB_PACKS loop for why that is a supported
+ * state rather than an error.
+ */
+function snapshotPackDir(dir) {
+	/** @type {Map<string, string>} */
+	const snapshot = new Map();
+	if (fs.existsSync(dir) === false || fs.statSync(dir).isDirectory() === false) {
+		return snapshot;
+	}
+	const files = fs.readdirSync(dir)
+		.filter((f) => f.toLowerCase().endsWith('.svg'))
+		.sort();
+	for (const file of files) {
+		snapshot.set(path.basename(file, '.svg'), fs.readFileSync(path.join(dir, file), 'utf8'));
+	}
+	return snapshot;
+}
+
 async function main() {
 	console.log('Building NL Design System Icons from @conduction/nextcloud-vue and @gouvfr/dsfr...');
+
+	// Snapshot every glob pack's already-committed artefacts BEFORE the wipe.
+	//
+	// `resetDir()` below deletes img/icons/ wholesale, which is correct for the
+	// data-URI packs (always regenerable from @conduction/nextcloud-vue, a real
+	// dependency). It is NOT safe for a glob pack whose source is an OPTIONAL
+	// dependency: @gouvfr/dsfr is declared in `optionalDependencies` precisely
+	// because it currently cannot be npm-installed (broken optional deps
+	// upstream), and its documented fallback `.dsfr-src/icons/` is gitignored.
+	// On any clean checkout — every CI runner — neither candidate source
+	// directory exists, so the wipe destroyed 1038 committed icons and the
+	// script then exited 1. `npm run build` could not succeed anywhere except a
+	// developer box that had manually pre-fetched the source.
+	/** @type {Map<string, Map<string, string>>} */
+	const committedGlobPacks = new Map();
+	for (const pack of GLOB_PACKS) {
+		committedGlobPacks.set(pack.set, snapshotPackDir(path.join(iconsDestPath, pack.set)));
+	}
 
 	resetDir(iconsDestPath);
 
@@ -146,8 +188,43 @@ async function main() {
 	for (const pack of GLOB_PACKS) {
 		const sourceDir = pack.sourceDirs.find((d) => fs.existsSync(d) && fs.statSync(d).isDirectory());
 		if (sourceDir === undefined) {
-			console.error(`✗ Pack "${pack.set}" has no available source directory (tried: ${pack.sourceDirs.join(', ')}).`);
-			process.exit(1);
+			// The upstream source is unavailable. That is an EXPECTED state for
+			// this pack, not a build error: @gouvfr/dsfr sits in
+			// `optionalDependencies` because it cannot currently be
+			// npm-installed, and the documented scratch fallback
+			// `.dsfr-src/icons/` is gitignored — so neither candidate exists on
+			// a clean checkout. The sibling script scripts/build-fonts-marianne.js
+			// already treats exactly this condition as a warning ("0 is
+			// expected/harmless when @gouvfr/dsfr is not installed") and leaves
+			// its committed artefacts alone; this pack now does the same.
+			//
+			// Reuse the committed artefacts snapshotted before resetDir(). This
+			// is deliberately NOT a skip: the pack is still fully materialized,
+			// so `packData` keeps its licence/upstream attribution, ICONS.md
+			// regenerates with the identical inventory, and the alias shim can
+			// still resolve `dsfr/*` replacements. Skipping would silently drop
+			// 1038 icons and the Etalab-2.0 attribution row out of a COMMITTED
+			// file, which is a far worse failure than the one being fixed.
+			const committed = committedGlobPacks.get(pack.set) ?? new Map();
+			if (committed.size === 0) {
+				console.error(`✗ Pack "${pack.set}" has no available source directory (tried: ${pack.sourceDirs.join(', ')}) and no committed icons under ${path.join(iconsDestPath, pack.set)} to fall back on.`);
+				process.exit(1);
+			}
+
+			const setDir = path.join(iconsDestPath, pack.set);
+			fs.mkdirSync(setDir, { recursive: true });
+			const icons = [];
+			for (const [basename, svg] of committed) {
+				fs.writeFileSync(path.join(setDir, `${basename}.svg`), svg);
+				svgByPath.set(`${pack.set}/${basename}`, svg);
+				icons.push({ id: basename });
+			}
+
+			packData.set(pack.set, { icons, upstream: pack.upstream, licence: pack.licence });
+			console.log(`⚠ Pack "${pack.set}": no source directory available (tried: ${pack.sourceDirs.join(', ')}).`);
+			console.log(`✓ Preserved ${icons.length} already-committed icons for set "${pack.set}" -> ${setDir}`);
+			console.log('  To refresh from upstream: npm install --no-save @gouvfr/dsfr@1.15.1 && npm run build:icons');
+			continue;
 		}
 
 		const sourceFiles = listSvgFilesRecursive(sourceDir);
@@ -177,6 +254,17 @@ async function main() {
 			svgByPath.set(`${pack.set}/${basename}`, svg);
 			icons.push({ id: basename });
 		}
+
+		// Sort by id before recording. `listSvgFilesRecursive` returns
+		// source-tree order (category directory by category directory), which
+		// is an upstream layout detail that leaks straight into the committed
+		// img/ICONS.md inventory sample. The materialized pack is FLAT — the
+		// category prefix is dropped — so that ordering is not reconstructible
+		// from the committed artefacts, and the fallback path above can only
+		// ever produce sorted order. Sorting here too makes ICONS.md identical
+		// whether or not the optional upstream source happens to be installed,
+		// instead of flip-flopping the committed file between the two.
+		icons.sort((a, b) => a.id.localeCompare(b.id));
 
 		packData.set(pack.set, { icons, upstream: pack.upstream, licence: pack.licence });
 		console.log(`✓ Materialized ${icons.length} icons for set "${pack.set}" -> ${setDir} (source: ${sourceDir})`);

@@ -196,8 +196,20 @@ class MarianneFontTest extends TestCase
     }//end testGatedStylesheetDeclaresCorrectFontWeights()
 
     /**
-     * `@gouvfr/dsfr` is declared as a devDependency (build-only) and no
-     * runtime PHP or JS source imports/requires it.
+     * `@gouvfr/dsfr` is a build-only dependency and no runtime PHP or JS
+     * source imports/requires it.
+     *
+     * It is declared under `optionalDependencies`, not `devDependencies`. Its
+     * published tree is broken upstream — @gouvfr/dsfr@1.15.1 ->
+     * @gouvfr/dsfr-nexus -> @gouvfr/dsfr-roller -> @gouvfr/dsfr-publisher, which
+     * is not on the registry (E404), as is @gouvfr/dsfr-token — so declaring it
+     * as a devDependency made `npm ci` impossible and took every npm-dependent
+     * CI job down with it. `optionalDependencies` keeps the declaration while
+     * letting npm skip the unresolvable subtree.
+     *
+     * The build-only property this test exists to protect is unchanged and is
+     * still asserted: it must not be a RUNTIME dependency, and nothing under
+     * lib/ or js/ may reference it.
      *
      * @spec openspec/specs/marianne-font/spec.md
      */
@@ -208,8 +220,13 @@ class MarianneFontTest extends TestCase
 
         $this->assertArrayHasKey(
             '@gouvfr/dsfr',
+            $packageJson['optionalDependencies'] ?? [],
+            '@gouvfr/dsfr must appear under package.json optionalDependencies.'
+        );
+        $this->assertArrayNotHasKey(
+            '@gouvfr/dsfr',
             $packageJson['devDependencies'] ?? [],
-            '@gouvfr/dsfr must appear under package.json devDependencies.'
+            '@gouvfr/dsfr must NOT be a devDependency — its upstream tree is unresolvable and it breaks npm ci.'
         );
         $this->assertArrayNotHasKey(
             '@gouvfr/dsfr',

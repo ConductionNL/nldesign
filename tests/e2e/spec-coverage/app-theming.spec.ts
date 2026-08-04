@@ -11,7 +11,22 @@ import { test, expect } from '@playwright/test'
 
 const THEMING_URL = '/settings/admin/theming'
 // An app that is present in the test instance and safe to toggle.
-const TARGET_APP = 'activity'
+//
+// `dashboard` — not `activity`. Activity is a separate appstore app; it is
+// bundled in the docker image but is NOT in nextcloud/server's `apps/`, which
+// is what CI checks out, so it is simply absent there. The panel rendered
+// correctly and just had no `input[data-app-id="activity"]` row, and all four
+// tests here blew a 30s timeout on a locator for an app that was never
+// installed (runs 30889958278, 30892246034).
+//
+// `dashboard` is shipped by nextcloud/server, enabled by default (it is the
+// first entry of core's own `defaultapp` list), is not in
+// AppThemingService::PROTECTED_IDS so it appears in the panel, and has a real
+// page at /apps/dashboard/ for the "CSS is stripped from its pages" half of
+// the assertion. Deliberately NOT `files`: `/apps/files/` is already the
+// CONTROL that must stay themed in the same test, and using one app for both
+// arms would make the assertion contradict itself.
+const TARGET_APP = 'dashboard'
 
 /** Count nldesign stylesheets present in the page head. */
 async function nldesignStyleCount(page): Promise<number> {
