@@ -7,17 +7,119 @@ on:
     branches: [main, beta, development]
   workflow_dispatch:
 
+concurrency:
+  group: quality-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+# Permission CEILING for the called quality pipeline. GitHub statically
+# validates the called workflow's declared job permissions against this
+# grant — even for jobs that are disabled — so it must cover the maximum
+# any nested job declares: journeydoc-capture (contents+actions write),
+# update-baseline / features-extract (contents write), and the Quality
+# Report PR comment (issues / pull-requests write).
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+
 jobs:
   quality:
     uses: ConductionNL/.github/.github/workflows/quality.yml@main
     with:
       app-name: nldesign
       php-version: "8.3"
-      enable-psalm: false
-      enable-phpstan: false
-      enable-phpcs: false
+      # These three were `false`, and that is worse than it sounds. The shared
+      # workflow builds one matrix leg per tool unconditionally; a disabled leg
+      # prints "<tool> is disabled — skipping." and `exit 0`. The job therefore
+      # COMPLETES SUCCESSFULLY, and GitHub publishes a check context named
+      # `quality / PHP Quality (psalm)` with a green tick — for a run in which
+      # psalm was never invoked. On PR #206 that leg finished in ~13s with no
+      # psalm output at all. Three checks named after three analysers were
+      # reporting the analysers' ABSENCE as their SUCCESS.
+      #
+      # Turning them on rather than dressing up the skip, because all three
+      # already pass on this repo today — the configs (phpcs.xml, phpstan.neon,
+      # psalm.xml) are present, complete and were clearly once in use. Measured
+      # on 9a0fbac under PHP 8.4:
+      #
+      #     phpcs    exit 0   0 errors, 5 warnings  (warnings fixed in this PR)
+      #     phpstan  exit 0   [OK] No errors        (level 5)
+      #     psalm    exit 0   No errors found
+      #
+      # Each was positive-controlled before being trusted, because a tool that
+      # cannot START is indistinguishable from a tool that found nothing — the
+      # first local attempt at phpcs exited 255 in vendor/composer/platform_check.php
+      # (host PHP 8.2 vs the required 8.3) and printed no findings, which reads
+      # exactly like a clean run. Injecting one deliberately broken class into
+      # lib/Service/ turned all three red — phpcs 2, phpstan 1, psalm 2 — so
+      # the green above is a verdict, not a silence.
+      enable-psalm: true
+      enable-phpstan: true
+      enable-phpcs: true
       enable-phpmetrics: true
       enable-frontend: true
       enable-eslint: true
       enable-sbom: true
       enable-phpunit: true
+      # nldesign ships ZERO .vue files — nc-vue is a build-only devDependency
+      # used for icon generation. That is precisely why this app NEEDS e2e
+      # rather than being exempt from it: nldesign's entire product surface is
+      # runtime CSS — design tokens, token sets, dark mode, high-contrast, the
+      # NL Design System variable mapping onto Nextcloud's own theming. None of
+      # that is observable from a unit test, because there is no component to
+      # mount; it only exists once a browser has resolved the cascade against a
+      # running Nextcloud. tests/e2e/spec-coverage/ holds 31 specs that do
+      # exactly that.
+      #
+      # `playwright-test-path` is left at its default (`tests/e2e`). The shared
+      # workflow uses it twice: to assert tests exist, and to locate a config —
+      # first `tests/e2e/playwright.config.ts`, then the repo root. nldesign has
+      # no config under tests/e2e, so the root `playwright.config.ts` is used,
+      # whose `chromium` project runs spec-coverage/ and testIgnores visual/
+      # (PNG baselines are host-font/GPU specific and cannot gate on a runner).
+      #
+      # workers stays at 1 deliberately. These specs mutate GLOBAL admin
+      # theming state — active token set, dark mode, hidden slogan, custom CSS.
+      # Two workers racing on one Nextcloud would cross-contaminate, so this
+      # suite is not a candidate for the `fullyParallel` treatment used
+      # elsewhere in the fleet.
+      enable-playwright: true
+      # A fresh Nextcloud has nldesign's `token_set` unset, which resolves to
+      # the `nextcloud` set, whose design_system is `none` — and `none` means
+      # CssInjectionService emits NO design-system layer and NO token layer at
+      # all. That is a correct, deliberate stock-Nextcloud state, and it is also
+      # not the state these specs describe: they assert the cascade
+      # systems/… → tokens/<set>.css → custom-overrides.css, and a dark variant
+      # next to the light one. On the first CI execution three of them failed
+      # with a bare index of -1 for a stylesheet that was never supposed to be
+      # there yet (run 30889958278).
+      #
+      # Seeding an actually-themed set is the precondition, not a workaround —
+      # `rijkshuisstijl` has no explicit design_system, so it resolves to
+      # `nldesign`, and it is one of the 41 sets that ships a generated dark
+      # variant under css/tokens/dark/, which the dark-mode specs need.
+      # dark_variants already defaults to '1'.
+      playwright-seed-command: 'php occ config:app:set nldesign token_set --value rijkshuisstijl'
+      # OpenRegister is required for nldesign to serve ANY route at all today.
+      #
+      # lib/Controller/HealthController.php declares
+      #   class HealthController extends
+      #     OCA\OpenRegister\AppHost\Controller\GenericHealthController
+      # and its docblock asserts "OpenRegister is a soft dependency; the parent
+      # class autoloads only on route dispatch, not at bootstrap."
+      #
+      # The first run of this job disproved that: with OpenRegister absent,
+      # `/apps/nldesign/` returned **HTTP 500** — `Class
+      # "OCA\OpenRegister\AppHost\Controller\GenericHealthController" not
+      # found`. Nextcloud's router reflects over every registered controller
+      # while MATCHING a route, so the missing parent takes down every nldesign
+      # route, not just /api/health. The login page then never finished
+      # rendering and global-setup timed out waiting for input[name="user"] —
+      # a failure that names the login form and says nothing about the cause.
+      #
+      # Installing OpenRegister makes the suite able to run. It does NOT fix
+      # the underlying coupling: nldesign is currently broken standalone, and
+      # an `extends` cannot be made lazy by DI because it is resolved by the
+      # autoloader, not the container. That is tracked separately.
+      additional-apps: '[{"repo":"ConductionNL/openregister","app":"openregister","ref":"development"}]'

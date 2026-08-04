@@ -40,21 +40,38 @@ export default defineConfig({
 			},
 		},
 		// Visual-regression project (GAP-5). Opt-in / non-gating:
-		//   npx playwright test --project visual
-		//   npx playwright test --project visual --update-snapshots  (rebaseline)
+		//   PW_VISUAL=1 npx playwright test --project visual
+		//   PW_VISUAL=1 npx playwright test --project visual --update-snapshots
 		// Fixed viewport + authenticated session => deterministic shots.
 		// Baselines live in tests/e2e/visual/*-snapshots/ and ARE committed.
+		//
 		// PLATFORM CAVEAT: PNG baselines are host-font/GPU specific, so a CI
 		// Linux runner will not byte-match a dev-container baseline; the visual
 		// project must regenerate its baselines in-CI before it can gate.
-		{
-			name: 'visual',
-			testMatch: /visual\/.*\.visual\.spec\.ts$/,
-			use: {
-				viewport: { width: 1280, height: 800 },
-				storageState: 'tests/e2e/.auth/admin.json',
-			},
-			timeout: 90_000,
-		},
+		//
+		// The env gate is what makes "opt-in" true. It was not: the project was
+		// declared unconditionally, and `npx playwright test` — which is exactly
+		// what the shared CI job runs, with no `--project` — runs EVERY declared
+		// project. `testIgnore: ['**/visual/**']` on chromium only stops chromium
+		// picking the files up; it does nothing about the visual project running
+		// them itself. So the first CI execution of this suite failed on
+		// `theming-admin.png` with "Expected an image 1751px by 800px, received
+		// 1280px by 800px" — a baseline captured on another host, gating a job
+		// its own documentation says it cannot gate (run 30889958278).
+		//
+		// Not a skip and not a deleted test: with PW_VISUAL=1 the project is
+		// declared and runs exactly as before. What changed is that the default
+		// invocation no longer silently includes it.
+		...(process.env.PW_VISUAL === '1'
+			? [{
+				name: 'visual',
+				testMatch: /visual\/.*\.visual\.spec\.ts$/,
+				use: {
+					viewport: { width: 1280, height: 800 },
+					storageState: 'tests/e2e/.auth/admin.json',
+				},
+				timeout: 90_000,
+			}]
+			: []),
 	],
 })

@@ -38,16 +38,18 @@
 		"test:coverage": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json-summary --coverage.reporter=text-summary --coverage.include=js/** --coverage.reportsDirectory=coverage-vitest",
 		"test:coverage-ratchet": "npm run test:coverage && bash tests/coverage-ratchet.sh vitest coverage-vitest/coverage-summary.json",
 		"test:unit:watch": "vitest",
-		"check:manifest": "node tests/validate-manifest.js"
+		"check:manifest": "node tests/validate-manifest.js",
+		"prepare": "git config core.hooksPath .githooks || true"
 	},
 	"dependencies": {
 		"@fontsource/fira-sans": "^5.0.0"
 	},
+	"optionalDependencies": {
+		"@gouvfr/dsfr": "^1.15.1"
+	},
 	"devDependencies": {
-		"@conduction/nextcloud-vue": "^1.0.0-beta.218",
-		"@gouvfr/dsfr": "^1.15.1",
+		"@conduction/nextcloud-vue": "3.0.0-vue3.4",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
-		"@gouvfr/dsfr": "^1.15.1",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",
 		"@vitest/coverage-v8": "^1.6.1",

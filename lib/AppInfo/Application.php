@@ -55,13 +55,19 @@ class Application extends App implements IBootstrap
      * Register services and providers.
      *
      * No bootstrap-time service registration is required for health: the
-     * `/api/health` endpoint is served by the thin `Controller\HealthController`
-     * subclass of the OpenRegister AppHost engine's GenericHealthController
-     * (ADR-040). The subclass is autoloaded only when the route is dispatched,
-     * never at bootstrap, so OpenRegister is a SOFT/optional dependency for
-     * health only — Nextcloud still boots and nldesign still themes when
-     * OpenRegister is absent (a request to /api/health would then degrade
-     * rather than fatal the app). The declarative checks live in
+     * `/api/health` endpoint is served by `Controller\HealthController`, which
+     * adopts the OpenRegister AppHost observability engine by COMPOSITION
+     * (ADR-040) — it resolves the engine out of the DI container by FQCN
+     * string at dispatch time and never names an OpenRegister class in a
+     * position the autoloader must resolve. OpenRegister is therefore a
+     * SOFT/optional dependency for health only: Nextcloud still boots,
+     * nldesign still themes, and every nldesign route still resolves when
+     * OpenRegister is absent — /api/health then degrades to
+     * `status: degraded` at HTTP 200 rather than 500ing the app. (It must NOT
+     * go back to `extends GenericHealthController`: NC's router
+     * ReflectionClass()es every file in lib/Controller/ while MATCHING any
+     * route, so an unresolvable parent 500s EVERY route — decidesk#377.)
+     * The declarative checks live in
      * `src/manifest.json` and use only the OR-independent primitives
      * (database, filesystem, appEnabled) — never orAvailable, and no OR-object
      * metrics. The `Capabilities` class IS registered here — it is the app's
@@ -93,8 +99,8 @@ class Application extends App implements IBootstrap
         // can be constructed by another app's dispatcher. Mirrors hermiq.
         include_once __DIR__.'/../../vendor/autoload.php';
 
-        // Health endpoint served by the thin Controller\HealthController
-        // subclass of the AppHost engine — no explicit registration needed.
+        // Health endpoint served by Controller\HealthController, which drives
+        // the AppHost engine by composition — no explicit registration needed.
         // Public huisstijl capability — see lib/Capabilities.php.
         $context->registerCapability(Capabilities::class);
 

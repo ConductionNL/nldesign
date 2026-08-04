@@ -126,6 +126,18 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 				fontFamily: FONT_STACK,
 			},
 		},
+		// MERGE NOTE (development <- wip/preserve-2026-08-04): both sides
+		// independently found that `#header .header-appname` is dead here —
+		// development established WHY (it exists only in Nextcloud's PUBLIC
+		// layout, core/templates/layout.public.php; the authenticated layout
+		// this spec runs against renders `.header-start` + `#header-start__appmenu`)
+		// and DELETED the row; this branch found the element NC34 actually
+		// renders and REPAIRED the row against it. The repaired row is kept,
+		// because it asserts the treatment css/systems/lasuite/element-overrides.css
+		// genuinely ships for the current app name, and the deleted row asserts
+		// nothing. nldesign's own `.header-appname` rules stay live on public
+		// pages; covering the public layout still needs its own spec against a
+		// public render, tracked separately as development noted.
 		{
 			name: 'header app name',
 			// Nextcloud 34 renders the current app's name through
@@ -168,7 +180,16 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			// instead of a rounded card. Radius 0 is the assertable half of that;
 			// the shadow and the x=0 flush position are covered by the layout
 			// checks below rather than this colour/metric table.
-			selector: '#app-navigation-vue',
+			// Both ids, exactly as css/systems/lasuite/element-overrides.css
+			// writes them ("#app-navigation, .app-navigation,
+			// #app-navigation-vue { … }") — one declaration block, so whichever
+			// the running Nextcloud renders carries the identical treatment.
+			// The settings page is server-rendered as `#app-navigation` on 31
+			// and Vue-rendered as `#app-navigation-vue` on 34; pinning only the
+			// 34 id made this row unsatisfiable on the version CI runs, and it
+			// blew a 15s waitForSelector (run 30893391595). Matching the CSS
+			// selector under test is the point, not a looser locator.
+			selector: '#app-navigation, #app-navigation-vue',
 			ref: {
 				backgroundColor: GRAY_000,
 				borderRadius: '0px',
@@ -361,11 +382,25 @@ test.describe('lasuite-parity', () => {
 		// installed NC version does not surface `.modal-container` for it
 		// (implementation detail that varies by NC release), skip rather
 		// than fail on something unrelated to this app's theming code.
+		// Navigate BEFORE reading the CSRF token. `requestToken()` evaluates
+		// `window.OC.requestToken` in the page, and a fresh `page` fixture is on
+		// about:blank, where `OC` is undefined — so this threw
+		// "Cannot read properties of undefined (reading 'requestToken')" before
+		// it reached anything it meant to assert. Every other test in this
+		// describe goes to THEMING_URL first; this one did not. It had never
+		// surfaced because the describe is `mode: 'serial'` and an earlier
+		// failure always stopped the block before this test ran.
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('networkidle')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, 'lasuite')
-		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
-		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
-		// the network never goes idle and this wait burns the whole test budget.
+		// MERGE NOTE: development restructured this test to navigate BEFORE
+		// reading the CSRF token (see the comment above) and then `reload()`;
+		// this branch changed the post-token navigation's wait strategy. Both
+		// are kept: development's `reload()` with this branch's
+		// `domcontentloaded`, because `reload()` defaults to waiting for `load`,
+		// which is the same signal that never arrives here.
+		await page.reload({ waitUntil: 'domcontentloaded' })
 		await page.waitForLoadState('domcontentloaded')
 
 		const searchButton = page.locator('#header .unified-search__button')
