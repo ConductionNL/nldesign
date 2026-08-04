@@ -72,10 +72,32 @@ export async function setOverrides(page: Page, token: string, overrides: Record<
 	expect(res.body.status).toBe('ok')
 }
 
+/**
+ * Resolve a static asset URL under this app's web root, as the running
+ * Nextcloud itself would build it.
+ *
+ * The path must NOT be hardcoded. `/custom_apps/nldesign/...` is only correct
+ * on the docker dev image, where apps live in `custom_apps/`; CI checks the app
+ * out into `apps/nldesign`, where that URL matches nothing on disk, falls
+ * through the front controller into index.php, matches no route, and comes back
+ * as an HTML 404. To an `expect(res.ok())` that is indistinguishable from the
+ * asset being missing, and the spec reports it as a broken file rather than a
+ * wrong URL. `OC.filePath()` is the platform's own resolver and is right in
+ * both layouts.
+ */
+export async function appAssetUrl(page: Page, type: string, file: string): Promise<string> {
+	return page.evaluate(
+		({ t, f }) => (window as unknown as { OC: { filePath: (a: string, t: string, f: string) => string } })
+			.OC.filePath('nldesign', t, f),
+		{ t: type, f: file },
+	)
+}
+
 /** Read the raw served custom-overrides.css (the actual generated file on disk). */
 export async function getServedOverrideCss(page: Page): Promise<string> {
-	const res = await page.request.get('/custom_apps/nldesign/css/custom-overrides.css')
-	expect(res.ok(), 'custom-overrides.css should be served').toBeTruthy()
+	const url = await appAssetUrl(page, 'css', 'custom-overrides.css')
+	const res = await page.request.get(url)
+	expect(res.ok(), `custom-overrides.css should be served (${url}, HTTP ${res.status()})`).toBeTruthy()
 	return await res.text()
 }
 

@@ -20,25 +20,6 @@ use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test-only extension of IAppManager that re-declares getEnabledApps().
- *
- * The OCP 31 IAppManager stub no longer types getEnabledApps(), but the real
- * OC\App\AppManager still implements it and AppThemingService::getThemableApps()
- * relies on it. Declaring it here lets PHPUnit's MockBuilder configure the
- * method when running against the OCP stub package outside a full Nextcloud
- * server, without touching production code.
- */
-interface IAppManagerWithEnabledApps extends IAppManager
-{
-    /**
-     * Get all enabled app ids (present on the concrete OC\App\AppManager).
-     *
-     * @return string[] The enabled app ids.
-     */
-    public function getEnabledApps(): array;
-}//end interface
-
-/**
  * Unit tests for AppThemingService.
  */
 class AppThemingServiceTest extends TestCase
@@ -72,7 +53,14 @@ class AppThemingServiceTest extends TestCase
     {
         parent::setUp();
         $this->config     = $this->createMock(IConfig::class);
-        $this->appManager = $this->createMock(IAppManagerWithEnabledApps::class);
+        // Mock the REAL OCP interface. It previously mocked a test-only
+        // sub-interface that re-declared getEnabledApps() because "the OCP 31
+        // stub no longer types" it — but the stub was right and the production
+        // call was wrong: OC\App\AppManager has no getEnabledApps() before
+        // Nextcloud 34. The mock was manufacturing the method under test, so
+        // this suite passed on every version where the panel 500'd. Mocking
+        // only what OCP actually declares is what makes that impossible.
+        $this->appManager = $this->createMock(IAppManager::class);
         $this->service    = new AppThemingService($this->config, $this->appManager);
     }//end setUp()
 
@@ -204,7 +192,7 @@ class AppThemingServiceTest extends TestCase
     public function testGetThemableAppsListsEnabledAppsWithState(): void
     {
         $this->config->method('getAppValue')->willReturn('["calendar"]');
-        $this->appManager->method('getEnabledApps')
+        $this->appManager->method('getInstalledApps')
             ->willReturn(['files', 'calendar', 'nldesign', 'settings', 'theming']);
         $this->appManager->method('getAppInfo')->willReturnCallback(
             fn ($id) => ['name' => ucfirst($id)]

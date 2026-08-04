@@ -69,6 +69,22 @@ jobs:
       # suite is not a candidate for the `fullyParallel` treatment used
       # elsewhere in the fleet.
       enable-playwright: true
+      # A fresh Nextcloud has nldesign's `token_set` unset, which resolves to
+      # the `nextcloud` set, whose design_system is `none` — and `none` means
+      # CssInjectionService emits NO design-system layer and NO token layer at
+      # all. That is a correct, deliberate stock-Nextcloud state, and it is also
+      # not the state these specs describe: they assert the cascade
+      # systems/… → tokens/<set>.css → custom-overrides.css, and a dark variant
+      # next to the light one. On the first CI execution three of them failed
+      # with a bare index of -1 for a stylesheet that was never supposed to be
+      # there yet (run 30889958278).
+      #
+      # Seeding an actually-themed set is the precondition, not a workaround —
+      # `rijkshuisstijl` has no explicit design_system, so it resolves to
+      # `nldesign`, and it is one of the 41 sets that ships a generated dark
+      # variant under css/tokens/dark/, which the dark-mode specs need.
+      # dark_variants already defaults to '1'.
+      playwright-seed-command: 'php occ config:app:set nldesign token_set --value rijkshuisstijl'
       # OpenRegister is required for nldesign to serve ANY route at all today.
       #
       # lib/Controller/HealthController.php declares
