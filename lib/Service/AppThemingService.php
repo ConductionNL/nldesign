@@ -215,14 +215,13 @@ class AppThemingService
         // exists across the whole range appinfo/info.xml claims support for
         // (Nextcloud 28-34). `IAppManager::getEnabledApps()` was added later:
         // it is absent from OC\App\AppManager on 31 and present on 34, so the
-        // call worked on the NC 34 dev container and threw
-        //   Call to undefined method OC\App\AppManager::getEnabledApps()
-        // on every supported older server — a hard 500 for
-        // GET /settings/app-theming, i.e. the per-app theming admin panel was
-        // dead on those versions. First seen in CI on stable31, run
-        // 30889958278 job 91929658882; the browser symptom was the panel's
-        // fetch receiving an HTML error page:
-        //   "Error loading app theming: SyntaxError: Unexpected token '<'".
+        // call worked on the NC 34 dev container and threw "Call to undefined
+        // method OC\App\AppManager::getEnabledApps()" on every supported older
+        // server — a hard 500 for GET /settings/app-theming, i.e. the per-app
+        // theming admin panel was dead on those versions. First seen in CI on
+        // stable31, run 30889958278 job 91929658882; the browser symptom was
+        // the panel's fetch receiving an HTML error page, reported as
+        // "Error loading app theming: SyntaxError: Unexpected token '<'".
         $enabled = $this->appManager->getInstalledApps();
 
         $apps = [];
