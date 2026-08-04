@@ -39,6 +39,8 @@ use Psr\Container\ContainerInterface;
 
 /**
  * Shares an NL Design theme through the federated-config engine.
+ *
+ * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
  */
 class NlDesignThemeShareableConfigType implements IShareableConfigType
 {
@@ -74,6 +76,8 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      * The type id.
      *
      * @return string The id.
+     *
+     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
      */
     public function getId(): string
     {
@@ -85,6 +89,8 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      * The display name.
      *
      * @return string The name.
+     *
+     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
      */
     public function getDisplayName(): string
     {
@@ -96,6 +102,8 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      * The discovery topic.
      *
      * @return string The topic.
+     *
+     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
      */
     public function getTopic(): string
     {

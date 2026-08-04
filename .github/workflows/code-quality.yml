@@ -13,9 +13,34 @@ jobs:
     with:
       app-name: nldesign
       php-version: "8.3"
-      enable-psalm: false
-      enable-phpstan: false
-      enable-phpcs: false
+      # These three were `false`, and that is worse than it sounds. The shared
+      # workflow builds one matrix leg per tool unconditionally; a disabled leg
+      # prints "<tool> is disabled — skipping." and `exit 0`. The job therefore
+      # COMPLETES SUCCESSFULLY, and GitHub publishes a check context named
+      # `quality / PHP Quality (psalm)` with a green tick — for a run in which
+      # psalm was never invoked. On PR #206 that leg finished in ~13s with no
+      # psalm output at all. Three checks named after three analysers were
+      # reporting the analysers' ABSENCE as their SUCCESS.
+      #
+      # Turning them on rather than dressing up the skip, because all three
+      # already pass on this repo today — the configs (phpcs.xml, phpstan.neon,
+      # psalm.xml) are present, complete and were clearly once in use. Measured
+      # on 9a0fbac under PHP 8.4:
+      #
+      #     phpcs    exit 0   0 errors, 5 warnings  (warnings fixed in this PR)
+      #     phpstan  exit 0   [OK] No errors        (level 5)
+      #     psalm    exit 0   No errors found
+      #
+      # Each was positive-controlled before being trusted, because a tool that
+      # cannot START is indistinguishable from a tool that found nothing — the
+      # first local attempt at phpcs exited 255 in vendor/composer/platform_check.php
+      # (host PHP 8.2 vs the required 8.3) and printed no findings, which reads
+      # exactly like a clean run. Injecting one deliberately broken class into
+      # lib/Service/ turned all three red — phpcs 2, phpstan 1, psalm 2 — so
+      # the green above is a verdict, not a silence.
+      enable-psalm: true
+      enable-phpstan: true
+      enable-phpcs: true
       enable-phpmetrics: true
       enable-frontend: true
       enable-eslint: true
