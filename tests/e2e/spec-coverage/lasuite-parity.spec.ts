@@ -126,16 +126,23 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 				fontFamily: FONT_STACK,
 			},
 		},
-		{
-			name: 'header app name',
-			// #header .header-appname is Nextcloud's own header app-name
-			// label — always present in stock chrome.
-			selector: '#header .header-appname',
-			ref: {
-				color: brand650,
-				fontWeight: '600',
-			},
-		},
+		// REMOVED: the `header app name` row, which asserted on
+		// `#header .header-appname` with the note "always present in stock
+		// chrome". It is not. `.header-appname` appears only in Nextcloud's
+		// PUBLIC layout (core/templates/layout.public.php); the authenticated
+		// layout this spec runs against (core/templates/layout.user.php) has no
+		// such element on 31 or 34 — it renders `.header-start` +
+		// `#header-start__appmenu` instead. The row could therefore never pass
+		// at THEMING_URL on any Nextcloud in the supported 28-34 range, and it
+		// blew a 15s waitForSelector on every run (30889958278, 30892246034).
+		//
+		// Deleted rather than skipped: a `test.skip` would leave a permanently
+		// grey row implying the check is temporarily unavailable, when in fact
+		// the element does not exist in this render context at all. nldesign's
+		// own `#header .header-appname` rules in css/systems/*/ are still live
+		// on public pages, so the CSS is not dead — it is the AUTHENTICATED
+		// parity table that had no business naming it. Covering the public
+		// layout needs its own spec against a public render; tracked separately.
 		{
 			name: 'header bar',
 			// La Suite Messages' top bar is white, flat and RULE-LESS: measured on
