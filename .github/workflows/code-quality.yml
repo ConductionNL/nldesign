@@ -44,3 +44,25 @@ jobs:
       # suite is not a candidate for the `fullyParallel` treatment used
       # elsewhere in the fleet.
       enable-playwright: true
+      # OpenRegister is required for nldesign to serve ANY route at all today.
+      #
+      # lib/Controller/HealthController.php declares
+      #   class HealthController extends
+      #     OCA\OpenRegister\AppHost\Controller\GenericHealthController
+      # and its docblock asserts "OpenRegister is a soft dependency; the parent
+      # class autoloads only on route dispatch, not at bootstrap."
+      #
+      # The first run of this job disproved that: with OpenRegister absent,
+      # `/apps/nldesign/` returned **HTTP 500** — `Class
+      # "OCA\OpenRegister\AppHost\Controller\GenericHealthController" not
+      # found`. Nextcloud's router reflects over every registered controller
+      # while MATCHING a route, so the missing parent takes down every nldesign
+      # route, not just /api/health. The login page then never finished
+      # rendering and global-setup timed out waiting for input[name="user"] —
+      # a failure that names the login form and says nothing about the cause.
+      #
+      # Installing OpenRegister makes the suite able to run. It does NOT fix
+      # the underlying coupling: nldesign is currently broken standalone, and
+      # an `extends` cannot be made lazy by DI because it is resolved by the
+      # autoloader, not the container. That is tracked separately.
+      additional-apps: '[{"repo":"ConductionNL/openregister","app":"openregister","ref":"development"}]'
