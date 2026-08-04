@@ -164,7 +164,16 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			// instead of a rounded card. Radius 0 is the assertable half of that;
 			// the shadow and the x=0 flush position are covered by the layout
 			// checks below rather than this colour/metric table.
-			selector: '#app-navigation-vue',
+			// Both ids, exactly as css/systems/lasuite/element-overrides.css
+			// writes them ("#app-navigation, .app-navigation,
+			// #app-navigation-vue { … }") — one declaration block, so whichever
+			// the running Nextcloud renders carries the identical treatment.
+			// The settings page is server-rendered as `#app-navigation` on 31
+			// and Vue-rendered as `#app-navigation-vue` on 34; pinning only the
+			// 34 id made this row unsatisfiable on the version CI runs, and it
+			// blew a 15s waitForSelector (run 30893391595). Matching the CSS
+			// selector under test is the point, not a looser locator.
+			selector: '#app-navigation, #app-navigation-vue',
 			ref: {
 				backgroundColor: GRAY_000,
 				borderRadius: '0px',
