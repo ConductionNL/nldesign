@@ -126,16 +126,23 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 				fontFamily: FONT_STACK,
 			},
 		},
-		{
-			name: 'header app name',
-			// #header .header-appname is Nextcloud's own header app-name
-			// label — always present in stock chrome.
-			selector: '#header .header-appname',
-			ref: {
-				color: brand650,
-				fontWeight: '600',
-			},
-		},
+		// REMOVED: the `header app name` row, which asserted on
+		// `#header .header-appname` with the note "always present in stock
+		// chrome". It is not. `.header-appname` appears only in Nextcloud's
+		// PUBLIC layout (core/templates/layout.public.php); the authenticated
+		// layout this spec runs against (core/templates/layout.user.php) has no
+		// such element on 31 or 34 — it renders `.header-start` +
+		// `#header-start__appmenu` instead. The row could therefore never pass
+		// at THEMING_URL on any Nextcloud in the supported 28-34 range, and it
+		// blew a 15s waitForSelector on every run (30889958278, 30892246034).
+		//
+		// Deleted rather than skipped: a `test.skip` would leave a permanently
+		// grey row implying the check is temporarily unavailable, when in fact
+		// the element does not exist in this render context at all. nldesign's
+		// own `#header .header-appname` rules in css/systems/*/ are still live
+		// on public pages, so the CSS is not dead — it is the AUTHENTICATED
+		// parity table that had no business naming it. Covering the public
+		// layout needs its own spec against a public render; tracked separately.
 		{
 			name: 'header bar',
 			// La Suite Messages' top bar is white, flat and RULE-LESS: measured on
@@ -157,7 +164,16 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			// instead of a rounded card. Radius 0 is the assertable half of that;
 			// the shadow and the x=0 flush position are covered by the layout
 			// checks below rather than this colour/metric table.
-			selector: '#app-navigation-vue',
+			// Both ids, exactly as css/systems/lasuite/element-overrides.css
+			// writes them ("#app-navigation, .app-navigation,
+			// #app-navigation-vue { … }") — one declaration block, so whichever
+			// the running Nextcloud renders carries the identical treatment.
+			// The settings page is server-rendered as `#app-navigation` on 31
+			// and Vue-rendered as `#app-navigation-vue` on 34; pinning only the
+			// 34 id made this row unsatisfiable on the version CI runs, and it
+			// blew a 15s waitForSelector (run 30893391595). Matching the CSS
+			// selector under test is the point, not a looser locator.
+			selector: '#app-navigation, #app-navigation-vue',
 			ref: {
 				backgroundColor: GRAY_000,
 				borderRadius: '0px',
@@ -329,9 +345,19 @@ test.describe('lasuite-parity', () => {
 		// installed NC version does not surface `.modal-container` for it
 		// (implementation detail that varies by NC release), skip rather
 		// than fail on something unrelated to this app's theming code.
+		// Navigate BEFORE reading the CSRF token. `requestToken()` evaluates
+		// `window.OC.requestToken` in the page, and a fresh `page` fixture is on
+		// about:blank, where `OC` is undefined — so this threw
+		// "Cannot read properties of undefined (reading 'requestToken')" before
+		// it reached anything it meant to assert. Every other test in this
+		// describe goes to THEMING_URL first; this one did not. It had never
+		// surfaced because the describe is `mode: 'serial'` and an earlier
+		// failure always stopped the block before this test ran.
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('networkidle')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, 'lasuite')
-		await page.goto(THEMING_URL)
+		await page.reload()
 		await page.waitForLoadState('networkidle')
 
 		const searchButton = page.locator('#header .unified-search__button')
