@@ -958,3 +958,32 @@ body#body-public {
 	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
 	background-image: none !important;
 }
+
+/* ============================================
+   GUEST / LOGIN SURFACES — flat, on the same ground
+
+   La Suite is flat. Measured on both its products: the Messages top bar carries
+   `box-shadow: none`, and its content cards are a 4px radius with no shadow at
+   all. Nextcloud's guest pages instead float the login box and its footer on a
+   `rgba(77,77,77,.5) 0 0 10px` drop shadow, which reads as a different design
+   language the moment you put the two side by side.
+
+   The logo banner is the second half of the same point: `.header-guest` paints
+   itself white across the full width, so the page showed a white strip on a
+   grey ground for no reason — La Suite would simply let the ground run behind
+   the mark.
+
+   NOT touched: the `box-shadow` on `.input-field__input`. Those are focus
+   RINGS, not decoration — removing them would take the visible focus indicator
+   with them and break keyboard navigation (WCAG 2.4.7). Only the decorative
+   shadows on the guest surfaces are cleared. */
+.guest-box,
+.guest-box.login-box,
+footer.guest-box {
+	box-shadow: none !important;
+}
+
+.header-guest {
+	background-color: transparent !important;
+	background-image: none !important;
+}
