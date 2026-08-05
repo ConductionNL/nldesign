@@ -940,13 +940,21 @@ body[data-themes*="dark"] {
    text colours be flipped for dark mode without touching the reserved
    background.
 
-   The theming background IMAGE is deliberately left alone: it paints over this
-   colour where Nextcloud intends a wallpaper (login, guest pages), so admins
-   keep that feature and only the ground beneath it changes. */
+   The theming background IMAGE goes too. An earlier revision kept it, reasoning
+   that admins might want their wallpaper — but on the login and guest pages the
+   image is the whole visible surface, so keeping it meant those pages still
+   showed Nextcloud's blue spheres while every other La Suite cue (violet
+   button, violet logo, violet links) was already applied. La Suite has no
+   wallpaper concept anywhere in its products: its ground is a flat neutral.
+   Fixing the colour but not the image fixed the part nobody could see.
+
+   This is scoped to the lasuite system only, so the other design systems in
+   this app keep Nextcloud's wallpaper behaviour untouched. */
 html,
 body,
 body#body-user,
 body#body-login,
 body#body-public {
 	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+	background-image: none !important;
 }
