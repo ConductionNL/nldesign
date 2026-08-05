@@ -101,7 +101,15 @@
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateField"/>
     <rule ref="rulesets/unusedcode.xml/UnusedLocalVariable"/>
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateMethod"/>
-    <rule ref="rulesets/unusedcode.xml/UnusedFormalParameter">
-        <exclude-pattern>*Migration*</exclude-pattern>
-    </rule>
+    <!-- No exclude-pattern here. PHPMD honours <exclude-pattern> ONLY as a direct
+         child of <ruleset>; nested inside a <rule> it is parsed and discarded
+         (ConductionNL/.github#155), so the `*Migration*` pattern that used to sit
+         here never excluded anything. It is not reinstated at ruleset level
+         because lib/Migration currently produces ZERO UnusedFormalParameter
+         findings — there is nothing to exclude, and a live exclusion would only
+         hide future ones. Should an OCP\Migration\IMigrationStep with a mandated
+         but unused signature ever land here, isolate the rule in its own ruleset
+         with a top-level exclude-pattern (see opencatalogi's
+         phpmd-unusedparams.xml) rather than nesting one under the rule again. -->
+    <rule ref="rulesets/unusedcode.xml/UnusedFormalParameter"/>
 </ruleset>
