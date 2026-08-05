@@ -11,7 +11,7 @@
 		"theming"
 	],
 	"homepage": "https://codeberg.org/Conduction/nldesign",
-	"license": "AGPL-3.0-or-later",
+	"license": "EUPL-1.2",
 	"repository": {
 		"type": "git",
 		"url": "https://codeberg.org/Conduction/nldesign.git"
@@ -48,7 +48,7 @@
 		"@gouvfr/dsfr": "^1.15.1"
 	},
 	"devDependencies": {
-		"@conduction/nextcloud-vue": "3.0.0-vue3.6",
+		"@conduction/nextcloud-vue": "2.2.0-vue3.3",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",

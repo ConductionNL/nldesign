@@ -47,7 +47,7 @@ const FeatureList = [
     title: 'Open Source',
     description: (
       <>
-        Built on the NL Design System community. Token sets sourced from official government design repositories. AGPL-3.0 licensed.
+        Built on the NL Design System community. Token sets sourced from official government design repositories. EUPL-1.2 licensed.
       </>
     ),
   },
