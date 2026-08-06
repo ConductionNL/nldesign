@@ -207,7 +207,8 @@
         "Nextcloud stock icons (no custom pack)": "Standaard Nextcloud-iconen (geen aangepaste set)",
         "Source: admin override (occ config:app:set nldesign icon_pack)": "Bron: beheerdersoverschrijving (occ config:app:set nldesign icon_pack)",
         "Source: the active design system": "Bron: het actieve designsysteem",
-        "This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud's built-in core icons beyond what the active theme's CSS already restyles.": "Dit wijzigt alleen de iconenassets die nldesign zelf levert via imagePath. Het vervangt niet de ingebouwde kern-iconen van Nextcloud, afgezien van wat de CSS van het actieve thema al herstylet."
+        "This only switches the icon assets nldesign itself serves through imagePath. It does not replace Nextcloud's built-in core icons beyond what the active theme's CSS already restyles.": "Dit wijzigt alleen de iconenassets die nldesign zelf levert via imagePath. Het vervangt niet de ingebouwde kern-iconen van Nextcloud, afgezien van wat de CSS van het actieve thema al herstylet.",
+        "Saved. Reload to see the change.": "Opgeslagen. Herlaad de pagina om de wijziging te zien."
     },
     "plurals": {}
 }

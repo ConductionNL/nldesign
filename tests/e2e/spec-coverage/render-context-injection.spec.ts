@@ -63,8 +63,28 @@ test.describe('render-context CSS injection', () => {
 		expect(cap.tokenSet).toHaveProperty('id')
 		expect(cap.designSystem).toBeTruthy()
 		// Strict allowlist — private config must never leak into a public doc.
+		//
+		// `iconPacks` is the EIGHTH key and belongs here: it is a specified
+		// public capability, not a leak. openspec/specs/icon-packs/spec.md
+		// requires "capabilities.nldesign.iconPacks MUST equal [\"dsfr\"]" for a
+		// dsfr override and "MUST include iconPacks as an empty array" when no
+		// pack resolves, and lib/Capabilities.php documents an "eight-key
+		// payload". This list was written at seven and never updated, because
+		// this spec had never been executed — the first CI run of the suite
+		// (30889958278) is what surfaced the drift. Adding it is correcting a
+		// stale fixture against the canonical spec, not widening the gate: the
+		// assertion stays an exact set comparison, so a NINTH key still fails.
 		expect(Object.keys(cap).sort()).toEqual(
-			['designSystem', 'hideSlogan', 'logos', 'showMenuLabels', 'tokenSet', 'version', 'wcagLevel'].sort(),
+			[
+				'designSystem',
+				'hideSlogan',
+				'iconPacks',
+				'logos',
+				'showMenuLabels',
+				'tokenSet',
+				'version',
+				'wcagLevel',
+			].sort(),
 		)
 	})
 })

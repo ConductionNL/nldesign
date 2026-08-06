@@ -268,8 +268,7 @@ div.guest-box.login-box::after {
 #body-login .guest-box div[class*="login-box__wrapper"],
 div[class*="login-box__wrapper"],
 div[data-v-48234338][class*="login-box__wrapper"],
-.login-box__wrapper[data-v-48234338],
-[data-v-48234338].login-box__wrapper {
+.login-box__wrapper[data-v-48234338] {
 	position: relative !important;
 	background: #ffffff !important;
 	/* Use lint height or min 100px for non-lint themes */

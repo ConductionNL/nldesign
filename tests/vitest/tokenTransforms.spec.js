@@ -1,6 +1,6 @@
 /**
  * SPDX-FileCopyrightText: 2026 Conduction / NL Design System Contributors
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-License-Identifier: EUPL-1.2
  *
  * Unit tests for js/lib/tokenTransforms.js — the pure design-token / colour
  * transforms the admin settings page uses to derive preview palettes and

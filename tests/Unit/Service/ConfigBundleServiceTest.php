@@ -114,7 +114,13 @@ class ConfigBundleServiceTest extends TestCase
         $appManager->method('getAppPath')->willReturn($this->appDir);
         $appManager->method('getAppVersion')->willReturn('0.1.3-test');
         $appManager->method('isInstalled')->willReturn(true);
-        $appManager->method('getEnabledApps')->willReturn([]);
+        // NOTE: no `getEnabledApps` stub. It is not on OCP\App\IAppManager in the
+        // supported Nextcloud versions, so createMock() refuses to configure it
+        // ("Trying to configure method ... which cannot be configured because it
+        // does not exist") and every test in this class errors in setUp(). The
+        // service under test never calls it either — ConfigBundleService uses
+        // exactly one IAppManager method, getAppVersion(). A double must mirror
+        // the real signature, never invent one.
 
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(

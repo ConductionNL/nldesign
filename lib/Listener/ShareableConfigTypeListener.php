@@ -36,6 +36,8 @@ use OCP\EventDispatcher\IEventListener;
  * Registers the NL Design theme shareable-config type.
  *
  * @template-implements IEventListener<RegisterShareableConfigTypesEvent>
+ *
+ * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
  */
 class ShareableConfigTypeListener implements IEventListener
 {

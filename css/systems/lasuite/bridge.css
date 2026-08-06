@@ -254,9 +254,23 @@ body {
 	 * BORDER RADIUS
 	 * =================================================================== */
 
+	/* `--lasuite-border-radius` (4px) is the one literal in the token set, and
+	   it was observed on Cunningham's BUTTON and INPUT — a control radius (see
+	   defaults.css COMPATIBILITY ALIASES). It is mapped onto the control-scale
+	   NC tokens only.
+
+	   `--border-radius-large` is deliberately NOT mapped. It is Nextcloud's
+	   CONTAINER radius (cards, widget surfaces; NC default 8px), and there is
+	   no measured Cunningham container radius to map it to — the parity suite
+	   asserts 4px for a button, a text input and a modal, none of which is a
+	   container, and all three take their radius from the direct
+	   `border-radius` rules in element-overrides.css rather than from this
+	   token. Collapsing the container scale onto the control radius flattened
+	   NC's radius hierarchy and, on a 1px gray-100 hairline, shrank card corner
+	   arcs to roughly two antialiased pixels — the corners visibly went
+	   missing while the straight edges stayed crisp. */
 	--border-radius: var(--lasuite-border-radius) !important;
 	--border-radius-small: var(--lasuite-border-radius) !important;
-	--border-radius-large: var(--lasuite-border-radius) !important;
 	--border-radius-element: var(--lasuite-border-radius) !important;
 
 	/* ===================================================================

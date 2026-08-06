@@ -126,6 +126,20 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 				fontFamily: FONT_STACK,
 			},
 		},
+		// Merge note — development DELETED this row, correctly observing that
+		// `#header .header-appname` exists only in Nextcloud's PUBLIC layout
+		// (core/templates/layout.public.php); the authenticated layout this spec
+		// runs against has no such element on 31 or 34, so the row blew a 15s
+		// waitForSelector on every run (30889958278, 30892246034).
+		//
+		// That diagnosis is right about the OLD selector, and this row is kept
+		// rather than deleted because it no longer uses it: NC34 renders the
+		// current app's name through `.app-menu__current-app-name`, which does
+		// exist here and is measured live below. Repairing a check keeps the
+		// coverage that deleting it loses — and a parity table that quietly
+		// stops asserting is the failure mode this suite exists to prevent.
+		// nldesign's `#header .header-appname` rules remain live on public
+		// pages; covering the public layout still needs its own spec.
 		{
 			name: 'header app name',
 			// Nextcloud 34 renders the current app's name through
@@ -168,7 +182,16 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 			// instead of a rounded card. Radius 0 is the assertable half of that;
 			// the shadow and the x=0 flush position are covered by the layout
 			// checks below rather than this colour/metric table.
-			selector: '#app-navigation-vue',
+			// Both ids, exactly as css/systems/lasuite/element-overrides.css
+			// writes them ("#app-navigation, .app-navigation,
+			// #app-navigation-vue { … }") — one declaration block, so whichever
+			// the running Nextcloud renders carries the identical treatment.
+			// The settings page is server-rendered as `#app-navigation` on 31
+			// and Vue-rendered as `#app-navigation-vue` on 34; pinning only the
+			// 34 id made this row unsatisfiable on the version CI runs, and it
+			// blew a 15s waitForSelector (run 30893391595). Matching the CSS
+			// selector under test is the point, not a looser locator.
+			selector: '#app-navigation, #app-navigation-vue',
 			ref: {
 				backgroundColor: GRAY_000,
 				borderRadius: '0px',
@@ -361,11 +384,29 @@ test.describe('lasuite-parity', () => {
 		// installed NC version does not surface `.modal-container` for it
 		// (implementation detail that varies by NC release), skip rather
 		// than fail on something unrelated to this app's theming code.
+		// Navigate BEFORE reading the CSRF token. `requestToken()` evaluates
+		// `window.OC.requestToken` in the page, and a fresh `page` fixture is on
+		// about:blank, where `OC` is undefined — so this threw
+		// "Cannot read properties of undefined (reading 'requestToken')" before
+		// it reached anything it meant to assert. Every other test in this
+		// describe goes to THEMING_URL first; this one did not. It had never
+		// surfaced because the describe is `mode: 'serial'` and an earlier
+		// failure always stopped the block before this test ran.
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background,
+		// so the network never goes idle and this wait burns the whole test budget.
+		// This was the last `networkidle` left in the file — every other wait here
+		// had already been converted, so it would have been the only one tripping
+		// the e2e-networkidle gate.
+		await page.waitForLoadState('domcontentloaded')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, 'lasuite')
 		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
 		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
 		// the network never goes idle and this wait burns the whole test budget.
+		// (Merge note: development reloaded and waited on `networkidle` here. Same
+		// intent — re-render after the theme is applied — but `networkidle` is the
+		// wait the e2e-networkidle gate exists to catch, for this exact reason.)
 		await page.waitForLoadState('domcontentloaded')
 
 		const searchButton = page.locator('#header .unified-search__button')
