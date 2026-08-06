@@ -126,23 +126,41 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 				fontFamily: FONT_STACK,
 			},
 		},
-		// REMOVED: the `header app name` row, which asserted on
-		// `#header .header-appname` with the note "always present in stock
-		// chrome". It is not. `.header-appname` appears only in Nextcloud's
-		// PUBLIC layout (core/templates/layout.public.php); the authenticated
-		// layout this spec runs against (core/templates/layout.user.php) has no
-		// such element on 31 or 34 — it renders `.header-start` +
-		// `#header-start__appmenu` instead. The row could therefore never pass
-		// at THEMING_URL on any Nextcloud in the supported 28-34 range, and it
-		// blew a 15s waitForSelector on every run (30889958278, 30892246034).
+		// Merge note — development DELETED this row, correctly observing that
+		// `#header .header-appname` exists only in Nextcloud's PUBLIC layout
+		// (core/templates/layout.public.php); the authenticated layout this spec
+		// runs against has no such element on 31 or 34, so the row blew a 15s
+		// waitForSelector on every run (30889958278, 30892246034).
 		//
-		// Deleted rather than skipped: a `test.skip` would leave a permanently
-		// grey row implying the check is temporarily unavailable, when in fact
-		// the element does not exist in this render context at all. nldesign's
-		// own `#header .header-appname` rules in css/systems/*/ are still live
-		// on public pages, so the CSS is not dead — it is the AUTHENTICATED
-		// parity table that had no business naming it. Covering the public
-		// layout needs its own spec against a public render; tracked separately.
+		// That diagnosis is right about the OLD selector, and this row is kept
+		// rather than deleted because it no longer uses it: NC34 renders the
+		// current app's name through `.app-menu__current-app-name`, which does
+		// exist here and is measured live below. Repairing a check keeps the
+		// coverage that deleting it loses — and a parity table that quietly
+		// stops asserting is the failure mode this suite exists to prevent.
+		// nldesign's `#header .header-appname` rules remain live on public
+		// pages; covering the public layout still needs its own spec.
+		{
+			name: 'header app name',
+			// Nextcloud 34 renders the current app's name through
+			// `.app-menu__current-app-name`. The previous selector here,
+			// `#header .header-appname`, does not exist on NC34 at all — the
+			// comment claiming it is "always present in stock chrome" was written
+			// against an older release. The assertion therefore never ran: the
+			// test failed on a 15s visibility timeout rather than on any value,
+			// and the failure was reported as "header app name matches the
+			// Cunningham reference", which reads like a parity regression.
+			// Found by tests/e2e/spec-coverage/selector-liveness.spec.ts.
+			selector: '#header .app-menu__current-app-name',
+			ref: {
+				color: brand650,
+				// 700, not 600. Read off La Suite Docs (localhost:3000), which renders
+				// its wordmark as TEXT and so exposes a computed value — Messages ships
+				// an image and cannot be measured. Live: rgb(72,68,173), 22px, 700.
+				// The colour in this reference was already right; the weight was not.
+				fontWeight: '700',
+			},
+		},
 		{
 			name: 'header bar',
 			// La Suite Messages' top bar is white, flat and RULE-LESS: measured on
@@ -292,6 +310,13 @@ let baselineTokenSet: string | null = null
 test.describe('lasuite-parity', () => {
 	test.describe.configure({ mode: 'serial' })
 
+	// Every navigation in this suite settles slowly on a loaded instance, and the
+	// default 30s budget turns that into a reported PARITY failure — the report
+	// names the element ("primary button matches the Cunningham reference") while
+	// the actual error is a navigation timeout, which reads as a regression that
+	// is not there. Budget set once for the whole describe.
+	test.setTimeout(120_000)
+
 	// @e2e exclude openspec/specs/lasuite-parity/spec.md#mismatch-names-the-property-and-delta
 	// Proven by manually reverting a reference value and observing the
 	// Playwright assertion message during development (see PR description);
@@ -299,9 +324,17 @@ test.describe('lasuite-parity', () => {
 	// carry permanently.
 
 	test.beforeAll(async ({ browser }) => {
+		// This hook mutates instance-wide state, so it gets a realistic budget:
+		// the default 30s is not enough on a loaded instance and the suite then
+		// aborts on a "beforeAll hook timeout" that looks like a parity failure
+		// in the report but is nothing of the kind.
+		test.setTimeout(120_000)
+
 		const page = await browser.newPage()
-		await page.goto(THEMING_URL)
-		await page.waitForLoadState('networkidle')
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the
+		// background (notifications, dashboard widgets), so the network never
+		// goes idle and this wait simply burns the hook's whole budget.
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
 		const token = await requestToken(page)
 		baselineTokenSet = await getTokenSet(page, token)
 		await page.close()
@@ -310,8 +343,10 @@ test.describe('lasuite-parity', () => {
 	test.afterAll(async ({ browser }) => {
 		if (baselineTokenSet === null) return
 		const page = await browser.newPage()
-		await page.goto(THEMING_URL)
-		await page.waitForLoadState('networkidle')
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, baselineTokenSet)
 		await page.close()
@@ -320,12 +355,16 @@ test.describe('lasuite-parity', () => {
 	for (const set of ['lasuite', 'cunningham'] as const) {
 		for (const element of referenceTable(set)) {
 			test(`${set}: ${element.name} matches the Cunningham reference`, async ({ page }) => {
-				await page.goto(THEMING_URL)
-				await page.waitForLoadState('networkidle')
+				await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 				const token = await requestToken(page)
 				await setTokenSet(page, token, set)
-				await page.reload()
-				await page.waitForLoadState('networkidle')
+				await page.reload({ waitUntil: 'domcontentloaded' })
+				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		await page.waitForLoadState('domcontentloaded')
 
 				await page.waitForSelector(element.selector, { timeout: 15_000 })
 				const computed = await readComputedStyle(page, element.selector)
@@ -353,12 +392,22 @@ test.describe('lasuite-parity', () => {
 		// describe goes to THEMING_URL first; this one did not. It had never
 		// surfaced because the describe is `mode: 'serial'` and an earlier
 		// failure always stopped the block before this test ran.
-		await page.goto(THEMING_URL)
-		await page.waitForLoadState('networkidle')
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background,
+		// so the network never goes idle and this wait burns the whole test budget.
+		// This was the last `networkidle` left in the file — every other wait here
+		// had already been converted, so it would have been the only one tripping
+		// the e2e-networkidle gate.
+		await page.waitForLoadState('domcontentloaded')
 		const token = await requestToken(page)
 		await setTokenSet(page, token, 'lasuite')
-		await page.reload()
-		await page.waitForLoadState('networkidle')
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
+		// the network never goes idle and this wait burns the whole test budget.
+		// (Merge note: development reloaded and waited on `networkidle` here. Same
+		// intent — re-render after the theme is applied — but `networkidle` is the
+		// wait the e2e-networkidle gate exists to catch, for this exact reason.)
+		await page.waitForLoadState('domcontentloaded')
 
 		const searchButton = page.locator('#header .unified-search__button')
 		if (await searchButton.count() === 0) {
