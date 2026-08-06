@@ -166,7 +166,9 @@ header#header {
 	   is fixed at its own site; see the note there. */
 	color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
 	font-size: 22px !important;
-	font-weight: 700 !important;
+	/* MUTATION PROOF (DO-NOT-MERGE): 700 -> 400. If the parity row
+	   `lasuite: header app name` still passes, it is not measuring this rule. */
+	font-weight: 400 !important;
 	letter-spacing: -0.01em !important;
 }
 
@@ -479,7 +481,12 @@ header#header {
 	   resolve from them is what actually fills the frame: top 0 + the 50px
 	   margin clears the header, bottom 0 reaches the viewport floor. */
 	height: auto !important;
-	inset: 0 !important;
+	/* MUTATION PROOF (DO-NOT-MERGE): 0 -> 17px. 17 is deliberately not 8, so a
+	   red `x` of 17 cannot be confused with Nextcloud's own stock 8px inset —
+	   the value the unfixed spec reported when it was measuring an unthemed
+	   page. If selector-liveness's geometry lock still passes, it is not
+	   measuring this rule. */
+	inset: 17px !important;
 	margin: 50px 0 0 !important;
 	width: 100% !important;
 }
@@ -986,4 +993,13 @@ footer.guest-box {
 .header-guest {
 	background-color: transparent !important;
 	background-image: none !important;
+}
+
+/* MUTATION PROOF (DO-NOT-MERGE): a selector that deliberately matches nothing
+   on any surface. selector-liveness's sweep must report it under
+   `unexplainedDead`. If the sweep stays green, it is not sweeping anything —
+   which is exactly the state it was in before this round, when it skipped on a
+   fixture nobody had built. */
+#header .nldesign-mutation-proof-selector-that-matches-nothing {
+	color: red !important;
 }
