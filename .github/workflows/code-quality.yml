@@ -131,7 +131,14 @@ jobs:
       # `nldesign`, and it is one of the 41 sets that ships a generated dark
       # variant under css/tokens/dark/, which the dark-mode specs need.
       # dark_variants already defaults to '1'.
-      playwright-seed-command: 'php occ config:app:set nldesign token_set --value rijkshuisstijl'
+      # DO-NOT-MERGE — BUNDLE-TRUNCATION CONTROL, throwaway branch only.
+      # Separated with `;`, never `&&`: chaining the truncation onto the seed
+      # means a seed that exits non-zero silently skips the truncation, and the
+      # run then tallies a perfectly credible-looking control that measured the
+      # untouched app. The script does its own before/after readback and its own
+      # on-the-wire check, and refuses (exit 1) if it cannot demonstrate that the
+      # bytes actually went away.
+      playwright-seed-command: 'php occ config:app:set nldesign token_set --value rijkshuisstijl ; TRUNCATE_TARGET=all bash apps/nldesign/tests/e2e/DO-NOT-MERGE-truncate-control.sh'
       # OpenRegister is required for nldesign to serve ANY route at all today.
       #
       # lib/Controller/HealthController.php declares
