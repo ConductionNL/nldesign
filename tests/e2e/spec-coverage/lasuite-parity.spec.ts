@@ -483,10 +483,12 @@ test.describe('lasuite-parity', () => {
 		// must trigger a REAL NC-core modal to have anything to assert.
 		// Unified search is the most stable, single-click native trigger
 		// already referenced by this app's own CSS
-		// (#header .unified-search__button in element-overrides.css). If the
-		// installed NC version does not surface `.modal-container` for it
-		// (implementation detail that varies by NC release), skip rather
-		// than fail on something unrelated to this app's theming code.
+		// (#header .unified-search__button in element-overrides.css — a
+		// selector that, as the locator note below records, matches nothing on
+		// any supported Nextcloud). If the installed NC version does not
+		// surface `.modal-container` for it (implementation detail that varies
+		// by NC release), skip rather than fail on something unrelated to this
+		// app's theming code.
 		// Navigate BEFORE reading the CSRF token. `requestToken()` evaluates
 		// `window.OC.requestToken` in the page, and a fresh `page` fixture is on
 		// about:blank, where `OC` is undefined — so this threw
@@ -513,12 +515,35 @@ test.describe('lasuite-parity', () => {
 		// wait the e2e-networkidle gate exists to catch, for this exact reason.)
 		await page.waitForLoadState('domcontentloaded')
 
-		const searchButton = page.locator('#header .unified-search__button')
+		// THE TRIGGER CLASS DIFFERS ON EVERY SUPPORTED NEXTCLOUD, AND
+		// `.unified-search__button` IS NONE OF THEM. Read off core/src/views/
+		// UnifiedSearch.vue at each ref:
+		//
+		//   stable31  <div class="header-menu unified-search-menu">
+		//               <NcButton class="header-menu__trigger">
+		//   stable32  <div class="unified-search-menu">
+		//               <NcHeaderButton id="unified-search">
+		//   NC34      identical to stable32
+		//
+		// So the sole locator this test had matched nothing on any of them, the
+		// count was always 0, and the test skipped every time it was reached
+		// with a message — "not present in header on this NC version" — that
+		// reads like a benign version quirk and was in fact a locator that is
+		// wrong everywhere. It never once asserted the modal radius it exists
+		// to assert. (It was reached rarely in any case: the serial cascade
+		// removed at the top of this describe usually stopped the block first.)
+		//
+		// Scoped to the search menu rather than a page-wide role query: a bare
+		// `getByRole('button').first()` would land on whichever control happens
+		// to render first and pass for the wrong reason.
+		const searchButton = page.locator(
+			'#header .unified-search-menu .header-menu__trigger, #header #unified-search, #header .unified-search__button',
+		)
 		if (await searchButton.count() === 0) {
 			test.skip(true, 'unified-search trigger not present in header on this NC version')
 			return
 		}
-		await searchButton.click()
+		await searchButton.first().click()
 
 		const modal = page.locator('.modal-container')
 		try {
