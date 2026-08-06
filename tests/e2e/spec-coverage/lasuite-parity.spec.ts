@@ -48,8 +48,19 @@ type StyleRef = Partial<{
 interface ElementRef {
 	/** Human-readable element name for assertion messages. */
 	name: string
-	/** CSS selector for the element under test (must exist on THEMING_URL). */
+	/** CSS selector for the element under test (must exist on the chosen surface). */
 	selector: string
+	/**
+	 * Which rendered surface carries this element.
+	 *
+	 * `admin` (default) is the nldesign admin theming page, which renders through
+	 * Nextcloud's AUTHENTICATED layout. `public` is a public link share, which
+	 * renders through `core/templates/layout.public.php` — a different chrome
+	 * with a different header. One declaration block in element-overrides.css
+	 * legitimately spans both, and a row is only honest if it is measured where
+	 * its selector exists.
+	 */
+	surface?: 'admin' | 'public'
 	ref: StyleRef
 }
 
@@ -142,16 +153,36 @@ function referenceTable(set: 'lasuite' | 'cunningham'): ElementRef[] {
 		// pages; covering the public layout still needs its own spec.
 		{
 			name: 'header app name',
-			// Nextcloud 34 renders the current app's name through
-			// `.app-menu__current-app-name`. The previous selector here,
-			// `#header .header-appname`, does not exist on NC34 at all — the
-			// comment claiming it is "always present in stock chrome" was written
-			// against an older release. The assertion therefore never ran: the
-			// test failed on a 15s visibility timeout rather than on any value,
-			// and the failure was reported as "header app name matches the
-			// Cunningham reference", which reads like a parity regression.
-			// Found by tests/e2e/spec-coverage/selector-liveness.spec.ts.
-			selector: '#header .app-menu__current-app-name',
+			// THIRD SELECTOR, THIRD 15s TIMEOUT — and this time the version the
+			// suite RUNS ON is the thing that was never checked.
+			//
+			// The row previously read `#header .app-menu__current-app-name`,
+			// chosen because "Nextcloud 34 renders the current app's name" that
+			// way. That is true of NC34. It is not true of the Nextcloud this job
+			// installs: the shared workflow's `nextcloud-test-refs` defaults to
+			// `["stable31","stable32"]` and the Playwright job takes element [0],
+			// so every run of this suite has been against **stable31**.
+			// `app-menu__current-app-name` appears in NO stable31 or stable32
+			// source file — the current-app button is a 34-era addition — so the
+			// row could only ever time out. The page snapshot from run 31086399980
+			// confirms it directly: stable31's header is an icon-only app list
+			// (`nav.app-menu > ul > li > a`) with no app-name text at all.
+			//
+			// The declaration block under test (element-overrides.css:151-153)
+			// covers THREE selectors, and one of them IS live on stable31:
+			// `#header .header-start .header-appname`, in
+			// `core/templates/layout.public.php`. Same block, same declared
+			// values — so measuring there tests exactly the CSS this row has
+			// always meant to test, on chrome the server actually renders.
+			// `surface: 'public'` navigates to a public link share created by the
+			// test itself; `public` is one of CssInjectionService's five valid
+			// render contexts, so the theme is injected there.
+			//
+			// Deleting the row was the alternative, and it is the one this file
+			// has already rejected twice: a parity table that quietly stops
+			// asserting is the failure mode the suite exists to prevent.
+			selector: '#header .header-start .header-appname',
+			surface: 'public',
 			ref: {
 				color: brand650,
 				// 700, not 600. Read off La Suite Docs (localhost:3000), which renders
@@ -307,8 +338,71 @@ function assertMatchesReference(elementName: string, computed: ComputedSubset, r
 
 let baselineTokenSet: string | null = null
 
+/**
+ * Create a public link share and return its absolute page path.
+ *
+ * Needed by the `surface: 'public'` rows, which measure chrome that only
+ * `core/templates/layout.public.php` renders. Created per-test rather than in
+ * `beforeAll` on purpose: a `beforeAll` that throws fails EVERY test in the
+ * describe, so a transient sharing hiccup would have reddened all thirteen rows
+ * and told you nothing about twelve of them.
+ *
+ * Fails loudly on any non-200 — an OCS 200 with an error `meta.statuscode` is
+ * still an error, so the OCS status is checked separately from the HTTP status.
+ */
+async function createPublicShare(page: Page, token: string): Promise<string> {
+	const res = await page.evaluate(async (t) => {
+		const base = (window as unknown as { OC: { linkToOCS: (s: string, v: number) => string } })
+			.OC.linkToOCS('apps/files_sharing/api/v1', 2)
+		const r = await fetch(`${base}shares?format=json`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'OCS-APIRequest': 'true',
+				requesttoken: t,
+			},
+			// welcome.txt is seeded into every fresh Nextcloud's admin home by
+			// core's first-login hook; shareType 3 = public link, permission 1 =
+			// read.
+			body: JSON.stringify({ path: '/welcome.txt', shareType: 3, permissions: 1 }),
+		})
+		return { status: r.status, body: await r.text() }
+	}, token)
+
+	expect(res.status, `public share creation: HTTP ${res.status} — ${res.body.slice(0, 400)}`).toBe(200)
+	const parsed = JSON.parse(res.body)
+	expect(
+		parsed?.ocs?.meta?.statuscode,
+		`public share creation: OCS statuscode ${parsed?.ocs?.meta?.statuscode} — ${parsed?.ocs?.meta?.message}`,
+	).toBe(200)
+
+	const shareToken = parsed?.ocs?.data?.token
+	expect(shareToken, 'public share creation returned no token').toBeTruthy()
+	return `/index.php/s/${shareToken}`
+}
+
 test.describe('lasuite-parity', () => {
-	test.describe.configure({ mode: 'serial' })
+	// NO `mode: 'serial'`.
+	//
+	// It used to be here, with the rationale "a flake isolates to one element,
+	// not the whole suite". Serial mode does the exact opposite of that: when one
+	// test in a serial group fails, Playwright ABANDONS every later test in the
+	// group. On run 31086399980 the `lasuite: header app name` row timed out and
+	// took TEN further tests down with it — three remaining lasuite rows, all six
+	// cunningham rows, and the unified-search modal check. Those ten reported
+	// "did not run": no pass, no fail, no verdict, and nothing in the summary line
+	// distinguishing them from tests that were never written.
+	//
+	// The isolation the comment wanted comes from the one-test-per-element split,
+	// which is orthogonal to serial mode and is kept. Nothing here depends on a
+	// previous test: every test navigates, reads its own CSRF token, sets its own
+	// token set and reloads. And `workers: 1` / `fullyParallel: false` in
+	// playwright.config.ts mean dropping serial introduces no concurrency at all —
+	// the tests still execute one at a time, in the same order. The only thing
+	// that changes is that a failure stops being contagious.
+	//
+	// (`beforeAll`/`afterAll` still run exactly once per worker either way, so the
+	// token-set snapshot/restore is unaffected.)
 
 	// Every navigation in this suite settles slowly on a loaded instance, and the
 	// default 30s budget turns that into a reported PARITY failure — the report
@@ -361,7 +455,16 @@ test.describe('lasuite-parity', () => {
 		await page.waitForLoadState('domcontentloaded')
 				const token = await requestToken(page)
 				await setTokenSet(page, token, set)
-				await page.reload({ waitUntil: 'domcontentloaded' })
+
+				// The token set is applied from the ADMIN page in both cases —
+				// it needs `OC.requestToken`, which a public share page does not
+				// expose. Only the surface the element is then MEASURED on
+				// differs.
+				if (element.surface === 'public') {
+					await page.goto(await createPublicShare(page, token), { waitUntil: 'domcontentloaded' })
+				} else {
+					await page.reload({ waitUntil: 'domcontentloaded' })
+				}
 				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
 		// the network never goes idle and this wait burns the whole test budget.
 		await page.waitForLoadState('domcontentloaded')
@@ -390,8 +493,9 @@ test.describe('lasuite-parity', () => {
 		// "Cannot read properties of undefined (reading 'requestToken')" before
 		// it reached anything it meant to assert. Every other test in this
 		// describe goes to THEMING_URL first; this one did not. It had never
-		// surfaced because the describe is `mode: 'serial'` and an earlier
-		// failure always stopped the block before this test ran.
+		// surfaced because the describe WAS `mode: 'serial'` at the time and an
+		// earlier failure always stopped the block before this test ran — the
+		// same cascade that is removed at the top of this describe.
 		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
 		// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background,
 		// so the network never goes idle and this wait burns the whole test budget.

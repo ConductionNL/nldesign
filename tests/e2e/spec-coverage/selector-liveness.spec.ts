@@ -47,6 +47,7 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { THEMING_URL, getTokenSet, requestToken, setTokenSet } from '../workflows/_helpers'
 
 /** Surfaces surveyed. Each contributes its DOM to the union. */
 const SURFACES: Array<{ name: string; path: string }> = [
@@ -118,7 +119,61 @@ function allowedReason(selector: string): string | null {
 	return null
 }
 
+let baselineTokenSet: string | null = null
+
 test.describe('lasuite selector liveness', () => {
+	// NOBODY WAS ACTIVATING THE THEME THIS SPEC MEASURES.
+	//
+	// The docblock above says "Requires the `lasuite` set to be active" and then
+	// nothing in the file, the config, or the CI seed ever activated it. The seed
+	// sets `rijkshuisstijl`; the only spec that switches to `lasuite` is
+	// lasuite-parity, which runs earlier (alphabetically) and dutifully RESTORES
+	// the baseline in its `afterAll`. So by the time this file ran, the lasuite
+	// bundle was not being served at all.
+	//
+	// The two tests below failed differently on that, and the difference is the
+	// whole lesson:
+	//
+	//   - The selector sweep is fail-closed and skipped, printing "lasuite
+	//     element-overrides.css was not served on any surface". That is exactly
+	//     one line in a 110-test summary, and it renders as "1 skipped". The
+	//     repo's single most valuable guard — the one written because five
+	//     defects in a row were dead selectors — had never once executed.
+	//   - The geometry lock had no such guard, so it measured STOCK Nextcloud
+	//     chrome and asserted La Suite's full-bleed shell against it. It reported
+	//     `x` = 8: Nextcloud's own 8px inset, correctly present on a page the
+	//     theme was not applied to. The failure named a theming regression that
+	//     did not exist. (Confirmed from run 31086399980's own failure
+	//     screenshot: stock Nextcloud blue, blue frame down the left edge.)
+	//
+	// A guard that skips on a fixture nobody built and a guard that fails on one
+	// are the same bug wearing two faces. Both are fixed by building the fixture
+	// here, where the requirement is stated — snapshot the active set, activate
+	// `lasuite`, restore afterwards, same pattern as lasuite-parity's.
+	//
+	// The fail-closed skip below is deliberately KEPT. It is now unreachable in
+	// the normal case, which is the point: if it ever fires again it means this
+	// hook stopped working, and that has to be visible rather than silently
+	// turning into a green sweep over zero selectors.
+	test.beforeAll(async ({ browser }) => {
+		test.setTimeout(120_000)
+		const page = await browser.newPage()
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		const token = await requestToken(page)
+		baselineTokenSet = await getTokenSet(page, token)
+		await setTokenSet(page, token, 'lasuite')
+		await page.close()
+	})
+
+	test.afterAll(async ({ browser }) => {
+		if (baselineTokenSet === null) return
+		const page = await browser.newPage()
+		await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		const token = await requestToken(page)
+		await setTokenSet(page, token, baselineTokenSet)
+		await page.close()
+	})
+
 	test('every element-overrides selector matches something on at least one surface', async ({ page }) => {
 		// Six surfaces, each a full Vue app boot. test.slow() alone is not enough
 		// on a loaded dev instance, so the budget is set explicitly.
