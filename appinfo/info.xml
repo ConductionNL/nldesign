@@ -35,7 +35,7 @@ Gratis en open source onder de EUPL-1.2 licentie.
 
 	<dependencies>
 		<php min-version="8.3"/>
-		<nextcloud min-version="32" max-version="34"/>
+		<nextcloud min-version="28" max-version="34"/>
 	</dependencies>
 
 	<!-- Upstream token freshness check (openspec/specs/upstream-freshness/spec.md):
