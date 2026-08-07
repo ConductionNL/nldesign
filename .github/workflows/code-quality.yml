@@ -60,6 +60,26 @@ jobs:
     with:
       app-name: nldesign
       php-version: "8.3"
+      # Pinned, because the shared workflow's DEFAULT is '["stable31", "stable32"]'
+      # and stable31 CANNOT WORK here. `additional-apps` below installs
+      # openregister, which declares min-version="32" (its
+      # lib/ContextChat/ContentProvider.php implements
+      # OCP\ContextChat\IContentProvider, absent from core before NC32). On NC31
+      # `occ app:enable openregister` fails with
+      #   App "Open Register" cannot be installed because it is not compatible
+      #   with this version of the server.
+      # and the run continues anyway, because that failure is only a ::warning::.
+      # Every /apps/openregister/... call then returns Nextcloud's HTML 404 page.
+      #
+      # Order matters as much as membership: newman, playwright and
+      # journeydoc-capture all check out `fromJSON(nextcloud-test-refs)[0]` as
+      # their single server, so with the inherited default those three jobs ran
+      # entirely on the version openregister cannot load.
+      #
+      # nldesign's own appinfo/info.xml floor stays at 28: this app declares no
+      # <app> dependency and src/manifest.json declares none either — the NC32
+      # constraint is a property of the CI fixture, not of nldesign's code.
+      nextcloud-test-refs: '["stable32"]'
       # These three were `false`, and that is worse than it sounds. The shared
       # workflow builds one matrix leg per tool unconditionally; a disabled leg
       # prints "<tool> is disabled — skipping." and `exit 0`. The job therefore
