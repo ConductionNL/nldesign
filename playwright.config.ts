@@ -17,6 +17,16 @@ export default defineConfig({
 	fullyParallel: false,
 	retries: 0,
 	workers: 1,
+	// The shared CI job caps this suite at `timeout-minutes: 45`, and a job
+	// cancelled by that cap produces NO verdict at all: Playwright never prints
+	// its tally, the `if: failure()` trace upload never fires, and the run shows
+	// as "cancelled", which reads like an infrastructure hiccup rather than a
+	// suite that ran out of budget. Exiting on our own clock a few minutes early
+	// means the tally and the artifacts always exist. Measured: the baseline run
+	// (31086399980) executed 100 of 110 tests in 5.9m, so 38m is ~6x headroom
+	// over the full suite and cannot mask a real regression — it can only turn a
+	// silent cancellation into a reported timeout.
+	globalTimeout: 38 * 60_000,
 	reporter: [
 		['list'],
 		['html', { open: 'never', outputFolder: 'tests/e2e/playwright-report' }],
@@ -25,7 +35,16 @@ export default defineConfig({
 
 	use: {
 		baseURL: process.env.NEXTCLOUD_URL || 'http://localhost:8080',
-		trace: 'on-first-retry',
+		// `on-first-retry` PAIRED WITH `retries: 0` writes zero traces, ever.
+		// There is no first retry to trigger on, so every CI failure in this
+		// repo's history has been debugged from a single screenshot and a stack
+		// frame — the trace artifact the shared workflow faithfully uploads on
+		// failure has always been empty of traces. `retain-on-failure` is the
+		// setting that matches `retries: 0`: capture always, keep only what
+		// failed. (Raising `retries` instead would ALSO have produced traces,
+		// but at the price of letting a flake pass on the second attempt, which
+		// is the opposite of what this suite is for.)
+		trace: 'retain-on-failure',
 		screenshot: 'only-on-failure',
 		storageState: 'tests/e2e/.auth/admin.json',
 	},
