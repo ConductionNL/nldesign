@@ -780,16 +780,29 @@ class LasuiteDesignStackTest extends TestCase
     {
         $overrides = (string) file_get_contents($this->repoRoot().'/css/systems/lasuite/element-overrides.css');
 
+        // The surfaces are read through the CONTEXTUAL tokens, with the raw ramp
+        // step kept as the fallback. That indirection is what makes dark mode
+        // possible at all: Cunningham's own dark theme does not invert the ramp
+        // (`gray-000` is still #fff there) — it remaps the contextual surface
+        // tokens. A rule that hardcodes `gray-025` cannot be reached by a dark
+        // block, so asserting the literal here would lock out dark support.
+        // The fallback is asserted too, so the grey/white intent still holds if
+        // a contextual is ever missing.
         $this->assertMatchesRegularExpression(
-            '/#content-vue\.content[^{]*\{[^}]*background-color:\s*var\(--lasuite-color-gray-025\)/ms',
+            '/#content-vue\.content[^{]*\{[^}]*background-color:\s*var\('
+            .'--lasuite--contextuals--background--surface--tertiary,\s*'
+            .'var\(--lasuite-color-gray-025\)\)/ms',
             $overrides,
-            'The shell (#content-vue.content) must carry the grey gray-025 canvas.'
+            'The shell (#content-vue.content) must carry the grey canvas via the '
+            .'contextual surface token, falling back to gray-025.'
         );
 
         $this->assertMatchesRegularExpression(
-            '/#app-content-vue\s*\{[^}]*background:\s*var\(--lasuite-color-gray-000\)/ms',
+            '/#app-content-vue\s*\{[^}]*background:\s*var\('
+            .'--lasuite--contextuals--background--surface--primary,\s*'
+            .'var\(--lasuite-color-gray-000\)\)/ms',
             $overrides,
-            'The app content must be the white card floated on the grey canvas.'
+            'The app content must be the card surface, falling back to gray-000.'
         );
     }//end testElementOverridesInvertsCanvasAndCard()
 }//end class
