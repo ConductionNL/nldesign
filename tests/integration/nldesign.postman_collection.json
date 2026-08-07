@@ -1339,7 +1339,7 @@
               "formdata": [
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-valid.css",
+                  "src": "fixtures/newman-valid.css",
                   "type": "file"
                 }
               ]
@@ -1416,7 +1416,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-valid.css",
+                  "src": "fixtures/newman-valid.css",
                   "type": "file"
                 }
               ]
@@ -1488,7 +1488,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-valid.css",
+                  "src": "fixtures/newman-valid.css",
                   "type": "file"
                 }
               ]
@@ -1560,7 +1560,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-bad-selector.css",
+                  "src": "fixtures/newman-bad-selector.css",
                   "type": "file"
                 }
               ]
@@ -1632,7 +1632,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-malformed.tokens.json",
+                  "src": "fixtures/newman-malformed.tokens.json",
                   "type": "file"
                 }
               ]
