@@ -31,9 +31,19 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COLLECTION="${SCRIPT_DIR}/nldesign.postman_collection.json"
-# Repo root — multipart formdata file `src` paths in the collection are
-# resolved relative to --working-dir (e.g. tests/integration/fixtures/*.css).
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+# Multipart formdata file `src` paths in the collection (fixtures/*.css) are
+# resolved by newman relative to --working-dir, which DEFAULTS TO THE PROCESS
+# CWD. The shared CI workflow (ConductionNL/.github .github/workflows/quality.yml,
+# job `newman`) does `cd server/apps/<app>/<newman-collection-path>` and then
+# invokes newman with no --working-dir, so in CI the working dir is THIS
+# directory. The `src` paths are therefore relative to the collection file, and
+# this runner must pin --working-dir to the same place — otherwise every file
+# part silently resolves to nothing, newman sends the request WITHOUT the file,
+# and the app answers 400 "No file uploaded." for a payload the test believes it
+# uploaded. That is exactly how 14 assertions failed on `development`: the paths
+# were repo-root-relative, which only ever worked because this script passed the
+# repo root, and CI never did.
+FIXTURE_ROOT="${SCRIPT_DIR}"
 
 BASE_URL="${BASE_URL:-http://localhost:8080}"
 ADMIN_USER="${ADMIN_USER:-admin}"
@@ -65,7 +75,7 @@ fi
   --env-var "adminUser=${ADMIN_USER}" \
   --env-var "adminPass=${ADMIN_PASS}" \
   --ignore-redirects \
-  --working-dir "${REPO_ROOT}" \
+  --working-dir "${FIXTURE_ROOT}" \
   --reporters cli \
   --color on \
   "$@"
