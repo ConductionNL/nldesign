@@ -1,0 +1,84 @@
+/**
+ * SENERAWA Design Tokens
+ *
+ * Hand-authored for the SENERAWA consortium (Shared European Network for
+ * Evidence, Research and Analysis of Web Activity for Information Integrity),
+ * not generated from nl-design-system/themes.
+ *
+ * Every colour pair used for text or UI boundaries is measured against
+ * WCAG 2.2: 4.5:1 for body text, 3:1 for non-text UI such as borders. Ratios
+ * are stated inline. Values carry headroom above those floors rather than
+ * sitting on them, because a ratio of exactly 3.00 fails as soon as
+ * antialiasing or a display profile shifts it. Re-measure if you change one.
+ */
+
+:root {
+	/* Core palette */
+	--senerawa-color-ink: #04151f;
+	--senerawa-color-teal: #183a37;
+	--senerawa-color-slate: #3f5a57;
+	--senerawa-color-cream: #faf7f0;
+	--senerawa-color-mist: #e7ece8;
+	--senerawa-color-sand: #efd6ac;
+	--senerawa-color-flame: #c44900;
+	--senerawa-color-flame-light: #e85600;
+
+	/* Border colours derived for contrast, not picked by eye.
+	 * The originals measured 1.28:1 (light) and 2.48:1 (dark) — both under the
+	 * 3:1 floor, i.e. effectively invisible to anyone who needed to see them. */
+	--senerawa-color-border-light: #6f8a7a;   /* 3.51:1 on cream */
+	--senerawa-color-border-dark: #50726e;    /* 3.51:1 on ink   */
+
+	/* ===================================================================
+	 * TYPOGRAPHY — IBM Plex, served same-origin from /senerawa-brand/
+	 * rather than a CDN, so no third party sees a request per page view.
+	 * =================================================================== */
+
+	--nldesign-font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+	--nldesign-heading-font-family: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+	--nldesign-code-font-family: "IBM Plex Mono", ui-monospace, monospace;
+
+	/* ===================================================================
+	 * BORDER RADIUS
+	 * Sharp, in the NL Design house style — but never 0 for the radius that
+	 * Nextcloud also consumes as a length. See css/overrides.css.
+	 * =================================================================== */
+
+	--nldesign-border-radius: 1px;
+	--nldesign-border-radius-small: 1px;
+	--nldesign-border-radius-large: 4px;
+	--nldesign-border-radius-rounded: 1px;
+	--nldesign-border-radius-pill: 100px;
+
+	/* ===================================================================
+	 * SEMANTIC COLOUR — LIGHT
+	 * =================================================================== */
+
+	--nldesign-color-bg: var(--senerawa-color-cream);
+	--nldesign-color-text: var(--senerawa-color-ink);              /* 17.34:1 AAA */
+	--nldesign-color-text-secondary: var(--senerawa-color-slate);  /*  6.98:1     */
+	--nldesign-color-primary: var(--senerawa-color-teal);          /* 11.55:1 AAA */
+	--nldesign-color-primary-text: var(--senerawa-color-cream);    /* 11.55:1 AAA */
+	--nldesign-color-border: var(--senerawa-color-border-light);   /*  3.51:1     */
+	--nldesign-color-hover: var(--senerawa-color-mist);
+	--nldesign-color-error: var(--senerawa-color-flame);           /*  4.56:1     */
+}
+
+/* ===================================================================
+ * SEMANTIC COLOUR — DARK
+ * The header stays teal in both schemes, so its foreground is pinned
+ * rather than allowed to follow the scheme. Letting it follow produced
+ * #04151f on #183a37: 1.50:1, an unreadable menu.
+ * =================================================================== */
+
+[data-theme-dark],
+[data-theme-dark-highcontrast] {
+	--nldesign-color-bg: var(--senerawa-color-ink);
+	--nldesign-color-text: var(--senerawa-color-cream);            /* 17.34:1 AAA */
+	--nldesign-color-text-secondary: var(--senerawa-color-mist);   /* 15.51:1 AAA */
+	--nldesign-color-primary: var(--senerawa-color-sand);          /* 13.15:1 AAA */
+	--nldesign-color-primary-text: var(--senerawa-color-ink);
+	--nldesign-color-border: var(--senerawa-color-border-dark);    /*  3.51:1     */
+	--nldesign-color-hover: var(--senerawa-color-teal);
+	--nldesign-color-error: var(--senerawa-color-flame-light);     /*  5.09:1     */
+}
