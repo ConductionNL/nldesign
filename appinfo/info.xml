@@ -22,7 +22,7 @@ This is the core profile plane. Theming app fields are surfaced separately as
 manual-only bridge guidance until a compatibility driver is explicitly
 version-verified, recovery-tested, and enabled.
 	]]></description>
-	<version>0.2.0-rc3</version>
+	<version>0.2.0-rc4</version>
 	<licence>EUPL-1.2</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
