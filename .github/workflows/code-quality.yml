@@ -14,6 +14,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  workflow-lint:
+    name: GitHub Actions workflow lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install verified actionlint binary
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          ARCHIVE="$RUNNER_TEMP/actionlint.tar.gz"
+          curl --fail --location --proto '=https' --tlsv1.2 --max-filesize 5242880 \
+            --output "$ARCHIVE" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  ${ARCHIVE}" | sha256sum --check --strict
+          tar -xzf "$ARCHIVE" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -version
+
+      - name: Lint GitHub Actions workflows
+        run: |
+          "$RUNNER_TEMP/actionlint"
+
   php:
     name: PHP ${{ matrix.php }} quality and security
     runs-on: ubuntu-latest
