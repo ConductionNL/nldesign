@@ -131,7 +131,7 @@ test.describe('menu-labels', () => {
 		'Show menu labels checkbox is present in admin settings panel',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const checkbox = page.locator('#nldesign-show-menu-labels')
 			await expect(checkbox).toBeAttached()
 			const label = page.locator('label[for="nldesign-show-menu-labels"]')

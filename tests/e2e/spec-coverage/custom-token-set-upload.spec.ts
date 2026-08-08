@@ -26,7 +26,7 @@ test.describe('custom-token-set-upload', () => {
 		'Custom token set upload form is present with name field and upload button',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 
 			const section = page.locator('#nldesign-custom-token-sets')
 			await expect(section).toBeVisible()
@@ -40,7 +40,7 @@ test.describe('custom-token-set-upload', () => {
 		'Uploading a valid CSS set adds it to the custom-set list and the dropdown',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 
 			const setName = 'E2E Voorbeeld ' + Date.now()
 			await page.fill('#nldesign-upload-name', setName)
@@ -115,7 +115,7 @@ test.describe('custom-token-set-upload', () => {
 		'Low-contrast upload succeeds and surfaces a WCAG AA warning',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 
 			const setName = 'E2E Lowcontrast ' + Date.now()
 			await page.fill('#nldesign-upload-name', setName)
@@ -194,7 +194,7 @@ test.describe('custom-token-set-upload', () => {
 		'Uploaded set exposes Download and Delete actions; delete removes the row',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 
 			const setName = 'E2E Manage ' + Date.now()
 			await page.fill('#nldesign-upload-name', setName)

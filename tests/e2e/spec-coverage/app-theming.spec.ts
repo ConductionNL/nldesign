@@ -62,7 +62,7 @@ async function openAppThemingDropdown(page: Page, appName = TARGET_APP) {
 /** Set the target app's themed state via the admin panel and save. */
 async function setThemed(page: Page, themed: boolean) {
 	await page.goto(THEMING_URL)
-	await page.waitForLoadState('networkidle')
+	await page.waitForLoadState('domcontentloaded')
 	await openAppThemingDropdown(page)
 	const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
 	// The raw <input> is visually hidden off-canvas (position:absolute, left:-9999px),
@@ -113,11 +113,11 @@ test.describe('per-app-theming', () => {
 			await setThemed(page, false)
 
 			await page.goto(`/apps/${TARGET_APP}/`)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			expect(await nldesignStyleCount(page)).toBe(0)
 
 			await page.goto('/apps/files/')
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
 		},
 	)
@@ -130,7 +130,7 @@ test.describe('per-app-theming', () => {
 			await setThemed(page, true)
 
 			await page.goto(`/apps/${TARGET_APP}/`)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
 		},
 	)
@@ -141,7 +141,7 @@ test.describe('per-app-theming', () => {
 		async ({ page }) => {
 			await setThemed(page, false)
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
 		},
 	)
@@ -151,7 +151,7 @@ test.describe('per-app-theming', () => {
 		'Every app row exposes a checkbox associated with a visible label',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			await openAppThemingDropdown(page)
 			const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
 			await box.waitFor({ state: 'visible' })

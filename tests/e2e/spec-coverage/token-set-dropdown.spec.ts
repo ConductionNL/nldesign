@@ -41,7 +41,7 @@ test.describe('token-set-dropdown', () => {
 		'Token set selector is a searchable <select> with multiple options',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const select = page.locator('#nldesign-token-set-select')
 			await expect(select).toBeVisible()
 			// Must be a native <select> element (not radio buttons)

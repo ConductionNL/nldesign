@@ -117,7 +117,7 @@ test.describe('hide-slogan', () => {
 		'Hide slogan checkbox is present in admin settings panel',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const checkbox = page.locator('#nldesign-hide-slogan')
 			await expect(checkbox).toBeAttached()
 			const label = page.locator('label[for="nldesign-hide-slogan"]')

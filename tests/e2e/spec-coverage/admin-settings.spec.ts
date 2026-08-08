@@ -26,7 +26,7 @@ test.describe('admin-settings', () => {
 		'Settings panel appears in admin area',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const heading = page.locator('h2:has-text("NL Design System Theme")')
 			await expect(heading).toBeVisible()
 		},
@@ -37,7 +37,7 @@ test.describe('admin-settings', () => {
 		'Settings panel position relative to Nextcloud theming',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// Both sections are present — the native "Theming" heading and the
 			// NL Design heading, which must come after.
 			const sections = page.locator('main h2')
@@ -80,7 +80,7 @@ test.describe('admin-settings', () => {
 		'Dropdown populated with token sets',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const select = page.locator('#nldesign-token-set-select')
 			await expect(select).toBeVisible()
 			const options = await select.locator('option').count()
@@ -97,7 +97,7 @@ test.describe('admin-settings', () => {
 		'Dropdown label is associated with select',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// The label element with for="nldesign-token-set-select" must exist
 			const label = page.locator('label[for="nldesign-token-set-select"]')
 			await expect(label).toBeVisible()
@@ -110,7 +110,7 @@ test.describe('admin-settings', () => {
 		'Design system badge is present after page load',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const badge = page.locator('#nldesign-design-system-badge')
 			await expect(badge).toBeAttached()
 		},
@@ -135,7 +135,7 @@ test.describe('admin-settings', () => {
 		'Preview box renders with token set colors',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// Live preview is rendered as `.nldesign-preview` (id #nldesign-preview)
 			// containing app/login `.nldesign-preview-stage` shells. The primary
 			// action is the `.nl-btn--primary` button inside the app-shell stage.
@@ -164,7 +164,7 @@ test.describe('admin-settings', () => {
 		'Hide slogan checkbox is present and has correct label',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const checkbox = page.locator('#nldesign-hide-slogan')
 			await expect(checkbox).toBeAttached()
 			const label = page.locator('label[for="nldesign-hide-slogan"]')
@@ -182,7 +182,7 @@ test.describe('admin-settings', () => {
 		'Hide slogan checkbox label text and accessibility',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const label = page.locator('label[for="nldesign-hide-slogan"]')
 			await expect(label).toContainText('Hide Nextcloud slogan/payoff on login page')
 			// label[for] links it to the checkbox — WCAG SC 1.3.1
@@ -204,7 +204,7 @@ test.describe('admin-settings', () => {
 		'Show menu labels checkbox is present and has correct label',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const checkbox = page.locator('#nldesign-show-menu-labels')
 			await expect(checkbox).toBeAttached()
 			const label = page.locator('label[for="nldesign-show-menu-labels"]')
@@ -222,7 +222,7 @@ test.describe('admin-settings', () => {
 		'Show menu labels checkbox label text and accessibility',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const label = page.locator('label[for="nldesign-show-menu-labels"]')
 			await expect(label).toContainText('Show text labels in app menu (hide icons)')
 			const checkbox = page.locator('#nldesign-show-menu-labels')
@@ -243,7 +243,7 @@ test.describe('admin-settings', () => {
 		'Documentation link rendered with correct attributes',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const link = page.locator('a[href="https://nldesign.app"]')
 			await expect(link).toBeVisible()
 			await expect(link).toHaveAttribute('target', '_blank')
@@ -256,7 +256,7 @@ test.describe('admin-settings', () => {
 		'NL Design System info link rendered',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const link = page.locator('a[href="https://nldesignsystem.nl/"]')
 			await expect(link).toBeVisible()
 			await expect(link).toHaveAttribute('target', '_blank')
@@ -309,7 +309,7 @@ test.describe('admin-settings', () => {
 		'Token editor mount point rendered with content',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const editorEl = page.locator('#nldesign-token-editor')
 			await expect(editorEl).toBeAttached()
 		},
@@ -332,7 +332,7 @@ test.describe('admin-settings', () => {
 		'Settings hint text rendered',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const hint = page.locator('.settings-hint').filter({ hasText: 'Select a Dutch government design token set' })
 			await expect(hint).toBeVisible()
 		},
@@ -355,7 +355,7 @@ test.describe('admin-settings', () => {
 		'Token sets data attribute present on settings div',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const settingsDiv = page.locator('#nldesign-settings')
 			await expect(settingsDiv).toBeAttached()
 			const attr = await settingsDiv.getAttribute('data-token-sets')
@@ -372,7 +372,7 @@ test.describe('admin-settings', () => {
 		'Current token set data attribute present on settings div',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const settingsDiv = page.locator('#nldesign-settings')
 			const attr = await settingsDiv.getAttribute('data-current-token-set')
 			expect(attr).toBeTruthy()

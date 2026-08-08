@@ -22,7 +22,7 @@ test.describe('token-editor-ui', () => {
 		'Admin opens settings — token editor panel is visible',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// Token editor is inside #nldesign-token-editor
 			const editorEl = page.locator('#nldesign-token-editor')
 			await expect(editorEl).toBeVisible()
@@ -45,7 +45,7 @@ test.describe('token-editor-ui', () => {
 		'Login page & Branding tab shows primary-color tokens',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// The "Login page & Branding" tab should be active by default or clickable
 			const tab = page.locator('button:has-text("Login page & Branding")')
 			await expect(tab).toBeVisible()
@@ -92,7 +92,7 @@ test.describe('token-editor-ui', () => {
 		'All four tabs are rendered in token editor',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			await expect(page.locator('button:has-text("Login page & Branding")')).toBeVisible()
 			await expect(page.locator('button:has-text("Content area")')).toBeVisible()
 			await expect(page.locator('button:has-text("Buttons & Status")')).toBeVisible()
@@ -113,7 +113,7 @@ test.describe('token-editor-ui', () => {
 		'Excluded tokens like --color-main-background are not shown in any tab',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// Check all tabs for the excluded token
 			const tabs = ['Login page & Branding', 'Content area', 'Buttons & Status', 'Typography']
 			for (const tabText of tabs) {
@@ -186,7 +186,7 @@ test.describe('token-editor-ui', () => {
 		'Save overrides button is present',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const saveBtn = page.locator('button:has-text("Save overrides")')
 			await expect(saveBtn).toBeVisible()
 		},
@@ -205,7 +205,7 @@ test.describe('token-editor-ui', () => {
 		'Per-token reset buttons are present in the editor',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			await page.locator('button:has-text("Login page & Branding")').click()
 			// Each token row must have a reset button (↺)
 			const resetBtns = page.locator('button:has-text("↺")')
