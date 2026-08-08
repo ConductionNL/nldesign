@@ -122,7 +122,7 @@ live unauthenticated curl check deferred to tasks.md#task-6.2
   request to any external host
 
 #### Scenario: Unknown font id returns 404
-@e2e exclude covered by FontServiceTest::testGetFontReturnsNullForUnknownId and
+@e2e exclude covered by FontServiceTest::testGetFontReturnsNullForUnknownIdEvenIfFileExists and
 FontControllerTest 404 case (PHPUnit)
 
 - GIVEN no manifest entry `custom-ghost`
@@ -184,7 +184,7 @@ bust), and cause the generated stylesheet to drop its rules so rendering falls b
 shipped chain. List and delete endpoints MUST be admin-only and CSRF-protected.
 
 #### Scenario: Admin deletes a font
-@e2e exclude covered by FontServiceTest::testDeleteRemovesFileAndManifest and
+@e2e exclude covered by FontServiceTest::testDeleteRemovesFileManifestAndBumpsRev and
 FontControllerTest delete cases (PHPUnit); live rendering-fallback check deferred to
 tasks.md#task-6.4
 

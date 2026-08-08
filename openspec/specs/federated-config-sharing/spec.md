@@ -26,7 +26,7 @@ matches on them, so changing any of them is a breaking change to every already-p
 MUST be treated as such.
 
 #### Scenario: The type declares its wire identity
-@e2e exclude cross-app contract identity — PHPUnit asserts the three strings; no UI surface
+@e2e exclude cross-app wire identity with no UI surface — nothing in this app renders these strings; covered by NlDesignThemeShareableConfigTypeTest::testWireIdentityIsStable
 
 - GIVEN the shareable config type
 - WHEN its id, display name and topic are read
@@ -49,7 +49,7 @@ never be extended to carry any. Any future theming value that IS a secret MUST b
 protected by the same decision.
 
 #### Scenario: A serialised theme is the config bundle
-@e2e exclude serialisation contract — PHPUnit asserts the envelope and delegation
+@e2e exclude serialisation contract invoked by OpenRegister, never by an nldesign page; covered by NlDesignThemeShareableConfigTypeTest::testSerialiseWrapsTheConfigBundleAndIgnoresTheSelection
 
 - GIVEN an instance with a configured theme
 - WHEN the type is serialised with any selection, including an empty one
@@ -65,7 +65,7 @@ malformed MUST degrade to an empty array rather than a fatal, so a peer sending 
 cannot take the receiving instance down.
 
 #### Scenario: An incoming theme goes through the validated import path
-@e2e exclude deserialisation contract — PHPUnit asserts delegation and the return shape
+@e2e exclude deserialisation contract invoked by OpenRegister, never by an nldesign page; covered by NlDesignThemeShareableConfigTypeTest::testDeserialiseAppliesTheInnerBundleThroughImport
 
 - GIVEN a bundle produced by this type
 - WHEN it is deserialised
@@ -73,6 +73,7 @@ cannot take the receiving instance down.
 - AND the result MUST report `installed: ['nldesign-theme']` alongside the import result
 
 #### Scenario: A payload with no bundle key does not fatal
+@e2e exclude no UI surface anywhere in this app — a malformed cross-instance payload cannot be produced from a browser; covered by NlDesignThemeShareableConfigTypeTest::testAMalformedPayloadImportsAnEmptyArrayInsteadOfFataling
 
 - GIVEN a payload that omits `bundle`, or whose `bundle` is not an array
 - WHEN it is deserialised
@@ -88,7 +89,7 @@ service eagerly would drag the whole theming dependency chain into every such re
 context that may not autowire it.
 
 #### Scenario: Constructing the type resolves nothing
-@e2e exclude container behaviour — PHPUnit asserts the container is untouched until first use
+@e2e exclude DI-container behaviour that produces no observable DOM difference; covered by NlDesignThemeShareableConfigTypeTest::testTheBundleServiceIsResolvedLazily
 
 - GIVEN the type is constructed with a container
 - WHEN no serialise or deserialise call has been made
@@ -108,13 +109,14 @@ no lazy-DI arrangement can defer it, so constructing that class on an instance w
 is fatal. The guard is what ensures nothing constructs it there.
 
 #### Scenario: The listener is registered only when the engine is present
-@e2e exclude boot-path invariant — PHPUnit asserts the guard exists in Application.php
+@e2e exclude boot-path invariant — proving it needs an instance WITHOUT OpenRegister, which the e2e fixture always installs; covered by NlDesignThemeShareableConfigTypeTest::testOpenRegisterRemainsASoftDependency
 
 - GIVEN `lib/AppInfo/Application.php`
 - WHEN the shareable-config listener registration is read
 - THEN it MUST be inside a `class_exists()` guard on the OpenRegister event class
 
 #### Scenario: A non-matching event is ignored
+@e2e exclude event-dispatch branch with no UI surface — an event listener is not reachable from a browser; covered by NlDesignThemeShareableConfigTypeTest::testListenerRegistersOnTheMatchingEventOnly
 
 - GIVEN the listener receives an event that is not a `RegisterShareableConfigTypesEvent`
 - WHEN it is handled

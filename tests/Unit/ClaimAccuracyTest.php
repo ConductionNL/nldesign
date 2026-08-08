@@ -544,4 +544,85 @@ class ClaimAccuracyTest extends TestCase
             . 'declarations contradict each other.'
         );
     }
+
+    /**
+     * Every `@e2e exclude ... covered by <Class>::<method>` in openspec/specs/
+     * names a test method that actually exists.
+     *
+     * An `@e2e exclude` is the one thing that makes gate-19 stop asking for
+     * coverage of a scenario, so it is the exact shape a blind spot takes. The
+     * gate itself only requires a non-empty REASON — any prose satisfies it.
+     * Whenever a reason claims a named PHPUnit method covers the scenario, that
+     * claim must be checkable, or the exclusion is prose standing in for a test.
+     *
+     * Deliberately narrow: exclusions whose reason does NOT name a method (e.g.
+     * "documentation invariant", "API-layer assertion") are untouched. Widening
+     * this to demand a named method everywhere would be a different decision.
+     *
+     * @spec openspec/specs/claim-accuracy/spec.md
+     */
+    public function testEveryNamedE2eExclusionPointsAtATestThatExists(): void
+    {
+        $root  = $this->repoRoot();
+        $specs = glob($root . '/openspec/specs/*/spec.md');
+        $this->assertNotEmpty($specs, 'openspec/specs/ must contain specs to scan.');
+
+        $claims = [];
+        foreach ($specs as $spec) {
+            $text = file_get_contents($spec);
+            $this->assertIsString($text);
+            preg_match_all(
+                '/covered by\s+(?P<class>[A-Za-z_][A-Za-z0-9_]*)::(?P<method>[A-Za-z_][A-Za-z0-9_]*)/',
+                $text,
+                $matches,
+                PREG_SET_ORDER
+            );
+            foreach ($matches as $match) {
+                $claims[] = [
+                    'spec'   => str_replace($root . '/', '', $spec),
+                    'class'  => $match['class'],
+                    'method' => $match['method'],
+                ];
+            }
+        }
+
+        // A scan that matched nothing and a scan that is broken are the same
+        // output. This repo HAS such claims, so an empty result means the regex
+        // stopped working, not that the claims became true.
+        $this->assertNotEmpty(
+            $claims,
+            'No "covered by Class::method" claims found in openspec/specs/. Either every one was '
+            . 'removed, or this scanner no longer matches the format it is supposed to check.'
+        );
+
+        $index = [];
+        $rii   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/tests'));
+        foreach ($rii as $file) {
+            if ($file->isFile() === false || str_ends_with($file->getFilename(), 'Test.php') === false) {
+                continue;
+            }
+
+            $body = file_get_contents($file->getPathname());
+            if ($body === false) {
+                continue;
+            }
+
+            $index[basename($file->getFilename(), '.php')] = $body;
+        }
+
+        foreach ($claims as $claim) {
+            $this->assertArrayHasKey(
+                $claim['class'],
+                $index,
+                "{$claim['spec']} claims coverage by {$claim['class']}::{$claim['method']}, "
+                . "but no tests/**/{$claim['class']}.php exists."
+            );
+            $this->assertStringContainsString(
+                "function {$claim['method']}(",
+                $index[$claim['class']],
+                "{$claim['spec']} claims coverage by {$claim['class']}::{$claim['method']}, "
+                . 'but that class has no such method — the exclusion is prose standing in for a test.'
+            );
+        }
+    }
 }
