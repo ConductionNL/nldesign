@@ -35,7 +35,32 @@ Gratis en open source onder de EUPL-1.2 licentie.
 
 	<dependencies>
 		<php min-version="8.3"/>
-		<nextcloud min-version="28" max-version="34"/>
+		<!-- Floor 32, aligned with the fleet. Two reasons, both verifiable here:
+
+		     1. PHP. This app already requires 8.3. Nextcloud 31 and below run on
+		        8.1/8.2 as well, so a 28 floor advertised a range where the app
+		        store could offer this app to an instance whose PHP it cannot run
+		        on. NC32 is the first release whose own floor is 8.3, so 32 is
+		        where the two declarations stop contradicting each other.
+
+		     2. It is what is actually tested. `.github/workflows/code-quality.yml`
+		        pins `nextcloud-test-refs: '["stable32"]'` (#240) and the only
+		        PHPUnit legs that exist are `NC stable32`. Nothing has exercised
+		        28-31 since #240. Declaring support for versions no leg touches is
+		        a promise the app store passes on to users.
+
+		     History, because this attribute has moved twice: #241 raised it to 32
+		     and #242 restored 28, on the stated premise that "this repo does not
+		     set nextcloud-test-refs, so it inherits the shared default of
+		     [stable31, stable32]". That premise was already false when #242
+		     landed — #240 had pinned the list to stable32 one commit earlier —
+		     and it is false now: development's own run has only `NC stable32`
+		     legs. #242's other premise (openregister restoring its 28 floor) does
+		     not bear on this app at all, which declares no <app> dependency.
+
+		     max-version stays 34, which is the fleet-wide value; openconnector is
+		     the only repo that says 35. -->
+		<nextcloud min-version="32" max-version="34"/>
 	</dependencies>
 
 	<!-- Upstream token freshness check (openspec/specs/upstream-freshness/spec.md):

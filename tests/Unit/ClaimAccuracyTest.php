@@ -412,4 +412,136 @@ class ClaimAccuracyTest extends TestCase
             'css/systems/lasuite/marianne.css must not load Marianne from an external http(s):// URL.'
         );
     }
+
+    /**
+     * The Nextcloud refs CI actually provisions, read out of the workflow.
+     *
+     * `nextcloud-test-refs` is a JSON array embedded in YAML, e.g.
+     * `nextcloud-test-refs: '["stable32"]'`. Returned as integers so the
+     * comparison against `min-version` is numeric, not lexical — "stable9"
+     * sorts above "stable32" as a string and below it as a number, and only
+     * the second is the meaning anyone intends.
+     *
+     * @return int[] the major versions provisioned by CI, ascending
+     */
+    private function testedNextcloudMajors(): array
+    {
+        $workflow = $this->readFile('.github/workflows/code-quality.yml');
+
+        // Anchored to the start of a (possibly indented) line so the many
+        // COMMENTS in this file that quote the key — including one quoting the
+        // shared workflow's own default of ["stable31","stable32"] — cannot be
+        // mistaken for the live setting. A comment line starts with '#'.
+        $matched = preg_match(
+            '/^[ \t]*nextcloud-test-refs:[ \t]*[\'"](?P<json>\[[^\]]*\])[\'"]/m',
+            $workflow,
+            $m
+        );
+        $this->assertSame(
+            1,
+            $matched,
+            '.github/workflows/code-quality.yml must pin `nextcloud-test-refs` explicitly. '
+            . 'Inheriting the shared default silently widens the tested matrix, which is how '
+            . 'the floor and the matrix drifted apart in #241/#242.'
+        );
+
+        $refs = json_decode($m['json'], true);
+        $this->assertIsArray($refs, 'nextcloud-test-refs must be a JSON array.');
+        $this->assertNotEmpty($refs, 'nextcloud-test-refs must not be empty.');
+
+        $majors = [];
+        foreach ($refs as $ref) {
+            $this->assertIsString($ref, 'Every nextcloud-test-refs entry must be a string.');
+            $this->assertSame(
+                1,
+                preg_match('/^stable(?P<major>\d+)$/', $ref, $r),
+                "nextcloud-test-refs entry '{$ref}' must be of the form stableNN."
+            );
+            $majors[] = (int) $r['major'];
+        }
+
+        sort($majors);
+        return $majors;
+    }
+
+    /**
+     * The declared Nextcloud range and the CI matrix say the same thing.
+     *
+     * `min-version` is enforced at install time and decides which servers the
+     * app store offers this app to. A floor ABOVE the matrix makes
+     * `occ app:enable` refuse on a tested leg; a floor BELOW it advertises
+     * versions that no leg has ever exercised. This repo shipped each defect
+     * once — #241 then #242 — because nothing compared the two files.
+     *
+     * @spec openspec/specs/claim-accuracy/spec.md
+     */
+    public function testDeclaredNextcloudRangeMatchesTheTestedMatrix(): void
+    {
+        $info = simplexml_load_string($this->readFile('appinfo/info.xml'));
+        $this->assertNotFalse($info, 'appinfo/info.xml must be well-formed XML.');
+
+        $min = (int) $info->dependencies->nextcloud['min-version'];
+        $max = (int) $info->dependencies->nextcloud['max-version'];
+        $this->assertGreaterThan(0, $min, 'appinfo/info.xml must declare <nextcloud min-version>.');
+        $this->assertGreaterThan(0, $max, 'appinfo/info.xml must declare <nextcloud max-version>.');
+
+        $tested = $this->testedNextcloudMajors();
+        $lowest = $tested[0];
+        $highest = $tested[\count($tested) - 1];
+        $list = implode(', ', $tested);
+
+        $this->assertGreaterThanOrEqual(
+            $min,
+            $lowest,
+            "appinfo/info.xml declares min-version={$min}, but CI provisions stable{$lowest}. "
+            . 'min-version is enforced at install time, so `occ app:enable` will REFUSE on that '
+            . 'leg and the run fails later with an unrelated "app is not installed or enabled".'
+        );
+
+        $this->assertSame(
+            $min,
+            $lowest,
+            "appinfo/info.xml declares min-version={$min}, but the lowest ref CI tests is "
+            . "stable{$lowest} (matrix: {$list}). Every version between {$min} and {$lowest} is "
+            . 'advertised to the app store and exercised by nothing.'
+        );
+
+        $this->assertGreaterThanOrEqual(
+            $highest,
+            $max,
+            "appinfo/info.xml declares max-version={$max}, but CI tests stable{$highest}."
+        );
+    }
+
+    /**
+     * The declared PHP floor is satisfiable on the declared Nextcloud floor.
+     *
+     * Nextcloud 32 is the first release whose own PHP floor is 8.3. Declaring
+     * `<php min-version="8.3"/>` alongside a Nextcloud floor below 32 is not a
+     * wider support range — it is two declarations that contradict each other,
+     * and the app store resolves the contradiction by offering the app to
+     * instances whose PHP it cannot run on.
+     *
+     * @spec openspec/specs/claim-accuracy/spec.md
+     */
+    public function testDeclaredPhpFloorIsSatisfiableOnTheDeclaredNextcloudFloor(): void
+    {
+        $info = simplexml_load_string($this->readFile('appinfo/info.xml'));
+        $this->assertNotFalse($info, 'appinfo/info.xml must be well-formed XML.');
+
+        $php = (string) $info->dependencies->php['min-version'];
+        $nc = (int) $info->dependencies->nextcloud['min-version'];
+
+        if (version_compare($php, '8.3', '>=') === false) {
+            $this->markTestSkipped('PHP floor is below 8.3 — this invariant does not apply.');
+        }
+
+        $this->assertGreaterThanOrEqual(
+            32,
+            $nc,
+            "appinfo/info.xml declares php min-version={$php} with nextcloud min-version={$nc}. "
+            . 'Nextcloud 32 is the first release whose own PHP floor is 8.3; below it the two '
+            . 'declarations contradict each other.'
+        );
+    }
 }
