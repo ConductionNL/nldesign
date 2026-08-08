@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0-rc3 - 2026-08-08
+
+- Moved the prerelease download and publication actions to signed, immutable
+  Node 24 revisions so release CI no longer relies on GitHub's Node 20
+  compatibility fallback.
+
 ## 0.2.0-rc2 - 2026-08-08
 
 - Replaced the simple selector UI with a searchable profile library, exact
