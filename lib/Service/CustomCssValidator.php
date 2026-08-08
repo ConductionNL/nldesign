@@ -211,55 +211,131 @@ class CustomCssValidator
      */
     private function bracesAreBalanced(string $css): bool
     {
-        $depth     = 0;
-        $length    = strlen($css);
-        $inComment = false;
-        $quote     = null;
+        $depth = 0;
 
-        for ($i = 0; $i < $length; $i++) {
-            $char = $css[$i];
-
-            if ($inComment === true) {
-                if ($char === '*' && ($i + 1) < $length && $css[($i + 1)] === '/') {
-                    $inComment = false;
-                    $i++;
-                }
-
-                continue;
-            }
-
-            if ($quote !== null) {
-                if ($char === '\\') {
-                    $i++;
-                } else if ($char === $quote) {
-                    $quote = null;
-                }
-
-                continue;
-            }
-
-            if ($char === '/' && ($i + 1) < $length && $css[($i + 1)] === '*') {
-                $inComment = true;
-                $i++;
-                continue;
-            }
-
-            if ($char === '"' || $char === "'") {
-                $quote = $char;
-                continue;
-            }
-
+        foreach ($this->structuralBraces(css: $css) as $char) {
             if ($char === '{') {
                 $depth++;
-            } else if ($char === '}') {
-                $depth--;
-                if ($depth < 0) {
-                    return false;
-                }
+                continue;
             }
-        }//end for
+
+            $depth--;
+            if ($depth < 0) {
+                return false;
+            }
+        }
 
         return ($depth === 0);
 
     }//end bracesAreBalanced()
+
+    /**
+     * Collect the `{`/`}` characters that carry structural meaning.
+     *
+     * Comments and quoted strings are consumed whole by {@see skipComment()}
+     * and {@see skipQuoted()}, so any brace inside them never reaches the
+     * result — a legitimate `content: "{"` declaration is not mistaken for a
+     * structural brace, and neither is a brace inside `/ * … * /`.
+     *
+     * @param string $css The CSS to scan.
+     *
+     * @return string[] The structural braces, in source order.
+     */
+    private function structuralBraces(string $css): array
+    {
+        $braces = [];
+        $length = strlen($css);
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $css[$i];
+
+            if ($this->opensCommentAt(css: $css, index: $i, length: $length) === true) {
+                $i = $this->skipComment(css: $css, start: $i, length: $length);
+                continue;
+            }
+
+            if ($char === '"' || $char === "'") {
+                $i = $this->skipQuoted(css: $css, start: $i, length: $length, quote: $char);
+                continue;
+            }
+
+            if ($char === '{' || $char === '}') {
+                $braces[] = $char;
+            }
+        }//end for
+
+        return $braces;
+
+    }//end structuralBraces()
+
+    /**
+     * Report whether a `/*` comment opener starts at the given index.
+     *
+     * @param string  $css    The CSS being scanned.
+     * @param integer $index  The index to test.
+     * @param integer $length The total length of $css.
+     *
+     * @return boolean True when a comment opens at $index.
+     */
+    private function opensCommentAt(string $css, int $index, int $length): bool
+    {
+        return ($css[$index] === '/' && ($index + 1) < $length && $css[($index + 1)] === '*');
+
+    }//end opensCommentAt()
+
+    /**
+     * Return the index of the last character belonging to the comment that
+     * opens at $start.
+     *
+     * An unterminated comment consumes the remainder of the document, which is
+     * how a browser parses it too.
+     *
+     * @param string  $css    The CSS being scanned.
+     * @param integer $start  The index of the comment's opening slash.
+     * @param integer $length The total length of $css.
+     *
+     * @return integer The index of the closing slash, or $length when unterminated.
+     */
+    private function skipComment(string $css, int $start, int $length): int
+    {
+        for ($i = ($start + 2); $i < $length; $i++) {
+            if ($css[$i] === '*' && ($i + 1) < $length && $css[($i + 1)] === '/') {
+                return ($i + 1);
+            }
+        }
+
+        return $length;
+
+    }//end skipComment()
+
+    /**
+     * Return the index of the quote that closes the string opening at $start.
+     *
+     * A backslash escapes the character that follows it, so an escaped quote
+     * does not terminate the string. An unterminated string consumes the
+     * remainder of the document.
+     *
+     * @param string  $css    The CSS being scanned.
+     * @param integer $start  The index of the opening quote.
+     * @param integer $length The total length of $css.
+     * @param string  $quote  The quote character that opened the string.
+     *
+     * @return integer The index of the closing quote, or $length when unterminated.
+     */
+    private function skipQuoted(string $css, int $start, int $length, string $quote): int
+    {
+        for ($i = ($start + 1); $i < $length; $i++) {
+            if ($css[$i] === '\\') {
+                $i++;
+                continue;
+            }
+
+            if ($css[$i] === $quote) {
+                return $i;
+            }
+        }
+
+        return $length;
+
+    }//end skipQuoted()
 }//end class

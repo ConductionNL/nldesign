@@ -19,9 +19,7 @@ use OCA\NLDesign\Service\CustomOverridesService;
 use OCA\NLDesign\Service\DesignSystemService;
 use OCA\NLDesign\Service\FontService;
 use OCA\NLDesign\Service\GroupThemingService;
-use OCA\NLDesign\Service\ThemePreviewService;
-use OCP\AppFramework\Services\IInitialState;
-use OCP\IUserSession;
+use OCA\NLDesign\Service\ThemePreviewBannerService;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -89,25 +87,15 @@ class CssInjectionServiceTest extends TestCase
     private $groupThemingService;
 
     /**
-     * The theme preview service mock.
+     * The theme preview banner service mock.
      *
-     * @var ThemePreviewService&MockObject
-     */
-    private $previewService;
-
-    /**
-     * The user session mock.
+     * The banner has its own dedicated coverage
+     * ({@see ThemePreviewBannerServiceTest}); these tests assert the
+     * stylesheet cascade only, so the mock is left inert.
      *
-     * @var IUserSession&MockObject
+     * @var ThemePreviewBannerService&MockObject
      */
-    private $userSession;
-
-    /**
-     * The initial state mock (preview banner payload).
-     *
-     * @var IInitialState&MockObject
-     */
-    private $initialState;
+    private $previewBannerService;
 
     /**
      * Set up mocks before each test.
@@ -122,9 +110,7 @@ class CssInjectionServiceTest extends TestCase
         $this->fontService            = $this->createMock(FontService::class);
         $this->urlGenerator           = $this->createMock(IURLGenerator::class);
         $this->groupThemingService    = $this->createMock(GroupThemingService::class);
-        $this->previewService         = $this->createMock(ThemePreviewService::class);
-        $this->userSession            = $this->createMock(IUserSession::class);
-        $this->initialState           = $this->createMock(IInitialState::class);
+        $this->previewBannerService   = $this->createMock(ThemePreviewBannerService::class);
 
         // Default: no group mapping configured, so the resolver returns the
         // plain appconfig token set — byte-identical to pre-per-group behaviour.
@@ -163,15 +149,10 @@ class CssInjectionServiceTest extends TestCase
                     $this->fontService,
                     $this->urlGenerator,
                     $this->groupThemingService,
-                    $this->previewService,
-                    $this->userSession,
-                    $this->initialState,
+                    $this->previewBannerService,
                 ]
             )
-            // injectPreviewBanner is stubbed out: the banner has its own
-            // dedicated coverage, and these tests assert the stylesheet
-            // cascade only.
-            ->onlyMethods(['emitStyle', 'emitFontLink', 'injectPreviewBanner'])
+            ->onlyMethods(['emitStyle', 'emitFontLink'])
             ->getMock();
 
         $service->method('emitStyle')->willReturnCallback(

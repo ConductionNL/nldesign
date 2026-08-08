@@ -22,10 +22,8 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Service;
 
 use OCA\NLDesign\AppInfo\Application;
-use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
 use OCP\IURLGenerator;
-use OCP\IUserSession;
 
 /**
  * Injects the nldesign stylesheet cascade for a themed render context.
@@ -118,44 +116,23 @@ class CssInjectionService
     private GroupThemingService $groupThemingService;
 
     /**
-     * Resolves whether the requesting user has an active theme preview.
+     * Injects the admin theme-preview banner (assets + initial state).
      *
-     * @var ThemePreviewService
+     * @var ThemePreviewBannerService
      */
-    private ThemePreviewService $previewService;
-
-    /**
-     * The user session, to resolve the previewing user.
-     *
-     * @var IUserSession
-     */
-    private IUserSession $userSession;
-
-    /**
-     * Provides the preview banner's initial state to the frontend.
-     *
-     * @var IInitialState
-     */
-    private IInitialState $initialState;
+    private ThemePreviewBannerService $previewBannerService;
 
     /**
      * Constructor.
      *
-     * @param IConfig                $config              The config service.
-     * @param DesignSystemService    $designSystemService The design system resolver.
-     * @param CustomOverridesService $overridesService    The custom overrides file service.
-     * @param CustomCssService       $customCssService    The freeform custom CSS service.
-     * @param FontService            $fontService         The custom font resolver.
-     * @param IURLGenerator          $urlGenerator        The URL generator.
-     * @param GroupThemingService    $groupThemingService The per-group token-set resolver.
-     * @param ThemePreviewService    $previewService      The admin theme-preview resolver.
-     * @param IUserSession           $userSession         The user session.
-     * @param IInitialState          $initialState        Provides the preview banner's initial state.
-     *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList) - Each dependency is one layer of the
-     * documented injection cascade (config, design system, overrides, fonts, URLs, per-group
-     * resolution, preview). NC's DI container supplies them; a parameter object would only
-     * rename the coupling.
+     * @param IConfig                   $config               The config service.
+     * @param DesignSystemService       $designSystemService  The design system resolver.
+     * @param CustomOverridesService    $overridesService     The custom overrides file service.
+     * @param CustomCssService          $customCssService     The freeform custom CSS service.
+     * @param FontService               $fontService          The custom font resolver.
+     * @param IURLGenerator             $urlGenerator         The URL generator.
+     * @param GroupThemingService       $groupThemingService  The per-group token-set resolver.
+     * @param ThemePreviewBannerService $previewBannerService The theme-preview banner injector.
      */
     public function __construct(
         IConfig $config,
@@ -165,20 +142,16 @@ class CssInjectionService
         FontService $fontService,
         IURLGenerator $urlGenerator,
         GroupThemingService $groupThemingService,
-        ThemePreviewService $previewService,
-        IUserSession $userSession,
-        IInitialState $initialState
+        ThemePreviewBannerService $previewBannerService
     ) {
         $this->config = $config;
-        $this->designSystemService = $designSystemService;
-        $this->overridesService    = $overridesService;
-        $this->customCssService    = $customCssService;
-        $this->fontService         = $fontService;
-        $this->urlGenerator        = $urlGenerator;
-        $this->groupThemingService = $groupThemingService;
-        $this->previewService      = $previewService;
-        $this->userSession         = $userSession;
-        $this->initialState        = $initialState;
+        $this->designSystemService  = $designSystemService;
+        $this->overridesService     = $overridesService;
+        $this->customCssService     = $customCssService;
+        $this->fontService          = $fontService;
+        $this->urlGenerator         = $urlGenerator;
+        $this->groupThemingService  = $groupThemingService;
+        $this->previewBannerService = $previewBannerService;
     }//end __construct()
 
     /**
@@ -209,14 +182,45 @@ class CssInjectionService
         // The active set is the per-group resolution (group mapping → instance
         // default). With no mapping configured this is the plain appconfig
         // value, so behaviour is byte-identical to a single-tenant instance.
-        $tokenSet       = $this->groupThemingService->resolveTokenSetForRequest();
-        $hideSlogan     = $this->config->getAppValue(Application::APP_ID, 'hide_slogan', '0') === '1';
-        $showMenuLabels = $this->config->getAppValue(Application::APP_ID, 'show_menu_labels', '0') === '1';
+        $tokenSet = $this->groupThemingService->resolveTokenSetForRequest();
 
         // 1. Resolve which design system this token set uses.
         $tokenSetMeta   = $this->designSystemService->getTokenSetMeta(tokenSetId: $tokenSet);
         $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
-        $designSystem   = $this->designSystemService->getDesignSystem(id: $designSystemId);
+
+        // 2/2b/3. Design-system stylesheets, Marianne, token + contrast layers.
+        $this->injectDesignSystemStyles(designSystemId: $designSystemId, tokenSet: $tokenSet);
+
+        // 4/4.1. Custom overrides, then freeform custom CSS.
+        $this->injectOverrideStyles();
+
+        // 4.5. Custom fonts.
+        $this->injectCustomFontLink(designSystemId: $designSystemId);
+
+        // 5. Conditional stylesheets.
+        $this->injectConditionalStyles();
+
+        // 6. Preview banner — ONLY when a theme preview is active for this
+        // request's user. Every other user (and every anonymous render) pays
+        // nothing: no script, no style, no initial state.
+        $this->previewBannerService->inject(tokenSet: $tokenSet, tokenSetMeta: $tokenSetMeta);
+    }//end inject()
+
+    /**
+     * Emit the design-system stylesheets and, for every system that reads
+     * `--nldesign-*` variables, the token and contrast layers on top of them.
+     *
+     * @param string $designSystemId The resolved design system id.
+     * @param string $tokenSet       The active token set id.
+     *
+     * @return void
+     *
+     * @spec openspec/specs/css-architecture/spec.md
+     * @spec openspec/specs/marianne-font/spec.md
+     */
+    private function injectDesignSystemStyles(string $designSystemId, string $tokenSet): void
+    {
+        $designSystem = $this->designSystemService->getDesignSystem(id: $designSystemId);
 
         // 2. Load design system stylesheets in declared order.
         // For "none" (stock Nextcloud) this array is empty — no CSS loads.
@@ -232,24 +236,37 @@ class CssInjectionService
         $this->injectMarianneStylesheet(designSystemId: $designSystemId);
 
         // 3. Load token values (only when a design system reads --nldesign-* vars).
-        if ($designSystemId !== 'none') {
-            $this->emitStyle(file: 'tokens/'.$tokenSet);
-            // 3b. Generated dark-mode variant, directly after the light layer
-            // so its media-query/attribute-scoped rules override it — only
-            // when the toggle is on AND a generated file exists for this set.
-            // A disabled toggle or a set without a variant adds nothing.
-            $this->injectDarkVariantStyle(tokenSet: $tokenSet);
-            // Functional contrast fix shared by all design systems: app icons
-            // that carry their white fill on <path> vanish on light surfaces
-            // in the NC 34 app-management list (see css/icon-contrast.css).
-            $this->emitStyle(file: 'icon-contrast');
-            // Functional contrast fix shared by all design systems: our error
-            // fill is a saturated brand red where Nextcloud's is pale, so the
-            // components painting --color-error-text on it lose all contrast
-            // (see css/error-contrast.css).
-            $this->emitStyle(file: 'error-contrast');
+        if ($designSystemId === 'none') {
+            return;
         }
 
+        $this->emitStyle(file: 'tokens/'.$tokenSet);
+        // 3b. Generated dark-mode variant, directly after the light layer
+        // so its media-query/attribute-scoped rules override it — only
+        // when the toggle is on AND a generated file exists for this set.
+        // A disabled toggle or a set without a variant adds nothing.
+        $this->injectDarkVariantStyle(tokenSet: $tokenSet);
+        // Functional contrast fix shared by all design systems: app icons
+        // that carry their white fill on <path> vanish on light surfaces
+        // in the NC 34 app-management list (see css/icon-contrast.css).
+        $this->emitStyle(file: 'icon-contrast');
+        // Functional contrast fix shared by all design systems: our error
+        // fill is a saturated brand red where Nextcloud's is pale, so the
+        // components painting --color-error-text on it lose all contrast
+        // (see css/error-contrast.css).
+        $this->emitStyle(file: 'error-contrast');
+    }//end injectDesignSystemStyles()
+
+    /**
+     * Emit the admin-authored override layers: the always-present
+     * custom-overrides stylesheet, then the freeform custom CSS.
+     *
+     * @return void
+     *
+     * @spec openspec/specs/css-architecture/spec.md
+     */
+    private function injectOverrideStyles(): void
+    {
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
         $this->overridesService->ensureExists();
         $this->emitStyle(file: 'custom-overrides');
@@ -263,90 +280,51 @@ class CssInjectionService
         ) {
             $this->emitStyle(file: 'custom-css');
         }
+    }//end injectOverrideStyles()
 
+    /**
+     * Emit the generated custom-fonts stylesheet link, when the active design
+     * system reads token variables and at least one font is configured.
+     *
+     * @param string $designSystemId The resolved design system id.
+     *
+     * @return void
+     *
+     * @spec openspec/specs/custom-fonts/spec.md
+     */
+    private function injectCustomFontLink(string $designSystemId): void
+    {
         // 4.5 Custom fonts — admin-uploaded, self-hosted webfonts. Injected as
         // a <link rel="stylesheet"> (not \OCP\Util::addStyle(), because the
         // CSS is generated dynamically by FontController::css(), not a static
         // file under css/) AFTER the token-set styles so the font tokens win
         // the cascade, and only when at least one font is configured, so a
         // themed instance with zero uploaded fonts issues no extra request.
-        if ($designSystemId !== 'none' && $this->fontService->hasFonts() === true) {
-            $cssUrl = $this->urlGenerator->linkToRoute('nldesign.font.css').'?v='.$this->fontService->getRevision();
-            $this->emitFontLink(url: $cssUrl);
+        if ($designSystemId === 'none' || $this->fontService->hasFonts() === false) {
+            return;
         }
 
-        // 5. Conditional stylesheets.
-        if ($hideSlogan === true) {
+        $cssUrl = $this->urlGenerator->linkToRoute('nldesign.font.css').'?v='.$this->fontService->getRevision();
+        $this->emitFontLink(url: $cssUrl);
+    }//end injectCustomFontLink()
+
+    /**
+     * Emit the appconfig-gated hide-slogan and show-menu-labels stylesheets.
+     *
+     * @return void
+     *
+     * @spec openspec/specs/css-architecture/spec.md
+     */
+    private function injectConditionalStyles(): void
+    {
+        if ($this->config->getAppValue(Application::APP_ID, 'hide_slogan', '0') === '1') {
             $this->emitStyle(file: 'hide-slogan');
         }
 
-        if ($showMenuLabels === true) {
+        if ($this->config->getAppValue(Application::APP_ID, 'show_menu_labels', '0') === '1') {
             $this->emitStyle(file: 'show-menu-labels');
         }
-
-        // 6. Preview banner — ONLY when a theme preview is active for this
-        // request's user. Every other user (and every anonymous render) pays
-        // nothing: no script, no style, no initial state.
-        $this->injectPreviewBanner(tokenSet: $tokenSet, tokenSetMeta: $tokenSetMeta);
-    }//end inject()
-
-    /**
-     * Load the preview banner assets and provide its initial state when the
-     * requesting user has an active theme preview.
-     *
-     * Fails open (renders nothing) on any error — a broken banner must never
-     * break the page it annotates.
-     *
-     * @param string               $tokenSet     The previewed token set id.
-     * @param array<string, mixed> $tokenSetMeta The token set metadata (for its display name).
-     *
-     * @return void
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
-     */
-    protected function injectPreviewBanner(string $tokenSet, array $tokenSetMeta): void
-    {
-        try {
-            $effective = $this->previewService->resolveEffectiveTokenSet(
-                userSession: $this->userSession,
-                activeTokenSet: $tokenSet
-            );
-
-            if ($effective['previewActive'] !== true) {
-                return;
-            }
-
-            $this->emitPreviewAssets();
-            $this->initialState->provideInitialState(
-                'preview',
-                [
-                    'tokenSet'  => $tokenSet,
-                    'name'      => ($tokenSetMeta['name'] ?? $tokenSet),
-                    'expiresAt' => ($effective['expiresAt'] ?? null),
-                ]
-            );
-        } catch (\Throwable $e) {
-            return;
-        }//end try
-    }//end injectPreviewBanner()
-
-    /**
-     * Emit the preview banner's script and stylesheet.
-     *
-     * Isolated as a seam so unit tests can assert banner injection without a
-     * Nextcloud bootstrap (see the emitStyle()/emitFontLink() rationale).
-     *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util is the Nextcloud API for asset injection.
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
-     */
-    protected function emitPreviewAssets(): void
-    {
-        \OCP\Util::addScript(application: Application::APP_ID, file: 'preview-banner');
-        \OCP\Util::addStyle(application: Application::APP_ID, file: 'preview-banner');
-    }//end emitPreviewAssets()
+    }//end injectConditionalStyles()
 
     /**
      * Add the generated dark-mode stylesheet, when ALL of: the `dark_variants`
