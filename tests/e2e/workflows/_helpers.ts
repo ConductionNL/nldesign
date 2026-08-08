@@ -37,14 +37,14 @@ export async function requestToken(page: Page): Promise<string> {
  */
 export async function openTheming(page: Page): Promise<void> {
 	await page.goto(THEMING_URL)
-	await page.waitForLoadState('networkidle')
+	await page.waitForLoadState('domcontentloaded')
 	await page.waitForFunction(() => typeof (window as unknown as { OC?: unknown }).OC !== 'undefined', null, { timeout: 30_000 })
 	try {
 		await page.waitForSelector('#nldesign-token-editor .nldesign-token-editor', { timeout: 30_000 })
 	} catch {
 		// Absorb a transient recompile/mount delay with one reload + longer wait.
 		await page.reload()
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('domcontentloaded')
 		await page.waitForSelector('#nldesign-token-editor .nldesign-token-editor', { timeout: 30_000 })
 	}
 }

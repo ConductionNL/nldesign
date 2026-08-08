@@ -56,7 +56,7 @@ test.describe('extended-token-sets', () => {
 		'Token set dropdown lists many options (extended token set discovery works)',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const select = page.locator('#nldesign-token-set-select')
 			await expect(select).toBeVisible()
 			// Should have many options reflecting extended token set support

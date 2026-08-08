@@ -22,7 +22,7 @@ test.describe('token-import-export', () => {
 		'Download button is present in the token editor panel',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// The export/download control of the editor panel is the canonical
 			// `#nldesign-export-btn`. Uploaded custom token sets each render their
 			// own per-row "Download" button, so a text-only locator is ambiguous.
@@ -49,7 +49,7 @@ test.describe('token-import-export', () => {
 		'Upload control is present in the token editor panel',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// The upload trigger (label acting as button or actual file input)
 			const uploadTrigger = page.locator('text=Upload').first()
 			await expect(uploadTrigger).toBeVisible()

@@ -59,7 +59,7 @@ test.describe('vng-token-set', () => {
 		'VNG token set appears as a selectable option in the admin dropdown',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const select = page.locator('#nldesign-token-set-select')
 			await expect(select).toBeVisible()
 			// VNG option must exist in the dropdown

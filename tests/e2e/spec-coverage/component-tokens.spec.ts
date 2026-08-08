@@ -60,7 +60,7 @@ test.describe('component-tokens', () => {
 		'Admin theming page loads without CSS errors (component-tokens infrastructure)',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// The NL Design section must render — proves CSS stack (incl. component tokens) loaded
 			await expect(page.locator('#nldesign-settings')).toBeAttached()
 		},
