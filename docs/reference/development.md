@@ -82,17 +82,20 @@ Code Quality runs PHP 8.2/8.5, Node 24/26, and a complete-history secret scan
 with read-only repository permissions. The PHP and release-candidate paths
 also validate `appinfo/info.xml` against Nextcloud's official live app schema.
 Documentation builds on Node 24 and 26
-and deploys only from an explicit workflow dispatch on `main`. Build Release Candidate is also
-manual: it verifies the full suite and creates a minimal unsigned artifact. It
-does not increment versions, push branches, create releases, sign with secrets,
-or publish to the App Store.
+and deploys only from an explicit workflow dispatch on `main`. Build Release
+Candidate is also manual: it verifies the full suite and creates a minimal
+unsigned artifact. A matching `v*-alpha*`, `v*-beta*`, or `v*-rc*` tag invokes
+the same package job and publishes its archive and checksum as a GitHub
+prerelease. Neither workflow signs with secrets or publishes to the App Store.
 
 Branch Policy enforces the repository's promotion model. It is separate from
 quality and release authority.
 
 ## Release discipline
 
-Update appinfo/info.xml in a reviewed change. Run the full suite against a
-packaged supported Nextcloud matrix. Then build a release candidate explicitly.
-Signing and publication remain human-authorized steps outside the current
-workflow until protected release environments and provenance are defined.
+Update `appinfo/info.xml`, `package.json`, and both root version fields in
+`package-lock.json` in one reviewed change. Run the full suite against a
+packaged supported Nextcloud matrix, build a release candidate explicitly, and
+create a matching prerelease tag only after reviewing that evidence. Stable
+signing and App Store publication remain outside the current workflow until
+protected release environments and provenance are defined.

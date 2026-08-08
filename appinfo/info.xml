@@ -16,14 +16,14 @@ This is the core profile plane. Theming app fields are surfaced separately as
 manual-only bridge guidance until a compatibility driver is explicitly
 version-verified, recovery-tested, and enabled.
 	]]></description>
-	<version>0.1.2</version>
+	<version>0.2.0-rc1</version>
 	<licence>EUPL-1.2</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>
 	<category>customization</category>
-	<website>https://github.com/ConductionNL/nldesign</website>
-	<bugs>https://github.com/ConductionNL/nldesign/issues</bugs>
-	<repository type="git">https://github.com/ConductionNL/nldesign.git</repository>
+	<website>https://github.com/DROG-group/nldesign</website>
+	<bugs>https://github.com/DROG-group/nldesign/issues</bugs>
+	<repository type="git">https://github.com/DROG-group/nldesign.git</repository>
 
 	<dependencies>
 		<php min-version="8.2"/>

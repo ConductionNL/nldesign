@@ -2,7 +2,7 @@ schema: spec-driven
 
 context: |
   Project: NL Design
-  Repo: ConductionNL/nldesign
+  Repo: DROG-group/nldesign
   Type: Nextcloud administration app (PHP backend and vanilla JS)
   Current product: manifest-backed, statically gated profile selection
   Current inventory: 40 manifest entries and 40 packaged stylesheets

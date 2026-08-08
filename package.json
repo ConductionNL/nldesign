@@ -1,6 +1,6 @@
 {
   "name": "nldesign",
-  "version": "0.1.2",
+  "version": "0.2.0-rc1",
   "description": "Bounded NL Design profile projections for Nextcloud",
   "keywords": [
     "nextcloud",
@@ -10,11 +10,11 @@
     "design-tokens",
     "theming"
   ],
-  "homepage": "https://github.com/ConductionNL/nldesign",
+  "homepage": "https://github.com/DROG-group/nldesign",
   "license": "EUPL-1.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ConductionNL/nldesign.git"
+    "url": "https://github.com/DROG-group/nldesign.git"
   },
   "scripts": {
     "build": "npm run build:fonts",

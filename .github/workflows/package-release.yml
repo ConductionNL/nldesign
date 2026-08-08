@@ -110,8 +110,16 @@ jobs:
             exit 1
           fi
           PACKAGE_JSON_VERSION=$(node -p "require('./package.json').version")
-          if [ "$PACKAGE_JSON_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "package.json ($PACKAGE_JSON_VERSION) and appinfo/info.xml ($PACKAGE_VERSION) disagree."
+          PACKAGE_LOCK_VERSION=$(node -p "require('./package-lock.json').version")
+          PACKAGE_LOCK_ROOT_VERSION=$(node -p "require('./package-lock.json').packages[''].version")
+          if [ "$PACKAGE_JSON_VERSION" != "$PACKAGE_VERSION" ] \
+            || [ "$PACKAGE_LOCK_VERSION" != "$PACKAGE_VERSION" ] \
+            || [ "$PACKAGE_LOCK_ROOT_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Release version metadata disagrees."
+            echo "appinfo/info.xml: $PACKAGE_VERSION"
+            echo "package.json: $PACKAGE_JSON_VERSION"
+            echo "package-lock.json: $PACKAGE_LOCK_VERSION"
+            echo "package-lock.json root: $PACKAGE_LOCK_ROOT_VERSION"
             exit 1
           fi
           echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"

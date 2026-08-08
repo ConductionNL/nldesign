@@ -212,7 +212,7 @@ Every *mechanism* survived the upgrade unchanged — fingerprinting, `d` substit
 
 **A sibling repository, not a folder in `nldesign`.**
 
-**Correction, 2026-08-08:** an earlier version of this section rested on the release pipeline deriving the app id from the repository name (`APP_NAME=${GITHUB_REPOSITORY##*/}`). **That argument is void** — the ten release and sync workflows have since been deleted and replaced by a manual-dispatch `package-release.yml` that only uploads a build artifact, so no such coupling exists today. A monorepo is now *less* costly to tool than it was.
+**Correction, 2026-08-08:** an earlier version of this section rested on the release pipeline deriving the app id from the repository name (`APP_NAME=${GITHUB_REPOSITORY##*/}`). **That argument is void** — the ten release and sync workflows have since been replaced by an explicit `nldesign` package job and a prerelease publisher. Neither derives the app id from the repository name, so no such coupling exists today. A monorepo is now *less* costly to tool than it was.
 
 The conclusion survives on the stronger argument alone: **the app store models one listing per app id, each with its own supported-version range**, and §8 requires this app to declare a narrower range than `nldesign`. That divergence cannot be expressed from one `info.xml`, and it is the whole reason for the split. Tooling cost was always the weaker half of the case.
 

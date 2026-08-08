@@ -10,7 +10,7 @@ const config = {
   baseUrl: '/',
 
   // GitHub pages deployment config
-  organizationName: 'ConductionNL',
+  organizationName: 'DROG-group',
   projectName: 'nldesign',
   trailingSlash: false,
 
@@ -30,7 +30,7 @@ const config = {
           path: '../docs',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/ConductionNL/nldesign/edit/main/',
+            'https://github.com/DROG-group/nldesign/edit/main/',
         },
         blog: false,
         theme: {
@@ -57,7 +57,7 @@ const config = {
             label: 'Documentation',
           },
           {
-            href: 'https://github.com/ConductionNL/nldesign',
+            href: 'https://github.com/DROG-group/nldesign',
             label: 'GitHub',
             position: 'right',
           },
@@ -80,7 +80,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/ConductionNL/nldesign',
+                href: 'https://github.com/DROG-group/nldesign',
               },
             ],
           },

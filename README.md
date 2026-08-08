@@ -24,13 +24,26 @@ This repository is pre-release. It contains a hardened profile-selection slice a
 
 The governing design and delivery sequence are in [architecture.md](docs/architecture.md) and [roadmap.md](docs/roadmap.md).
 
-## Install from a source checkout
+## Install a prerelease package
 
-The repository does not currently assert a published Nextcloud App Store release.
+Download the archive and checksum from the matching
+[GitHub prerelease](https://github.com/DROG-group/nldesign/releases), then:
+
+```bash
+sha256sum --check nldesign-VERSION.tar.gz.sha256
+tar -xzf nldesign-VERSION.tar.gz -C /path/to/nextcloud/custom_apps
+php /path/to/nextcloud/occ app:enable nldesign
+```
+
+The archive contains the required top-level `nldesign/` directory. Preserve the
+owner and permissions used by the other apps in `custom_apps`. Prereleases are
+unsigned integration candidates, not Nextcloud App Store releases.
+
+## Install from a source checkout
 
 ```bash
 cd /path/to/nextcloud/custom_apps
-git clone https://github.com/ConductionNL/nldesign.git
+git clone https://github.com/DROG-group/nldesign.git
 cd nldesign
 
 npm ci --ignore-scripts

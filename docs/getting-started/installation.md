@@ -4,7 +4,8 @@ sidebar_position: 1
 
 # Installation
 
-The repository does not currently claim a released Nextcloud App Store package. Install a reviewed package or build from source.
+The repository does not currently claim a released Nextcloud App Store package.
+Install a reviewed GitHub prerelease or build from source.
 
 ## Requirements
 
@@ -13,6 +14,23 @@ The repository does not currently claim a released Nextcloud App Store package. 
 - administrator and server access
 
 Local API analysis targets the oldest supported Nextcloud 32 OCP package. Production use still requires integration evidence for the exact Nextcloud major and installed-app set.
+
+## GitHub prerelease
+
+Download `nldesign-VERSION.tar.gz` and its `.sha256` file from the matching
+[GitHub prerelease](https://github.com/DROG-group/nldesign/releases). Verify and
+extract the archive from a trusted shell:
+
+```bash
+sha256sum --check nldesign-VERSION.tar.gz.sha256
+tar -xzf nldesign-VERSION.tar.gz -C /path/to/nextcloud/custom_apps
+php /path/to/nextcloud/occ app:enable nldesign
+```
+
+The archive already contains the top-level `nldesign/` directory and generated
+font assets. Preserve the owner and permissions used by the other installed
+apps. GitHub prereleases are unsigned integration candidates; they are not App
+Store packages.
 
 ## Source checkout
 
