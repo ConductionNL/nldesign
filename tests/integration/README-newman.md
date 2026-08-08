@@ -21,6 +21,32 @@ BASE_URL=http://localhost:8080 ADMIN_USER=admin ADMIN_PASS=admin ./run-newman.sh
 `run-newman.sh` uses a globally-installed `newman` if present, otherwise
 `npx newman`. Runs are serialised under `flock /tmp/uiaudit-nldesign.lock`.
 
+### Two conventions that must not drift
+
+Both of these were broken at once and cost 14 assertions on `development`:
+
+1. **Multipart fixture paths are relative to THIS directory.** The upload
+   requests carry `"src": "fixtures/<file>"`. Newman resolves a formdata `src`
+   against `--working-dir`, which **defaults to the process CWD**. The shared CI
+   workflow (`ConductionNL/.github` → `.github/workflows/quality.yml`, job
+   `newman`) does `cd server/apps/<app>/<newman-collection-path>` and then runs
+   newman with no `--working-dir`, so in CI the working dir is this directory.
+   `run-newman.sh` pins `--working-dir` to the same place. If a path is ever made
+   repo-root-relative again it will resolve to nothing in CI, newman will send
+   the request **without the file part**, and the app will answer
+   `400 No file uploaded.` for a payload the test believes it uploaded — which
+   reads as "the upload feature is broken", not "the test cannot find its file".
+
+2. **The CI variable names are aliased in a collection pre-request script.**
+   CI passes `base_url` / `admin_user` / `admin_password`; the requests use
+   `{{baseUrl}}` / `{{adminUser}}` / `{{adminPass}}`. The collection-level
+   `prerequest` script maps the former onto the latter and derives `noAuthBase`
+   from the effective base URL. Without it those three flags are inert and the
+   suite silently tests whatever is on `localhost:8080` regardless of what it
+   was told to target. An explicitly supplied camelCase variable still wins
+   (environment scope outranks collection scope), so `run-newman.sh` is
+   unaffected.
+
 ## Design (matches the procest `tests/integration/` pattern)
 
 - **Host-split auth.** Authenticated requests hit `{{baseUrl}}` (`localhost`)
@@ -44,7 +70,7 @@ are rejected `401`. There is no `#[PublicPage]` endpoint in this app.
 
 ## Coverage
 
-23 requests / 50 assertions, all green. Families:
+46 requests / 108 assertions, all green. Families:
 
 0. Setup — capture live `token_set` + `overrides`.
 1. Token sets — list available, set (200), invalid id (400), preview (200),
@@ -54,6 +80,12 @@ are rejected `401`. There is no `#[PublicPage]` endpoint in this app.
 3. Custom token overrides — write (200, written count) + read-back, non-object
    body (400), CSS export (200, `text/css`), import-without-file (400),
    authz 401 on read + write.
+4. Custom token sets — multipart upload of a compliant CSS set (200, namespaced
+   `custom-*` id + `imported`/`skipped`/`warnings`), name-collision (409),
+   disallowed selector (422), malformed JSON (422), missing file (400), missing
+   name (400), list, export (200, `text/css`), unknown export (404), delete
+   (200), delete of a shipped id (400), authz 401 on upload + list.
+   Fixtures live in `fixtures/` — see "Two conventions" above.
 9. Teardown — restore the captured token set + overrides.
 
 ## Notes

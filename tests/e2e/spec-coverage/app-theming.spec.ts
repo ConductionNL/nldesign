@@ -7,7 +7,7 @@
  * Per-app theming toggle: excluding an app suppresses ALL nldesign CSS on that
  * app's pages while every other app (and login/settings) stays themed.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 
 const THEMING_URL = '/settings/admin/theming'
 // An app that is present in the test instance and safe to toggle.
@@ -29,7 +29,7 @@ const THEMING_URL = '/settings/admin/theming'
 const TARGET_APP = 'dashboard'
 
 /** Count nldesign stylesheets present in the page head. */
-async function nldesignStyleCount(page): Promise<number> {
+async function nldesignStyleCount(page: Page): Promise<number> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll('link[rel=stylesheet]')]
 			.filter((l) => (l as HTMLLinkElement).href.includes('/nldesign/'))
@@ -45,7 +45,7 @@ async function nldesignStyleCount(page): Promise<number> {
  * scrolls internally, so far-down rows stay outside the click viewport until
  * the search field filters the list down to a single matching row.
  */
-async function openAppThemingDropdown(page, appName = TARGET_APP) {
+async function openAppThemingDropdown(page: Page, appName = TARGET_APP) {
 	const trigger = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-trigger')
 	if (await trigger.count() === 0) {
 		// No dropdown variant (flat list) — nothing to expand.
@@ -60,7 +60,7 @@ async function openAppThemingDropdown(page, appName = TARGET_APP) {
 }
 
 /** Set the target app's themed state via the admin panel and save. */
-async function setThemed(page, themed: boolean) {
+async function setThemed(page: Page, themed: boolean) {
 	await page.goto(THEMING_URL)
 	await page.waitForLoadState('networkidle')
 	await openAppThemingDropdown(page)

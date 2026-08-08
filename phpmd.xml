@@ -101,15 +101,27 @@
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateField"/>
     <rule ref="rulesets/unusedcode.xml/UnusedLocalVariable"/>
     <rule ref="rulesets/unusedcode.xml/UnusedPrivateMethod"/>
-    <!-- No exclude-pattern here. PHPMD honours <exclude-pattern> ONLY as a direct
-         child of <ruleset>; nested inside a <rule> it is parsed and discarded
-         (ConductionNL/.github#155), so the `*Migration*` pattern that used to sit
-         here never excluded anything. It is not reinstated at ruleset level
-         because lib/Migration currently produces ZERO UnusedFormalParameter
-         findings — there is nothing to exclude, and a live exclusion would only
-         hide future ones. Should an OCP\Migration\IMigrationStep with a mandated
-         but unused signature ever land here, isolate the rule in its own ruleset
-         with a top-level exclude-pattern (see opencatalogi's
-         phpmd-unusedparams.xml) rather than nesting one under the rule again. -->
-    <rule ref="rulesets/unusedcode.xml/UnusedFormalParameter"/>
+    <!-- UnusedFormalParameter is NOT declared here. It lives alone in
+         phpmd-unusedparams.xml, which is run as a second leg by the "phpmd"
+         composer script.
+
+         Why: this rule used to carry a NESTED
+             <exclude-pattern>*Migration*</exclude-pattern>
+         meant to spare lib/Migration, whose changeSchema/preSchemaChange/
+         postSchemaChange signatures are mandated by OCP\Migration\IMigrationStep
+         and cannot drop their unused parameters. That pattern was INERT: PHPMD
+         2.15 reads exclude-patterns in RuleSetFactory::getIgnorePattern(), which
+         walks $xml->children() - i.e. only elements DIRECTLY under <ruleset>. A
+         nested one parses without error and does nothing, so lib/Migration was
+         always scanned by this rule (ConductionNL/.github#155).
+
+         Moving the pattern up to the top level of THIS file would make it
+         effective, but it is applied by PDepend's ExcludePathFilter at
+         file-collection time, so it drops lib/Migration from EVERY rule in the
+         ruleset - real complexity, StaticAccess and method-length findings in
+         migrations would silently vanish.
+
+         Isolating the rule in its own ruleset gives the exclusion a top-level
+         home that scopes it to this one rule, while the main leg above keeps
+         analysing lib/Migration with everything else. -->
 </ruleset>

@@ -186,7 +186,12 @@ body {
 	--color-text-maxcontrast: var(--lasuite-color-gray-600) !important;
 	/* --color-text-maxcontrast-default: unmapped — auto-calculated per theme by Nextcloud */
 	/* --color-text-maxcontrast-background-blur: unmapped — blur-adjusted maxcontrast, auto-calculated */
-	--color-text-light: var(--lasuite-color-gray-000) !important;
+	/* NOT gray-000. Nextcloud's --color-text-light means DE-EMPHASISED text, not
+	   WHITE text — NC 34 defines it as equal to --color-main-text. Mapping it to
+	   pure white made every component using it invisible on a white surface:
+	   observed on Hermiq's features-roadmap sidebar, where five paragraphs
+	   rendered white-on-white and could only be found by selecting them. */
+	--color-text-light: var(--lasuite-color-gray-850) !important;
 	--color-text-lighter: var(--lasuite-color-gray-500) !important;
 	--color-text-error: var(--lasuite-color-error-550) !important;
 	--color-text-success: var(--lasuite-color-success-550) !important;
@@ -318,4 +323,44 @@ body,
 *:focus-visible {
 	outline: 2px solid var(--nldesign-color-focus) !important;
 	outline-offset: 2px !important;
+}
+
+/* ===================================================================
+ * DARK MODE — the Nextcloud-facing text variables
+ *
+ * The mapping above pins --color-main-text to gray-850 with !important,
+ * unconditionally. In LIGHT mode that is correct and measured. In DARK mode it
+ * is actively harmful: Nextcloud darkens --color-main-background (a REQ-CSS-007
+ * reserved variable this file correctly never touches), and our dark text is
+ * then painted onto it. Observed on a dark render of the Files list: file and
+ * folder names rendered dark-on-dark and were invisible, while the shell around
+ * them was correct.
+ *
+ * Fixing this needs no reserved variable. Nextcloud owns the BACKGROUND; this
+ * file owns the FOREGROUND it maps. Flipping only the foreground restores the
+ * pairing, and the reserved variables keep deriving exactly as before.
+ *
+ * Scope selectors mirror css/tokens/dark/lasuite.css so this turns on and off
+ * with the rest of the dark layer. `!important` is carried for the same reason
+ * the light mapping carries it: Nextcloud assigns these at equal specificity
+ * from its own body[data-themes] rules (ADR-CSS-002 category 1).
+ * =================================================================== */
+
+@media (prefers-color-scheme: dark) {
+	body:not([data-theme-light]):not([data-theme-dark]):not([data-theme-light-highcontrast]):not([data-theme-dark-highcontrast]) {
+		--color-main-text: var(--lasuite-color-gray-050) !important;
+		--color-text-maxcontrast: var(--lasuite-color-gray-200) !important;
+		/* Inverted pair: on a dark ground the "light" text token is the dark one
+		   and vice versa, otherwise both collapse to the same end of the ramp. */
+		--color-text-light: var(--lasuite-color-gray-050) !important;
+		--color-text-lighter: var(--lasuite-color-gray-300) !important;
+	}
+}
+
+body[data-theme-dark],
+body[data-themes*="dark"] {
+	--color-main-text: var(--lasuite-color-gray-050) !important;
+	--color-text-maxcontrast: var(--lasuite-color-gray-200) !important;
+	--color-text-light: var(--lasuite-color-gray-050) !important;
+	--color-text-lighter: var(--lasuite-color-gray-300) !important;
 }
