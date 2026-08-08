@@ -7,6 +7,16 @@ on:
         description: Expected app version from appinfo/info.xml
         required: false
         type: string
+  workflow_call:
+    inputs:
+      version:
+        description: Expected app version from appinfo/info.xml
+        required: false
+        type: string
+    outputs:
+      version:
+        description: The packaged version
+        value: ${{ jobs.package.outputs.version }}
 
 permissions:
   contents: read
@@ -16,6 +26,8 @@ jobs:
     name: Verify and package
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout
@@ -95,6 +107,11 @@ jobs:
           fi
           if [ -n "$REQUESTED_VERSION" ] && [ "$REQUESTED_VERSION" != "$PACKAGE_VERSION" ]; then
             echo "Requested version $REQUESTED_VERSION does not match appinfo version $PACKAGE_VERSION."
+            exit 1
+          fi
+          PACKAGE_JSON_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PACKAGE_JSON_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "package.json ($PACKAGE_JSON_VERSION) and appinfo/info.xml ($PACKAGE_VERSION) disagree."
             exit 1
           fi
           echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"

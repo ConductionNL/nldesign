@@ -1,0 +1,147 @@
+name: Publish release
+
+# Restores the publishing step that the workflow consolidation removed. Building
+# a release candidate and never publishing it means a tag produces nothing
+# installable: the artifact expires after fourteen days and the App Store never
+# sees it.
+#
+# The tag is a trigger, not a source of truth. Packaging re-derives the version
+# from appinfo/info.xml and cross-checks package.json, and the tag has to agree
+# with both — a mistyped tag fails rather than publishing an archive whose name
+# and contents disagree.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-[a-z]*[0-9]*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish, without the leading v
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Verify and package
+    # Reuses the release-candidate job rather than repeating its gates, so the
+    # published archive is the one that passed them.
+    uses: ./.github/workflows/package-release.yml
+    with:
+      version: ${{ inputs.version || '' }}
+
+  publish:
+    name: Publish
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # Needed to create the release. Nothing else in this workflow writes.
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Download the verified package
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: nldesign-${{ needs.package.outputs.version }}
+
+      - name: Check the tag matches the packaged version
+        if: github.event_name == 'push'
+        env:
+          PACKAGED: ${{ needs.package.outputs.version }}
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$TAG" != "$PACKAGED" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match appinfo version $PACKAGED."
+            echo "Bump appinfo/info.xml and package.json, or retag."
+            exit 1
+          fi
+
+      - name: Verify the checksum before publishing
+        env:
+          VERSION: ${{ needs.package.outputs.version }}
+        run: |
+          sha256sum --check --strict "nldesign-${VERSION}.tar.gz.sha256"
+          ls -l "nldesign-${VERSION}.tar.gz"
+
+      - name: Create the GitHub release
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        with:
+          name: nldesign ${{ needs.package.outputs.version }}
+          tag_name: ${{ github.event_name == 'push' && github.ref_name || format('v{0}', needs.package.outputs.version) }}
+          draft: false
+          prerelease: ${{ contains(needs.package.outputs.version, '-') }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            nldesign-${{ needs.package.outputs.version }}.tar.gz
+            nldesign-${{ needs.package.outputs.version }}.tar.gz.sha256
+
+  appstore:
+    name: Publish to the Nextcloud App Store
+    needs: [package, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Pre-releases stay on GitHub only.
+    if: ${{ !contains(needs.package.outputs.version, '-') }}
+
+    steps:
+      - name: Check the publishing secrets are configured
+        id: secrets
+        env:
+          APPSTORE_TOKEN: ${{ secrets.NEXTCLOUD_APPSTORE_TOKEN }}
+          SIGNING_KEY: ${{ secrets.NEXTCLOUD_SIGNING_KEY }}
+        run: |
+          # Skipping is deliberate. A repository without these secrets should
+          # still get a usable GitHub release rather than a red run on every tag.
+          if [ -z "$APPSTORE_TOKEN" ] || [ -z "$SIGNING_KEY" ]; then
+            echo "App Store secrets are not configured; skipping publication."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download the verified package
+        if: steps.secrets.outputs.configured == 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: nldesign-${{ needs.package.outputs.version }}
+
+      - name: Sign the package
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          SIGNING_KEY: ${{ secrets.NEXTCLOUD_SIGNING_KEY }}
+          VERSION: ${{ needs.package.outputs.version }}
+        run: |
+          printf '%s' "$SIGNING_KEY" > "$RUNNER_TEMP/signing.key"
+          chmod 600 "$RUNNER_TEMP/signing.key"
+          openssl dgst -sha512 -sign "$RUNNER_TEMP/signing.key" \
+            "nldesign-${VERSION}.tar.gz" \
+            | openssl base64 -A > signature.txt
+          shred -u "$RUNNER_TEMP/signing.key"
+
+      - name: Publish to the App Store
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          APPSTORE_TOKEN: ${{ secrets.NEXTCLOUD_APPSTORE_TOKEN }}
+          VERSION: ${{ needs.package.outputs.version }}
+          DOWNLOAD_URL: https://github.com/${{ github.repository }}/releases/download/v${{ needs.package.outputs.version }}/nldesign-${{ needs.package.outputs.version }}.tar.gz
+        run: |
+          SIGNATURE=$(cat signature.txt)
+          # The App Store fetches the archive from the release created above,
+          # which is why this job depends on `publish`.
+          curl --fail --show-error --silent --location \
+            --proto '=https' --tlsv1.2 \
+            -X POST https://apps.nextcloud.com/api/v1/apps/releases \
+            -H "Authorization: Token ${APPSTORE_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -n --arg download "$DOWNLOAD_URL" --arg signature "$SIGNATURE" \
+                  '{download: $download, signature: $signature, nightly: false}')"
