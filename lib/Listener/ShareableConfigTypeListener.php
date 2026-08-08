@@ -20,7 +20,7 @@
  *
  * @link https://conduction.nl
  *
- * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+ * @spec openspec/specs/federated-config-sharing/spec.md
  */
 
 declare(strict_types=1);
@@ -37,7 +37,7 @@ use OCP\EventDispatcher\IEventListener;
  *
  * @template-implements IEventListener<RegisterShareableConfigTypesEvent>
  *
- * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+ * @spec openspec/specs/federated-config-sharing/spec.md
  */
 class ShareableConfigTypeListener implements IEventListener
 {
@@ -58,7 +58,7 @@ class ShareableConfigTypeListener implements IEventListener
      *
      * @return void
      *
-     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     * @spec openspec/specs/federated-config-sharing/spec.md
      */
     public function handle(Event $event): void
     {
