@@ -103,3 +103,39 @@ app-relative, no CDN.
 - AND the documentation MUST NOT claim CDN loading nor that Marianne is fetched from an external
   server
 
+### Requirement: Declared Nextcloud Range Matches What CI Actually Tests
+
+The `<nextcloud min-version>` declared in `appinfo/info.xml` is a promise the Nextcloud app store
+passes on to administrators: it decides which servers are offered this app. That promise MUST be
+backed by an exercised configuration. The declared floor MUST equal the LOWEST Nextcloud ref in
+`nextcloud-test-refs` in `.github/workflows/code-quality.yml`, and `max-version` MUST be at least
+the highest such ref.
+
+Both directions are defects, and this repository has shipped each of them:
+
+- **Floor above the matrix.** `min-version` is enforced at install time, so a floor higher than a
+  tested ref makes `occ app:enable` refuse on that leg, and the failure surfaces as an unrelated
+  "app is not installed or enabled" error much later in the run.
+- **Floor below the matrix.** A floor lower than every tested ref advertises versions no leg has
+  ever exercised. Nothing reports it, because a version that is never tested cannot go red.
+
+#### Scenario: Declared floor equals the lowest tested Nextcloud ref
+@e2e exclude manifest/CI invariant — PHPUnit reads `appinfo/info.xml` and the workflow, not a UI flow
+
+- GIVEN `appinfo/info.xml` declares `<nextcloud min-version="X" max-version="Y"/>`
+- AND `.github/workflows/code-quality.yml` pins `nextcloud-test-refs` to a JSON list of `stableNN`
+  refs
+- WHEN the declared range is compared with that list
+- THEN no tested ref MUST be below `X`
+- AND the lowest tested ref MUST equal `X`
+- AND `Y` MUST be greater than or equal to the highest tested ref
+
+#### Scenario: Declared PHP floor is satisfiable on the declared Nextcloud floor
+@e2e exclude manifest invariant — PHPUnit reads `appinfo/info.xml`
+
+- GIVEN `appinfo/info.xml` declares `<php min-version="8.3"/>`
+- WHEN the declared Nextcloud floor is read
+- THEN it MUST be at least 32, the first Nextcloud release whose own PHP floor is 8.3
+- AND a lower Nextcloud floor MUST be treated as a contradiction between the two declarations,
+  not as a wider support range
+
