@@ -26,7 +26,7 @@
  *
  * @link https://conduction.nl
  *
- * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+ * @spec openspec/specs/federated-config-sharing/spec.md
  */
 
 declare(strict_types=1);
@@ -40,7 +40,7 @@ use Psr\Container\ContainerInterface;
 /**
  * Shares an NL Design theme through the federated-config engine.
  *
- * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+ * @spec openspec/specs/federated-config-sharing/spec.md
  */
 class NlDesignThemeShareableConfigType implements IShareableConfigType
 {
@@ -77,7 +77,7 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      *
      * @return string The id.
      *
-     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     * @spec openspec/specs/federated-config-sharing/spec.md
      */
     public function getId(): string
     {
@@ -90,7 +90,7 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      *
      * @return string The name.
      *
-     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     * @spec openspec/specs/federated-config-sharing/spec.md
      */
     public function getDisplayName(): string
     {
@@ -103,7 +103,7 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      *
      * @return string The topic.
      *
-     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     * @spec openspec/specs/federated-config-sharing/spec.md
      */
     public function getTopic(): string
     {
@@ -125,7 +125,7 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      * @SuppressWarnings(PHPMD.UnusedFormalParameter) - $selection is required by
      * the IShareableConfigType::serialise() contract; a theme has no selection.
      *
-     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     * @spec openspec/specs/federated-config-sharing/spec.md
      */
     public function serialise(array $selection): array
     {
@@ -144,11 +144,22 @@ class NlDesignThemeShareableConfigType implements IShareableConfigType
      *
      * @return array `{installed: ['nldesign-theme'], import: {...}}`.
      *
-     * @spec openspec/changes/federated-config-sharing/specs/federated-config-sharing/spec.md
+     * @spec openspec/specs/federated-config-sharing/spec.md
      */
     public function deserialise(array $bundle): array
     {
-        $result = $this->bundle()->import((array) ($bundle['bundle'] ?? []), false);
+        // `(array) $scalar` WRAPS rather than empties: `(array) 'x'` is `['x']`,
+        // not `[]`. So a peer sending `{"bundle": "x"}` — or any scalar — reached
+        // the importer as a one-element list instead of the empty default the
+        // `?? []` was written to provide. The import path rejects it either way,
+        // so this was never exploitable, but "malformed becomes empty" is what
+        // this line is supposed to say and `(array)` does not say it.
+        $payload = ($bundle['bundle'] ?? null);
+        if (is_array($payload) === false) {
+            $payload = [];
+        }
+
+        $result = $this->bundle()->import($payload, false);
 
         return [
             'installed' => ['nldesign-theme'],
