@@ -28,8 +28,17 @@ Configure which token set to use in the admin settings.
 	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot.png</screenshot>
 
 	<dependencies>
-		<php min-version="8.1"/>
-		<nextcloud min-version="28" max-version="33"/>
+		<!--
+			Nextcloud floor raised from 28 to 32 so the app may require PHP 8.3.
+			Fleet wide product directive: standardise on Nextcloud 32.
+			Rationale (openconnector issue 1172): an app must never advertise a
+			Nextcloud floor lower than the highest floor of any app it depends on,
+			or the App Store offers the app on releases where the dependency
+			refuses to install. openregister on development declares a Nextcloud
+			floor of 32. The max-version below is unchanged by this commit.
+		-->
+		<php min-version="8.3"/>
+		<nextcloud min-version="32" max-version="33"/>
 	</dependencies>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
