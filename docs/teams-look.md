@@ -232,6 +232,29 @@ So the surface/ground split Teams depends on is achievable — **provided the de
 
 ## 6. Tier 2 — the left rail, which is the actual "Teams" signal
 
+> **Superseded — read as history. See [`teams-rail-spec.md`](teams-rail-spec.md).**
+>
+> Three of this section's premises are false:
+>
+> 1. **The markup it plans against no longer exists.** NC34 replaced the inline
+>    horizontal app list with a waffle popover (`app-menu__grid`,
+>    `app-menu__waffle`). `.app-menu-entry` appears **zero** times in core's
+>    `dist/`; the only class surviving NC28→master is `.app-menu` itself. So
+>    "reflow `.app-menu-entry` to icon-above-label" targets nothing.
+> 2. **The files it cites were deleted from this repo.** `ddf77d1` removed both
+>    `css/show-menu-labels.css` and `css/element-overrides.css`; neither is in
+>    `git ls-files`, and `data-v-1f87d811` now survives only in these docs. Every
+>    present-tense claim below about that CSS "already shipping", and the action
+>    item to move it out, refer to code that is already gone. **This is the
+>    stronger retraction: not "it targets nothing" but "it is not there."**
+> 3. **`side_menu` is not an adequate substitute.** Its `MenuContainer.vue:115`
+>    precedence chain offers a rail *or* categories, never both.
+>
+> What survives is this section's core warning — that overriding core's Vue DOM
+> breaks silently on upgrade. The spec answers it by rendering the rail from
+> `OCP\INavigationManager` and owning its own markup, so there is no core
+> component to fight.
+
 **Out of scope for `nldesign` by decision (§9).** This section is kept because it establishes *why* the boundary is technically right, and what the separate app would face if anyone rebuilt what `side_menu` already provides.
 
 Palette is not what makes Teams recognisable. The shell is: a **vertical left app rail** with icon-above-label entries, a **list pane** beside it, a **thin top bar** with a centred command box, and content in **rounded panes**.
