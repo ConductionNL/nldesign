@@ -5,13 +5,18 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TARGET_DIR="${ROOT_DIR}/lib"
 
-# The gate is only meaningful if the search tool exists. Without this check a
-# missing ripgrep exits 127, `|| true` below converts that to success, the loop
-# reads nothing, and the script reports "passed" having searched nothing at all.
-if ! command -v rg >/dev/null 2>&1; then
-  echo "[boundary] ripgrep (rg) is required but was not found" >&2
+# Prefer ripgrep locally, but GitHub's Node runner image does not guarantee it.
+# The fallback remains fail-closed: a missing tool or a search error aborts the
+# gate instead of being mistaken for "no matches".
+if command -v rg >/dev/null 2>&1; then
+  search_tool="rg"
+elif command -v grep >/dev/null 2>&1; then
+  search_tool="grep"
+else
+  echo "[boundary] ripgrep (rg) or grep is required but neither was found" >&2
   exit 1
 fi
+readonly search_tool
 
 if [[ ! -d "${TARGET_DIR}" ]]; then
   echo "[boundary] no lib directory found at ${TARGET_DIR}" >&2
@@ -30,13 +35,18 @@ check_pattern() {
   local file
   local status=0
 
-  # rg exits 1 for "no matches" and 2+ for a real error (bad pattern, unreadable
-  # path, missing binary). Only the first is benign.
-  rg -n --no-heading --hidden --glob "*.php" "${TARGET_DIR}" -g '*.php' -e "$pattern" \
-    > "${search_output}" || status=$?
+  # Both search tools exit 1 for "no matches" and 2+ for a real error. Only the
+  # first is benign.
+  if [[ "$search_tool" == "rg" ]]; then
+    rg -n --no-heading --hidden --glob '*.php' -e "$pattern" "${TARGET_DIR}" \
+      > "${search_output}" || status=$?
+  else
+    grep -R -n -E --include='*.php' -e "$pattern" "${TARGET_DIR}" \
+      > "${search_output}" || status=$?
+  fi
 
   if [[ "$status" -gt 1 ]]; then
-    echo "[boundary] search failed (rg exit ${status}) for pattern: ${pattern}" >&2
+    echo "[boundary] search failed (${search_tool} exit ${status}) for pattern: ${pattern}" >&2
     exit "$status"
   fi
 
