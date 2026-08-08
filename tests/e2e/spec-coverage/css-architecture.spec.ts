@@ -169,7 +169,7 @@ test.describe('css-architecture', () => {
 				if (msg.type() === 'error') errors.push(msg.text())
 			})
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// Admin settings section must render — proves CSS stack bootstrapped OK
 			await expect(page.locator('#nldesign-settings')).toBeAttached()
 			// The NL Design h2 heading confirms the PHP template rendered (CSS was injected)

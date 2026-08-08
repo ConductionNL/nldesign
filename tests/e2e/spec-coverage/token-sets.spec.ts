@@ -93,7 +93,7 @@ test.describe('token-sets', () => {
 		'Active token set is set and reflected in the dropdown selection',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const select = page.locator('#nldesign-token-set-select')
 			await expect(select).toBeVisible()
 			const currentValue = await select.inputValue()

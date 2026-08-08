@@ -57,7 +57,7 @@ test.describe('custom-css-overrides', () => {
 		'Token editor Save overrides button is present (custom-overrides.css write entry point)',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			const saveBtn = page.locator('button:has-text("Save overrides")')
 			await expect(saveBtn).toBeVisible()
 		},

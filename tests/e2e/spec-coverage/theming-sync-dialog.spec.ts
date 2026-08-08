@@ -111,7 +111,7 @@ test.describe('theming-sync-dialog', () => {
 				if (msg.type() === 'error') errors.push(msg.text())
 			})
 			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
+			await page.waitForLoadState('domcontentloaded')
 			// nldesign-theming-dialog-overlay must NOT exist on page load (no spurious dialog)
 			const dialog = page.locator('#nldesign-theming-dialog-overlay')
 			await expect(dialog).not.toBeVisible()
