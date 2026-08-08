@@ -12,9 +12,9 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "check:assets": "node check-assets.mjs && node test-check-assets.mjs",
-    "audit:runtime": "npm audit --omit=dev --audit-level=high",
-    "audit:build": "node test-build-audit.mjs && node check-build-audit.mjs",
+    "check:assets": "node check-assets.mjs && node test-check-assets.mjs && node test-image-size-replacement.mjs",
+    "audit:runtime": "npm audit --omit=dev --audit-level=info",
+    "audit:build": "npm audit --audit-level=info",
     "ci": "npm ci --ignore-scripts && npm run check:assets && npm run audit:runtime && npm run audit:build && npm run build"
   },
   "devDependencies": {
@@ -24,12 +24,17 @@
     "@docusaurus/theme-mermaid": "^3.10.2",
     "@mdx-js/react": "^3.1.0",
     "clsx": "^2.1.1",
+    "image-size": "file:packages/image-size-disabled",
+    "mdast-util-from-markdown": "^2.0.3",
     "prism-react-renderer": "^2.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "search-insights": "2.17.3"
   },
   "overrides": {
+    "@docusaurus/mdx-loader": {
+      "image-size": "$image-size"
+    },
     "serialize-javascript": "7.0.5",
     "sockjs": {
       "uuid": "11.1.1"

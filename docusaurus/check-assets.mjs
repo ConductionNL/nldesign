@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Keep the Docusaurus image parser away from formats with known loop bugs.
+ * Keep documentation inputs within the parser-free image boundary.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fromMarkdown } from 'mdast-util-from-markdown';
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const requestedRoots = process.argv.slice(2);
@@ -20,6 +21,64 @@ const sourceRoots = requestedRoots.length > 0
 const blockedExtensions = new Set(['.avif', '.heic', '.heif', '.icns', '.jxl']);
 const blockedFtypBrands = new Set(['avif', 'heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1']);
 const failures = [];
+
+function isLocalImageUrl(url) {
+    const normalized = url.trim();
+    if (normalized === '' || normalized.startsWith('pathname://')) {
+        return true;
+    }
+    if (/^file:/i.test(normalized)) {
+        return true;
+    }
+
+    return !normalized.startsWith('//')
+        && !/^[a-z][a-z\d+.-]*:/i.test(normalized);
+}
+
+function inspectMarkdown(entryPath) {
+    const tree = fromMarkdown(fs.readFileSync(entryPath, 'utf8'));
+    const definitions = new Map();
+
+    function collectDefinitions(node) {
+        if (node.type === 'definition') {
+            const identifier = node.identifier.toLowerCase();
+            if (!definitions.has(identifier)) {
+                definitions.set(identifier, node.url);
+            }
+        }
+        if (Array.isArray(node.children)) {
+            for (const child of node.children) {
+                collectDefinitions(child);
+            }
+        }
+    }
+
+    function inspectNode(node) {
+        let imageUrl = null;
+        if (node.type === 'image') {
+            imageUrl = node.url;
+        } else if (node.type === 'imageReference') {
+            imageUrl = definitions.get(node.identifier.toLowerCase()) ?? '';
+        }
+
+        if (imageUrl !== null && isLocalImageUrl(imageUrl)) {
+            const line = node.position?.start?.line;
+            const location = line === undefined ? entryPath : `${entryPath}:${line}`;
+            failures.push(
+                `local Markdown images are disabled because Docusaurus must not parse image files: ${location}`,
+            );
+        }
+
+        if (Array.isArray(node.children)) {
+            for (const child of node.children) {
+                inspectNode(child);
+            }
+        }
+    }
+
+    collectDefinitions(tree);
+    inspectNode(tree);
+}
 
 function blockedFormatFromHeader(entryPath) {
     const descriptor = fs.openSync(entryPath, 'r');
@@ -65,6 +124,9 @@ function inspect(entryPath) {
 	}
 
     if (stat.isFile()) {
+        if (['.md', '.mdx'].includes(path.extname(entryPath).toLowerCase())) {
+            inspectMarkdown(entryPath);
+        }
         if (blockedExtensions.has(path.extname(entryPath).toLowerCase())) {
             failures.push(`blocked image extension in documentation source: ${entryPath}`);
         }
@@ -89,4 +151,6 @@ if (failures.length > 0) {
 	process.exit(1);
 }
 
-console.log('Documentation assets exclude symlinks and blocked image extensions/signatures.');
+console.log(
+    'Documentation assets exclude local Markdown images, symlinks, and blocked image extensions/signatures.',
+);

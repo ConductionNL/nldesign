@@ -55,7 +55,7 @@ jobs:
         working-directory: docusaurus
         run: npm run audit:runtime
 
-      - name: Audit build-only dependencies against the residual allowlist
+      - name: Audit all build dependencies
         working-directory: docusaurus
         run: npm run audit:build
 

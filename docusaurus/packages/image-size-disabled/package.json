@@ -1,0 +1,16 @@
+{
+  "name": "image-size",
+  "version": "2.0.3-nldesign.1",
+  "private": true,
+  "description": "Parser-free compatibility boundary for NL Design documentation builds",
+  "license": "EUPL-1.2",
+  "nldesignParserFreeReplacement": true,
+  "exports": {
+    "./fromFile": {
+      "types": "./fromFile.d.ts",
+      "import": "./fromFile.mjs",
+      "require": "./fromFile.cjs"
+    },
+    "./package.json": "./package.json"
+  }
+}

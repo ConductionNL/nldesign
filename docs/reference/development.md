@@ -41,21 +41,25 @@ profile-manifest, JavaScript syntax, and stylesheet checks.
 
 ## Dependency advisory boundary
 
-At the 2026-08-08 lock-file snapshot, app dependencies, Composer dependencies,
-and the generated documentation runtime have zero known advisories. A
-forced patched `serialize-javascript` 7.0.5 removes that fixable build-chain
-advisory. A scoped `sockjs` override to CommonJS-compatible `uuid` 11.1.1
-removes the development-server advisory. The full private Docusaurus graph
-still reports 18 high-severity affected package nodes, all propagated from
-Docusaurus's unfixed `image-size` parser dependency. The build audit permits
-only `GHSA-w3rx-r6r6-pgpr` and `GHSA-5p2g-fcmc-qvqq` through that dependency
-graph and fails on a new or severity-escalated finding. These packages are not
-present in the static site output dependency surface. Before Docusaurus runs,
-the asset gate rejects symlinks and AVIF, ICNS, JXL, HEIF, and HEIC inputs by
-both extension and file signature, including renamed files.
-Trusted installs disable dependency
-lifecycle scripts, CI builds only static output, and publication must never
-deploy the Docusaurus development server or its `node_modules` tree.
+At the 2026-08-08 lock-file snapshot, app, Composer, documentation runtime, and
+documentation build dependencies have zero known advisories. A forced patched
+`serialize-javascript` 7.0.5 removes that fixable build-chain advisory. A
+scoped `sockjs` override to CommonJS-compatible `uuid` 11.1.1 removes the
+development-server advisory.
+
+Docusaurus imports `image-size/fromFile` even when a documentation corpus has
+no local Markdown images. NL Design replaces that transitive package with a
+checked-in, parser-free compatibility package that returns no optional image
+dimensions. The asset gate rejects local Markdown image nodes before the build
+and also rejects symlinks and AVIF, ICNS, JXL, HEIF, and HEIC inputs by both
+extension and file signature, including renamed files. Static theme assets,
+including the navbar logo, bypass the Markdown image transformer and remain
+supported. Both npm audit commands are zero-tolerance; there is no advisory
+allowlist.
+
+Trusted installs disable dependency lifecycle scripts, CI builds only static
+output, and publication must never deploy the Docusaurus development server or
+its `node_modules` tree.
 
 ## Change boundaries
 
