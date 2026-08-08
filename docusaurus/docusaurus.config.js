@@ -1,9 +1,11 @@
 // @ts-check
 
 /** @type {import('@docusaurus/types').Config} */
+const { themes: prismThemes } = require('prism-react-renderer');
+
 const config = {
   title: 'NL Design',
-  tagline: 'NL Design System tokens for Nextcloud',
+  tagline: 'Bounded NL Design profiles for Nextcloud',
   url: 'https://nldesign.app',
   baseUrl: '/',
 
@@ -12,8 +14,7 @@ const config = {
   projectName: 'nldesign',
   trailingSlash: false,
 
-  onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: 'throw',
 
   i18n: {
     defaultLocale: 'en',
@@ -29,7 +30,7 @@ const config = {
           path: '../docs',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/ConductionNL/nldesign/tree/main/docusaurus/',
+            'https://github.com/ConductionNL/nldesign/edit/main/',
         },
         blog: false,
         theme: {
@@ -84,11 +85,11 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} for <a href="https://openwebconcept.nl">Open Webconcept</a> by <a href="https://conduction.nl">Conduction B.V.</a>`,
+        copyright: `Copyright © ${new Date().getFullYear()} NL Design contributors. Code licensed under EUPL-1.2.`,
       },
       prism: {
-        theme: require('prism-react-renderer/themes/github'),
-        darkTheme: require('prism-react-renderer/themes/dracula'),
+        theme: prismThemes.github,
+        darkTheme: prismThemes.dracula,
       },
       mermaid: {
         theme: { light: 'default', dark: 'dark' },
@@ -96,6 +97,9 @@ const config = {
     }),
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
   },
   themes: ['@docusaurus/theme-mermaid'],
 };

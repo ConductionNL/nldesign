@@ -1,70 +1,62 @@
-## ADDED Requirements
+---
+status: reviewed
+reviewed_date: 2026-08-08
+---
 
-### Requirement: Documentation landing page
-The documentation site SHALL have an `intro.md` file at `docs/intro.md` that serves as the entry point for all documentation. It SHALL provide a high-level overview of what nldesign is, link to key sections (getting started, features, reference), and use the Docusaurus `slug: /` frontmatter to become the docs root.
+# Documentation Content Specification
 
-#### Scenario: Visitor opens documentation
-- **WHEN** a visitor navigates to `/docs/` on the documentation site
-- **THEN** they see the intro page with a description of nldesign, its purpose, and navigation links to getting started, features, and reference sections
+## REQ-DOCS-001: Truthful landing page
 
-### Requirement: Getting started guide
-The documentation SHALL include a `docs/getting-started/` directory containing an installation and configuration guide. The guide SHALL cover: installing the app from the Nextcloud App Store, selecting a token set via admin settings, and verifying the theme is applied.
+docs/intro.md MUST be the Docusaurus documentation root and MUST describe the
+implemented profile plane before future roadmap capabilities. It MUST not claim
+automatic Nextcloud Theming mutation, token editing, import/export, or App
+Store publication when those capabilities are absent.
 
-#### Scenario: New administrator follows getting started guide
-- **WHEN** an administrator reads the getting started guide
-- **THEN** they find step-by-step instructions for installing nldesign, navigating to admin settings, selecting a token set, and confirming the theme is active
+## REQ-DOCS-002: Install and configure
 
-#### Scenario: Getting started sidebar ordering
-- **WHEN** the documentation site sidebar renders
-- **THEN** the "Getting Started" section appears as the first section after the intro page (sidebar_position: 1)
+The getting-started section MUST distinguish a reviewed packaged install from
+a source build. Until App Store publication is verified, it MUST state that no
+App Store release is claimed.
 
-### Requirement: Features overview section
-The documentation SHALL include a `docs/features/` directory with pages covering: token sets overview, 7-layer CSS architecture, theming sync, admin settings panel, optional toggles (hide slogan, menu labels), and icon library.
+Configuration instructions MUST cover selecting a ready profile, reloading
+affected pages, understanding revisions and rollback, treating Theming values
+as manual recommendations, and identifying the retired selector experiments as
+unavailable rather than configurable features.
 
-#### Scenario: Visitor browses features
-- **WHEN** a visitor expands the "Features" section in the sidebar
-- **THEN** they see individual pages for token sets, CSS architecture, theming sync, admin settings, toggles, and icons
+## REQ-DOCS-003: Current versus deferred capabilities
 
-#### Scenario: Token sets showcase page
-- **WHEN** a visitor opens the token sets feature page
-- **THEN** they see a listing of all 39 available token sets with organization name, primary color, and description
+Feature pages MUST label each capability as implemented, manual, experimental,
+or deferred. Pages retained for a deferred token editor, import/export flow, or
+apply dialog MUST be explicit design notes and MUST not read as operating
+instructions.
 
-### Requirement: Reference section with existing docs
-The documentation SHALL include a `docs/reference/` directory containing the existing technical documentation: tokens.md, mappings.md, compliance.md, token-audit.md, assets.md, and brand-identity.md. Each file SHALL retain its existing content and have `sidebar_position` frontmatter for ordering.
+The token-set page MUST distinguish package inventory from runtime
+availability: currently 40 manifest records and matching stylesheets, with 8
+ready projections and 32 source-only records.
 
-#### Scenario: Existing doc content preserved
-- **WHEN** a visitor navigates to a reference page (e.g., token mappings)
-- **THEN** they see the same content that was previously at the root of the docs folder
+## REQ-DOCS-004: Architecture and roadmap
 
-#### Scenario: Reference sidebar ordering
-- **WHEN** the documentation site sidebar renders
-- **THEN** the "Reference" section appears after "Features" (sidebar_position: 3)
+Documentation MUST explain the separation between ready profile state and
+instance-owned Nextcloud Theming state. It MUST identify private OCA\Theming
+usage as an isolated, unregistered compatibility experiment and describe the
+public OCP\Theming direction.
 
-### Requirement: Integration guide for app developers
-The documentation SHALL include a page explaining how Nextcloud app developers can ensure their apps are compatible with nldesign. It SHALL cover: using standard Nextcloud CSS variables, avoiding hardcoded colors, testing with nldesign enabled, and using the `--nldesign-*` token namespace.
+Security, compatibility, accessibility, and standards claims MUST name their
+evidence and residual gaps. Static checks MUST not be presented as browser,
+cross-app, or WCAG certification.
 
-#### Scenario: App developer reads integration guide
-- **WHEN** a Nextcloud app developer reads the integration guide
-- **THEN** they find concrete guidance on CSS variable usage, color avoidance patterns, and testing procedures to ensure nldesign compatibility
+## REQ-DOCS-005: Developer reference
 
-### Requirement: Enhanced homepage feature cards
-The homepage SHALL display feature cards that describe nldesign's key capabilities: token sets, CSS architecture, government compliance, easy configuration, app compatibility, and open source nature. Each card SHALL have a title and a brief description.
+Reference material MUST direct app developers toward stable Nextcloud variables
+and semantic markup, warn against hardcoded colors and generated scoped
+selectors, and require testing with representative profiles and Nextcloud
+versions.
 
-#### Scenario: Visitor lands on homepage
-- **WHEN** a visitor opens the documentation site root URL
-- **THEN** they see a hero section with the app name and tagline, plus 6 feature cards summarizing nldesign's capabilities
+## REQ-DOCS-006: Reproducible site
 
-#### Scenario: Homepage documentation link
-- **WHEN** a visitor clicks the "Documentation" button on the homepage
-- **THEN** they are navigated to the docs intro page (`/docs/intro`), not to the tokens reference page
-
-### Requirement: Documentation builds without errors
-The Docusaurus build SHALL complete without errors after all documentation changes. All internal links between pages SHALL resolve correctly. The auto-generated sidebar SHALL reflect the new directory structure.
-
-#### Scenario: Clean build after reorganization
-- **WHEN** `npm run build` is executed in the `docusaurus/` directory
-- **THEN** the build completes successfully with no broken link errors
-
-#### Scenario: Sidebar reflects directory structure
-- **WHEN** the built site is served
-- **THEN** the sidebar shows sections for Getting Started, Features, and Reference as collapsible groups
+The documentation project MUST use a supported Node version, install from its
+lock file, pass the shipped-runtime audit, build without broken links, and
+produce index.html. Build-only dependency advisories with no upstream fix MUST
+be recorded as residual risk rather than hidden. Any temporary exception MUST
+allowlist exact advisories and their dependency chains, reject new or escalated
+findings, and carry an executable input-mitigation test.

@@ -1,90 +1,40 @@
-# NL Design — Dutch Government Theming for Nextcloud
+# NL Design project contract
 
-## Overview
+## Product
 
-NL Design is a Nextcloud theming app that applies Dutch government design standards (NL Design System) to the Nextcloud interface. It provides 39 token sets covering national government (Rijkshuisstijl), municipalities, and organizations. Admins select a token set via a settings panel, and the app injects a 7-layer CSS architecture that overrides Nextcloud's default styling with the selected organization's brand identity.
+NL Design is a pre-release Nextcloud administration app that can select one statically gated profile and project a small CSS contract onto Nextcloud core. Native Nextcloud remains the initial and explicitly restorable state. The package inventories 40 manifest-backed profile snapshots; 8 currently declare the `nextcloud-core-v1` projection and are selectable.
 
-## Architecture
+The load-bearing product is the profile plane. A future bridge to state owned by Nextcloud Theming is optional, removable, and must not break profile selection or rendering when absent.
 
-- **Type**: Nextcloud App (PHP backend + vanilla JS admin panel)
-- **Data layer**: Nextcloud IConfig (key-value, no own database tables)
-- **Pattern**: CSS injection — reads config on boot, loads CSS files via `\OCP\Util::addStyle()`
-- **License**: EUPL-1.2 (app), SIL OFL 1.1 (Fira Sans font)
-- **No Vue/webpack build**: Admin UI is vanilla PHP template + vanilla JS
+## Current implementation
 
-## Tech Stack
+- PHP 8.2+ and the Nextcloud App Framework
+- Vanilla PHP admin template and JavaScript
+- App-scoped `OCP\AppFramework\Services\IAppConfig`
+- Manifest plus packaged CSS; no app database tables
+- Three ordered runtime CSS layers with only root/theme-state guards, never component or structural selectors
+- Self-hosted Fira Sans build output
+- EUPL-1.2 app code
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | PHP 8.1+, Nextcloud App Framework |
-| Admin UI | Vanilla PHP template + vanilla JS (13.5 KB) |
-| CSS | Pre-compiled token CSS, 7-layer cascade |
-| Font | Fira Sans (open-source alternative to RijksoverheidSansWebText) |
-| Token source | NL Design System themes repo (upstream sync) |
+Profile activation and deactivation are revision-checked and retain one rollback snapshot plus bounded history. Nextcloud Theming recommendations are read-only. Token editing, import/export, and automatic Theming mutation are deferred.
 
-## 7-Layer CSS Architecture
+## Runtime stylesheet contract
 
-| Order | File | Purpose |
-|-------|------|---------|
-| 1 | `css/fonts.css` | Fira Sans @font-face declarations |
-| 2 | `css/defaults.css` | All `--nldesign-*` tokens with Rijkshuisstijl defaults |
-| 3 | `css/tokens/{org}.css` | Organization-specific token overrides |
-| 4 | `css/utrecht-bridge.css` | Maps `--utrecht-*` to `--nldesign-component-*` |
-| 5 | `css/theme.css` | Maps `--nldesign-*` to Nextcloud element selectors |
-| 6 | `css/overrides.css` | Maps Nextcloud `--color-*` vars to `--nldesign-*` |
-| 7 | `css/element-overrides.css` | Low-level element styling (fonts, containers) |
+1. `css/fonts.css`
+2. `css/tokens/{profile}.css`
+3. `css/theme.css`
 
-## Token Sets (39)
+The order is implemented by `RuntimeStylesheetPlan` and covered by a unit test.
 
-- **National**: Rijkshuisstijl (default)
-- **Major cities**: Amsterdam, Utrecht, Rotterdam, Den Haag
-- **Municipalities**: 33 others (Haarlem, Leiden, Nijmegen, Tilburg, etc.)
-- **Organizations**: Demodam, Duo, Noaberkracht, VNG, xxllnc
-- **Provinces**: Zuid-Holland
+## Boundaries
 
-## Features
+- `token-sets.json` is the catalogue; filesystem discovery is not an availability API, and `source-only` entries are not runtime profiles.
+- Runtime writes below the installed app path are forbidden.
+- Private `OCA\Theming` names are allowed only in `lib/Infrastructure/Nextcloud/Compatibility/`.
+- The private compatibility prototype is currently unregistered.
+- Organisational profile names and values are not an endorsement or rights grant.
+- Accessibility and app/version compatibility require measured evidence, not a repository-wide claim. Explicit high-contrast and OpenDyslexic preferences outrank the profile projection.
 
-### Implemented
+## Verification
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Token Set Selection | Admin selects from 39 org token sets with live preview | Done |
-| 7-Layer CSS | Cascading token system with defaults for incomplete sets | Done |
-| Theming Sync | Optionally sync Nextcloud primary color, background, logo | Done |
-| Hide Slogan | Toggle to hide login page slogan | Done |
-| Show Menu Labels | Toggle to show text labels instead of icons in app menu | Done |
-| Fira Sans Font | Open-source government-style font bundled with app | Done |
-| Utrecht Bridge | Maps NL Design System component tokens to app tokens | Done |
-| Token Generation | Script to generate CSS from upstream NL Design themes | Done |
-
-## Configuration (IConfig)
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `nldesign:token_set` | `rijkshuisstijl` | Active token set ID |
-| `nldesign:hide_slogan` | `0` | Hide login page slogan (0/1) |
-| `nldesign:show_menu_labels` | `0` | Show text labels in app menu (0/1) |
-
-## Key Directories
-
-```
-nldesign/
-├── appinfo/          # App manifest and routes
-├── lib/              # PHP backend (controllers, services, settings)
-├── css/              # 7-layer CSS + 39 token files
-│   └── tokens/       # Organization-specific CSS token files
-├── js/               # Vanilla admin JS
-├── img/              # SVG logos (17 organizations)
-├── templates/        # Admin settings PHP template
-├── scripts/          # Token generation, font/icon build scripts
-├── docs/             # Token docs, compliance, mappings
-├── openspec/         # OpenSpec specs
-└── token-sets.json   # Token set manifest with metadata
-```
-
-## Development
-
-- **Local URL**: http://localhost:8080/settings/admin/theming (admin settings)
-- **Docker**: Part of openregister/docker-compose.yml
-- **Enable**: `php occ app:enable nldesign`
-- **Token regeneration**: `npm run generate:tokens` (requires upstream themes repo)
+Run `composer check`, `npm test`, both dependency audits, the asset build, and the Docusaurus build. Live release evidence must additionally cover the supported Nextcloud-version and app-surface matrix.

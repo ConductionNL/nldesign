@@ -6,7 +6,7 @@
  * @category Settings
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12 EUPL-1.2
  * @link     https://github.com/ConductionNL/nldesign
  */
 
@@ -15,90 +15,106 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Service\ProfileStateService;
+use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
-use OCP\IConfig;
+use OCP\AppFramework\Http;
 use OCP\IL10N;
-use OCP\Settings\ISettings;
+use OCP\Settings\IDelegatedSettings;
 
 /**
  * Admin settings form for NL Design.
  *
  * Provides the configuration interface for selecting design token sets.
  */
-class Admin implements ISettings
+final class Admin implements IDelegatedSettings
 {
-    private IConfig $config;
+
+    /**
+     * Localization helper.
+     *
+     * @var IL10N
+     */
     private IL10N $l;
+
+    /**
+     * Token set discovery service.
+     *
+     * @var TokenSetService
+     */
+    private TokenSetService $tokenSetService;
+
+    /**
+     * Profile state service.
+     *
+     * @var ProfileStateService
+     */
+    private ProfileStateService $profileStateService;
 
     /**
      * Constructor.
      *
-     * @param IConfig $config The config service.
-     * @param IL10N   $l      The localization service.
+     * @param IL10N               $l                   The localization service.
+     * @param TokenSetService     $tokenSetService     Token set discovery service.
+     * @param ProfileStateService $profileStateService Profile state tracking service.
      */
-    public function __construct(IConfig $config, IL10N $l)
-    {
-        $this->config = $config;
+    public function __construct(
+        IL10N $l,
+        TokenSetService $tokenSetService,
+        ProfileStateService $profileStateService
+    ) {
         $this->l = $l;
-    }
+        $this->tokenSetService     = $tokenSetService;
+        $this->profileStateService = $profileStateService;
+    }//end __construct()
 
     /**
      * Get the settings form.
      *
-     * @return TemplateResponse The settings form template.
+     * @return         TemplateResponse The settings form template.
+     * @phpstan-return TemplateResponse<Http::STATUS_OK, array{}>
      */
     public function getForm(): TemplateResponse
     {
-        $tokenSets = [
-            'rijkshuisstijl' => [
-                'name' => 'Rijkshuisstijl',
-                'description' => $this->l->t('Dutch national government (Rijksoverheid)'),
-            ],
-            'utrecht' => [
-                'name' => 'Gemeente Utrecht',
-                'description' => $this->l->t('Municipality of Utrecht'),
-            ],
-            'amsterdam' => [
-                'name' => 'Gemeente Amsterdam',
-                'description' => $this->l->t('Municipality of Amsterdam'),
-            ],
-            'denhaag' => [
-                'name' => 'Gemeente Den Haag',
-                'description' => $this->l->t('Municipality of The Hague'),
-            ],
-            'rotterdam' => [
-                'name' => 'Gemeente Rotterdam',
-                'description' => $this->l->t('Municipality of Rotterdam'),
-            ],
-        ];
+        $tokenSets       = $this->tokenSetService->getAvailableTokenSets();
+        $profileState    = $this->profileStateService->getActiveProfileState();
+        $currentTokenSet = $profileState['active_profile_id'];
 
-        $currentTokenSet = $this->config->getAppValue(
-            Application::APP_ID,
-            'token_set',
-            'rijkshuisstijl'
+        $currentIsAvailable = $this->isCurrentTokenSetAvailable(
+            tokenSets: $tokenSets,
+            currentTokenSet: $currentTokenSet
         );
-
-        $hideSlogan = $this->config->getAppValue(
-            Application::APP_ID,
-            'hide_slogan',
-            '0'
-        ) === '1';
-
-        $showMenuLabels = $this->config->getAppValue(
-            Application::APP_ID,
-            'show_menu_labels',
-            '0'
-        ) === '1';
 
         return new TemplateResponse(
-            Application::APP_ID, 'settings/admin', [
-            'tokenSets' => $tokenSets,
-            'currentTokenSet' => $currentTokenSet,
-            'hideSlogan' => $hideSlogan,
-            'showMenuLabels' => $showMenuLabels,
+            Application::APP_ID,
+            'settings/admin',
+            [
+                'tokenSets'                => $tokenSets,
+                'currentTokenSet'          => $currentTokenSet,
+                'currentTokenSetAvailable' => $currentIsAvailable,
+                'profileState'             => $profileState,
             ]
         );
-    }
+    }//end getForm()
+
+    /**
+     * Check whether the stored token set is available in the discovered token list.
+     *
+     * @param array<int, array<string, mixed>> $tokenSets       Available token sets from discovery.
+     * @param string|null                      $currentTokenSet Stored token set.
+     *
+     * @return bool True when token set exists.
+     */
+    private function isCurrentTokenSetAvailable(array $tokenSets, ?string $currentTokenSet): bool
+    {
+        foreach ($tokenSets as $tokenSet) {
+            if (($tokenSet['id'] ?? '') === $currentTokenSet) {
+                return true;
+            }
+        }
+
+        return false;
+    }//end isCurrentTokenSetAvailable()
 
     /**
      * Get the settings section identifier.
@@ -108,7 +124,7 @@ class Admin implements ISettings
     public function getSection(): string
     {
         return 'theming';
-    }
+    }//end getSection()
 
     /**
      * Get the priority for ordering in the settings menu.
@@ -118,5 +134,29 @@ class Admin implements ISettings
     public function getPriority(): int
     {
         return 50;
-    }
-}
+    }//end getPriority()
+
+    /**
+     * Get the delegated-settings display name.
+     *
+     * @return string Display name.
+     */
+    public function getName(): string
+    {
+        return $this->l->t('NL Design');
+    }//end getName()
+
+    /**
+     * Restrict delegated administrators to this app's known state keys.
+     *
+     * @return array<string, array<int, string>> Authorized config patterns.
+     */
+    public function getAuthorizedAppConfig(): array
+    {
+        return [
+            Application::APP_ID => [
+                '/^(active_profile_state|active_profile_revision|profile_state_history|token_set)$/',
+            ],
+        ];
+    }//end getAuthorizedAppConfig()
+}//end class

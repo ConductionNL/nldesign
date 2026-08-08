@@ -2,61 +2,59 @@
 sidebar_position: 4
 ---
 
-# Admin Settings
+# Admin settings
 
-NL Design provides an admin settings panel for configuring the active theme, optional display settings, and per-token CSS overrides.
+The app adds **NL Design profiles** to Nextcloud's Theming administration section. Every API action behind this panel requires Nextcloud's `AuthorizedAdminSetting` permission for this delegated settings class.
 
-## Accessing Settings
+## Profile selector
 
-1. Log in as a Nextcloud administrator
-2. Go to **Administration Settings** (click your avatar, then "Administration settings")
-3. Navigate to **Appearance** in the left sidebar
-4. Scroll down to the **NL Design System Theme** section
+The selector lists entries only when all conditions are true:
 
-![NL Design System Theme admin panel showing the token set dropdown, display option checkboxes, and preview section](../img/nl-design-section-top.png)
+- the id is declared in `token-sets.json`; and
+- the record is `ready` with projection `nextcloud-core-v1`; and
+- a readable stylesheet resolves inside `css/tokens/`.
 
-## Token Set Selector
+Changing the selector saves immediately. The browser sends the revision it
+observed; the server acquires an exclusive Nextcloud lock, clears Nextcloud's
+public app-config cache, reads canonical state, and then compares and writes.
+A concurrent change produces a conflict and reloads canonical state instead of
+overwriting it. Temporary lock or cache-refresh failure changes nothing.
 
-The main control is a dropdown listing all 39 available token sets. When you select a token set:
+**Native Nextcloud (no NL Design profile)** is always present. It is the
+fresh-install state and a typed deactivation operation, not a synthetic
+organisation profile.
 
-- The CSS theme updates immediately on the current page
-- A color preview swatch shows the selected theme's primary color
-- Nextcloud's theming system is synced with the new primary color, background, and logo (see [Theming Sync](theming-sync))
+## Colour preview
 
-When you switch to a different token set, the [Apply Token Set dialog](apply-dialog) appears, letting you review and selectively apply the token changes to your custom overrides.
+The small preview uses `theming.primary_color` only when the manifest provides a valid six-digit hex value. Profiles without that optional hint use a neutral/current-Nextcloud fallback. The preview is not a screenshot or compatibility proof.
 
-## Display Options
+## Rollback and history
 
-Below the token set selector, two toggle checkboxes provide optional adjustments:
+After an actual profile or native-state transition, the app retains one
+previous snapshot. Rollback is revision-checked. A native target remains valid;
+a profile target is disabled if it is no longer ready.
 
-![Display option checkboxes: Hide Nextcloud slogan/payoff on login page, Show text labels in app menu](../img/admin-nl-design-panel.png)
+The page also shows the ten most recent profile transitions stored by this app.
+It records a generic operation source rather than a user identifier: this is a
+small recovery trail, not a general security audit log.
 
-### Hide Login Slogan
+Manual-plan and history reads use latest-request-wins guards. An older response
+cannot overwrite recommendations for a profile selected while that request was
+in flight, and state-changing responses are validated before their revision is
+accepted by the browser.
 
-Controls whether the tagline/slogan text is visible on the Nextcloud login page. Enable this for a cleaner login experience that focuses on the organization's branding.
+## Nextcloud Theming hand-off
 
-### Show Menu Labels
+The hand-off panel renders allowlisted recommendations from the profile manifest. It never executes them. A logo, background, or colour remains owned by Nextcloud Theming until an administrator applies it there.
 
-Controls whether text labels appear next to the icons in Nextcloud's left sidebar navigation. By default, Nextcloud shows only icons — enabling labels improves accessibility and usability, especially for new users.
+## Retired presentation experiments
 
-## Preview Section
+The panel no longer exposes login-footer or app-menu CSS toggles. The former
+footer rule also hid the instance identity link; the menu rule had no adequate
+cross-version browser evidence. Legacy stored values are ignored. See
+[Retired presentation options](./toggles.md) for the cleanup commands and the
+evidence required before a bounded surface adapter could replace either idea.
 
-The **Preview** section shows a live preview of the current theme's primary color applied to sample buttons. This updates immediately as you switch token sets or modify individual tokens.
+## Not present in architecture v1
 
-## Custom Token Overrides
-
-The **Custom Token Overrides** section lets you fine-tune individual CSS tokens beyond what your selected token set provides. Changes apply instantly as a live preview.
-
-![Custom Token Overrides section showing tabs and the Download/Upload import-export buttons](../img/import-export-buttons.png)
-
-See the dedicated pages for full details:
-
-- [Token Editor](token-editor) — Edit individual CSS tokens across 4 category tabs
-- [Import & Export](import-export) — Download your overrides as CSS or upload a CSS file
-- [Apply Token Set Dialog](apply-dialog) — Review and selectively apply token set changes
-
-## Technical Details
-
-The admin settings panel is built with vanilla JavaScript and PHP templates (no Vue.js or webpack build step). This keeps the admin UI lightweight and avoids frontend build dependencies.
-
-Settings are stored in Nextcloud's `IConfig` system and take effect immediately without requiring a page reload for the CSS changes.
+The settings page does not contain a token editor, import/export controls, or an apply-token comparison dialog. Those older documentation claims were removed because the associated runtime path wrote into the installed app package.

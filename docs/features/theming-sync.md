@@ -4,36 +4,51 @@ sidebar_position: 3
 
 # Theming Sync
 
-When you select a token set in the NL Design admin settings, the app automatically syncs key values with Nextcloud's built-in theming system.
+## Status
 
-## What Gets Synced
+The production slice currently does **not** apply Theming settings automatically when a token set is selected.
 
-| Setting | Source | Purpose |
-|---------|--------|---------|
-| Primary color | `theming.primary_color` from `token-sets.json` | Nextcloud's accent color for emails, mobile apps, and generated assets |
-| Background color | `theming.background_color` from `token-sets.json` | Login page and default background |
-| Logo | `theming.logo` from `token-sets.json` | Organization logo in header and login page |
+This app does inject profile CSS and controls the UI-level profile surface.
+Theming sync is tracked as a separate, removable compatibility path and is
+part of the “Slice 2/3” sequencing.
 
-## Why Sync Matters
+## Planned bridge fields
 
-NL Design controls visual styling through CSS injection, but Nextcloud's built-in theming system controls elements that CSS can't reach:
+The compatibility bridge intends to map selected token metadata to these
+Nextcloud-owned fields:
 
-- **Email templates** use the primary color from theming settings
-- **Mobile apps** display the primary color and logo from theming settings
-- **Generated favicons and manifest files** use theming colors
-- **Login page background** is controlled by theming settings
+- Primary color
+- Background color
+- Logo
 
-Without syncing, you'd see the correct colors in the web interface but the wrong colors in emails and mobile apps.
+It is intentionally separated from the load-bearing profile path so that profile
+selection, preview, and rollback continue to work if the bridge is unavailable.
 
-## How It Works
+## Why it matters
 
-The `ThemingService` class writes to Nextcloud's theming configuration when the admin saves a token set:
+Nextcloud's built-in theming still controls surfaces that are not fully covered
+by CSS injection (for example email assets and some client surfaces).
+Until the bridge is enabled, those surfaces remain on their existing instance
+defaults.
 
-1. Reads the selected token set's metadata from `token-sets.json`
-2. If `theming.primary_color` exists, updates Nextcloud's `theming:color` config
-3. If `theming.background_color` exists, updates Nextcloud's `theming:background` config
-4. If `theming.logo` exists, copies the SVG file to Nextcloud's theming storage
+## How to use it now (temporary, manual)
 
-## Token Sets Without Theming Data
+The admin page exposes a read-only "Theming bridge (manual only)" panel.
 
-Not all token sets have complete theming metadata. If a field is missing, Nextcloud's existing theming value for that field is left unchanged. The CSS-based theming still works regardless — theming sync is supplementary.
+For the selected token set, it renders `/settings/theming-plan`:
+
+- the fields that appear in `token-sets.json` under `theming`;
+- suggested values;
+- and a plain instruction for the Nextcloud Theming app screen.
+
+No automatic write occurs during profile activation.
+
+Until a safe compatibility driver ships, this is an explicit operator step.
+
+## Recovery trail
+
+The admin page reads `/settings/profile-history` to show the recent activation/rollback
+operations for this app instance.
+
+This history is load-bearing for recovery decisions only and does not include private
+Theming operations, which remain separate and non-automatic until Slice 3 is implemented.

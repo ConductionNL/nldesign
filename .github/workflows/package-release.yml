@@ -1,0 +1,154 @@
+name: Build Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Expected app version from appinfo/info.xml
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Verify and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, dom, filter, gd, json, posix, zip
+          tools: composer:2.10.2@sha256:5ee7125f8a30a34d246cefdc0bc85b8a783b28f2aec968994118512350d28027
+          coverage: pcov
+        env:
+          fail-fast: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts
+
+      - name: Audit and verify
+        run: |
+          composer validate --strict
+          composer audit --locked
+          composer check
+          composer check:coverage
+          npm audit --audit-level=high
+          npm test
+          npm run build
+          status=$(git status --porcelain -- css/fonts css/fonts.css)
+          if [ -n "$status" ]; then
+            echo "Generated assets are not current, or are not committed:"
+            echo "$status"
+            exit 1
+          fi
+
+      - name: Validate Nextcloud app metadata schema
+        run: |
+          SCHEMA="$RUNNER_TEMP/nextcloud-app-info.xsd"
+          curl --fail --location --proto '=https' --tlsv1.2 --max-filesize 1048576 \
+            --output "$SCHEMA" https://apps.nextcloud.com/schema/apps/info.xsd
+          # PHP, not the shell, expands variables in this single-quoted code.
+          # shellcheck disable=SC2016
+          php -r '$document = new DOMDocument(); exit($document->load("appinfo/info.xml") && $document->schemaValidate($argv[1]) ? 0 : 1);' "$SCHEMA"
+
+      - name: Install verified Gitleaks binary
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          ARCHIVE="$RUNNER_TEMP/gitleaks.tar.gz"
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            --output "$ARCHIVE" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  ${ARCHIVE}" | sha256sum --check --strict
+          tar -xzf "$ARCHIVE" -C "$RUNNER_TEMP" gitleaks
+
+      - name: Resolve version
+        id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          # PHP, not the shell, expands the variable in this single-quoted code.
+          # shellcheck disable=SC2016
+          PACKAGE_VERSION=$(php -r '$xml = simplexml_load_file("appinfo/info.xml"); echo (string) $xml->version;')
+          if [[ ! "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-](alpha|beta|rc)[.-]?[0-9]+)?$ ]]; then
+            echo "appinfo version is not a safe supported release version."
+            exit 1
+          fi
+          if [ -n "$REQUESTED_VERSION" ] && [ "$REQUESTED_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Requested version $REQUESTED_VERSION does not match appinfo version $PACKAGE_VERSION."
+            exit 1
+          fi
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build minimal package
+        run: |
+          PACKAGE_ROOT="$RUNNER_TEMP/nldesign-release"
+          APP_ROOT="$PACKAGE_ROOT/nldesign"
+          mkdir -p "$APP_ROOT"
+          rsync -a --prune-empty-dirs --exclude='.gitkeep' appinfo css img js lib templates "$APP_ROOT/"
+          cp LICENSE README.md token-sets.json "$APP_ROOT/"
+          if find "$APP_ROOT" -type l -print -quit | grep -q .; then
+            echo "Release package must not contain symlinks."
+            exit 1
+          fi
+          if find "$APP_ROOT" -type f -perm -0002 -print -quit | grep -q .; then
+            echo "Release package must not contain world-writable files."
+            exit 1
+          fi
+          if find "$APP_ROOT" -type f -perm /0111 -print -quit | grep -q .; then
+            echo "Release package must not contain executable files."
+            exit 1
+          fi
+          if find "$APP_ROOT" -type f -size +3M -print -quit | grep -q .; then
+            echo "Release package contains an unexpectedly large file."
+            exit 1
+          fi
+          if find "$APP_ROOT" -mindepth 1 -name '.*' -print -quit | grep -q .; then
+            echo "Release package must not contain hidden files."
+            exit 1
+          fi
+          # PHP, not the shell, expands variables in this single-quoted code.
+          # shellcheck disable=SC2016
+          php -r '$xml = simplexml_load_file($argv[1]); exit($xml === false ? 1 : 0);' "$APP_ROOT/appinfo/info.xml"
+          jq -e '.schema == "nldesign-profile-catalogue/v1" and .default_profile == null and (.profiles | type == "array")' \
+            "$APP_ROOT/token-sets.json" >/dev/null
+          find "$APP_ROOT" -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          "$RUNNER_TEMP/gitleaks" dir --redact --verbose "$APP_ROOT"
+          ARCHIVE="nldesign-${{ steps.version.outputs.version }}.tar"
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --format=ustar \
+            -C "$PACKAGE_ROOT" -cf "$ARCHIVE" nldesign
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --format=ustar \
+            -C "$PACKAGE_ROOT" -cf "$ARCHIVE.reproducibility-check" nldesign
+          cmp "$ARCHIVE" "$ARCHIVE.reproducibility-check"
+          gzip -n "$ARCHIVE"
+          sha256sum "nldesign-${{ steps.version.outputs.version }}.tar.gz" \
+            > "nldesign-${{ steps.version.outputs.version }}.tar.gz.sha256"
+
+      - name: Upload release candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nldesign-${{ steps.version.outputs.version }}
+          path: |
+            nldesign-${{ steps.version.outputs.version }}.tar.gz
+            nldesign-${{ steps.version.outputs.version }}.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14

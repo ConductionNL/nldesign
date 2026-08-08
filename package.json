@@ -1,32 +1,43 @@
 {
-	"name": "nldesign",
-	"version": "0.1.0",
-	"description": "NL Design System Theme for Nextcloud",
-	"keywords": [
-		"nextcloud",
-		"nl-design-system",
-		"rijkshuisstijl",
-		"dutch-government",
-		"design-tokens",
-		"theming"
-	],
-	"homepage": "https://github.com/ConductionNL/nldesign",
-	"license": "AGPL-3.0-or-later",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ConductionNL/nldesign.git"
-	},
-	"scripts": {
-		"build": "npm run build:fonts && npm run build:icons",
-		"build:fonts": "node scripts/build-fonts.js",
-		"build:icons": "node scripts/build-icons.js",
-		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
-		"test": "echo 'No tests yet'"
-	},
-	"dependencies": {
-		"@fontsource/fira-sans": "^5.0.0",
-		"@amsterdam/design-system-assets": "latest",
-		"@amsterdam/design-system-react-icons": "latest"
-	},
-	"devDependencies": {}
+  "name": "nldesign",
+  "version": "0.1.2",
+  "description": "Bounded NL Design profile projections for Nextcloud",
+  "keywords": [
+    "nextcloud",
+    "nl-design-system",
+    "rijkshuisstijl",
+    "dutch-government",
+    "design-tokens",
+    "theming"
+  ],
+  "homepage": "https://github.com/ConductionNL/nldesign",
+  "license": "EUPL-1.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ConductionNL/nldesign.git"
+  },
+  "scripts": {
+    "build": "npm run build:fonts",
+    "build:fonts": "node scripts/build-fonts.js",
+    "check:architecture": "bash scripts/check-architecture-boundary.sh",
+    "check:manifest": "node scripts/validate-token-sets.mjs",
+    "test:manifest-gate": "node scripts/test-token-set-validator.mjs",
+    "lint": "composer lint",
+    "stylelint": "stylelint \"css/**/*.css\"",
+    "stylelint:fix": "npm run stylelint -- --fix",
+    "test:js": "node --check js/admin.js && node --check scripts/build-fonts.js && node --check scripts/validate-token-sets.mjs && node --check scripts/test-token-set-validator.mjs",
+    "test": "npm run check:architecture && npm run check:manifest && npm run test:manifest-gate && npm run test:js && npm run stylelint",
+    "lint:php": "composer lint",
+    "quality:php": "composer lint && composer phpcs && composer phpmd && composer psalm && composer phpstan"
+  },
+  "dependencies": {
+    "@fontsource/fira-sans": "5.3.0"
+  },
+  "devDependencies": {
+    "stylelint": "^17.14.1",
+    "stylelint-config-recommended": "^18.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0 <27.0.0"
+  }
 }

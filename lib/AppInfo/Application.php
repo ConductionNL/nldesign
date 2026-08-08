@@ -6,7 +6,7 @@
  * @category Application
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12 EUPL-1.2
  * @link     https://github.com/ConductionNL/nldesign
  */
 
@@ -14,8 +14,12 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\AppInfo;
 
-use OCA\NLDesign\Themes\NLDesignTheme;
 use OCP\AppFramework\App;
+use OCA\NLDesign\Domain\Profile\ProfileCataloguePolicy;
+use OCA\NLDesign\Listener\TemplateStylesListener;
+use OCA\NLDesign\Service\TokenSetService;
+use OCP\AppFramework\Http\Events\BeforeLoginTemplateRenderedEvent;
+use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
@@ -25,7 +29,7 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
  *
  * Bootstraps the NL Design theme system and injects design tokens.
  */
-class Application extends App implements IBootstrap
+final class Application extends App implements IBootstrap
 {
     public const APP_ID = 'nldesign';
 
@@ -34,11 +38,11 @@ class Application extends App implements IBootstrap
      */
     public function __construct()
     {
-        parent::__construct(self::APP_ID);
-    }
+        parent::__construct(appName: self::APP_ID);
+    }//end __construct()
 
     /**
-     * Register services and providers.
+     * Register event listeners. Services are resolved by Nextcloud autowiring.
      *
      * @param IRegistrationContext $context The registration context.
      *
@@ -46,8 +50,21 @@ class Application extends App implements IBootstrap
      */
     public function register(IRegistrationContext $context): void
     {
-        // Register the theme.
-    }
+        $context->registerServiceAlias(
+            ProfileCataloguePolicy::class,
+            TokenSetService::class
+        );
+
+        $context->registerEventListener(
+            BeforeTemplateRenderedEvent::class,
+            TemplateStylesListener::class
+        );
+
+        $context->registerEventListener(
+            BeforeLoginTemplateRenderedEvent::class,
+            TemplateStylesListener::class
+        );
+    }//end register()
 
     /**
      * Boot the application.
@@ -58,47 +75,7 @@ class Application extends App implements IBootstrap
      */
     public function boot(IBootContext $context): void
     {
-        $serverContainer = $context->getServerContainer();
-
-        // Inject our CSS variables.
-        $this->injectThemeCSS($serverContainer);
-    }
-
-    /**
-     * Inject theme CSS files based on configuration.
-     *
-     * @param mixed $serverContainer The server container.
-     *
-     * @return void
-     */
-    private function injectThemeCSS($serverContainer): void
-    {
-        $config = $serverContainer->getConfig();
-        $tokenSet = $config->getAppValue(self::APP_ID, 'token_set', 'rijkshuisstijl');
-        $hideSlogan = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
-        $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
-
-        // Add fonts (Fira Sans from @fontsource).
-        \OCP\Util::addStyle(self::APP_ID, 'fonts');
-        
-        // Add the CSS file for the selected token set (organization-specific tokens).
-        \OCP\Util::addStyle(self::APP_ID, 'tokens/' . $tokenSet);
-        
-        // Add theme CSS (standard design token application).
-        \OCP\Util::addStyle(self::APP_ID, 'theme');
-        
-        // Add aggressive overrides (applies NL Design styling to Nextcloud).
-        // This includes header styling for logged-in pages.
-        \OCP\Util::addStyle(self::APP_ID, 'overrides');
-        
-        // Hide slogan if enabled.
-        if ($hideSlogan) {
-            \OCP\Util::addStyle(self::APP_ID, 'hide-slogan');
-        }
-
-        // Show menu labels (instead of icons) if enabled.
-        if ($showMenuLabels) {
-            \OCP\Util::addStyle(self::APP_ID, 'show-menu-labels');
-        }
-    }
-}
+        // Style injection moved to template rendering listeners.
+        return;
+    }//end boot()
+}//end class

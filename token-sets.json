@@ -1,167 +1,275 @@
-[
+{
+  "schema": "nldesign-profile-catalogue/v1",
+  "default_profile": null,
+  "profiles": [
+  {
+    "id": "amsterdam",
+    "name": "Gemeente Amsterdam",
+      "description": "Minimal Amsterdam Design System snapshot projection; inclusion does not imply municipal endorsement.",
+    "theming": {
+      "primary_color": "#ec0000"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
+  },
   {
     "id": "bodegraven-reeuwijk",
     "name": "Gemeente Bodegraven-Reeuwijk",
-    "description": "Design tokens for Gemeente Bodegraven-Reeuwijk"
+    "description": "Design tokens for Gemeente Bodegraven-Reeuwijk",
+    "status": "source-only"
   },
   {
     "id": "borne",
     "name": "Gemeente Borne",
-    "description": "Design tokens for Gemeente Borne"
+    "description": "Design tokens for Gemeente Borne",
+    "status": "source-only"
   },
   {
     "id": "buren",
     "name": "Gemeente Buren",
-    "description": "Design tokens for Gemeente Buren"
+    "description": "Design tokens for Gemeente Buren",
+    "status": "source-only"
+  },
+  {
+    "id": "denhaag",
+    "name": "Gemeente Den Haag",
+      "description": "Minimal Den Haag Design System snapshot projection; inclusion does not imply municipal endorsement.",
+    "theming": {
+      "primary_color": "#1a7a3e"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
   },
   {
     "id": "demodam",
     "name": "Demodam",
-    "description": "Design tokens for Demodam"
+    "description": "Design tokens for Demodam",
+    "status": "source-only"
   },
   {
     "id": "dinkelland",
     "name": "Gemeente Dinkelland",
-    "description": "Design tokens for Gemeente Dinkelland"
+    "description": "Design tokens for Gemeente Dinkelland",
+    "status": "source-only"
   },
   {
     "id": "drechterland",
     "name": "Gemeente Drechterland",
-    "description": "Design tokens for Gemeente Drechterland"
+    "description": "Design tokens for Gemeente Drechterland",
+    "status": "source-only"
   },
   {
     "id": "duiven",
     "name": "Gemeente Duiven",
-    "description": "Design tokens for Gemeente Duiven"
+    "description": "Design tokens for Gemeente Duiven",
+    "status": "source-only"
   },
   {
     "id": "duo",
     "name": "Duo",
-    "description": "Design tokens for Duo"
+    "description": "Design tokens for Duo",
+    "status": "source-only"
   },
   {
     "id": "enkhuizen",
     "name": "Gemeente Enkhuizen",
-    "description": "Design tokens for Gemeente Enkhuizen"
+    "description": "Design tokens for Gemeente Enkhuizen",
+    "status": "source-only"
   },
   {
     "id": "epe",
     "name": "Gemeente Epe",
-    "description": "Design tokens for Gemeente Epe"
+    "description": "Design tokens for Gemeente Epe",
+    "status": "source-only"
   },
   {
     "id": "groningen",
     "name": "Gemeente Groningen",
-    "description": "Design tokens for Gemeente Groningen"
+    "description": "Design tokens for Gemeente Groningen",
+    "status": "source-only"
   },
   {
     "id": "haarlem",
     "name": "Gemeente Haarlem",
-    "description": "Design tokens for Gemeente Haarlem"
+    "description": "Design tokens for Gemeente Haarlem",
+    "status": "source-only"
   },
   {
     "id": "haarlemmermeer",
     "name": "Gemeente Haarlemmermeer",
-    "description": "Design tokens for Gemeente Haarlemmermeer"
+    "description": "Design tokens for Gemeente Haarlemmermeer",
+    "status": "source-only"
   },
   {
     "id": "hoorn",
     "name": "Gemeente Hoorn",
-    "description": "Design tokens for Gemeente Hoorn"
+    "description": "Design tokens for Gemeente Hoorn",
+    "status": "source-only"
   },
   {
     "id": "horstaandemaas",
     "name": "Gemeente Horst aan de Maas",
-    "description": "Design tokens for Gemeente Horst aan de Maas"
+    "description": "Design tokens for Gemeente Horst aan de Maas",
+    "status": "source-only"
   },
   {
     "id": "leidschendam-voorburg",
     "name": "Gemeente Leidschendam Voorburg",
-    "description": "Design tokens for Gemeente Leidschendam Voorburg"
+    "description": "Design tokens for Gemeente Leidschendam Voorburg",
+    "status": "source-only"
+  },
+  {
+    "id": "leiden",
+    "name": "Gemeente Leiden",
+      "description": "Minimal Leiden theme snapshot projection; inclusion does not imply municipal endorsement.",
+    "theming": {
+      "primary_color": "#d62410"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
   },
   {
     "id": "nijmegen",
     "name": "Gemeente Nijmegen",
-    "description": "Design tokens for Gemeente Nijmegen"
+    "description": "Design tokens for Gemeente Nijmegen",
+    "status": "source-only"
   },
   {
     "id": "noaberkracht",
     "name": "Noaberkracht",
-    "description": "Design tokens for Noaberkracht"
+    "description": "Design tokens for Noaberkracht",
+    "status": "source-only"
   },
   {
     "id": "noordoostpolder",
     "name": "Gemeente Noordoostpolder",
-    "description": "Design tokens for Gemeente Noordoostpolder"
+    "description": "Design tokens for Gemeente Noordoostpolder",
+    "status": "source-only"
   },
   {
     "id": "noordwijk",
     "name": "Gemeente Noordwijk",
-    "description": "Design tokens for Gemeente Noordwijk"
+    "description": "Design tokens for Gemeente Noordwijk",
+    "status": "source-only"
   },
   {
     "id": "provincie-zuid-holland",
     "name": "Provincie Zuid-Holland",
-    "description": "Design tokens for Provincie Zuid-Holland"
+    "description": "Design tokens for Provincie Zuid-Holland",
+    "status": "source-only"
   },
   {
     "id": "riddeliemers",
     "name": "Riddeliemers",
-    "description": "Design tokens for Riddeliemers"
+    "description": "Design tokens for Riddeliemers",
+    "status": "source-only"
   },
   {
     "id": "ridderkerk",
     "name": "Ridderkerk",
-    "description": "Design tokens for Ridderkerk"
+    "description": "Design tokens for Ridderkerk",
+    "status": "source-only"
+  },
+  {
+    "id": "rijkshuisstijl",
+    "name": "Rijkshuisstijl",
+      "description": "Minimal Rijkshuisstijl Community source projection; inclusion does not imply Dutch national-government endorsement.",
+    "theming": {
+      "primary_color": "#154273"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
+  },
+  {
+    "id": "rotterdam",
+    "name": "Gemeente Rotterdam",
+      "description": "Minimal Rotterdam Design System snapshot projection; inclusion does not imply municipal endorsement.",
+    "theming": {
+      "primary_color": "#00811f"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
   },
   {
     "id": "senerawa",
     "name": "SENERAWA",
-    "description": "SENERAWA consortium identity. IBM Plex, WCAG 2.2 measured in light and dark."
+    "description": "SENERAWA palette projection with measured light and dark primary pairs.",
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
   },
   {
     "id": "stedebroec",
     "name": "Gemeente Stede Broec",
-    "description": "Design tokens for Gemeente Stede Broec"
+    "description": "Design tokens for Gemeente Stede Broec",
+    "status": "source-only"
   },
   {
     "id": "tilburg",
     "name": "Gemeente Tilburg",
-    "description": "Design tokens for Gemeente Tilburg"
+    "description": "Design tokens for Gemeente Tilburg",
+    "status": "source-only"
   },
   {
     "id": "tubbergen",
     "name": "Gemeente Tubbergen",
-    "description": "Design tokens for Gemeente Tubbergen"
+    "description": "Design tokens for Gemeente Tubbergen",
+    "status": "source-only"
+  },
+  {
+    "id": "utrecht",
+    "name": "Gemeente Utrecht",
+      "description": "Minimal Utrecht Design System snapshot projection; inclusion does not imply municipal endorsement.",
+    "theming": {
+      "primary_color": "#cc0000"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
   },
   {
     "id": "venray",
     "name": "Gemeente Venray",
-    "description": "Design tokens for Gemeente Venray"
+    "description": "Design tokens for Gemeente Venray",
+    "status": "source-only"
   },
   {
     "id": "vught",
     "name": "Gemeente Vught",
-    "description": "Design tokens for Gemeente Vught"
+    "description": "Design tokens for Gemeente Vught",
+    "status": "source-only"
   },
   {
     "id": "westervoort",
     "name": "Gemeente Westervoort",
-    "description": "Design tokens for Gemeente Westervoort"
+    "description": "Design tokens for Gemeente Westervoort",
+    "status": "source-only"
+  },
+  {
+    "id": "vng",
+    "name": "VNG (Vereniging Nederlandse Gemeenten)",
+      "description": "Minimal packaged VNG token snapshot projection; inclusion does not imply VNG endorsement.",
+    "theming": {
+      "primary_color": "#003865"
+    },
+    "status": "ready",
+    "projection": "nextcloud-core-v1"
   },
   {
     "id": "xxllnc",
     "name": "xxllnc",
-    "description": "Design tokens for xxllnc"
+    "description": "Design tokens for xxllnc",
+    "status": "source-only"
   },
   {
     "id": "zevenaar",
     "name": "Gemeente Zevenaar",
-    "description": "Design tokens for Gemeente Zevenaar"
+    "description": "Design tokens for Gemeente Zevenaar",
+    "status": "source-only"
   },
   {
     "id": "zwolle",
     "name": "Gemeente Zwolle",
-    "description": "Design tokens for Gemeente Zwolle"
+    "description": "Design tokens for Gemeente Zwolle",
+    "status": "source-only"
   }
-]
+  ]
+}

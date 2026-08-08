@@ -2,193 +2,71 @@
 sidebar_position: 1
 ---
 
-# CSS Token Architecture
+# Profile inventory and projection
 
-This document describes how NL Design System tokens are mapped to Nextcloud styling in the nldesign app.
+NL Design packages upstream-derived CSS snapshots and only exposes profiles
+that also carry a statically gated Nextcloud projection:
 
-## Three-Layer Architecture
+    upstream source vocabulary
+        -> packaged profile snapshot
+        -> minimal nldesign projection
+        -> bounded Nextcloud core variables
 
-```
-NL Design System repos          nldesign app                 Nextcloud
-(upstream source of truth)      (translation layer)          (target)
+This is semantic translation. Similar names do not establish that an NL
+Design System component and a Nextcloud component have the same role or
+states.
 
-ams.color.interactive.default   --nldesign-color-primary     --color-primary
-utrecht.color.blue.35           --nldesign-color-link        --color-primary-text
-rhc.color.lintblauw.500         --nldesign-color-header-*    #header { background }
-...                             ...                          ...
-```
+## Statuses
 
-1. **NL Design System repos** define tokens using their own namespaces (`ams.*`, `utrecht.*`, `rhc.*`)
-2. **nldesign token files** (`css/tokens/*.css`) translate those into a unified `--nldesign-*` namespace
-3. **theme.css** maps `--nldesign-*` tokens to Nextcloud's CSS variables and element styling
+`token-sets.json` is a versioned catalogue envelope. It declares its schema,
+a required null activation sentinel, and a profile list. The
+`default_profile` field may not name an organisation: every fresh installation
+stays on native Nextcloud until an administrator acts. Every
+record has an `id`, `name`, `description`, and one of these statuses:
 
-## Token Reference
+- `source-only`: inventory retained for provenance and future mapping work;
+  never administrator-selectable and may not declare Theming hints.
+- `ready`: selectable only with `projection: nextcloud-core-v1` and all four
+  required app-owned properties for primary, primary text, primary hover, and
+  font family.
 
-### Core Tokens (required for every token set)
+The current package contains 40 records and matching CSS files: 8 ready and 32
+source-only. Directory discovery cannot promote a file into the runtime
+catalogue.
 
-| Token | Purpose | Example |
-|-------|---------|---------|
-| `--nldesign-color-primary` | Interactive/accent color (buttons, links, accents) | `#004699` |
-| `--nldesign-color-primary-text` | Text on primary color | `#ffffff` |
-| `--nldesign-color-primary-hover` | Primary hover state | `#003677` |
-| `--nldesign-color-primary-light` | Light tint of primary | `#e8f0f8` |
-| `--nldesign-color-primary-light-hover` | Hover on light primary | `#d4e4f2` |
+## Namespace and ownership
 
-### Header Tokens
+- `--nldesign-*` is the app's runtime projection namespace.
+- Organisation-prefixed and NL Design System source variables remain source
+  context unless the profile explicitly derives the four required values.
+- `--color-*`, `--font-face`, user themes, core surfaces, and layout remain
+  owned by Nextcloud.
 
-| Token | Purpose | Example |
-|-------|---------|---------|
-| `--nldesign-color-header-background` | Nextcloud header bar background | `#154273` |
-| `--nldesign-color-header-text` | Text/icon color in header | `#ffffff` |
-| `--nldesign-header-icon-filter` | CSS filter for header SVG icons | `brightness(0) invert(1)` |
+There is no defaults layer. A ready profile must be internally complete for
+the values consumed by `theme.css`; it cannot inherit another organisation's
+identity by accident.
 
-The default icon filter is `brightness(0) invert(1)` (white icons). Override to `none` for light-colored headers where dark icons are needed (e.g., Amsterdam's white header).
+## Manual Theming hints
 
-### Logo and Lint/Ribbon Tokens
+Ready records may contain evidenced recommendations for `primary_color`,
+`background_color`, `logo`, and `background`. Colours must be six-digit hex.
+Assets must be contained local files in the allowlisted image directories.
+The current app displays these as manual recommendations and never mutates
+Nextcloud Theming automatically.
 
-The lint (ribbon) system follows the Rijkshuisstijl concept of `rhc.logo.image.*` tokens. A colored bar appears behind the logo **only when these tokens are defined**.
+## Adding or promoting a profile
 
-| Token | Purpose | Default (fallback) | Example (Rijkshuisstijl) |
-|-------|---------|-------------------|--------------------------|
-| `--nldesign-logo-url` | Logo image path | `none` (no logo) | `url('../../img/nederland-logo.svg')` |
-| `--nldesign-color-logo-background` | Lint/ribbon background color | `transparent` (no ribbon) | `#154273` |
-| `--nldesign-color-logo-text` | Text color on ribbon | _(unused)_ | `#ffffff` |
-| `--nldesign-size-lint` | Ribbon width in header | `0px` (no ribbon) | `48px` |
-| `--nldesign-size-lint-height` | Ribbon/bar height on login page | `0px` (no bar) | `96px` |
-| `--nldesign-logo-filter` | CSS filter applied to logo image | `none` (natural colors) | `brightness(0) invert(1)` |
+1. Add a lowercase kebab-case CSS file and matching `source-only` manifest
+   record.
+2. Record source version, transformation, rights status, and known gaps.
+3. Derive and test the four required semantic projection properties.
+4. Reduce the runtime file to the four consumed properties, change the record
+   to `ready`, add `nextcloud-core-v1`, and add only evidenced Theming hints.
+5. Run the manifest, stylesheet, PHP, packaged browser, and accessibility
+   checks.
 
-**Conditional behavior:**
-
-- **Lint tokens defined** (currently only Rijkshuisstijl): Colored ribbon behind logo, logo displayed in white (inverted), login page shows colored bar
-- **Only `--nldesign-logo-url` defined**: Logo displayed in natural/original colors, no ribbon, login page shows logo on white background
-- **Neither defined**: No logo shown, Nextcloud's default logo behavior
-
-### Text Tokens
-
-| Token | Purpose | Example |
-|-------|---------|---------|
-| `--nldesign-color-text` | Default body text | `#202020` |
-| `--nldesign-color-text-muted` | Secondary/muted text | `#767676` |
-| `--nldesign-color-text-light` | Text on dark backgrounds | `#ffffff` |
-
-### Status/Feedback Tokens
-
-| Token | Purpose |
-|-------|---------|
-| `--nldesign-color-error` | Error states |
-| `--nldesign-color-error-rgb` | RGB values for rgba() usage |
-| `--nldesign-color-error-hover` | Error hover state |
-| `--nldesign-color-warning` | Warning states |
-| `--nldesign-color-warning-rgb` | RGB values |
-| `--nldesign-color-success` | Success states |
-| `--nldesign-color-success-rgb` | RGB values |
-| `--nldesign-color-info` | Info states |
-| `--nldesign-color-info-rgb` | RGB values |
-
-### Link Tokens
-
-| Token | Purpose |
-|-------|---------|
-| `--nldesign-color-link` | Link text color |
-| `--nldesign-color-link-hover` | Link hover color |
-| `--nldesign-color-link-visited` | Visited link color |
-
-### Button Tokens
-
-| Token | Purpose |
-|-------|---------|
-| `--nldesign-color-button-primary-background` | Primary button background |
-| `--nldesign-color-button-primary-text` | Primary button text |
-| `--nldesign-color-button-primary-border` | Primary button border |
-| `--nldesign-color-button-primary-hover` | Primary button hover |
-
-### Other Tokens
-
-| Token | Purpose |
-|-------|---------|
-| `--nldesign-color-background-hover` | Hover background for elements |
-| `--nldesign-color-background-dark` | Dark variant background |
-| `--nldesign-color-background-darker` | Darker variant background |
-| `--nldesign-color-border` | Standard border color |
-| `--nldesign-color-border-dark` | Dark border color |
-| `--nldesign-color-focus` | Focus ring color (rgba) |
-| `--nldesign-color-focus-rgb` | Focus color RGB values |
-| `--nldesign-color-nav-background` | Navigation panel background |
-| `--nldesign-font-family` | Font stack |
-| `--nldesign-border-radius` | Base border radius |
-| `--nldesign-border-radius-small` | Small border radius |
-| `--nldesign-border-radius-large` | Large border radius |
-| `--nldesign-border-radius-rounded` | Rounded border radius |
-| `--nldesign-border-radius-pill` | Pill/full border radius |
-
-## Brand Color vs Interactive Color
-
-Many Dutch municipalities have **different colors** for their brand identity and their interactive elements:
-
-| Municipality | Brand/Identity | Interactive/Primary | Note |
-|-------------|---------------|-------------------|------|
-| **Amsterdam** | Red (#ec0000) | Blue (#004699) | Red is only for the logo emblem and error feedback |
-| **Utrecht** | Red (#cc0000) | Blue (#24578F) | Red is the header/brand banner, blue is for buttons/links |
-| **Den Haag** | Green (#1a7a3e) | Green (#1a7a3e) | Same color for both |
-| **Rotterdam** | Green (#00811f) | Green (#00811f) | Same color for both |
-| **Rijkshuisstijl** | Lintblauw (#154273) | Lintblauw (#154273) | Donkerblauw (#01689b) used for links |
-
-`--nldesign-color-primary` always maps to the **interactive** color, not the brand color. This is because Nextcloud's `--color-primary` drives buttons, links, and accent styling throughout the interface.
-
-The brand/identity color may appear in:
-- `--nldesign-color-header-background` (e.g., Utrecht's red header)
-- `--nldesign-color-logo-background` (lint/ribbon behind logo)
-- Municipality-specific palette variables (e.g., `--amsterdam-color-red`)
-
-## Official Sources
-
-Each token file maps values from the upstream NL Design System repositories:
-
-| Token file | Source repository | Token prefix |
-|-----------|------------------|-------------|
-| `rijkshuisstijl.css` | [nl-design-system/rijkshuisstijl-community](https://github.com/nl-design-system/rijkshuisstijl-community) | `rhc.*` |
-| `amsterdam.css` | [Amsterdam/design-system](https://github.com/Amsterdam/design-system) | `ams.*` |
-| `utrecht.css` | [nl-design-system/utrecht](https://github.com/nl-design-system/utrecht) | `utrecht.*` |
-| `denhaag.css` | [nl-design-system/denhaag](https://github.com/nl-design-system/denhaag) | `denhaag.*` |
-| `rotterdam.css` | [nl-design-system/rotterdam](https://github.com/nl-design-system/rotterdam) | `rods.*` |
-| Others | [nl-design-system/themes](https://github.com/nl-design-system/themes) | Various |
-
-## Adding a New Token Set
-
-1. **Create the CSS file** at `css/tokens/{id}.css` with all required `--nldesign-*` variables
-2. **Add metadata** to `token-sets.json`:
-   ```json
-   {
-     "id": "myorg",
-     "name": "My Organization",
-     "description": "Design tokens for My Organization"
-   }
-   ```
-3. **Optional: Add a logo** at `img/logos/{id}.svg` and set `--nldesign-logo-url` in the CSS file
-4. **Optional: Add theming metadata** to `token-sets.json` for Nextcloud theming sync:
-   ```json
-   {
-     "id": "myorg",
-     "name": "My Organization",
-     "description": "...",
-     "theming": {
-       "primary_color": "#hexcolor",
-       "background_color": "#FFFFFF",
-       "logo": "img/logos/myorg.svg"
-     }
-   }
-   ```
-5. **Optional: Add lint tokens** if the organization uses a ribbon/banner behind their logo (following the Rijkshuisstijl pattern)
-
-The admin dropdown picks up new token sets automatically from the filesystem. No PHP changes are needed.
-
-### Mapping Guidelines
-
-When translating tokens from an upstream NL Design System repo:
-
-- **`--nldesign-color-primary`** = the **interactive** color (buttons, accents), NOT the brand/logo color
-- **`--nldesign-color-header-background`** = the background of the Nextcloud top navigation bar
-- **`--nldesign-color-link`** = may differ from primary (e.g., Rijkshuisstijl uses donkerblauw for links)
-- **`--nldesign-color-error`** = map from `*.color.feedback.error` or equivalent
-- Always check the municipality's actual website to verify how colors are used in practice
-- Reference the upstream repo's component tokens to understand which palette color maps to which purpose
+The validator derives catalogue size from the manifest: every record needs one
+matching stylesheet and every stylesheet needs one record. `default_profile`
+is required and must be null; activation is instance state, never package
+policy. The validator deliberately does not hard-code today's 40/8 inventory,
+so adding or promoting a profile changes instance data rather than app logic.

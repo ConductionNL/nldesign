@@ -1,56 +1,81 @@
 # Development
 
-## Prerequisites
+## Requirements
 
-- Docker & Docker Compose
-- Node.js >= 18
+- PHP 8.2 or newer
+- Composer 2
+- a maintained Node.js 24 or 26 release
 - npm
-- A running Nextcloud instance
+- Nextcloud 32, 33, and 34 test instances for integration work
 
-## Local Development
+The repository does not prescribe a specific Docker environment or personal filesystem path.
 
-This app is developed using the [nextcloud-docker-dev](https://github.com/juliushaertl/nextcloud-docker-dev) environment. The app is volume-mounted into the Nextcloud container.
-
-```bash
-# Start the development environment
-docker compose -f openregister/docker-compose.yml up -d
-
-# Build the frontend
-cd nldesign
-npm install
-npm run dev
-```
-
-The app will be available at `http://localhost:8080/apps/nldesign`.
-
-## Frontend Build
+## Setup
 
 ```bash
-npm install          # Install dependencies
-npm run dev          # Development build (watch mode)
-npm run build        # Production build
+composer install
+npm ci --ignore-scripts
+npm run build
 ```
 
-## Product Page
+The root JavaScript build only produces bundled Fira Sans assets. Profile CSS is already compiled and validated against `token-sets.json`.
 
-The product page at [nldesign.app](https://nldesign.app) is built with [Docusaurus 3](https://docusaurus.io/) and deployed via GitHub Pages.
+## Required local gates
 
-### How it works
+```bash
+composer validate --strict
+composer check
+composer check:coverage
+composer audit --locked
 
-- The Docusaurus setup lives in the `docusaurus/` folder
-- Documentation content comes from the `docs/` folder at the project root — **not** duplicated inside `docusaurus/`
-- The Docusaurus config uses `path: '../docs'` to reference the root docs directly
-- Pushing to the `development` branch triggers the GitHub Actions workflow (`.github/workflows/documentation.yml`) which builds and deploys to the `gh-pages` branch
-- GitHub Pages serves the built site at `nldesign.app` (configured via `static/CNAME`)
+npm test
+npm run build
+npm audit --audit-level=high
+```
 
-### Local preview
+`composer check` runs PHP syntax checks, PHPCS, PHPMD, Psalm, PHPStan, and PHPUnit without masking failures. `composer check:coverage` requires PCOV or Xdebug and enforces at least 75% line coverage; reports stay under ignored `build/coverage/`. `npm test` checks architecture boundaries, the profile manifest, JavaScript syntax, and CSS.
+CI and the release-candidate workflow additionally validate `appinfo/info.xml`
+against Nextcloud's official app metadata schema.
+
+## Nextcloud integration
+
+Mount or copy the app into a test instance's `custom_apps/nldesign` directory, then run:
+
+```bash
+php occ app:enable nldesign
+```
+
+Exercise at least login, Files, admin settings, dark/high-contrast preferences, profile change, stale-save conflict, and rollback before claiming compatibility with a Nextcloud major. Local OCP analysis is not a replacement for this matrix.
+
+## Documentation site
+
+The Docusaurus site reads the root `docs/` directory.
 
 ```bash
 cd docusaurus
-npm install
-npm start            # Dev server at http://localhost:3000 with hot reload
+npm ci --ignore-scripts
+npm start
 ```
 
-### Adding documentation
+Production check:
 
-Simply add or edit Markdown files in the `docs/` folder. The sidebar is auto-generated from the folder structure. Changes will appear on the product page after pushing to `development`.
+```bash
+npm run build
+```
+
+The documentation workflow builds on supported branches and deploys only after
+an explicit workflow dispatch. Keep build-tool advisories separate from the
+distributable Nextcloud app's dependency surface and record any unresolved
+upstream advisory explicitly.
+
+## Adding or changing profiles
+
+- Treat `token-sets.json` as the catalogue contract.
+- Keep ids lowercase kebab-case and one-to-one with `css/tokens/{id}.css`.
+- Do not add arbitrary Theming keys or filesystem paths.
+- Record provenance and identity-asset rights; a colour/token implementation is not proof of official endorsement.
+- Run `npm run check:manifest` and representative visual/accessibility tests.
+
+## Runtime-state rule
+
+The installed app is immutable. Runtime code must not write CSS, uploads, generated previews, or snapshots below the app path. Small state uses app-scoped `IAppConfig`; future file data belongs in Nextcloud app data.

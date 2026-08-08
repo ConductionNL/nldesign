@@ -1,79 +1,184 @@
 name: Code Quality
 
 on:
+  push:
+    branches: [main, beta, development]
   pull_request:
-    branches: [main, master, development]
+    branches: [main, beta, development]
+
+permissions:
+  contents: read
 
 concurrency:
-  group: quality-${{ github.head_ref || github.ref }}
+  group: quality-${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  php-checks:
-    name: ${{ matrix.check.name }}
+  php:
+    name: PHP ${{ matrix.php }} quality and security
     runs-on: ubuntu-latest
-    # Matrix of 6 legs (PHP Lint, PHPCS, PHPMD, Psalm, PHPStan, PHPUnit). ONE
-    # job-level bound covers all six, so it has to clear the SLOWEST leg, not
-    # the average. Five of them are static analysis at max 4.0 min (shared PHP
-    # Quality, 1497 executions) — but the PHPUnit leg has been measured at
-    # 18.9 min WHILE SUCCEEDING elsewhere in the fleet, because a full PHPUnit
-    # run installs a Nextcloud server first. A 20-minute bound would leave that
-    # known-good duration only ~6% of headroom, which is exactly how a timeout
-    # turns a slow run into a phantom defect. 30 min instead.
-    timeout-minutes: 30
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        check:
-          - { name: "PHP Lint", command: "composer lint" }
-          - { name: "PHPCS", command: "./vendor/bin/phpcs --standard=phpcs.xml" }
-          - { name: "PHPMD", command: "./vendor/bin/phpmd lib text phpmd.xml" }
-          - { name: "Psalm", command: "./vendor/bin/psalm --threads=1 --no-cache --output-format=github" }
-          - { name: "PHPStan", command: "./vendor/bin/phpstan analyse --memory-limit=1G" }
-          - { name: "PHPUnit", command: "./vendor/bin/phpunit --colors=always" }
+        include:
+          - php: '8.2'
+            coverage: pcov
+          - php: '8.5'
+            coverage: none
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: '8.1'
-          extensions: mbstring, xml, ctype, iconv, intl, dom, filter, gd, json, posix, zip, soap
-          tools: composer:v2
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl, dom, filter, gd, json, posix, zip
+          tools: composer:2.10.2@sha256:5ee7125f8a30a34d246cefdc0bc85b8a783b28f2aec968994118512350d28027
+          coverage: ${{ matrix.coverage }}
+        env:
+          fail-fast: true
 
       - name: Install dependencies
-        run: composer install --no-progress --prefer-dist --optimize-autoloader
+        run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: ${{ matrix.check.name }}
-        run: ${{ matrix.check.command }}
-  css-quality:
-    name: CSS Quality
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Validate Nextcloud app metadata schema
+        if: matrix.php == '8.2'
+        run: |
+          SCHEMA="$RUNNER_TEMP/nextcloud-app-info.xsd"
+          curl --fail --location --proto '=https' --tlsv1.2 --max-filesize 1048576 \
+            --output "$SCHEMA" https://apps.nextcloud.com/schema/apps/info.xsd
+          # PHP, not the shell, expands variables in this single-quoted code.
+          # shellcheck disable=SC2016
+          php -r '$document = new DOMDocument(); exit($document->load("appinfo/info.xml") && $document->schemaValidate($argv[1]) ? 0 : 1);' "$SCHEMA"
+
+      - name: Audit Composer dependencies
+        run: composer audit --locked
+
+      - name: Run PHP quality suite
+        run: composer check
+
+      - name: Enforce PHP line coverage
+        if: matrix.php == '8.2'
+        run: composer check:coverage
+
+  frontend:
+    name: Node.js ${{ matrix.node }} frontend, assets, and architecture
     runs-on: ubuntu-latest
-    # Stylelint over the token CSS. The shared Vue Quality (stylelint) leg was
-    # observed at max 2.1 min across 494 executions.
-    timeout-minutes: 20
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.x', '26.x']
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ matrix.node }}
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Stylelint
-        run: npm run stylelint
+      - name: Audit all npm dependencies
+        run: npm audit --audit-level=high
+
+      - name: Validate JavaScript, CSS, architecture, and profiles
+        run: npm test
+
+      - name: Rebuild bundled assets
+        run: npm run build
+
+      - name: Verify generated assets are current
+        # `git diff --exit-code` cannot see untracked files, so a generated asset
+        # that was never committed reads as "no change". That hid the bundled
+        # fonts' OFL notice: build-fonts.js emits css/fonts/OFL-1.1.txt and
+        # validates it as required, but it was absent from source control, so a
+        # git checkout shipped the fonts with no licence. --porcelain reports
+        # modified and untracked alike.
+        run: |
+          status=$(git status --porcelain -- css/fonts css/fonts.css)
+          if [ -n "$status" ]; then
+            echo "Generated assets are not current, or are not committed:"
+            echo "$status"
+            exit 1
+          fi
+
+  ocp-contract:
+    name: Nextcloud ${{ matrix.nextcloud }} OCP contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        nextcloud: ['33', '34']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, dom, filter, gd, json, posix, zip
+          tools: composer:2.10.2@sha256:5ee7125f8a30a34d246cefdc0bc85b8a783b28f2aec968994118512350d28027
+          coverage: none
+        env:
+          fail-fast: true
+
+      - name: Resolve target OCP contract
+        run: >-
+          composer require --dev "nextcloud/ocp:^${{ matrix.nextcloud }}.0"
+          --with-all-dependencies --no-interaction --no-progress --prefer-dist
+
+      - name: Validate resolved dependencies
+        run: |
+          composer validate --strict
+          composer audit --locked
+
+      - name: Run PHP quality suite
+        run: composer check
+
+  secrets:
+    name: Repository secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install verified Gitleaks binary
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          ARCHIVE="$RUNNER_TEMP/gitleaks.tar.gz"
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            --output "$ARCHIVE" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  ${ARCHIVE}" | sha256sum --check --strict
+          tar -xzf "$ARCHIVE" -C "$RUNNER_TEMP" gitleaks
+
+      - name: Scan complete repository history
+        run: |
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose --log-opts='--all'

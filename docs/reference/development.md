@@ -2,148 +2,97 @@
 sidebar_position: 8
 ---
 
-# NL Design — Developer Guide
+# Developer reference
 
-## Branching Strategy
+Use the root DEVELOPMENT.md as the setup guide. The repository baseline is PHP
+8.2, Composer 2, a maintained Node 24 or 26 release, and npm lock-file installs.
 
-This project follows a strict promotion-based branching model. Code flows upward through environments, and each branch has rules about which source branches it accepts.
+## Local verification
 
-```
-feature/* → development → beta → main
-hotfix/*  → (any branch)
-```
+Install dependencies:
 
-### Branch Roles
+    composer install
+    npm ci --ignore-scripts
+    cd docusaurus
+    npm ci --ignore-scripts
 
-| Branch | Purpose | Accepts PRs from |
-|--------|---------|-----------------|
-| `main` | Production-ready releases | `beta`, `hotfix/*` |
-| `beta` | Pre-release testing and stabilisation | `development`, `hotfix/*` |
-| `development` | Integration of completed features | `feature/*`, `hotfix/*` |
-| `feature/*` | Individual feature work | Created from `development` |
-| `hotfix/*` | Urgent production fixes | Created from `main`, merged into any branch |
+Run the complete app checks from the repository root:
 
-### Flow Diagram
+    composer validate --strict
+    composer audit --locked
+    composer check
+    composer check:coverage
+    npm audit --audit-level=high
+    npm test
+    npm run build
 
-```mermaid
-gitGraph
-    commit id: "v1.0.0"
-    branch beta order: 1
-    commit id: "beta-start"
-    branch development order: 2
-    commit id: "dev-start"
-    branch feature/my-feature order: 3
-    commit id: "implement"
-    commit id: "tests"
-    checkout development
-    merge feature/my-feature id: "PR: feature → dev"
-    branch feature/another order: 4
-    commit id: "work"
-    checkout development
-    merge feature/another id: "PR: feature → dev" tag: "ready"
-    checkout beta
-    merge development id: "PR: dev → beta"
-    checkout main
-    merge beta id: "PR: beta → main" tag: "v1.1.0"
-    branch hotfix/critical-fix order: 5
-    commit id: "fix"
-    checkout main
-    merge hotfix/critical-fix id: "PR: hotfix → main" tag: "v1.1.1"
-    checkout beta
-    merge hotfix/critical-fix id: "PR: hotfix → beta"
-    checkout development
-    merge hotfix/critical-fix id: "PR: hotfix → dev"
-```
+Run the documentation checks from docusaurus:
 
-### Branch Policy Enforcement
+    npm run check:assets
+    npm run audit:runtime
+    npm run audit:build
+    npm run build
 
-A **Branch Policy Check** runs on every PR to `main`, `beta`, and `development`. It automatically blocks PRs from unauthorised source branches:
+composer check includes PHP syntax, coding standard, PHPMD, Psalm, PHPStan, and
+PHPUnit. composer check:coverage requires PCOV or Xdebug and enforces the 75%
+line-coverage floor used by CI and release-candidate packaging. Reports remain
+under ignored build/coverage/. npm test includes architecture-boundary,
+profile-manifest, JavaScript syntax, and stylesheet checks.
 
-- PR to `main` from `feature/x` → **blocked**
-- PR to `main` from `beta` → **allowed**
-- PR to `beta` from `feature/x` → **blocked**
-- PR to `beta` from `development` → **allowed**
-- PR to `development` from `some-random-branch` → **blocked**
-- PR to `development` from `feature/x` → **allowed**
-- PR to any branch from `hotfix/x` → **always allowed**
+## Dependency advisory boundary
 
-### Working with Hotfixes
+At the 2026-08-08 lock-file snapshot, app dependencies, Composer dependencies,
+and the generated documentation runtime have zero known advisories. A
+forced patched `serialize-javascript` 7.0.5 removes that fixable build-chain
+advisory. A scoped `sockjs` override to CommonJS-compatible `uuid` 11.1.1
+removes the development-server advisory. The full private Docusaurus graph
+still reports 18 high-severity affected package nodes, all propagated from
+Docusaurus's unfixed `image-size` parser dependency. The build audit permits
+only `GHSA-w3rx-r6r6-pgpr` and `GHSA-5p2g-fcmc-qvqq` through that dependency
+graph and fails on a new or severity-escalated finding. These packages are not
+present in the static site output dependency surface. Before Docusaurus runs,
+the asset gate rejects symlinks and AVIF, ICNS, JXL, HEIF, and HEIC inputs by
+both extension and file signature, including renamed files.
+Trusted installs disable dependency
+lifecycle scripts, CI builds only static output, and publication must never
+deploy the Docusaurus development server or its `node_modules` tree.
 
-Hotfixes bypass the normal promotion flow for urgent production issues:
+## Change boundaries
 
-1. Create `hotfix/description` from `main`
-2. Implement and test the fix
-3. Open PRs to `main`, `beta`, **and** `development` (to keep all branches in sync)
+- token-sets.json is the profile inventory; every entry needs one matching CSS
+  file, and only statically gated ready projections are selectable;
+- only lib/Infrastructure/Nextcloud/Compatibility may reference private
+  OCA\Theming classes;
+- runtime code must not mutate files below the installed app;
+- no controller may accept arbitrary app ids, config keys, or filesystem paths;
+- profile writes require the revision observed by the client;
+- do not add automatic core-Theming behavior to profile selection.
 
-## Quality Checks
+## Generated assets
 
-All PRs to `main`, `beta`, and `development` must pass these **blocking** checks before merge:
+npm run build copies the exact Fira Sans allowlist and OFL notice. Generated
+output must be unchanged after the build. Profile snapshots are maintained in
+the repository; only the 8 entries carrying the minimal projection contract
+are runtime profiles. The former unpinned nightly upstream generator is not
+part of the trusted build.
 
-| Check | Tool | Command |
-|-------|------|---------|
-| PHP Lint | `php -l` | `composer lint` |
-| PHP Coding Standards | PHPCS (Conduction standard) | `composer phpcs` |
-| PHP Mess Detection | PHPMD | `composer phpmd` |
-| PHP Code Metrics | phpmetrics (informational) | `composer phpmetrics` |
-| Stylelint | Stylelint | `npm run stylelint` |
-| Branch Policy | GitHub Actions | Automatic |
+## Continuous integration
 
-### Running Quality Checks Locally
+Code Quality runs PHP 8.2/8.5, Node 24/26, and a complete-history secret scan
+with read-only repository permissions. The PHP and release-candidate paths
+also validate `appinfo/info.xml` against Nextcloud's official live app schema.
+Documentation builds on Node 24 and 26
+and deploys only from an explicit workflow dispatch on `main`. Build Release Candidate is also
+manual: it verifies the full suite and creates a minimal unsigned artifact. It
+does not increment versions, push branches, create releases, sign with secrets,
+or publish to the App Store.
 
-Before pushing, run all checks locally to catch issues early:
+Branch Policy enforces the repository's promotion model. It is separate from
+quality and release authority.
 
-```bash
-# PHP checks
-composer phpcs          # Coding standards (auto-fix: composer cs:fix)
-composer phpmd          # Mess detection
-composer phpmetrics     # Code metrics report
+## Release discipline
 
-# Frontend checks
-npm run stylelint
-```
-
-### Auto-fixing
-
-PHPCS can automatically fix many coding standard violations:
-
-```bash
-composer cs:fix         # Auto-fix what PHPCBF can handle (~60% of issues)
-```
-
-## Getting Started
-
-### Prerequisites
-
-- PHP 8.1+
-- Composer 2.x
-- Node.js 20+
-- npm
-
-### Setup
-
-```bash
-# Install PHP dependencies
-composer install
-
-# Install frontend dependencies
-npm ci
-
-# Run the app in development mode
-npm run dev
-```
-
-### Creating a New Feature
-
-```bash
-# Start from development
-git checkout development
-git pull origin development
-
-# Create your feature branch
-git checkout -b feature/my-feature
-
-# ... implement, commit, push ...
-git push -u origin feature/my-feature
-
-# Open a PR to development
-```
+Update appinfo/info.xml in a reviewed change. Run the full suite against a
+packaged supported Nextcloud matrix. Then build a release candidate explicitly.
+Signing and publication remain human-authorized steps outside the current
+workflow until protected release environments and provenance are defined.

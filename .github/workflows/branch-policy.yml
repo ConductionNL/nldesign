@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main, beta, development]
 
+permissions: {}
+
 jobs:
   check-source-branch:
     name: Branch Policy Check
@@ -12,10 +14,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Verify source branch
+        env:
+          SOURCE: ${{ github.head_ref }}
+          TARGET: ${{ github.base_ref }}
         run: |
-          SOURCE="${{ github.head_ref }}"
-          TARGET="${{ github.base_ref }}"
-
           # hotfix/* is always allowed
           if [[ "$SOURCE" == hotfix/* ]]; then
             echo "✅ Hotfix branch '$SOURCE' is allowed to merge into '$TARGET'."

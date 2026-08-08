@@ -1,16 +1,12 @@
 parameters:
-    level: 5
+    level: 6
     paths:
         - lib
     bootstrapFiles:
-        - vendor/autoload.php
-    excludePaths:
-        - vendor
-    scanDirectories:
-        - vendor/nextcloud/ocp
-    reportUnmatchedIgnoredErrors: false
-    ignoreErrors:
-        # Nextcloud internal classes that PHPStan might not recognize
-        - '#Call to an undefined method OC::#'
-        - '#Class OC not found#'
-        - '#Access to static property \$server on an unknown class OC#'
+        - phpstan-bootstrap.php
+    stubFiles:
+        - stubs/nextcloud-theming.php
+    scanFiles:
+        - stubs/nextcloud-theming.php
+    tmpDir: build/phpstan
+    reportUnmatchedIgnoredErrors: true

@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated and third-party dependency trees"
+paths = [
+  '''(^|/)build/''',
+  '''(^|/)vendor/''',
+  '''(^|/)node_modules/''',
+]

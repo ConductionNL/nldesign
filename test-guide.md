@@ -1,48 +1,45 @@
-# NL Design — Test Guide
+# NL Design integration test guide
 
-> **Agentic testing (experimental)**: This guide is used by automated browser testing agents. Results are approximate and should be verified manually for critical findings.
+Never store test credentials in this repository. Use an isolated Nextcloud instance and obtain administrator access through the environment's secret mechanism.
 
-## App Access
+## Before browser testing
 
-- **Admin Settings**: `http://localhost:8080/settings/admin/theming` (NL Design section)
-- **Login**: admin / admin
-- **Note**: NL Design has NO user-facing app page. It is a theming system with admin settings only.
+```bash
+composer check
+npm test
+npm run build
+```
 
-## What to Test
+Record the exact Nextcloud version, PHP version, enabled apps, browser, colour scheme, and accessibility preferences.
 
-Read the feature documentation:
+## Admin flow
 
-- **Docs**: [docs/](docs/) — tokens, icons, CSS architecture, compliance, etc.
-- **Specs**: [openspec/specs/](openspec/specs/) — admin-settings, css-architecture, token-sets, theming-sync, hide-slogan, menu-labels
+1. Open **Administration settings → Theming → NL Design profiles**.
+2. Confirm the selector contains the manifest-backed catalogue and no invalid/orphan entry.
+3. Change to a profile with a primary-colour hint; verify save, revision update, preview, history, and manual hand-off content.
+4. From a second admin session, change the profile, then try saving the stale first session. Verify HTTP 409 behavior and UI resynchronization.
+5. Roll back and verify the target, new revision, and history.
+6. Deactivate the profile to native Nextcloud; verify the new revision and
+   history entry, then verify rollback can restore the profile.
 
-### Features (All Admin Settings)
+## Surface flow
 
-| Feature | Spec | What to Test |
-|---------|------|-------------|
-| Token Set Selection | token-sets | Dropdown with 39 token sets — select different ones, verify preview updates |
-| Theming Sync | theming-sync | After changing token set, sync dialog may appear — test "Update theming" and "Cancel" |
-| Hide Slogan | hide-slogan | Checkbox — toggle and verify login page slogan hides/shows |
-| Show Menu Labels | menu-labels | Checkbox — toggle and verify app sidebar shows text labels instead of icons |
-| Live Preview | admin-settings | Preview box should update colors when token set changes |
-| CSS Injection | css-architecture | After applying a theme, navigate around Nextcloud and verify styling is consistent |
+For each claimed Nextcloud major, test at least:
 
-### Testing Flow
+- login and password-reset surfaces;
+- Files and core settings;
+- one Vue-heavy app and one legacy app in the supported matrix;
+- explicit light/dark, system-following default, high-contrast, and
+  OpenDyslexic preferences;
+- narrow/mobile viewport and keyboard focus;
+- failure with a malformed stored state and a missing selected stylesheet.
 
-1. Navigate to `/settings/admin/theming`
-2. Find the "NL Design System Theme" section
-3. **Token set**: Change from current to "Amsterdam" → preview should update → note if sync dialog appears
-4. **Token set**: Change to "Rotterdam" → preview should update with different color
-5. **Hide slogan**: Toggle checkbox → navigate to login page (log out and check) → verify slogan hidden/shown
-6. **Menu labels**: Toggle checkbox → reload page → verify sidebar labels appear/disappear
-7. **Global styling**: After applying a token set, navigate to different Nextcloud pages and verify consistent theming (header color, buttons, fonts)
+Check browser console, failed asset requests, Nextcloud logs, readable focus indicators, contrast of projected pairs, clipping, and selector regressions.
 
-### Key Interactions
+## Explicitly absent
 
-- **Dropdown change**: Select different token set → preview updates → POST to server
-- **Theming sync dialog**: Modal with "Current" vs "Proposed" preview → "Update theming" or "Cancel"
-- **Checkbox toggles**: Each saves immediately on change
-- **Documentation link**: Top-right link should open nldesign.app
+Do not test an automatic Theming sync dialog, token editor, apply-token dialog, or import/export endpoint: architecture v1 does not expose them. Do inspect the read-only Nextcloud Theming hand-off.
 
-## What NOT to Test
+## Evidence
 
-This app has no ROADMAP.md — all features are implemented. Test everything.
+Store screenshots, HTTP results, and the tested version/app matrix as dated artifacts. A successful local OCP analysis or one browser session is not a release compatibility claim.

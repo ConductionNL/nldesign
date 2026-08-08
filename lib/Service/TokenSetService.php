@@ -6,7 +6,7 @@
  * @category Service
  * @package  OCA\NLDesign
  * @author   Conduction <info@conduction.nl>
- * @license  https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0-or-later
+ * @license  https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12 EUPL-1.2
  * @link     https://github.com/ConductionNL/nldesign
  */
 
@@ -14,150 +14,162 @@ declare(strict_types=1);
 
 namespace OCA\NLDesign\Service;
 
-use OCP\App\IAppManager;
+use OCA\NLDesign\Domain\Profile\ProfileCataloguePolicy;
+use OCA\NLDesign\Infrastructure\Profile\PackagedProfileFiles;
+use OCA\NLDesign\Infrastructure\Profile\ProfileCatalogueEnvelope;
+use OCA\NLDesign\Infrastructure\Profile\ProfileManifestEntryNormalizer;
 
 /**
- * Service for filesystem-based token set discovery.
- *
- * Discovers available token sets by scanning css/tokens/ directory
- * and reading token-sets.json for metadata.
+ * Discover ready profiles from the packaged profile manifest.
  */
-class TokenSetService
+final class TokenSetService implements ProfileCataloguePolicy
 {
+    private const READY_STATUS = 'ready';
 
     /**
-     * The app manager for resolving paths.
+     * Manifest cache.
      *
-     * @var IAppManager
+     * @var array<string, array<string, mixed>>|null
      */
-    private IAppManager $appManager;
+    private ?array $manifestIndex = null;
 
     /**
      * Constructor.
      *
-     * @param IAppManager $appManager The app manager for resolving paths.
+     * @param PackagedProfileFiles           $profileFiles Immutable package boundary.
+     * @param ProfileCatalogueEnvelope       $envelope     Versioned envelope decoder.
+     * @param ProfileManifestEntryNormalizer $normalizer   Profile metadata boundary.
      */
-    public function __construct(IAppManager $appManager)
-    {
-        $this->appManager = $appManager;
+    public function __construct(
+        private PackagedProfileFiles $profileFiles,
+        private ProfileCatalogueEnvelope $envelope,
+        private ProfileManifestEntryNormalizer $normalizer
+    ) {
     }//end __construct()
 
     /**
-     * Get the absolute path to the app's directory.
+     * Get all selectable ready profiles with normalized metadata.
      *
-     * @return string The app directory path.
-     */
-    private function getAppPath(): string
-    {
-        return $this->appManager->getAppPath('nldesign');
-    }//end getAppPath()
-
-    /**
-     * Get all available token sets with metadata.
-     *
-     * Scans css/tokens/ for CSS files and merges metadata from token-sets.json.
-     *
-     * @return array<array{id: string, name: string, description: string}> The available token sets.
+     * @return array<int, array<string, mixed>> Available profiles.
      */
     public function getAvailableTokenSets(): array
     {
-        $appPath      = $this->getAppPath();
-        $tokensDir    = $appPath.'/css/tokens';
-        $manifestPath = $appPath.'/token-sets.json';
-
-        // Read metadata from token-sets.json.
-        $metadata = $this->readManifest(manifestPath: $manifestPath);
-
-        // Scan filesystem for actual CSS files.
         $tokenSets = [];
-        if (is_dir($tokensDir) === true) {
-            $files = scandir($tokensDir);
-            foreach ($files as $file) {
-                if (str_ends_with($file, '.css') === true) {
-                    $id       = basename($file, '.css');
-                    $meta     = $metadata[$id] ?? null;
-                    $tokenSet = [
-                        'id'          => $id,
-                        'name'        => $meta['name'] ?? $this->formatName(id: $id),
-                        'description' => $meta['description'] ?? 'Design tokens for '.$this->formatName(id: $id),
-                    ];
-                    if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
-                        $tokenSet['theming'] = $meta['theming'];
-                    }
-
-                    $tokenSets[] = $tokenSet;
-                }
+        foreach ($this->getManifestIndex() as $id => $metadata) {
+            if ($metadata['status'] !== self::READY_STATUS
+                || $this->profileFiles->hasSafeStylesheet(profileId: $id) === false
+            ) {
+                continue;
             }
+
+            $tokenSets[] = $metadata;
         }
 
-        // Sort alphabetically by name.
-        usort($tokenSets, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
+        usort(
+            $tokenSets,
+            static function (array $left, array $right): int {
+                $nameOrder = strcasecmp(
+                    (string) $left['name'],
+                    (string) $right['name']
+                );
+
+                if ($nameOrder !== 0) {
+                    return $nameOrder;
+                }
+
+                return strcmp((string) $left['id'], (string) $right['id']);
+            }
+        );
 
         return $tokenSets;
     }//end getAvailableTokenSets()
 
     /**
-     * Check if a token set exists on the filesystem.
+     * Check whether a profile is declared and resolves to a readable stylesheet
+     * inside the app's token directory.
      *
-     * @param string $tokenSetId The token set identifier.
+     * @param string $tokenSetId Profile identifier.
      *
-     * @return bool True if the CSS file exists.
+     * @return bool Whether the profile is usable.
      */
     public function isValidTokenSet(string $tokenSetId): bool
     {
-        // Prevent path traversal.
-        if (str_contains($tokenSetId, '/') === true || str_contains($tokenSetId, '..') === true) {
+        if ($this->normalizer->isValidId(id: $tokenSetId) === false) {
             return false;
         }
 
-        $appPath = $this->getAppPath();
-        $cssFile = $appPath.'/css/tokens/'.$tokenSetId.'.css';
-
-        return file_exists($cssFile);
+        $metadata = $this->getManifestIndex()[$tokenSetId] ?? null;
+        return is_array($metadata) === true
+            && $metadata['status'] === self::READY_STATUS
+            && $this->profileFiles->hasSafeStylesheet(profileId: $tokenSetId) === true;
     }//end isValidTokenSet()
 
     /**
-     * Read the token-sets.json manifest and index by id.
+     * Get normalized metadata for a usable profile.
      *
-     * @param string $manifestPath Path to token-sets.json.
+     * @param string $tokenSetId Profile identifier.
      *
-     * @return array<string, array{name: string, description: string}> Metadata indexed by id.
+     * @return array<string, mixed>|null Profile metadata.
      */
-    private function readManifest(string $manifestPath): array
+    public function getTokenSetMetadata(string $tokenSetId): ?array
     {
-        if (file_exists($manifestPath) === false) {
-            return [];
+        if ($this->isValidTokenSet(tokenSetId: $tokenSetId) === false) {
+            return null;
         }
 
-        $content = file_get_contents($manifestPath);
-        if ($content === false) {
-            return [];
-        }
-
-        $data = json_decode($content, true);
-        if (is_array($data) === false) {
-            return [];
-        }
-
-        $indexed = [];
-        foreach ($data as $entry) {
-            if (isset($entry['id']) === true) {
-                $indexed[$entry['id']] = $entry;
-            }
-        }
-
-        return $indexed;
-    }//end readManifest()
+        return $this->getManifestIndex()[$tokenSetId] ?? null;
+    }//end getTokenSetMetadata()
 
     /**
-     * Format a kebab-case id into a display name.
+     * Load and index the manifest once per request.
      *
-     * @param string $id The kebab-case identifier.
-     *
-     * @return string The formatted display name.
+     * @return array<string, array<string, mixed>> Manifest indexed by profile id.
      */
-    private function formatName(string $id): string
+    private function getManifestIndex(): array
     {
-        return ucwords(str_replace('-', ' ', $id));
-    }//end formatName()
+        if ($this->manifestIndex !== null) {
+            return $this->manifestIndex;
+        }
+
+        $this->manifestIndex = [];
+        $content = $this->profileFiles->readManifest();
+        if ($content === null) {
+            return $this->manifestIndex;
+        }
+
+        $catalogue = $this->envelope->decode(content: $content);
+        if ($catalogue === null) {
+            return $this->manifestIndex;
+        }
+
+        $seenIds = [];
+        foreach ($catalogue['profiles'] as $entry) {
+            if (is_array($entry) === false) {
+                continue;
+            }
+
+            $entryId = $entry['id'] ?? null;
+            if (is_string($entryId) === true
+                && $this->normalizer->isValidId(id: $entryId) === true
+            ) {
+                if (isset($seenIds[$entryId]) === true) {
+                    // Duplicate package identities are ambiguous even when one
+                    // record is otherwise malformed. Fail the catalogue closed.
+                    $this->manifestIndex = [];
+                    return $this->manifestIndex;
+                }
+
+                $seenIds[$entryId] = true;
+            }
+
+            $metadata = $this->normalizer->normalize(entry: $entry);
+            if ($metadata === null) {
+                continue;
+            }
+
+            $this->manifestIndex[$metadata['id']] = $metadata;
+        }//end foreach
+
+        return $this->manifestIndex;
+    }//end getManifestIndex()
 }//end class

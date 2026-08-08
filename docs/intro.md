@@ -3,25 +3,30 @@ sidebar_position: 0
 slug: /
 ---
 
-# NL Design — User Guide
+# NL Design profiles
 
-**NL Design** is a Nextcloud app that gives your Nextcloud the look and feel of your organisation. It supports all major Dutch municipalities, provinces, and national government organisations — just pick yours from a list and you're done.
+NL Design is a pre-release Nextcloud administration app for selecting a statically gated design profile and projecting a bounded CSS contract onto Nextcloud core.
 
-![The NL Design admin settings panel, showing the Design token set dropdown and the Preview section with styled buttons](img/guide-nl-design-section.png)
+## Current scope
 
-## What you can do with it
+- Select from 8 ready projections. The package also retains 32 source-only inventory entries that cannot be activated.
+- Save profile state with revision checks, rollback, and bounded history.
+- Preview a declared primary-colour hint.
+- Read manual recommendations for selected Nextcloud Theming fields.
+- Return explicitly to native Nextcloud presentation under the same revision
+  and rollback contract.
 
-- **Apply your organisation's house style** — pick from 39 pre-built themes including Rijkshuisstijl, Gemeente Utrecht, Gemeente Amsterdam, Den Haag, Rotterdam, and many more
-- **Preview the result instantly** — the preview section updates as soon as you make a selection
-- **Fine-tune individual colours** — if the theme isn't quite right, you can adjust specific colours in the token editor without touching any code
-- **Export and import your settings** — download your customisations as a file and share them with another instance
+Profile selection does **not** automatically change settings owned by Nextcloud Theming. Architecture v1 also has no token editor, import/export workflow, or apply dialog.
+The former login-slogan and app-menu-label selector experiments are retired and
+are not configurable features.
 
-## Who should read this guide
+## Evidence and identity
 
-This guide is for **Nextcloud administrators** who want to apply their organisation's branding. You don't need any technical knowledge — if you can log in to Nextcloud's admin panel, you can use NL Design.
+The catalogue is an inventory, not a claim that every source is official, complete, endorsed, legally usable for every operator, or verified across every Nextcloud app. Even `ready` means only that the bounded projection contract is present; organisational identity rights and release compatibility evidence remain separate from the app's EUPL-1.2 code licence.
 
-## Where to start
+## Start here
 
-1. **[Install the app](/docs/getting-started/installation)** — takes about a minute via the Nextcloud App Store
-2. **[Choose your theme](/docs/getting-started/configuration)** — select your organisation from the dropdown and save
-3. **[Fine-tune if needed](/docs/features/token-editor)** — optionally adjust individual colours using the token editor
+1. [Install a source or packaged build](getting-started/installation.md).
+2. [Select and verify a profile](getting-started/configuration.md).
+3. Read the [current feature ledger](feature-ledger.md) before relying on a capability in production.
+4. Use the [architecture](architecture.md) and [roadmap](roadmap.md) for development decisions.

@@ -1,177 +1,129 @@
 ---
 status: reviewed
-reviewed_date: 2026-02-28
+reviewed_date: 2026-08-08
 ---
 
-# Token Sets Specification
+# Profile Catalogue Specification
 
-## Purpose
-Defines how the NL Design app discovers, validates, stores, and serves design token sets. Token sets are organization-specific CSS files that override default Rijkshuisstijl design tokens, enabling Dutch government organizations to apply their own visual identity to Nextcloud. The system uses filesystem-based discovery combined with a JSON manifest for metadata.
+## REQ-PROFILE-001: Manifest-backed catalogue
 
-## Requirements
+The package inventory MUST originate from `token-sets.json`. Every record MUST
+have one matching bounded regular CSS file inside `css/tokens`. Filesystem
+discovery MUST NOT create runtime profiles.
 
-### REQ-TSET-001: Filesystem-Based Discovery
-The app MUST discover available token sets by scanning the `css/tokens/` directory for CSS files and merging metadata from `token-sets.json`.
+Only status `ready` with projection `nextcloud-core-v1` MAY be administrator-
+selectable. Status `source-only` MUST remain unavailable and MUST NOT declare
+Theming hints.
 
-#### Scenario: Token sets discovered from filesystem
-- GIVEN the nldesign app is installed
-- AND the `css/tokens/` directory contains CSS files (e.g. `rijkshuisstijl.css`, `amsterdam.css`)
-- WHEN `TokenSetService::getAvailableTokenSets()` is called
-- THEN each `.css` file in `css/tokens/` MUST produce a token set entry
-- AND each entry MUST have an `id` derived from the filename without extension
-- AND each entry MUST have a `name` and `description`
+## REQ-PROFILE-002: Release integrity
 
-#### Scenario: Metadata merged from manifest
-- GIVEN `token-sets.json` exists and contains an entry with `id: "amsterdam"`
-- AND `css/tokens/amsterdam.css` exists on the filesystem
-- WHEN the available token sets are retrieved
-- THEN the entry for `amsterdam` MUST use the `name` from the manifest ("Gemeente Amsterdam")
-- AND the entry MUST use the `description` from the manifest
-- AND if the manifest entry has a `theming` object, it MUST be included in the response
+The release validator MUST derive the inventory size from the manifest and
+require a one-to-one record/stylesheet mapping and at least one ready profile.
+The token directory MUST contain no other files, directories, or symlinks.
+The required `default_profile` field MUST be null so package data cannot
+activate an organisation. The validator MUST reject
+duplicates, malformed ids or metadata, inconsistent status/projection,
+unsupported hints, invalid values, missing assets, and orphan files. Ready
+stylesheets MUST contain only the four consumed properties, stay at or below
+ten declarations and 32 KiB, contain no CSS escapes, and pass 4.5:1
+primary/text and hover/text checks in each supplied mode. The only permitted
+at-rule is `@media (prefers-color-scheme: dark)`, and it MAY contain only the
+`[data-theme-default]` fallback paired with an explicit `[data-theme-dark]`
+projection. Those two dark branches MUST override all three projected colours
+with the same resolved values. Ready projections MUST contain no URLs; profile
+assets remain separate manifest fields. It MUST NOT encode the current
+catalogue count in application or validation logic.
 
-#### Scenario: CSS file exists without manifest entry
-- GIVEN a file `css/tokens/custom-org.css` exists
-- AND `token-sets.json` does NOT contain an entry with `id: "custom-org"`
-- WHEN the available token sets are retrieved
-- THEN the entry MUST still be returned
-- AND the `name` MUST be auto-generated from the id using `ucwords(str_replace('-', ' ', $id))` (e.g. "Custom Org")
-- AND the `description` MUST default to "Design tokens for Custom Org"
+## REQ-PROFILE-003: Path and resource safety
 
-#### Scenario: Manifest entry exists without CSS file
-- GIVEN `token-sets.json` contains an entry with `id: "phantom-org"`
-- AND `css/tokens/phantom-org.css` does NOT exist
-- WHEN the available token sets are retrieved
-- THEN the `phantom-org` entry MUST NOT appear in the results
+Identifiers MUST match bounded lowercase kebab case. Traversal, separators,
+uppercase ids, symlinks, path escapes, unreadable files, oversized files, and
+non-allowlisted asset types MUST be rejected using resolved paths and file
+metadata rather than string concatenation alone.
 
-#### Scenario: Token sets sorted alphabetically
-- GIVEN multiple token sets are discovered
-- WHEN the list is returned
-- THEN the token sets MUST be sorted alphabetically by `name` (case-insensitive)
+## REQ-PROFILE-004: Metadata boundary
 
-### REQ-TSET-002: Token Set Manifest Structure
-The `token-sets.json` manifest MUST follow a defined schema for each entry.
+Runtime metadata MUST contain normalized id, name, description, source, status,
+and projection. Optional ready-profile Theming hints MUST be limited to
+six-digit hexadecimal `primary_color` and `background_color`, plus contained
+local `logo` and `background` files in the approved directories. Unknown or
+malformed optional metadata MUST not be exposed.
+Duplicate valid identifiers MUST make the runtime catalogue unavailable rather
+than select one declaration by order.
 
-#### Scenario: Manifest entry with theming metadata
-- GIVEN a manifest entry for an organization
-- WHEN the entry is valid
-- THEN it MUST have a `id` field (string, kebab-case identifier matching the CSS filename)
-- AND it MUST have a `name` field (string, human-readable display name)
-- AND it MUST have a `description` field (string)
-- AND it MAY have a `theming` object with optional keys: `primary_color` (hex), `background_color` (hex), `logo` (relative path)
+## REQ-PROFILE-005: Revisioned and locked publication
 
-#### Scenario: Manifest is malformed JSON
-- GIVEN `token-sets.json` contains invalid JSON
-- WHEN `readManifest()` is called
-- THEN it MUST return an empty array
-- AND the system MUST still discover token sets from the filesystem (without metadata)
+Canonical state MUST be stored through app-scoped `IAppConfig`. Publication,
+deactivation, and rollback MUST require a syntactically valid expected revision
+and MUST perform compare-and-write while holding an exclusive Nextcloud lock.
+After acquiring the lock and before reading canonical state, the implementation
+MUST clear Nextcloud's public app-config cache.
 
-#### Scenario: Manifest is missing
-- GIVEN `token-sets.json` does not exist
-- WHEN `readManifest()` is called
-- THEN it MUST return an empty array
-- AND the system MUST still discover token sets with auto-generated names
+### Scenario: current revision
 
-### REQ-TSET-003: Active Token Set Storage
-The active token set MUST be stored in Nextcloud's `IConfig` and default to `rijkshuisstijl`.
+- GIVEN the submitted revision matches canonical state under the lock
+- WHEN a different ready profile is published
+- THEN canonical state MUST be written first
+- AND a new opaque revision and previous snapshot MUST be returned
+- AND compatibility mirrors and bounded history MAY be attempted afterward.
 
-#### Scenario: No token set configured
-- GIVEN no value has been set for `nldesign:token_set` in IConfig
-- WHEN the active token set is queried
-- THEN the default value MUST be `rijkshuisstijl`
+### Scenario: stale or absent revision
 
-#### Scenario: Token set persisted via API
-- GIVEN an admin selects the `utrecht` token set
-- WHEN `POST /settings/tokenset` is called with `tokenSet=utrecht`
-- THEN `IConfig::setAppValue('nldesign', 'token_set', 'utrecht')` MUST be called
-- AND the response MUST be JSON with `{"status": "ok", "tokenSet": "utrecht"}`
+- GIVEN the revision is stale, malformed, or absent
+- WHEN publication or rollback is requested
+- THEN the request MUST fail without changing canonical state.
 
-#### Scenario: Token set retrieved via API
-- GIVEN the active token set is `amsterdam`
-- WHEN `GET /settings/tokenset` is called
-- THEN the response MUST be JSON with `{"tokenSet": "amsterdam"}`
+### Scenario: unavailable lock
 
-### REQ-TSET-004: Token Set Validation
-The app MUST validate that a token set is valid before accepting it as the active set.
+- GIVEN the exclusive lock cannot be acquired
+- WHEN publication or rollback is requested
+- THEN no state MUST change
+- AND the route MUST report temporary unavailability.
 
-#### Scenario: Valid token set selected
-- GIVEN `css/tokens/utrecht.css` exists on the filesystem
-- WHEN `setTokenSet("utrecht")` is called
-- THEN `isValidTokenSet("utrecht")` MUST return `true`
-- AND the token set MUST be stored in IConfig
+### Scenario: unavailable cache refresh
 
-#### Scenario: Invalid token set rejected
-- GIVEN `css/tokens/nonexistent.css` does NOT exist
-- WHEN `setTokenSet("nonexistent")` is called
-- THEN `isValidTokenSet("nonexistent")` MUST return `false`
-- AND the API MUST return HTTP 400 with `{"error": "Invalid token set"}`
-- AND IConfig MUST NOT be updated
+- GIVEN the lock is acquired but the app-config cache cannot be refreshed
+- WHEN publication or rollback is requested
+- THEN canonical state MUST not be read or changed
+- AND the route MUST report temporary unavailability.
 
-#### Scenario: Path traversal prevented
-- GIVEN a malicious token set id containing `../` or `/`
-- WHEN `isValidTokenSet("../../etc/passwd")` is called
-- THEN it MUST return `false`
-- AND the filesystem MUST NOT be accessed outside `css/tokens/`
+### Scenario: auxiliary failure
 
-### REQ-TSET-005: Token Set CSS Structure
-Each token set CSS file MUST define organization-specific `--nldesign-*` variables on `:root`.
+- GIVEN canonical publication succeeds
+- AND a compatibility mirror or history write fails
+- THEN canonical state MUST remain active
+- AND each auxiliary failure MUST be logged independently.
 
-#### Scenario: Complete token set
-- GIVEN a token set like `rijkshuisstijl.css`
-- WHEN loaded after `defaults.css`
-- THEN it MUST override `--nldesign-color-primary` with the organization's primary color
-- AND it MUST override `--nldesign-color-primary-text` for accessible text on the primary color
-- AND it MAY override any other `--nldesign-*` variable defined in `defaults.css`
+### Scenario: corrupt or incomplete canonical state with stale fragments
 
-#### Scenario: Incomplete token set (partial overrides)
-- GIVEN a token set that only defines `--nldesign-color-primary` and `--nldesign-color-primary-text`
-- WHEN loaded after `defaults.css`
-- THEN all undefined tokens MUST fall back to the Rijkshuisstijl defaults from `defaults.css`
-- AND the application MUST render correctly with the partial overrides
+- GIVEN the canonical state key exists but cannot produce one complete active
+  id/revision pair
+- AND the legacy mirror names a profile
+- WHEN profile state is read
+- THEN the legacy mirror MUST be ignored
+- AND any partial rollback snapshot MUST be ignored
+- AND native Nextcloud MUST be returned with a deterministic recovery revision.
 
-#### Scenario: Token set with logo
-- GIVEN a token set defines `--nldesign-logo-url: url('../img/logos/amsterdam.svg')`
-- WHEN the theme is rendered
-- THEN the logo MUST be displayed in the header and login page via `background-image`
-- AND the logo MUST be sized and positioned using `--nldesign-logo-center` and related variables
+Canonical state and history JSON MUST be bounded before decoding. Oversized
+canonical state MUST follow the same native fallback, and oversized history
+MUST be ignored.
 
-### REQ-TSET-006: Token Sets API Endpoints
-The app MUST expose admin-only API endpoints for managing token sets.
+## REQ-PROFILE-006: Authorized administration
 
-#### Scenario: List all available token sets
-- GIVEN the admin is authenticated
-- WHEN `GET /apps/nldesign/settings/tokensets` is called
-- THEN the response MUST be JSON with `{"tokenSets": [...]}` containing all discovered token sets
-- AND each token set object MUST have `id`, `name`, `description` fields
-- AND token sets with theming metadata MUST include the `theming` object
+Every state and history action MUST carry the `AuthorizedAdminSetting`
+attribute for the NL Design delegated setting. Profile id and revision MUST be
+validated before any write. Actor and stored text fields MUST be bounded and
+must reject control characters.
 
-#### Scenario: Get current token set
-- GIVEN the admin is authenticated
-- WHEN `GET /apps/nldesign/settings/tokenset` is called
-- THEN the response MUST be JSON with `{"tokenSet": "<current-id>"}`
+## REQ-PROFILE-007: Ordered, fail-open rendering
 
-#### Scenario: Set active token set
-- GIVEN the admin is authenticated
-- AND the token set `denhaag` exists
-- WHEN `POST /apps/nldesign/settings/tokenset` is called with `tokenSet=denhaag`
-- THEN the response MUST be JSON with `{"status": "ok", "tokenSet": "denhaag"}`
-- AND the active token set MUST be updated in IConfig
+Normal and login templates MUST load fonts, the active ready profile, and theme
+in that order. The catalogue default MUST be present and null, and fresh state
+MUST initialize native Nextcloud.
+Unavailable stored state MUST emit no profile CSS and preserve native
+Nextcloud. Read or injection failure MUST be logged and MUST NOT abort the
+Nextcloud response. Activation MUST NOT modify Nextcloud Theming settings or
+package files.
 
-#### Scenario: Non-admin access denied
-- GIVEN a non-admin user is authenticated
-- WHEN any `/settings/tokenset` or `/settings/tokensets` endpoint is called
-- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
-
-### REQ-TSET-007: Token Set Count and Coverage
-The app MUST support at minimum the documented set of organizations. As of 2026-02-28, there are 39 token sets and 39 manifest entries.
-
-#### Scenario: All required token sets present
-- GIVEN the nldesign app is installed
-- WHEN the `css/tokens/` directory is scanned
-- THEN it MUST contain CSS files for at least: rijkshuisstijl, amsterdam, utrecht, rotterdam, denhaag
-- AND the total number of CSS files in `css/tokens/` MUST match the number of entries in `token-sets.json`
-
-#### Scenario: Token set count matches manifest
-- GIVEN the `token-sets.json` manifest lists N entries
-- WHEN the `css/tokens/` directory is scanned
-- THEN each manifest entry MUST have a corresponding CSS file
-- AND conversely, each CSS file SHOULD have a corresponding manifest entry (files without manifest entries receive auto-generated names)
+Explicit deactivation MUST transition to native Nextcloud under the same lock,
+revision, history, and rollback contract as profile activation.

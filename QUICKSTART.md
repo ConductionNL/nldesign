@@ -1,178 +1,61 @@
-# Quick Start Guide - NL Design System for Nextcloud
+# Quick start
 
-## ⚡ 5-Minute Setup
+This guide is for a source checkout. It assumes a Nextcloud 32–34 test instance and administrator access.
 
-### 1. Installation (Already Done!)
-
-The nldesign app is already in your apps-extra directory.
-
-### 2. Install Fonts
+## 1. Prepare the app
 
 ```bash
-cd /home/rubenlinde/nextcloud-docker-dev/workspace/server/apps-extra/nldesign
-npm install
+cd /path/to/nextcloud/custom_apps/nldesign
+composer install
+npm ci --ignore-scripts
+npm run build
 ```
 
-✅ This installs Fira Sans fonts from `@fontsource/fira-sans`
+The build copies eight pinned Fira Sans files into `css/fonts/`. It fails if the package or an expected file is missing.
 
-### 3. Enable in Nextcloud
+## 2. Enable it
 
 ```bash
-docker exec -u 33 nextcloud php occ app:enable nldesign
+php /path/to/nextcloud/occ app:enable nldesign
 ```
 
-Or via web UI: Settings → Apps → search "nldesign" → Enable
+For Docker, run the same `occ app:enable nldesign` command in the Nextcloud container as the web-server user.
 
-### 4. Configure Theme
+## 3. Select a profile
 
-1. Login to Nextcloud: http://localhost:8080
-2. Go to: **Settings → Administration → Theming**
-3. Scroll to: **NL Design System Theme** section
-4. Select your organization (Rijkshuisstijl, Utrecht, etc.)
-5. Reload the page
+1. Sign in as an administrator.
+2. Open **Administration settings → Theming**.
+3. Find **NL Design profiles**.
+4. Leave **Native Nextcloud** selected or choose one of the ready profiles. Source-only inventory entries are not shown.
 
-### 5. Set Background Color (Important!)
+The selection is saved immediately. Reload another page to verify the runtime styles. If another administrator changed the profile concurrently, the page rejects the stale save and reloads current state.
 
-The NL Design app does not set a background color automatically. You must configure it in Nextcloud's theming:
+The app starts in the native state and does not implicitly apply Rijkshuisstijl
+or another organisation's profile. Returning to **Native Nextcloud** is a
+revision-checked transition and can be rolled back like a profile change.
 
-1. Stay in: **Settings → Administration → Theming** (Nextcloud's main section)
-2. Scroll to: **Background and color** section
-3. Click on **Color** and enter the background color for your token set:
+## 4. Treat Nextcloud Theming separately
 
-| Token Set | Primary Color | Background Color |
-|-----------|--------------|------------------|
-| **Rijkshuisstijl** | `#154273` (blue) | `#F5F6F7` (light gray) |
-| **Utrecht** | `#CC0000` (red) | `#FFFFFF` (white) |
-| **Amsterdam** | `#EC0000` (red) | `#FFFFFF` (white) |
-| **Den Haag** | `#1A7A3E` (green) | `#FFFFFF` (white) |
-| **Rotterdam** | `#00811F` (green) | `#FFFFFF` (white) |
+The **Nextcloud Theming hand-off** panel is read-only. When a profile declares recommendations such as a primary colour, copy them manually only if they match the instance's identity policy.
 
-4. **Click on Background image** → Select **Remove background image**
-5. Save changes
+Profile activation does not change Nextcloud's logo, background, email branding, mobile-client branding, or other Theming-owned state.
 
-**Note**: Primary colors are set automatically by NL Design when you select a token set. Only the background color needs manual configuration.
+## 5. Verify
 
-🎉 **Done!** Your Nextcloud now uses Dutch government design styling with professional Fira Sans typography and correct colors.
+- In browser developer tools, font requests should resolve under `/apps/nldesign/css/fonts/`, not a third-party CDN.
+- `data-current-token-set` and the revision shown on the settings page should update after a successful save.
+- **Roll back to previous profile** should become available after the first actual profile change.
+- `php occ config:app:get nldesign token_set` should show the compatibility mirror of the active profile, or an empty value for native Nextcloud.
 
-## 🎨 Token Sets Available
+## Troubleshooting
 
-| Token Set | Primary Color | Background | Best For |
-|-----------|--------------|------------|----------|
-| **Rijkshuisstijl** | `#154273` (blue) | `#F5F6F7` | National government |
-| **Utrecht** | `#CC0000` (red) | `#FFFFFF` | Municipality |
-| **Amsterdam** | `#EC0000` (red) | `#FFFFFF` | Municipality |
-| **Den Haag** | `#1A7A3E` (green) | `#FFFFFF` | Municipality |
-| **Rotterdam** | `#00811F` (green) | `#FFFFFF` | Municipality |
+Run the local gates first:
 
-## ✅ What You Get
-
-- ✅ Professional Fira Sans typography
-- ✅ Official Dutch government colors
-- ✅ Sharp corners (Rijkshuisstijl) or rounded (municipalities)
-- ✅ Configurable background colors via Nextcloud theming
-- ✅ WCAG AA accessible
-- ✅ Responsive design
-- ✅ No build required
-
-## 🔍 Verify Installation
-
-### Check Fonts Are Loading
-
-1. Open Nextcloud in browser
-2. Open DevTools (F12)
-3. Go to **Network** tab
-4. Filter by "font"
-5. Reload page
-6. Should see: `fira-sans-latin-*.woff2` from `cdn.jsdelivr.net`
-
-### Check Theme Applied
-
-1. Inspect any text element
-2. In Computed styles, look for `font-family`
-3. Should start with: `"Fira Sans"`
-
-## 🛠️ Troubleshooting
-
-### Fonts Not Loading?
-
-**Check:**
 ```bash
-cd nldesign
-ls -la node_modules/@fontsource/fira-sans/
+composer check
+npm test
 ```
 
-Should show the installed package.
+If the catalogue is empty, run `npm run check:manifest` and confirm each manifest id has a matching readable `css/tokens/{id}.css` file. If styles appear stale, hard-reload the browser and inspect Nextcloud's application log for an `NL Design styles could not be attached` warning.
 
-**Fix:**
-```bash
-npm install
-```
-
-### Theme Not Changing?
-
-**Clear cache:**
-```bash
-docker exec -u 33 nextcloud php occ maintenance:repair
-```
-
-**Or manually:** Settings → Administration → Theming → "Reset to defaults" → Try again
-
-### Colors Wrong?
-
-1. Check which token set is selected in NL Design settings
-2. **Check background color** in Nextcloud Theming settings:
-   - Should be `#F5F6F7` for Rijkshuisstijl
-   - Should be `#FFFFFF` for other token sets
-   - Background image should be removed
-3. Hard reload browser (Ctrl+Shift+R)
-4. Clear Nextcloud cache
-
-## 📖 Full Documentation
-
-- `README.md` - Complete guide with architecture
-- `IMPLEMENTATION.md` - Technical details
-- `COMPLIANCE.md` - Rijkshuisstijl checklist
-- `ASSETS.md` - Font & asset guide
-- `SUMMARY.md` - What we implemented
-
-## 🚀 Next Steps
-
-1. **Test all token sets** - Switch between organizations to see different styles
-2. **Verify on mobile** - Check responsive design
-3. **Test accessibility** - Use keyboard navigation, screen readers
-4. **Customize** (optional) - Edit `css/tokens/*.css` to fine-tune colors
-
-## 💡 Pro Tips
-
-- **Best performance**: Fonts load from CDN (fast, cached)
-- **No build needed**: Just CSS, works immediately
-- **Easy updates**: `git pull && npm install`
-- **Switchable**: Change themes without reloading app
-
-## ⚖️ Legal & Compliance
-
-✅ **Fully open source** - No proprietary assets
-✅ **No permission needed** - Fira Sans is free (SIL OFL 1.1)
-✅ **95% Rijkshuisstijl compliant** - Using official alternatives
-✅ **Safe for production** - No legal restrictions
-
-## 🎯 Common Use Cases
-
-### For Demonstrations
-Select **Rijkshuisstijl** - The official government blue theme
-
-### For Municipalities
-Select your city (Utrecht, Amsterdam, etc.) for local branding
-
-### For Development
-Switch between themes to test responsive design
-
-## 🔗 Quick Links
-
-- [NL Design System](https://nldesignsystem.nl/)
-- [Fira Sans Font](https://github.com/mozilla/Fira)
-- [Rijkshuisstijl Community](https://github.com/nl-design-system/rijkshuisstijl-community)
-
----
-
-**That's it!** You now have a professional Dutch government design system running in Nextcloud with open-source fonts and full compliance. 🇳🇱
+Do not edit or write runtime state into the installed app directory. Profile state belongs in Nextcloud app configuration; generated or uploaded assets belong in app data when those features are implemented.

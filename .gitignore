@@ -19,3 +19,7 @@ Thumbs.db
 
 # Nextcloud
 .htaccess
+
+# Operator skills symlinked in from the private infra repo. Machine-local
+# absolute paths — never commit these to a public repository.
+.claude/skills/

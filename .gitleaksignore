@@ -1,0 +1,5 @@
+# Historical localhost examples use the documented admin:admin test fixture.
+48059681f16a991251729adb2fab0f2756ca45a2:openspec/changes/theme-switchable-iconography/tasks.md:curl-auth-user:97
+48059681f16a991251729adb2fab0f2756ca45a2:openspec/changes/theme-switchable-iconography/tasks.md:curl-auth-user:99
+f35920064df69c45df33b3d2d99c8748b44b0c92:openspec/changes/theming-capability-api/tasks.md:curl-auth-user:62
+4b233f6f0b2226e2c46444e447c5891549921711:.forgejo/workflows/tests-live.yml:curl-auth-user:193

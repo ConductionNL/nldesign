@@ -2,68 +2,48 @@
 sidebar_position: 2
 ---
 
-# 7-Layer CSS Architecture
+# Bounded CSS projection
 
-NL Design uses a layered CSS architecture to translate NL Design System tokens into Nextcloud styling. Each layer serves a specific purpose and is loaded in a strict order.
+The load-bearing runtime adds one explicit three-layer cascade to normal and
+login templates:
 
-## Layer Overview
-
-```mermaid
-graph TD
-    A["1. Fonts"] --> B["2. Defaults"]
-    B --> C["3. Token Set"]
-    C --> D["4. Utrecht Bridge"]
-    D --> E["5. Theme"]
-    E --> F["6. Overrides"]
-    F --> G["7. Element Overrides"]
+```text
+fonts
+  -> tokens/validated-ready-profile
+  -> theme
 ```
 
-## Layers in Detail
+`RuntimeStylesheetPlan` owns this order and has unit coverage. The template
+listener validates the active profile before forming a stylesheet name and
+fails open if state or style planning cannot be read.
 
-### Layer 1: Fonts (`css/fonts.css`)
+## Responsibilities
 
-Loads the **Fira Sans** font family — an open-source alternative to the proprietary RijksoverheidSansWebText. Defines `@font-face` declarations for regular, italic, bold, and bold-italic weights.
+| Layer | Purpose |
+| --- | --- |
+| fonts | Four local Fira Sans faces in WOFF and WOFF2 |
+| profile | A reviewed `nextcloud-core-v1` projection in the app namespace |
+| theme | Map font and primary interaction roles to Nextcloud core custom properties |
 
-### Layer 2: Defaults (`css/defaults.css`)
+The projection uses only root and body theme-state guards; it contains no
+component or structural Nextcloud selectors. The retired login-footer and
+app-menu experiments are not loaded. Selector-based surface adaptations require
+a separate compatibility contract and packaged browser evidence.
 
-Defines **all** `--nldesign-*` CSS variables with their default (Rijkshuisstijl) values. This layer ensures every variable has a value, even if the active token set doesn't define it. Incomplete token sets gracefully fall back to these defaults.
+## Accessibility ownership
 
-### Layer 3: Token Set (`css/tokens/{org}.css`)
+The font mapping does not override Nextcloud's explicit OpenDyslexic theme.
+The colour mapping does not run for explicit light or dark high-contrast
+themes, or when the operating system requests more contrast. Nextcloud keeps
+ownership of dark-mode derivation, page surfaces, layout, images, and all
+other framework variables.
 
-The organization-specific overrides. Each token set only needs to define the variables that differ from the defaults. For example, `amsterdam.css` overrides the primary color to `#004699` but inherits the default border radius.
+## Evidence limits
 
-### Layer 4: Utrecht Bridge (`css/utrecht-bridge.css`)
-
-Maps `--utrecht-*` component tokens to `--nldesign-component-*` variables. This temporary bridge layer exists because some NL Design System components use the Utrecht namespace. It will be removed once upstream namespaces are aligned.
-
-### Layer 5: Theme (`css/theme.css`)
-
-The core mapping layer. Maps `--nldesign-*` tokens to Nextcloud-specific CSS selectors and variables. This is where design tokens become actual styling — for example, `--nldesign-color-primary` is applied to Nextcloud's `--color-primary` variable.
-
-### Layer 6: Overrides (`css/overrides.css`)
-
-Maps Nextcloud's `--color-*` CSS variables to their `--nldesign-*` equivalents. Handles the complete set of 102 Nextcloud CSS variables, mapping 49 of them to NL Design tokens.
-
-### Layer 7: Element Overrides (`css/element-overrides.css`)
-
-Low-level element styling that can't be achieved through CSS variables alone. Targets specific Nextcloud HTML elements and class names (e.g., header background, button styles, link colors).
-
-## Why Layers Matter
-
-The order is critical:
-
-- **Defaults before token sets** ensures incomplete themes still work
-- **Token sets before theme** ensures organization-specific values are picked up
-- **Theme before overrides** ensures Nextcloud variables use the correct token values
-- **Element overrides last** ensures direct styling takes precedence
-
-Changing the load order can cause visual bugs where defaults override organization-specific values or where Nextcloud variables don't pick up token changes.
-
-## Optional Layers
-
-Two additional CSS files are conditionally loaded based on admin settings:
-
-- `css/hide-slogan.css` — Hides the login page tagline (when "Hide slogan" is enabled)
-- `css/show-menu-labels.css` — Shows text labels in the app sidebar (when "Show menu labels" is enabled)
-
-These are loaded after the 7 core layers.
+The quality gate rejects generated Vue scope hashes, remote profile assets,
+unresolved source placeholders, unsafe CSS constructs, and profiles that lack
+the required projection properties. It also rejects unconsumed ready-profile
+properties and measures the supplied light/dark primary pairs at 4.5:1. Static
+checks do not prove visual,
+accessibility, browser, app, or Nextcloud-major compatibility; those claims
+need packaged integration evidence.

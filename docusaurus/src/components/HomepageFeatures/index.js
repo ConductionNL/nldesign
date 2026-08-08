@@ -4,42 +4,42 @@ import styles from './styles.module.css';
 
 const FeatureList = [
   {
-    title: '39 Token Sets',
+    title: '40 Profile Snapshots',
     description: (
       <>
-        Pre-configured themes for Dutch municipalities, provinces, and national government. From Rijkshuisstijl to Amsterdam, Utrecht, Den Haag, and 35 more.
+        Eight statically gated projections are selectable; the other 32 records remain source-only.
       </>
     ),
   },
   {
-    title: '7-Layer CSS Architecture',
+    title: '3-Layer Bounded Cascade',
     description: (
       <>
-        Layered CSS system that translates NL Design System tokens into Nextcloud styling. Incomplete token sets gracefully fall back to defaults.
+        Local fonts, one complete selected projection, and a small semantic mapping—with no cross-profile fallback.
       </>
     ),
   },
   {
-    title: 'Government Compliant',
+    title: 'Evidence First',
     description: (
       <>
-        WCAG AA accessible and compliant with Dutch government design standards including Rijkshuisstijl guidelines.
+        Provenance, identity rights, accessibility, and Nextcloud compatibility are tracked as separate evidence—not inferred from a profile name.
       </>
     ),
   },
   {
-    title: 'One-Click Configuration',
+    title: 'Revision-Checked Changes',
     description: (
       <>
-        Select your organization from a dropdown in admin settings. Primary color, background, and logo sync automatically.
+        Profile updates reject stale administrator writes and retain rollback context plus bounded history.
       </>
     ),
   },
   {
-    title: 'App Compatible',
+    title: 'Scoped Runtime',
     description: (
       <>
-        Works with all Nextcloud apps that use standard CSS variables. No changes needed in other apps for theming to apply.
+        Public Nextcloud APIs power the profile path. Private Theming integration remains isolated, optional, and currently unregistered.
       </>
     ),
   },
@@ -47,7 +47,7 @@ const FeatureList = [
     title: 'Open Source',
     description: (
       <>
-        Built on the NL Design System community. Token sets sourced from official government design repositories. AGPL-3.0 licensed.
+        App code is EUPL-1.2 and Fira Sans is self-hosted under SIL OFL 1.1. Identity rights remain separate.
       </>
     ),
   },

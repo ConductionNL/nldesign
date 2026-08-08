@@ -2,80 +2,53 @@
 sidebar_position: 6
 ---
 
-# App Compatibility
+# App compatibility
 
-This guide explains how Nextcloud app developers can ensure their apps work correctly when NL Design is active.
+NL Design can influence another Nextcloud app only where that app consumes a
+Nextcloud custom property or markup selector that this projection reaches.
+Compatibility is therefore a tested relationship between versions, not an
+automatic consequence of using Nextcloud or Vue.
 
-## Key Principles
+## Guidance for app authors
 
-### Use Nextcloud's CSS Variables
-
-NL Design works by overriding Nextcloud's CSS custom properties. If your app uses these variables, it will automatically pick up the correct colors:
+Prefer Nextcloud's documented semantic variables and components. For example:
 
 ```css
-/* Good — uses Nextcloud variables, works with NL Design */
 .my-button {
-  background-color: var(--color-primary);
-  color: var(--color-primary-text);
+  color: var(--color-primary-element-text);
+  background: var(--color-primary-element);
   border-radius: var(--border-radius-element);
-}
-
-/* Bad — hardcoded colors, ignores NL Design theming */
-.my-button {
-  background-color: #0082c9;
-  color: white;
-  border-radius: 8px;
 }
 ```
 
-### Avoid Hardcoded Colors
+Avoid hardcoded brand colors, assumptions that the header is dark, generated
+Vue data-v hashes, and selectors tied to another app's private DOM.
 
-Never hardcode color values in CSS or inline styles. Always use Nextcloud's CSS variables or the `--nldesign-*` token namespace.
+Use app-owned variables only when the dependency on NL Design is intentional.
+Otherwise depend on Nextcloud variables so the app remains compatible with
+native Theming when NL Design is absent.
 
-Common variables to use:
+## What to test
 
-| Purpose | Variable |
-|---------|----------|
-| Primary accent | `var(--color-primary)` |
-| Text on primary | `var(--color-primary-text)` |
-| Body text | `var(--color-main-text)` |
-| Muted text | `var(--color-text-maxcontrast)` |
-| Borders | `var(--color-border)` |
-| Error state | `var(--color-error)` |
-| Success state | `var(--color-success)` |
-| Warning state | `var(--color-warning)` |
+At minimum, exercise:
 
-### Use Standard Nextcloud Components
+- native Nextcloud and several materially different ready profiles;
+- light, dark, and high-contrast user themes where supported;
+- keyboard focus, zoom, narrow viewport, and overflow behavior;
+- normal, error, warning, disabled, selected, and hover states;
+- pages rendered before and after a profile change;
+- the exact Nextcloud and target-app versions being declared.
 
-If you're building a Vue.js Nextcloud app, use components from `@nextcloud/vue`. These components already use the correct CSS variables and will inherit NL Design theming automatically.
+Passing stylelint or finding a mapped variable is not evidence that text
+contrast, icons, component state, or layout is correct.
 
-### Test with Multiple Token Sets
+## Compatibility reports
 
-Different token sets have different characteristics:
+A proposed surface-specific override should name its target app, tested
+version range, selectors, expected failure behavior, and browser evidence. It
+must ship as an isolated, bounded adapter rather than entering the selector-
+free core projection, and should be removed when a stable Nextcloud variable
+becomes available.
 
-- **Rijkshuisstijl** uses 0px border radius (sharp corners)
-- **Amsterdam** uses a light header with dark icons (unusual contrast)
-- **Some municipalities** have very dark or very light primary colors
-
-Test your app with at least 3-4 different token sets to catch contrast and layout issues.
-
-## Testing Your App
-
-1. Install NL Design in your development environment
-2. Enable it and select a token set
-3. Navigate through your app and check:
-   - All text is readable (contrast)
-   - Buttons and interactive elements are visible
-   - No hardcoded colors clash with the theme
-   - Icons are visible against the header background
-4. Switch to a different token set and repeat
-
-## What NL Design Overrides
-
-NL Design maps 49 of Nextcloud's 102 CSS variables. The full mapping is documented in the [CSS Variable Mappings reference](../reference/mappings).
-
-Variables that NL Design intentionally does **not** override:
-- Layout dimensions (header height, sidebar width, breakpoints)
-- Background images and gradients (user-configurable)
-- Spacing and clickable area sizes (accessibility standards)
-- Dark mode inversion filters (Nextcloud handles these)
+No repository-wide claim is currently made that all Nextcloud apps are
+compatible.

@@ -1,8 +1,8 @@
 /**
  * Noaberkracht Design Tokens
  *
- * Auto-generated from nl-design-system/themes repository.
- * Do not edit manually — changes will be overwritten by the sync workflow.
+ * Imported snapshot from the nl-design-system/themes repository.
+ * Runtime selection stays disabled until a reviewed projection is added.
  *
  * Source: https://github.com/nl-design-system/themes
  */
@@ -95,17 +95,11 @@
 	--nldesign-conduction-download-card-border-radius: 22px;
 	--nldesign-conduction-logo-header-inline-size: 130px;
 	--nldesign-conduction-logo-header-block-size: 75px;
-	--nldesign-conduction-logo-header-background-image: url('https://werkenbijnoaberkracht.nl/assets/img/base/logo.png');
 	--nldesign-conduction-logo-footer-inline-size: 150px;
 	--nldesign-conduction-logo-footer-block-size: 87px;
-	--nldesign-conduction-logo-footer-background-image: url('https://werkenbijnoaberkracht.nl/assets/img/base/logo.png');
 	--nldesign-conduction-logo-navbar-inline-size: 69px;
 	--nldesign-conduction-logo-navbar-block-size: 43px;
-	--nldesign-conduction-logo-navbar-background-image: url('https://werkenbijnoaberkracht.nl/assets/img/base/logo.png');
-	--nldesign-conduction-primary-top-nav-current-box-shadow: inset 0 -4px {noaberkracht.color.yellow.47};
-	--nldesign-conduction-primary-top-nav-current-mobile-box-shadow: inset 4px 0 {noaberkracht.color.yellow.47};
 	--nldesign-conduction-primary-top-nav-dropdown-border-style: solid;
-	--nldesign-conduction-primary-top-nav-dropdown-hover-box-shadow: inset 0 -4px {noaberkracht.color.yellow.47};
 	--nldesign-conduction-primary-top-nav-item-padding: 18px;
 	--nldesign-conduction-primary-top-nav-padding-inline-end: 16px;
 	--nldesign-conduction-primary-top-nav-padding-inline-start: 16px;
@@ -114,7 +108,6 @@
 	--nldesign-conduction-secondary-top-nav-background-color: transparent;
 	--nldesign-conduction-secondary-top-nav-hover-background-color: transparent;
 	--nldesign-conduction-secondary-top-nav-current-background-color: unset;
-	--nldesign-conduction-secondary-top-nav-current-box-shadow: inset 0 -4px {noaberkracht.color.yellow.47};
 	--nldesign-conduction-secondary-top-nav-font-weight: 400;
 	--nldesign-conduction-secondary-top-nav-item-padding: 18px;
 	--nldesign-conduction-secondary-top-nav-padding-inline-end: 16px;
@@ -150,9 +143,7 @@
 	--nldesign-conduction-tooltip-border-radius: 0px;
 	--nldesign-conduction-tooltip-z-index: 9999;
 	--nldesign-component-badge-counter-border-radius: 50%;
-	--nldesign-component-badge-background-color: {noaberkracht.color.blue.31} ;
 	--nldesign-component-badge-border-radius: 9999px;
-	--nldesign-component-badge-color: {noaberkracht.color.white.100} ;
 	--nldesign-component-button-border-radius: 9999px;
 	--nldesign-component-button-font-size: inherit;
 	--nldesign-component-button-font-weight: inherit;

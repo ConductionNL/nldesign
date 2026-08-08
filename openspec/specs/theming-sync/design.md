@@ -1,315 +1,92 @@
-# Theming Sync — Technical Design
-
-## Overview
-
-When an admin selects a design token set in the NL Design admin settings, the app optionally synchronises matching values into Nextcloud's built-in theming system (`OCA\Theming`). This keeps the CSS-layer colours and brand assets consistent with Nextcloud core theming, which drives background images, email templates, and the server branding shown in the file-sharing UI.
-
-The feature is purely opt-in and triggered by a confirmation dialog: if a token set carries `theming` metadata and that metadata differs from the current Nextcloud theming state, the admin is shown a "before / after" comparison and must explicitly click "Update theming" before any changes are written.
-
+---
+status: reviewed
+reviewed_date: 2026-08-08
 ---
 
-## Component Map
-
-```
-token-sets.json                 ← theming metadata source-of-truth
-        |
-        v
-TokenSetService::getAvailableTokenSets()
-        |  passes theming object through when present
-        v
-Admin::getForm()  →  templates/settings/admin.php
-        |  writes tokenSets as data-token-sets JSON on #nldesign-settings
-        v
-js/admin.js
-  saveTokenSet()               — POST /settings/tokenset (saves CSS layer selection)
-  checkAndShowThemingDialog()  — GET /settings/theming   (compare current vs proposed)
-  showThemingDialog()          — builds inline modal with diff table + preview boxes
-  [confirm click]              — POST /settings/theming  (apply selected diffs)
-        |
-        v
-SettingsController
-  getThemingValues()           — reads IConfig theming values + ImageManager state
-  updateThemingValues()        — validates then applies via ThemingService
-        |
-        v
-ThemingService
-  validateColors()             — hex regex check on primary_color, background_color
-  validateImagePaths()         — path-traversal check + directory allowlist + file_exists
-  applyColors()                — ThemingDefaults::set(key, value)
-  applyImages()                — ImageManager::updateImage(key, absolutePath)
-```
-
----
-
-## Theming Metadata in token-sets.json
-
-Each entry in `token-sets.json` may carry an optional `theming` object:
-
-```json
-{
-  "id": "rijkshuisstijl",
-  "name": "Rijkshuisstijl",
-  "description": "Official Dutch national government design system (Rijksoverheid)",
-  "theming": {
-    "primary_color": "#154273",
-    "background_color": "#F5F6F7",
-    "logo": "img/logos/rijkshuisstijl.svg"
-  }
-}
-```
-
-| Field              | Type            | Required | Description                                              |
-|--------------------|-----------------|----------|----------------------------------------------------------|
-| `primary_color`    | hex string      | yes      | Brand accent colour (3-digit or 6-digit hex, `#` prefix) |
-| `background_color` | hex string      | yes      | Login/background colour                                  |
-| `logo`             | relative path   | no       | Path relative to app root, must be under `img/logos/`   |
-| `background`       | relative path   | no       | Path relative to app root, must be under `img/backgrounds/` |
-
-Token sets without a `theming` key are treated as CSS-only sets. The `TokenSetService` passes the `theming` object through unchanged when building the available-token-sets array; if the key is absent it is omitted from the output entirely. This means the admin JS can use `ts.theming` as a presence check.
-
----
-
-## API Endpoints
-
-All endpoints are registered in `appinfo/routes.php` and protected by `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)`.
-
-### GET /apps/nldesign/settings/theming
-
-Returns the current state of Nextcloud's built-in theming for comparison.
-
-**Handler:** `SettingsController::getThemingValues()`
-
-**Implementation detail:** Colors are read from `IConfig::getAppValue('theming', 'primary_color', '')` — this is the raw config store used by `ThemingDefaults`, not the `ThemingDefaults` object itself (which applies fallbacks). Image state is read through `ImageManager::getImageUrl()` and `ImageManager::hasImage()`.
-
-**Response schema:**
-```json
-{
-  "primary_color":         "string (hex or empty)",
-  "background_color":      "string (hex or empty)",
-  "logo_url":              "string (URL or empty)",
-  "background_url":        "string (URL or empty)",
-  "has_custom_logo":       "boolean",
-  "has_custom_background": "boolean"
-}
-```
-
-When no custom theming has been applied: both color fields are empty strings, both boolean fields are `false`.
-
-### POST /apps/nldesign/settings/theming
-
-Validates and applies theming values. Accepts `application/x-www-form-urlencoded` (as sent by the admin dialog confirm action).
-
-**Handler:** `SettingsController::updateThemingValues()`
-
-**Accepted parameters:**
-| Parameter          | Type          | Description                                         |
-|--------------------|---------------|-----------------------------------------------------|
-| `primary_color`    | hex string    | Nextcloud primary/accent colour                     |
-| `background_color` | hex string    | Nextcloud background/login colour                   |
-| `logo`             | relative path | Logo image, relative to app root                    |
-| `background`       | relative path | Background image, relative to app root              |
+# Nextcloud Theming Bridge — Technical Design
 
-All parameters are optional; omitted or empty parameters are skipped. Processing order is: color validation → image-path validation → apply colors → apply images. Any validation failure returns HTTP 400 and nothing is applied.
+## Current decision
 
-**Success response:**
-```json
-{ "status": "ok", "updated": ["primary_color", "logo"] }
-```
+Profile activation and Nextcloud Theming are separate operations.
 
-**Error response:**
-```json
-{ "error": "Invalid hex color for primary_color: not-a-color" }
-```
+The production path only builds a manual hand-off plan. It does not write
+settings owned by the core Theming app, upload images, or register private
+Theming services.
 
----
+This separation is deliberate:
 
-## ThemingService
+- the profile plane owns NL Design CSS selection and rollback;
+- the branding plane owns any future mutation of Nextcloud Theming;
+- a failure or incompatibility in the branding plane must never prevent profile
+  selection, page rendering, settings access, or profile rollback.
 
-**File:** `lib/Service/ThemingService.php`
+## Current component flow
 
-**Constructor injection:**
-```php
-public function __construct(
-    ImageManager    $imageManager,
-    ThemingDefaults $themingDefaults,
-    IAppManager     $appManager
-)
-```
+    token-sets.json
+        -> TokenSetService
+        -> ManualThemingPlanBuilder
+        -> GET /settings/theming-plan
+        -> administrator reviews the recommendations
 
-`ImageManager` and `ThemingDefaults` are provided by `OCA\Theming` (the built-in Nextcloud theming app). `IAppManager` is used to resolve the absolute path to the nldesign app directory when building full file paths for image uploads.
+TokenSetService exposes only normalized, allowlisted hints:
 
-### Color Validation
+- primary_color and background_color as six-digit hexadecimal colors;
+- logo under img/logos;
+- background under img/backgrounds.
 
-`isValidHexColor(string $color): bool`
-- Regex: `/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/`
-- Accepts both 3-digit shorthand (`#abc`) and 6-digit full form (`#aabbcc`)
-- Case-insensitive hex digits
+ManualThemingPlanBuilder repeats this validation and returns an explicitly
+non-executing result with mode manual and appliesAutomatically false.
 
-`validateColors(array $params): ?string`
-- Iterates over `['primary_color', 'background_color']`
-- Skips keys that are absent or empty (allows partial updates)
-- Returns error string on first failure, `null` on success
+## Compatibility experiment
 
-### Image Path Validation
+`lib/Infrastructure/Nextcloud/Compatibility/PrivateThemingProbe.php` is an
+isolated, read-only prototype for detecting the minimum method shape researched
+for a future version-specific adapter. It references private
+`OCA\Theming\ThemingDefaults` and `OCA\Theming\ImageManager` class names but
+does not resolve either service and exposes no mutation method.
 
-`validateImagePaths(array $params): ?string`
-- Iterates over `['logo', 'background']`
-- Delegates each non-empty path to `validateSinglePath()`
-- Returns error string on first failure, `null` on success
+It is intentionally:
 
-`validateSinglePath(string $imageKey, string $imagePath): ?string` (private)
+- outside controllers, settings, domain services, and render listeners;
+- absent from application registration and routes;
+- not autowired into the production graph;
+- not a fallback for failed public operations;
+- not a supported automatic capability.
 
-Three-stage validation:
-1. **Path traversal check** — rejects any path containing `..` or starting with `/`
-   - Error: `"Invalid image path for {key}: path traversal not allowed"`
-2. **Directory allowlist** — path must start with `img/logos/` or `img/backgrounds/`
-   - Error: `"Invalid image path for {key}: must be in img/logos/ or img/backgrounds/"`
-3. **File existence check** — `file_exists(appPath . '/' . imagePath)`
-   - Error: `"Image file not found: {imagePath}"`
+Method presence is diagnostic only. It cannot produce `private-verified`
+capability without reflected-signature checks and packaged lifecycle tests.
 
-The absolute app path is obtained via `IAppManager::getAppPath('nldesign')`.
+The repository architecture check rejects OCA\Theming references outside this
+compatibility directory.
 
-### Applying Colors
+## Public API direction
 
-`applyColors(array $params): array`
-- Iterates over `['primary_color', 'background_color']`
-- For each non-empty value: calls `ThemingDefaults::set(key, value)`
-- Returns array of applied keys
+The preferred future backend is a public OCP\Theming contract. A public
+IDefaults-style API can improve read compatibility, but reading effective
+defaults is not equivalent to a complete mutation API. Automatic application
+must wait for a supported mutation contract or for a separately verified,
+version-gated private adapter.
 
-### Applying Images
+A future bridge must use a neutral branding plan and driver interface. Driver
+selection belongs in infrastructure and must produce an explicit capability:
 
-`applyImages(array $params): array`
-- Iterates over `['logo', 'background']`
-- For each non-empty value: resolves absolute path as `appPath . '/' . relativePath`
-- Calls `ImageManager::updateImage(key, absolutePath)`
-- Returns array of applied keys
+- public-supported;
+- private-verified for one exact tested version cell;
+- manual-only.
 
----
+Unknown versions, failed probes, or a kill switch must resolve to manual-only.
+They must never fall through to raw configuration writes.
 
-## TokenSetService — Theming Passthrough
+## Preconditions for automatic application
 
-**File:** `lib/Service/TokenSetService.php`
+Automatic application is deferred until all of these exist:
 
-`getAvailableTokenSets()` scans `css/tokens/` for CSS files and merges metadata from `token-sets.json`. The `theming` key from the manifest is conditionally included:
+1. typed branding plans with old and new values;
+2. a capability probe for every declared Nextcloud/Theming version cell;
+3. validation and staging before the first write;
+4. snapshot, read-back verification, and compensating rollback;
+5. operation revision checks and an audit trail;
+6. integration tests against packaged Nextcloud instances;
+7. a public-only kill switch and documented recovery path.
 
-```php
-if (isset($meta['theming']) === true && is_array($meta['theming']) === true) {
-    $tokenSet['theming'] = $meta['theming'];
-}
-```
-
-This means token sets without theming metadata will not have the key in the response, and the admin JS will not offer theming sync for them.
-
----
-
-## Admin Template and Data Binding
-
-**File:** `templates/settings/admin.php`
-
-The full token sets array (including any `theming` sub-objects) is JSON-encoded into a `data-token-sets` attribute on the root settings element:
-
-```php
-data-token-sets="<?php p(json_encode($_['tokenSets'])); ?>"
-```
-
-The admin JS reads this at `DOMContentLoaded` and builds a lookup map keyed by token set ID:
-
-```js
-var tokenSets = JSON.parse(settingsEl.getAttribute('data-token-sets') || '[]');
-tokenSets.forEach(function(ts) { tokenSetsData[ts.id] = ts; });
-```
-
----
-
-## Admin Dialog UX (js/admin.js)
-
-The theming-sync flow is triggered automatically when a token set selection is saved and that token set carries `theming` metadata.
-
-### Flow
-
-```
-admin selects token set
-  → saveTokenSet()  POST /settings/tokenset
-    → on success: check tsData.theming
-      → checkAndShowThemingDialog(tsData)
-        → GET /settings/theming   (current NC theming state)
-          → compute diffs between proposed and current
-            → if diffs.length > 0: showThemingDialog()
-```
-
-### Diff Computation
-
-In `checkAndShowThemingDialog()`:
-- `primary_color` diff: case-insensitive hex comparison (`toLowerCase()`)
-- `background_color` diff: case-insensitive hex comparison
-- `logo` diff: always shown if proposed has a logo value (no URL-level comparison — the current logo URL is opaque)
-- `background` diff: always shown if proposed has a background value
-
-Only differing fields are shown in the dialog table.
-
-### Dialog Structure
-
-`showThemingDialog()` injects a full-screen overlay into `document.body`:
-
-```
-#nldesign-theming-dialog-overlay   (overlay, click-outside-to-close)
-  .nldesign-dialog
-    h3  "Update Nextcloud theming to match {name}?"
-    .nldesign-dialog-previews
-      .nldesign-dialog-preview-col  "Current"
-        .nldesign-dialog-preview-box  (background-color from current, bg-image if custom)
-          img  (current logo, if has_custom_logo)
-      .nldesign-dialog-preview-col  "Proposed"
-        .nldesign-dialog-preview-box  (background-color from proposed or current fallback)
-          img  (proposed logo via OC.linkTo, or current logo as fallback)
-    table.nldesign-dialog-table
-      thead  Setting | Current | Proposed
-      tbody  one row per diff
-        color cells: inline swatch span + hex string
-        image cells: filename only (split('/').pop())
-    p.nldesign-dialog-hint  (note about unchanged values)
-    .nldesign-dialog-actions
-      button.nldesign-dialog-cancel
-      button.nldesign-dialog-confirm  "Update theming"
-```
-
-XSS prevention: all user-visible strings pass through `escapeHtml()` (creates a DOM text node and reads back `innerHTML`). Color swatches use `escapeHtml()` on the hex string before embedding in `style=`.
-
-### Confirm Action
-
-On confirm, the dialog:
-1. Disables the button and sets text to "Updating..."
-2. Builds a payload from the diff list — only keys that appeared in `diffs` are sent
-3. POSTs to `/apps/nldesign/settings/theming` as `application/x-www-form-urlencoded`
-4. On success: shows temporary notification, reloads page after 1500 ms
-5. On error: shows notification with `data.error` message; overlay is removed in both cases
-
----
-
-## Dependencies
-
-| Dependency          | Source              | Purpose                                              |
-|---------------------|---------------------|------------------------------------------------------|
-| `ThemingDefaults`   | `OCA\Theming`       | `set(key, value)` — persists color values            |
-| `ImageManager`      | `OCA\Theming`       | `updateImage(key, path)`, `getImageUrl()`, `hasImage()` |
-| `IAppManager`       | `OCP\App`           | `getAppPath('nldesign')` — resolves absolute FS path |
-| `IConfig`           | `OCP`               | Read raw theming app config values for GET response  |
-
-The `theming` app must be enabled in Nextcloud for `ThemingDefaults` and `ImageManager` to be available. If the app is absent, DI will fail at container resolution time. No explicit app-enabled check is implemented; this is a platform-level dependency.
-
----
-
-## File Inventory
-
-| File                                    | Role                                              |
-|-----------------------------------------|---------------------------------------------------|
-| `token-sets.json`                       | Theming metadata for all token sets               |
-| `lib/Service/ThemingService.php`        | Validation and application of theming values      |
-| `lib/Service/TokenSetService.php`       | Token set discovery; passthrough of theming key   |
-| `lib/Controller/SettingsController.php` | HTTP handlers for GET/POST /settings/theming      |
-| `lib/Settings/Admin.php`                | Admin settings form; passes tokenSets to template |
-| `templates/settings/admin.php`          | Embeds tokenSets JSON in data-token-sets attr     |
-| `js/admin.js`                           | Dialog logic: diff, render, confirm, POST         |
-| `appinfo/routes.php`                    | Route registration for theming endpoints          |
-| `img/logos/`                            | Allowed logo images (SVG)                         |
-| `img/backgrounds/`                      | Allowed background images                         |
+Profile dropdown changes must never trigger this bridge implicitly.

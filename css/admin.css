@@ -1,13 +1,26 @@
 /**
- * NL Design System Theme - Admin Settings Styles
+ * NL Design profile administration.
  */
 
 #nldesign-settings {
 	max-width: 800px;
 }
 
-#nldesign-settings h2 {
+.nldesign-settings-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.nldesign-settings-header h2 {
 	margin-bottom: 0.5em;
+}
+
+.nldesign-doc-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 }
 
 #nldesign-settings .settings-hint {
@@ -15,55 +28,25 @@
 	margin-bottom: 1.5em;
 }
 
-.nldesign-token-sets {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	margin-bottom: 2em;
-}
-
-.nldesign-token-set {
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-	padding: 16px;
-	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius-large);
-	background: var(--color-main-background);
-	transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.nldesign-token-set:hover {
-	border-color: var(--color-primary-element);
-}
-
-.nldesign-token-set:has(input:checked) {
-	border-color: var(--color-primary-element);
-	box-shadow: 0 0 0 1px var(--color-primary-element);
-}
-
-.nldesign-token-set input[type="radio"] {
-	margin-top: 4px;
-}
-
-.nldesign-token-set label {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	cursor: pointer;
-	flex: 1;
-}
-
-.nldesign-token-set label strong {
-	font-size: 1.1em;
-}
-
-.nldesign-token-set-description {
+.nldesign-status {
+	min-height: 1.5em;
 	color: var(--color-text-maxcontrast);
-	font-size: 0.9em;
 }
 
-/* Options section */
+.nldesign-token-set-selector {
+	display: grid;
+	gap: 8px;
+	margin-bottom: 1.5em;
+}
+
+.nldesign-token-set-selector label {
+	font-weight: 600;
+}
+
+.nldesign-token-set-selector select {
+	max-width: 420px;
+}
+
 .nldesign-option {
 	display: flex;
 	align-items: center;
@@ -80,20 +63,34 @@
 	flex: 1;
 }
 
-/* Preview section */
+.nldesign-revision-row {
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.nldesign-meta {
+	color: var(--color-text-maxcontrast);
+	font-size: 0.9em;
+}
+
 .nldesign-preview {
-	margin-top: 2em;
+	margin: 2em 0;
 	padding: 20px;
 	background: var(--color-background-dark);
 	border-radius: var(--border-radius-large);
 }
 
-.nldesign-preview h3 {
+.nldesign-preview h3,
+.nldesign-theming-manual-bridge h3,
+.nldesign-profile-history h3 {
 	margin-top: 0;
-	margin-bottom: 1em;
+	margin-bottom: 0.75em;
 }
 
 .nldesign-preview-box {
+	--nldesign-preview-primary: var(--color-primary-element);
+	--nldesign-preview-primary-text: var(--color-primary-element-text);
+
 	background: var(--color-main-background);
 	border-radius: var(--border-radius);
 	overflow: hidden;
@@ -102,13 +99,14 @@
 
 .nldesign-preview-header {
 	height: 50px;
-	background: var(--color-primary);
+	background: var(--nldesign-preview-primary);
 }
 
 .nldesign-preview-content {
 	padding: 20px;
 	display: flex;
 	gap: 12px;
+	flex-wrap: wrap;
 }
 
 .nldesign-preview-button {
@@ -116,34 +114,59 @@
 	border-radius: var(--border-radius-element);
 	border: 1px solid var(--color-border);
 	background: var(--color-main-background);
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-.nldesign-preview-button:hover {
-	background: var(--color-background-hover);
 }
 
 .nldesign-preview-button.primary {
-	background: var(--color-primary);
-	color: var(--color-primary-text);
-	border-color: var(--color-primary);
+	background: var(--nldesign-preview-primary);
+	color: var(--nldesign-preview-primary-text);
+	border-color: var(--nldesign-preview-primary);
 }
 
-.nldesign-preview-button.primary:hover {
-	background: var(--color-primary-hover);
+.nldesign-theming-manual-bridge,
+.nldesign-profile-history {
+	padding: 20px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	background: var(--color-main-background);
 }
 
-/* Info link */
+.nldesign-profile-history {
+	margin-top: 1.5em;
+}
+
+.nldesign-theming-plan-list,
+.nldesign-profile-history-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.nldesign-theming-plan-list li,
+.nldesign-profile-history-list li {
+	display: grid;
+	gap: 4px;
+	padding: 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	margin-bottom: 8px;
+	background: var(--color-background-dark);
+}
+
+.nldesign-theming-plan-list code {
+	font-size: 0.9em;
+	overflow-wrap: anywhere;
+}
+
 .nldesign-info {
 	margin-top: 2em;
 }
 
 .nldesign-info a {
-	color: var(--color-primary);
+	color: var(--color-primary-element);
 	text-decoration: none;
 }
 
-.nldesign-info a:hover {
+.nldesign-info a:hover,
+.nldesign-info a:focus-visible {
 	text-decoration: underline;
 }
