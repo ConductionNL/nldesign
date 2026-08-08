@@ -22,8 +22,45 @@ permissions:
   contents: read
 
 jobs:
+  ocp-contract:
+    name: Nextcloud ${{ matrix.nextcloud }} OCP contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        nextcloud: ['32', '33', '34']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, dom, filter, gd, json, posix, zip
+          tools: composer:2.10.2@sha256:5ee7125f8a30a34d246cefdc0bc85b8a783b28f2aec968994118512350d28027
+          coverage: none
+        env:
+          fail-fast: true
+
+      - name: Resolve target OCP contract
+        run: >-
+          composer require --dev "nextcloud/ocp:^${{ matrix.nextcloud }}.0"
+          --with-all-dependencies --no-interaction --no-progress --prefer-dist
+
+      - name: Verify target OCP contract
+        run: |
+          composer validate --strict
+          composer audit --locked
+          composer check
+
   package:
     name: Verify and package
+    needs: ocp-contract
     runs-on: ubuntu-latest
     timeout-minutes: 25
     outputs:
@@ -129,7 +166,7 @@ jobs:
           PACKAGE_ROOT="$RUNNER_TEMP/nldesign-release"
           APP_ROOT="$PACKAGE_ROOT/nldesign"
           mkdir -p "$APP_ROOT"
-          rsync -a --prune-empty-dirs --exclude='.gitkeep' appinfo css img js lib templates "$APP_ROOT/"
+          rsync -a --prune-empty-dirs --exclude='.gitkeep' appinfo css examples img js lib templates "$APP_ROOT/"
           cp LICENSE README.md token-sets.json "$APP_ROOT/"
           if find "$APP_ROOT" -type l -print -quit | grep -q .; then
             echo "Release package must not contain symlinks."

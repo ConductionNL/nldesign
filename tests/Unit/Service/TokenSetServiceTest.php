@@ -7,6 +7,7 @@ namespace OCA\NLDesign\Tests\Unit\Service;
 use OCA\NLDesign\Infrastructure\Profile\PackagedProfileFiles;
 use OCA\NLDesign\Infrastructure\Profile\ProfileCatalogueEnvelope;
 use OCA\NLDesign\Infrastructure\Profile\ProfileManifestEntryNormalizer;
+use OCA\NLDesign\Port\Profile\InstalledProfileRepository;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;
@@ -346,11 +347,15 @@ class TokenSetServiceTest extends TestCase
         $appManager->method('getAppPath')->willReturn($this->appPath);
 
         $profileFiles = new PackagedProfileFiles(appManager: $appManager);
+        $installed    = $this->createMock(InstalledProfileRepository::class);
+        $installed->method('listRecords')->willReturn([]);
+        $installed->method('find')->willReturn(null);
 
         return new TokenSetService(
             profileFiles: $profileFiles,
             envelope: new ProfileCatalogueEnvelope(),
-            normalizer: new ProfileManifestEntryNormalizer(profileFiles: $profileFiles)
+            normalizer: new ProfileManifestEntryNormalizer(profileFiles: $profileFiles),
+            installed: $installed
         );
     }//end createService()
 
@@ -372,6 +377,7 @@ class TokenSetServiceTest extends TestCase
                     [
                         'status'     => 'ready',
                         'projection' => 'nextcloud-core-v1',
+                        'version'    => '1.0.0',
                     ],
                     $entry
                 );

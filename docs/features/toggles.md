@@ -15,7 +15,8 @@ app for two different reasons:
 
 Changing an instance slogan belongs in Nextcloud Theming. A future navigation
 adaptation should be a separately bounded surface adapter with explicit
-responsive, keyboard, zoom, assistive-technology, and exact-major evidence.
+responsive, keyboard, zoom, assistive-technology, and evidence for every
+supported major.
 
 Legacy `hide_slogan` and `show_menu_labels` app-config values are ignored. They
 are harmless, but a system administrator may remove them explicitly:

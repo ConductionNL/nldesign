@@ -26,11 +26,25 @@ It is the third of three independent components. Keeping them separate is the ar
 
 | Component | Supplies | Owned by |
 |---|---|---|
-| Navigation rail | left vertical app rail | **`side_menu`** — a third-party app, already installed and configured on the reference instance |
+| Navigation rail | left vertical app rail | **`side_menu`** — a third-party app. Installed on the reference instance, but see the correction below |
 | Colour, radius, type, density | the design language | **`nldesign` target** — only font and primary interaction roles exist today |
 | **Glyphs and asset artwork** | icon geometry, theme previews | **this app** — markup conventions, higher upgrade risk |
 
 None depends on another at build time. `nldesign` needs no knowledge of this app; this app reads `--nldesign-*` custom properties **if they are present in the cascade** and falls back to its own defaults if not. Custom properties are global, so the coupling is nil — no PHP API, no shared service, no version negotiation.
+
+> **Correction, 2026-08-08.** Earlier revisions of this document said the rail
+> was "already installed and configured" on the reference instance. `side_menu`
+> 6.0.1 is installed, but it is configured as a **Social links dropdown**, not a
+> rail: `top-menu-apps` pins the real applications to the horizontal top bar,
+> `top-side-menu-apps` is empty, `always-displayed` is 0, and the only entries
+> are eight external links in one "Social" category. SENERAWA's custom CSS then
+> reshapes it into a 20rem dropdown anchored to a "Social ▾" button.
+>
+> The capability is present; the rail is not. Turning it into one means moving
+> the applications out of `top-menu-apps` into `top-side-menu-apps`, setting
+> `always-displayed`, and unpicking the CSS that makes it a dropdown — which
+> would displace a social menu somebody deliberately built. That is a product
+> decision about the instance, not a configuration detail.
 
 **Why separate at all:** `nldesign` projects through documented variables and can honestly claim a wide Nextcloud range. This app rides Vue class names and Material Design path data — conventions nobody promised to keep. Bundling them would mean an administrator cannot take the stable half without inheriting the fragile half, and would make `nldesign`'s support claim untrue. §8 is the whole reason this is a second app.
 

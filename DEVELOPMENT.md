@@ -45,7 +45,18 @@ Mount or copy the app into a test instance's `custom_apps/nldesign` directory, t
 php occ app:enable nldesign
 ```
 
+When hot-replacing files in an already running test instance, gracefully reload
+PHP-FPM after adding or removing PHP classes. Long-lived workers can otherwise
+retain stale application autoload state: the CLI router may list a new route
+while web requests still return 404. This hot-deploy step is not a substitute
+for testing the normal packaged install and upgrade lifecycle.
+
 Exercise at least login, Files, admin settings, dark/high-contrast preferences, profile change, stale-save conflict, and rollback before claiming compatibility with a Nextcloud major. Local OCP analysis is not a replacement for this matrix.
+
+NC32–34 currently share `css/compatibility/nextcloud-core-v1.css`. Keep the
+major allowlist explicit, but do not create a per-major copy unless a source and
+browser audit demonstrates a semantic difference in a property or theme-state
+mechanism the app actually consumes.
 
 ## Documentation site
 
@@ -72,10 +83,19 @@ upstream advisory explicitly.
 
 - Treat `token-sets.json` as the catalogue contract.
 - Keep ids lowercase kebab-case and one-to-one with `css/tokens/{id}.css`.
+- Give every ready built-in profile an immutable semantic `version`.
 - Do not add arbitrary Theming keys or filesystem paths.
 - Record provenance and identity-asset rights; a colour/token implementation is not proof of official endorsement.
 - Run `npm run check:manifest` and representative visual/accessibility tests.
 
+Instance-local profiles use the separate `nldesign-profile-pack/v1` contract.
+Do not add raw CSS, URLs, assets, or Nextcloud settings to that envelope. Change
+content by installing a new version; never edit an installed record in place.
+
 ## Runtime-state rule
 
-The installed app is immutable. Runtime code must not write CSS, uploads, generated previews, or snapshots below the app path. Small state uses app-scoped `IAppConfig`; future file data belongs in Nextcloud app data.
+The installed app is immutable. Runtime code must not write CSS, uploads,
+generated previews, or snapshots below the app path. Small activation state
+uses app-scoped `IAppConfig`. Validated installed profile descriptors and their
+deterministically generated CSS are integrity-checked records in Nextcloud app
+data under `installed-profiles/`.

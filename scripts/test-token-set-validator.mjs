@@ -48,6 +48,12 @@ try {
 	runValidator(/default_profile must be null/);
 	fs.writeFileSync(manifestTarget, originalManifest);
 
+	const mutableVersionCatalogue = JSON.parse(originalManifest);
+	mutableVersionCatalogue.profiles.find((profile) => profile.status === 'ready').version = '01.0.0';
+	fs.writeFileSync(manifestTarget, `${JSON.stringify(mutableVersionCatalogue, null, 2)}\n`);
+	runValidator(/supported semantic version/);
+	fs.writeFileSync(manifestTarget, originalManifest);
+
 	fs.writeFileSync(
 		stylesheetTarget,
 		originalStylesheet.replace(

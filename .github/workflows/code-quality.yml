@@ -124,7 +124,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nextcloud: ['33', '34']
+        nextcloud: ['32', '33', '34']
 
     steps:
       - name: Checkout

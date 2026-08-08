@@ -55,15 +55,23 @@ final class SettingsController extends Controller
      * Activate a ready profile.
      *
      * @param string $tokenSet         Profile identifier.
+     * @param string $profileVersion   Exact profile version.
      * @param string $expectedRevision Revision observed by the browser.
      *
      * @return         JSONResponse Operation response.
      * @phpstan-return JSONResponse<Http::STATUS_*, array<string, mixed>, array{}>
      */
     #[AuthorizedAdminSetting(settings: Admin::class)]
-    public function setTokenSet(string $tokenSet, string $expectedRevision=''): JSONResponse
-    {
-        if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
+    public function setTokenSet(
+        string $tokenSet,
+        string $profileVersion='',
+        string $expectedRevision=''
+    ): JSONResponse {
+        if ($this->tokenSetService->isValidTokenSet(
+            tokenSetId: $tokenSet,
+            profileVersion: $profileVersion
+        ) === false
+        ) {
             return $this->respond(
                 data: ['status' => 'invalid_profile', 'error' => 'Invalid token set'],
                 statusCode: Http::STATUS_BAD_REQUEST
@@ -79,6 +87,7 @@ final class SettingsController extends Controller
 
         $result       = $this->profileStateService->publishProfile(
             tokenSetId: $tokenSet,
+            profileVersion: $profileVersion,
             actor: self::SETTINGS_ACTOR,
             expectedRevision: $expectedRevision
         );
@@ -113,11 +122,13 @@ final class SettingsController extends Controller
 
         return $this->respond(
             data: [
-                'status'          => 'ok',
-                'tokenSet'        => $state['active_profile_id'] ?? $tokenSet,
-                'revision'        => $state['active_profile_revision'] ?? null,
-                'previousProfile' => $state['previous_profile_snapshot']['profile_id'] ?? null,
-                'canRollback'     => $this->hasPreviousSnapshot(state: $state),
+                'status'                 => 'ok',
+                'tokenSet'               => $state['active_profile_id'] ?? $tokenSet,
+                'profileVersion'         => $state['active_profile_version'] ?? $profileVersion,
+                'revision'               => $state['active_profile_revision'] ?? null,
+                'previousProfile'        => $state['previous_profile_snapshot']['profile_id'] ?? null,
+                'previousProfileVersion' => $state['previous_profile_snapshot']['profile_version'] ?? null,
+                'canRollback'            => $this->hasPreviousSnapshot(state: $state),
             ]
         );
     }//end setTokenSet()
@@ -175,11 +186,13 @@ final class SettingsController extends Controller
 
         return $this->respond(
             data: [
-                'status'          => 'ok',
-                'tokenSet'        => null,
-                'revision'        => $state['active_profile_revision'] ?? null,
-                'previousProfile' => $state['previous_profile_snapshot']['profile_id'] ?? null,
-                'canRollback'     => $this->hasPreviousSnapshot(state: $state),
+                'status'                 => 'ok',
+                'tokenSet'               => null,
+                'profileVersion'         => null,
+                'revision'               => $state['active_profile_revision'] ?? null,
+                'previousProfile'        => $state['previous_profile_snapshot']['profile_id'] ?? null,
+                'previousProfileVersion' => $state['previous_profile_snapshot']['profile_version'] ?? null,
+                'canRollback'            => $this->hasPreviousSnapshot(state: $state),
             ]
         );
     }//end deactivateTokenSet()
@@ -193,26 +206,40 @@ final class SettingsController extends Controller
     #[AuthorizedAdminSetting(settings: Admin::class)]
     public function getTokenSet(): JSONResponse
     {
-        $state     = $this->getActiveState();
-        $tokenSet  = $state['active_profile_id'] ?? null;
-        $available = false;
-        $metadata  = null;
+        $state          = $this->getActiveState();
+        $tokenSet       = $state['active_profile_id'] ?? null;
+        $profileVersion = $state['active_profile_version'] ?? null;
+        $available      = false;
+        $metadata       = null;
         if (is_string($tokenSet) === true) {
-            $available = $this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSet);
+            $resolvedVersion = '';
+            if (is_string($profileVersion) === true) {
+                $resolvedVersion = $profileVersion;
+            }
+
+            $available = $this->tokenSetService->isValidTokenSet(
+                tokenSetId: $tokenSet,
+                profileVersion: $resolvedVersion
+            );
             if ($available === true) {
-                $metadata = $this->tokenSetService->getTokenSetMetadata(tokenSetId: $tokenSet);
+                $metadata = $this->tokenSetService->getTokenSetMetadata(
+                    tokenSetId: $tokenSet,
+                    profileVersion: $resolvedVersion
+                );
             }
         }
 
         return $this->respond(
             data: [
-                'status'           => 'ok',
-                'tokenSet'         => $tokenSet,
-                'available'        => $available,
-                'revision'         => $state['active_profile_revision'] ?? null,
-                'previousProfile'  => $state['previous_profile_snapshot']['profile_id'] ?? null,
-                'canRollback'      => $this->hasPreviousSnapshot(state: $state),
-                'tokenSetMetadata' => $metadata,
+                'status'                 => 'ok',
+                'tokenSet'               => $tokenSet,
+                'profileVersion'         => $profileVersion,
+                'available'              => $available,
+                'revision'               => $state['active_profile_revision'] ?? null,
+                'previousProfile'        => $state['previous_profile_snapshot']['profile_id'] ?? null,
+                'previousProfileVersion' => $state['previous_profile_snapshot']['profile_version'] ?? null,
+                'canRollback'            => $this->hasPreviousSnapshot(state: $state),
+                'tokenSetMetadata'       => $metadata,
             ]
         );
     }//end getTokenSet()
@@ -220,19 +247,25 @@ final class SettingsController extends Controller
     /**
      * Build a non-executing Nextcloud Theming synchronization plan.
      *
-     * @param string $tokenSet Profile id, or active profile when omitted.
+     * @param string $tokenSet       Profile id, or active profile when omitted.
+     * @param string $profileVersion Exact version, or active version when omitted.
      *
      * @return         JSONResponse Manual plan response.
      * @phpstan-return JSONResponse<Http::STATUS_*, array<string, mixed>, array{}>
      */
     #[AuthorizedAdminSetting(settings: Admin::class)]
-    public function getThemingPlan(string $tokenSet=''): JSONResponse
+    public function getThemingPlan(string $tokenSet='', string $profileVersion=''): JSONResponse
     {
         if ($tokenSet === '') {
-            $tokenSet = (string) $this->getActiveState()['active_profile_id'];
+            $state          = $this->getActiveState();
+            $tokenSet       = (string) $state['active_profile_id'];
+            $profileVersion = (string) $state['active_profile_version'];
         }
 
-        $metadata = $this->tokenSetService->getTokenSetMetadata(tokenSetId: $tokenSet);
+        $metadata = $this->tokenSetService->getTokenSetMetadata(
+            tokenSetId: $tokenSet,
+            profileVersion: $profileVersion
+        );
         if ($metadata === null) {
             return $this->respond(
                 data: ['status' => 'invalid_profile', 'error' => 'Invalid token set'],
@@ -244,6 +277,7 @@ final class SettingsController extends Controller
             data: [
                 'status'           => 'ok',
                 'tokenSet'         => $tokenSet,
+                'profileVersion'   => $metadata['version'] ?? $profileVersion,
                 'tokenSetMetadata' => $metadata,
                 'plan'             => $this->planBuilder->build(
                     theming: $metadata['theming'] ?? null
@@ -290,11 +324,13 @@ final class SettingsController extends Controller
 
         return $this->respond(
             data: [
-                'status'          => 'ok',
-                'tokenSet'        => $state['active_profile_id'] ?? null,
-                'revision'        => $state['active_profile_revision'] ?? null,
-                'previousProfile' => $state['previous_profile_snapshot']['profile_id'] ?? null,
-                'canRollback'     => $this->hasPreviousSnapshot(state: $state),
+                'status'                 => 'ok',
+                'tokenSet'               => $state['active_profile_id'] ?? null,
+                'profileVersion'         => $state['active_profile_version'] ?? null,
+                'revision'               => $state['active_profile_revision'] ?? null,
+                'previousProfile'        => $state['previous_profile_snapshot']['profile_id'] ?? null,
+                'previousProfileVersion' => $state['previous_profile_snapshot']['profile_version'] ?? null,
+                'canRollback'            => $this->hasPreviousSnapshot(state: $state),
             ]
         );
     }//end rollbackTokenSet()

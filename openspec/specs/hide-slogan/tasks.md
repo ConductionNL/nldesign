@@ -6,4 +6,4 @@
 - [x] Keep legacy stored values inert and document optional administrator
   cleanup.
 - [ ] Design a new adapter only if a semantically narrow requirement and
-  packaged exact-major evidence exist.
+  packaged capability-contract evidence exists for every supported major.

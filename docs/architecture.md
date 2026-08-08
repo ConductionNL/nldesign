@@ -11,10 +11,11 @@ sidebar_position: 9
 **Target:** architecture-v1 on the current `main`-based application line
 
 Implementation status is tracked in [feature-ledger.md](./feature-ledger.md).
-The current working tree implements the bounded profile/state slice; modules
-described for preview, app-data snapshots, CLI recovery, capability brokering,
-and automatic core-Theming mutation remain target architecture until the
-ledger says otherwise.
+The current working tree implements the bounded profile/state slice, an
+administrator profile library, and immutable app-data installation of the
+closed `nldesign-profile-pack/v1` projection. CLI recovery, general app-data
+snapshots, capability brokering, and automatic core-Theming mutation remain
+target architecture until the ledger says otherwise.
 
 ## 1. Decision
 
@@ -68,12 +69,12 @@ Deleting `Infrastructure/Nextcloud/Compatibility` must remove automatic core-The
 | Current code | Current status | Remaining target seam |
 |---|---|---|
 | `AppInfo/Application.php` and `Listener/TemplateStylesListener.php` | Public template-event registration; fail-open three-layer injection | Add surface adapters only when measured evidence warrants them |
-| `Service/TokenSetService.php` and `Infrastructure/Profile/*` | Versioned manifest envelope with a required null default, ready/source-only status, normalized metadata, bounded immutable file access | Move behind a `ProfileCatalog` port when external profile sources are introduced |
-| `Service/ProfileStateService.php` and `Infrastructure/Nextcloud/ProfileStateMutationGuard.php` | App-scoped nullable profile state, strict revisions, exclusive lock with public app-config cache refresh, activation/deactivation rollback, bounded history | Move persistence behind ports before adding app-data snapshots or CLI workflows |
-| `Controller/SettingsController.php` | Authorized typed actions using profile/state services | Introduce request DTOs and versioned use cases before adding the bridge API |
-| `css/theme.css` | Font and primary interaction mapping with only body/theme-state guards | Add no mapping without semantic, accessibility, and version evidence |
+| `Service/TokenSetService.php`, `Port/Profile/*`, and `Infrastructure/Profile/*` | Composite exact-version catalogue: read-only packaged profiles plus integrity-checked installed records; closed pack validation and deterministic CSS compilation | Promote the existing installed-profile port into a full `ProfileCatalog` port before adding other profile sources |
+| `Service/ProfileStateService.php` and `Infrastructure/Nextcloud/ProfileStateMutationGuard.php` | App-scoped nullable exact-version state, strict revisions, exclusive lock with public app-config cache refresh, activation/deactivation rollback, bounded version history | Move canonical state persistence behind a port before adding CLI workflows or deeper snapshot retention |
+| `Controller/SettingsController.php`, `Controller/ProfileLibraryController.php`, and `Controller/StylesheetController.php` | Authorized typed state/library actions plus one public digest-addressed generated-CSS response | Introduce request DTOs and versioned use cases before adding the bridge API |
+| `css/compatibility/nextcloud-core-v1.css` and `Infrastructure/Nextcloud/Presentation/*` | One documented CSS-variable contract shared by an explicit NC32–34 major allowlist; font and primary interaction mapping with only body/theme-state guards | Add a separate contract only for a measured semantic delta; add no mapping without semantic, accessibility, and version evidence |
 | `Infrastructure/Nextcloud/Compatibility/PrivateThemingProbe.php` | Unregistered read-only private method-shape probe | Replace with capability-driven version adapters; method presence alone never enables a write |
-| Retired login-footer and app-menu selectors | Removed from routes, settings, and runtime | Reintroduce only as a bounded surface adapter with accurate semantics and packaged exact-major evidence |
+| Retired login-footer and app-menu selectors | Removed from routes, settings, and runtime | Reintroduce only as a bounded surface adapter with accurate semantics and packaged evidence for every supported major |
 
 The deleted runtime CSS generator, token editor, broad selector stack, and
 general private Theming service are not interfaces to preserve.
@@ -151,9 +152,21 @@ asks the broker for capabilities. No bridge provider is registered today.
 
 Source design tokens are compiled before packaging. Runtime PHP never downloads, merges, aliases, upgrades, or interprets an upstream token repository.
 
-The current v1 package uses `token-sets.json` and `css/tokens/{id}.css`. The
-compiler slice replaces that interim shape with immutable data and web assets
-in package locations that Nextcloud can address normally:
+The current v1 package uses `token-sets.json` and `css/tokens/{id}.css` for
+read-only built-in profiles. Instance-local profiles use a second, narrower
+release artifact: `nldesign-profile-pack/v1`. That envelope contains bounded
+provenance text and only the semantic input for `nextcloud-core-v1`; it never
+contains CSS, selectors, executable content, URLs, assets, or Nextcloud setting
+keys. Runtime PHP validates the envelope and compiles its CSS deterministically.
+
+Every selectable identity is `(profile ID, immutable semantic version)`. A
+content change creates a new version. Built-in identities cannot be shadowed,
+and an existing installed identity is a no-op only when its content hash is
+identical. Installation and activation are separate operations.
+
+The richer source compiler slice will replace the interim packaged shape with
+immutable data and web assets in package locations that Nextcloud can address
+normally:
 
 ```text
 profiles/{profile-id}/
@@ -178,7 +191,7 @@ interface ProfileCatalog
     /** @return list<ProfileSummary> */
     public function listVisible(): array;
 
-    public function get(ProfileId $id): CompiledProfile;
+    public function get(ProfileId $id, ProfileVersion $version): CompiledProfile;
 }
 
 interface ActiveProfileStore
@@ -200,9 +213,12 @@ interface ProfileSnapshotStore
 ```
 
 The target concrete catalogue reads only manifest-declared files and verifies
-their hashes. The implemented v1 envelope already prevents filesystem
-promotion and bounds every packaged file, but does not yet carry content
-digests; hash verification remains a release-compiler gate.
+their hashes. The implemented packaged v1 envelope prevents filesystem
+promotion and bounds every packaged file. Packaged CSS now has a runtime
+content digest, but the manifest does not yet pin that digest, so full
+release-input hash verification remains a compiler gate. Installed records do
+carry and verify a SHA-256 identity over their normalized descriptor and
+generated CSS.
 
 ### 5.3 Presentation extension point
 
@@ -229,9 +245,11 @@ The first adapter targets the core shell and documented variables. Later adapter
 The implemented listener:
 
 1. reads the small app-owned active-profile state;
-2. resolves the selected ready profile through the bounded package inventory;
-3. calls `OCP\Util::addStyle()` for the fixed fonts/profile/theme stack only
-   during a template-render event;
+2. resolves the selected exact version through the composite catalogue;
+3. calls `OCP\Util::addStyle()` for packaged CSS, or emits one
+   digest-addressed stylesheet link for generated installed CSS, within the
+   fixed fonts/profile/core-projection precedence and only during a template-render
+   event;
 4. catches profile failures, logs a structured diagnostic, and emits no NL
    Design CSS.
 
@@ -511,14 +529,46 @@ The stored profile records recommendations and the ID of the last bridge operati
 
 ## 10. Persistence
 
-Use app-scoped `OCP\AppFramework\Services\IAppConfig` for small NL Design state:
+The implemented profile plane stores one bounded canonical JSON state record in
+app-scoped `OCP\AppFramework\Services\IAppConfig`, plus best-effort legacy
+mirrors and bounded history:
+
+```text
+active_profile_state
+  active_profile_id
+  active_profile_version
+  active_profile_revision
+  previous_profile_snapshot
+  updated_at
+  updated_by
+profile_state_history
+token_set                    compatibility mirror
+active_profile_version      compatibility mirror
+active_profile_revision     compatibility mirror
+```
+
+The current profile library uses NL Design `IAppData`:
+
+```text
+installed-profiles/{profile-id}--{profile-version}.json
+  closed record schema
+  normalized profile descriptor
+  deterministically generated CSS
+  content hash
+  installed timestamp and actor
+```
+
+Records are immutable, capped in size and count, revalidated on read, and
+served only through an exact `(id, version, content hash)` route. Invalid or
+internally inconsistent records disappear from the usable catalogue. The hash
+is a content identity and corruption check, not a signature or MAC. No runtime
+operation writes below the installed app path.
+
+The bridge target adds these small-state fields when implemented:
 
 ```text
 schema_version
-active_profile_id
-active_profile_version
 active_projection_hash
-profile_revision
 previous_profile_snapshot_id
 bridge_policy                 public-only | private-verified | experimental-internal
 last_branding_operation_id
@@ -540,15 +590,26 @@ Plans and results contain domain field IDs and driver metadata, not raw Theming 
 
 ## 11. HTTP and command surface
 
-Use versioned, intention-revealing routes:
+The implemented profile routes are intention-revealing even though the older
+state routes retain their `/settings/*` compatibility paths:
 
 ```text
 GET  /api/v1/profiles
-GET  /api/v1/profile-state
-POST /api/v1/profile-preview
-POST /api/v1/profile-activate
-POST /api/v1/profile-rollback
+POST /api/v1/profiles/install
+POST /api/v1/profiles/uninstall
+GET  /styles/profiles/{profileId}/{profileVersion}/{contentHash}
 
+GET  /settings/tokenset
+POST /settings/tokenset
+POST /settings/deactivate
+POST /settings/rollback
+GET  /settings/profile-history
+GET  /settings/theming-plan
+```
+
+The bridge target adds:
+
+```text
 GET  /api/v1/branding/capabilities
 POST /api/v1/branding/plan
 POST /api/v1/branding/apply
@@ -556,7 +617,11 @@ POST /api/v1/branding/rollback
 GET  /api/v1/operations/{operationId}
 ```
 
-There is deliberately no `/settings/{key}` or `/config/{app}/{key}` route. Controllers use current admin-setting authorization attributes, CSRF protection, strict request DTOs, expected revisions, and structured error codes.
+There is deliberately no `/settings/{key}` or `/config/{app}/{key}` route. The
+current controllers use admin-setting authorization attributes, CSRF
+protection, bounded typed parameters, expected revisions, and structured error
+codes. The bridge should introduce versioned request DTOs before adding its
+larger plan/apply surface.
 
 Provide app-owned CLI commands for recovery and inspection:
 
@@ -607,8 +672,9 @@ Run the public API and private lifecycle inventory, execute the adapter contract
 | Boundary | Required evidence |
 |---|---|
 | Domain/use cases | Unit tests with fake ports; no Nextcloud bootstrap |
-| Profile catalogue | Manifest/status/path fixtures now; digest fixtures before compiler promotion; no filesystem promotion |
-| Presentation listener | Template-only injection and fail-open behavior |
+| Profile catalogue | Manifest/status/path fixtures; exact installed versions; no filesystem promotion |
+| Profile-pack boundary | Closed-envelope, size, semantic-version, contrast, deterministic compiler, tamper, conflict, and immutable-record tests |
+| Presentation listener | Template-only packaged/generated injection, exact digest URL, idempotence, and fail-open behavior |
 | Surface adapter | Version, mode, selector budget, visual and accessibility matrix |
 | Capability broker | Preference, downgrade, stale capability, kill switch, no fall-through after failure |
 | OCA driver | Real packaged set/reset/read-back tests for every field on each explicitly enabled Nextcloud/Theming build |
@@ -690,6 +756,24 @@ At the inspected Nextcloud 34 commit `628d14cc0d08a35972a0dfe260f24d3570a2acc9`:
 - `ThemingDefaults::undo()` owns image deletion and MIME reset;
 - the global capabilities response may contain current-user colour/background choices and is not a configured administrator snapshot.
 
+The load-bearing CSS contract was separately audited at stable-32 commit
+`da3a7667d3db7c464aa3e2b4809370121f6e4b90`, stable-33 commit
+`61af92b64a14c5813a2401483af14b334adbde4a`, and stable-34 commit
+`0d95ffb11ac935dbd12ff60524a35f4b81bb36d2`:
+
+- all three provide the CSS theme manager, built-in theme-state body
+  attributes, and the seven documented custom properties this app projects;
+- the NC32 and NC33 generated default property sets are identical;
+- NC34 adds six selection and font-weight properties, none of which changes the
+  semantics of this app's bounded projection; and
+- `OCA\Theming\ITheme` and `ThemesService` remain private implementation with a
+  hard-coded provider list, not a public third-party theme registration API.
+
+The runtime therefore maps NC32–34 to one `nextcloud-core-v1` contract. The
+explicit major allowlist remains: NC31, NC35, and later releases emit no profile
+stack until their public CSS contract is audited. A future major-specific file
+requires an actual semantic delta, not merely a different version number.
+
 The same central `ThemingDefaults::set()/undo()` and
 `ImageManager::updateImage()` lifecycle is present at the inspected stable-32
 and stable-33 commits `86cb7a4e385c60813729f2654e1acc9074724271`
@@ -700,6 +784,8 @@ enable a matrix cell, or convert those classes into public API.
 Authoritative references:
 
 - [Nextcloud public PHP API boundary](https://docs.nextcloud.com/server/stable/developer_manual/digging_deeper/api.html)
+- [Nextcloud 32 documented CSS variables](https://docs.nextcloud.com/server/32/developer_manual/html_css_design/css.html)
+- [Nextcloud 32 theme provider implementation](https://github.com/nextcloud/server/blob/da3a7667d3db7c464aa3e2b4809370121f6e4b90/apps/theming/lib/Service/ThemesService.php)
 - [Nextcloud 34 public `OCP\Defaults`](https://github.com/nextcloud/server/blob/628d14cc0d08a35972a0dfe260f24d3570a2acc9/lib/public/Defaults.php)
 - [Open `OCP\Theming\IDefaults` refactor](https://github.com/nextcloud/server/pull/55384)
 - [Nextcloud 34 Theming controller lifecycle](https://github.com/nextcloud/server/blob/628d14cc0d08a35972a0dfe260f24d3570a2acc9/apps/theming/lib/Controller/ThemingController.php)

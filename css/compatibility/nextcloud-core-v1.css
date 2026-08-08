@@ -1,9 +1,10 @@
 /**
- * NL Design profile projection for Nextcloud core variables.
+ * Shared documented Nextcloud core projection for maintained majors 32–34.
  *
- * This layer targets only the body theme-state attributes needed to preserve
- * user preferences. It contains no component or structural DOM selectors.
- * Profile CSS must provide every --nldesign-* value consumed below.
+ * The runtime adapter attaches this file only to explicitly audited majors.
+ * It owns the CSS custom properties common to that range and composes with the
+ * theme-state attributes emitted by Nextcloud's CSS theme manager. A separate
+ * major-specific contract belongs here only when the semantics actually differ.
  */
 
 /* Preserve Nextcloud's explicit OpenDyslexic user preference. */
@@ -11,12 +12,7 @@ body:not([data-theme-opendyslexic]) {
 	--font-face: var(--nldesign-font-family);
 }
 
-/*
- * Preserve both explicit and operating-system high-contrast preferences.
- * Nextcloud exposes explicit themes through data-theme-* body attributes.
- * Negating `more` also keeps the projection active in browsers that do not
- * expose the prefers-contrast media feature.
- */
+/* Preserve explicit and operating-system high-contrast preferences. */
 @media not (prefers-contrast: more) {
 	body:not([data-theme-light-highcontrast]):not([data-theme-dark-highcontrast]) {
 		--color-primary: var(--nldesign-color-primary);

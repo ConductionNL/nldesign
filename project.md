@@ -22,9 +22,12 @@ Profile activation and deactivation are revision-checked and retain one rollback
 
 1. `css/fonts.css`
 2. `css/tokens/{profile}.css`
-3. `css/theme.css`
+3. `css/compatibility/nextcloud-core-v1.css`
 
-The order is implemented by `RuntimeStylesheetPlan` and covered by a unit test.
+The order is implemented by `RuntimeStylesheetPlan` and covered by unit tests.
+An explicit runtime allowlist maps Nextcloud 32–34 to the shared core contract;
+unknown majors emit no NL Design stack. A separate contract is added only for
+an audited semantic delta.
 
 ## Boundaries
 

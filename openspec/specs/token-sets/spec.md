@@ -117,9 +117,9 @@ must reject control characters.
 
 ## REQ-PROFILE-007: Ordered, fail-open rendering
 
-Normal and login templates MUST load fonts, the active ready profile, and theme
-in that order. The catalogue default MUST be present and null, and fresh state
-MUST initialize native Nextcloud.
+Normal and login templates MUST load fonts, the active ready profile, and the
+verified core projection in that order. The catalogue default MUST be present
+and null, and fresh state MUST initialize native Nextcloud.
 Unavailable stored state MUST emit no profile CSS and preserve native
 Nextcloud. Read or injection failure MUST be logged and MUST NOT abort the
 Nextcloud response. Activation MUST NOT modify Nextcloud Theming settings or

@@ -19,16 +19,21 @@ namespace OCA\NLDesign\Infrastructure\Profile;
  */
 final class ProfileManifestEntryNormalizer
 {
-    private const ID_PATTERN      = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
-    private const COLOR_PATTERN   = '/^#[0-9a-fA-F]{6}$/';
-    private const ASSET_PATTERN   = '#^img/(?:logos|backgrounds)/[a-zA-Z0-9._-]+\.(?:svg|png|jpe?g|webp)$#i';
-    private const READY_STATUS    = 'ready';
-    private const PROJECTION_ID   = 'nextcloud-core-v1';
-    private const MAX_ID_LENGTH   = 64;
-    private const MAX_NAME_LENGTH = 160;
+    private const ID_PATTERN         = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+    private const COLOR_PATTERN      = '/^#[0-9a-fA-F]{6}$/';
+    private const VERSION_CORE       = '(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)';
+    private const VERSION_PRERELEASE = '(?:-(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+)(?:\.(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+))*)?';
+    private const VERSION_PATTERN    = '/^'.self::VERSION_CORE.self::VERSION_PRERELEASE.'$/';
+    private const ASSET_PATTERN      = '#^img/(?:logos|backgrounds)/[a-zA-Z0-9._-]+\.(?:svg|png|jpe?g|webp)$#i';
+    private const READY_STATUS       = 'ready';
+    private const PROJECTION_ID      = 'nextcloud-core-v1';
+    private const MAX_ID_LENGTH      = 64;
+    private const MAX_VERSION_LENGTH = 64;
+    private const MAX_NAME_LENGTH    = 160;
     private const MAX_DESCRIPTION_LENGTH = 500;
     private const ALLOWED_FIELDS         = [
         'id'          => true,
+        'version'     => true,
         'name'        => true,
         'description' => true,
         'status'      => true,
@@ -87,8 +92,23 @@ final class ProfileManifestEntryNormalizer
             'name'        => $name,
             'description' => $description,
             'source'      => 'token-sets.json',
+            'origin'      => 'built-in',
+            'installed'   => false,
             ...$availability,
         ];
+
+        if ($metadata['status'] === self::READY_STATUS) {
+            $version = $entry['version'] ?? null;
+            if (is_string($version) === false || $this->isValidVersion(version: $version) === false) {
+                return null;
+            }
+
+            $metadata['version']      = $version;
+            $metadata['content_hash'] = $this->profileFiles->getStylesheetHash(profileId: $id);
+            if ($metadata['content_hash'] === null) {
+                return null;
+            }
+        }
 
         $theming = $this->normalizeTheming(value: $entry['theming'] ?? null);
         if ($theming !== []) {
@@ -112,6 +132,19 @@ final class ProfileManifestEntryNormalizer
     }//end isValidId()
 
     /**
+     * Validate an immutable compiled-profile version.
+     *
+     * @param string $version Semantic version.
+     *
+     * @return bool Whether the version is supported.
+     */
+    public function isValidVersion(string $version): bool
+    {
+        return strlen($version) <= self::MAX_VERSION_LENGTH
+            && preg_match(self::VERSION_PATTERN, $version) === 1;
+    }//end isValidVersion()
+
+    /**
      * Normalize the package availability contract.
      *
      * @param array<string, mixed> $entry Raw manifest entry.
@@ -133,6 +166,7 @@ final class ProfileManifestEntryNormalizer
         if ($status === 'source-only'
             && array_key_exists('projection', $entry) === false
             && array_key_exists('theming', $entry) === false
+            && array_key_exists('version', $entry) === false
         ) {
             return ['status' => 'source-only'];
         }

@@ -19,11 +19,15 @@ namespace OCA\NLDesign\Domain\Profile;
  */
 final class ProfileStateNormalizer
 {
-    private const MAX_HISTORY_ENTRIES   = 10;
-    private const MAX_PROFILE_ID_LENGTH = 64;
-    private const MAX_METADATA_LENGTH   = 256;
-    private const PROFILE_ID_PATTERN    = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
-    private const REVISION_PATTERN      = '/^[a-f0-9]{20}$/';
+    private const MAX_PROFILE_ID_LENGTH   = 64;
+    private const MAX_METADATA_LENGTH     = 256;
+    private const PROFILE_ID_PATTERN      = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+    private const VERSION_CORE            = '(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)';
+    private const VERSION_IDENTIFIER      = '(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+)';
+    private const VERSION_PRERELEASE      = '(?:-'.self::VERSION_IDENTIFIER.'(?:\.'.self::VERSION_IDENTIFIER.')*)?';
+    private const PROFILE_VERSION_PATTERN = '/^'.self::VERSION_CORE.self::VERSION_PRERELEASE.'$/';
+    private const REVISION_PATTERN        = '/^[a-f0-9]{20}$/';
+    private const MAX_PROFILE_VERSION_LENGTH = 64;
 
     /**
      * Retain only canonical profile-state fields and types.
@@ -44,6 +48,15 @@ final class ProfileStateNormalizer
             ) {
                 $state['active_profile_id'] = $profileId;
             }
+        }
+
+        $profileVersion = $decoded['active_profile_version'] ?? null;
+        if ($profileVersion === null) {
+            $state['active_profile_version'] = null;
+        } else if (is_string($profileVersion) === true
+            && $this->isProfileVersion(profileVersion: $profileVersion) === true
+        ) {
+            $state['active_profile_version'] = $profileVersion;
         }
 
         $revision = $decoded['active_profile_revision'] ?? null;
@@ -67,26 +80,6 @@ final class ProfileStateNormalizer
 
         return $state;
     }//end normalizeState()
-
-    /**
-     * Retain a bounded list of complete, canonical history entries.
-     *
-     * @param array<int, mixed> $decoded Decoded history payload.
-     *
-     * @return array<int, array<string, string|null>> Normalized history.
-     */
-    public function normalizeHistory(array $decoded): array
-    {
-        $history = [];
-        foreach (array_slice($decoded, 0, self::MAX_HISTORY_ENTRIES) as $entry) {
-            $normalized = $this->normalizeHistoryEntry(value: $entry);
-            if ($normalized !== null) {
-                $history[] = $normalized;
-            }
-        }
-
-        return $history;
-    }//end normalizeHistory()
 
     /**
      * Normalize an audit actor without storing control characters or huge ids.
@@ -121,6 +114,19 @@ final class ProfileStateNormalizer
         return strlen($profileId) <= self::MAX_PROFILE_ID_LENGTH
             && preg_match(self::PROFILE_ID_PATTERN, $profileId) === 1;
     }//end isProfileId()
+
+    /**
+     * Validate an immutable profile version.
+     *
+     * @param string $profileVersion Profile version.
+     *
+     * @return bool Whether the version is valid.
+     */
+    public function isProfileVersion(string $profileVersion): bool
+    {
+        return strlen($profileVersion) <= self::MAX_PROFILE_VERSION_LENGTH
+            && preg_match(self::PROFILE_VERSION_PATTERN, $profileVersion) === 1;
+    }//end isProfileVersion()
 
     /**
      * Validate an optimistic-concurrency revision token.
@@ -160,11 +166,24 @@ final class ProfileStateNormalizer
         }
 
         $snapshot = [
-            'profile_id' => $profileId,
-            'revision'   => null,
-            'updated_at' => null,
-            'updated_by' => null,
+            'profile_id'      => $profileId,
+            'profile_version' => null,
+            'revision'        => null,
+            'updated_at'      => null,
+            'updated_by'      => null,
         ];
+
+        $profileVersion = $value['profile_version'] ?? null;
+        if ($profileVersion !== null) {
+            if ($profileId === null
+                || is_string($profileVersion) === false
+                || $this->isProfileVersion(profileVersion: $profileVersion) === false
+            ) {
+                return null;
+            }
+
+            $snapshot['profile_version'] = $profileVersion;
+        }
 
         $revision = $value['revision'] ?? null;
         if (is_string($revision) === true && $this->isRevision(revision: $revision) === true) {
@@ -180,61 +199,6 @@ final class ProfileStateNormalizer
 
         return $snapshot;
     }//end normalizePreviousSnapshot()
-
-    /**
-     * Retain only a complete, bounded history entry.
-     *
-     * @param mixed $value Decoded history entry.
-     *
-     * @return array<string, string|null>|null Normalized entry.
-     */
-    private function normalizeHistoryEntry(mixed $value): ?array
-    {
-        if (is_array($value) === false) {
-            return null;
-        }
-
-        $actor     = $value['actor'] ?? null;
-        $timestamp = $value['timestamp'] ?? null;
-        if ($this->isBoundedString(value: $actor) === false
-            || $this->isBoundedString(value: $timestamp) === false
-        ) {
-            return null;
-        }
-
-        $entry = [
-            'actor'                 => $actor,
-            'timestamp'             => $timestamp,
-            'from_profile_id'       => null,
-            'from_profile_revision' => null,
-            'to_profile_id'         => null,
-            'to_profile_revision'   => null,
-        ];
-
-        foreach (['from_profile_id', 'to_profile_id'] as $profileField) {
-            $profileId = $value[$profileField] ?? null;
-            if (is_string($profileId) === true && $this->isProfileId(profileId: $profileId) === true) {
-                $entry[$profileField] = $profileId;
-            } else if ($profileId !== null) {
-                return null;
-            }
-        }
-
-        foreach (['from_profile_revision', 'to_profile_revision'] as $revisionField) {
-            $revision = $value[$revisionField] ?? null;
-            if (is_string($revision) === true && $this->isRevision(revision: $revision) === true) {
-                $entry[$revisionField] = $revision;
-            }
-        }
-
-        if (array_key_exists('to_profile_id', $value) === false
-            || $entry['to_profile_revision'] === null
-        ) {
-            return null;
-        }
-
-        return $entry;
-    }//end normalizeHistoryEntry()
 
     /**
      * Validate bounded metadata strings read from app config.

@@ -8,7 +8,7 @@ reviewed_date: 2026-08-08
 ## REQ-CSS-001: Exact precedence
 
 The stylesheets MUST be returned in this order: fonts, the active ready
-profile, theme. The order MUST be represented by a pure
+profile, `compatibility/nextcloud-core-v1`. The order MUST be represented by a pure
 `RuntimeStylesheetPlan` with unit coverage.
 
 ## REQ-CSS-002: Safe runtime selection
@@ -21,6 +21,12 @@ emit no profile CSS and preserve native Nextcloud presentation.
 Styles MUST be attached from normal and login template events. State,
 catalogue, or planning exceptions MUST be logged and MUST NOT abort response
 rendering.
+
+Only explicitly allowlisted Nextcloud majors MAY receive the projection.
+NC32–34 MUST resolve to the shared `nextcloud-core-v1` contract; an unknown
+major MUST emit no NL Design stylesheet stack. A separate major contract MUST
+have evidence of a semantic difference in a consumed property or theme-state
+mechanism.
 
 ## REQ-CSS-003: Complete profile projection
 
@@ -36,9 +42,10 @@ Nextcloud's system-following default theme under
 
 ## REQ-CSS-004: Bounded mapping
 
-`theme.css` MUST map only the reviewed font and primary interaction roles to
-Nextcloud core custom properties. It MAY use root/body theme-state guards but
-MUST NOT contain component or structural Nextcloud selectors.
+`compatibility/nextcloud-core-v1.css` MUST map only the reviewed font and
+primary interaction roles to Nextcloud core custom properties. It MAY use
+root/body theme-state guards but MUST NOT contain component or structural
+Nextcloud selectors.
 User theme calculations and unmapped framework variables remain owned by
 Nextcloud.
 

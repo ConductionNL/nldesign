@@ -9,6 +9,7 @@
     "theming": {
       "primary_color": "#ec0000"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -37,6 +38,7 @@
     "theming": {
       "primary_color": "#1a7a3e"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -125,6 +127,7 @@
     "theming": {
       "primary_color": "#d62410"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -177,6 +180,7 @@
     "theming": {
       "primary_color": "#154273"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -187,6 +191,7 @@
     "theming": {
       "primary_color": "#00811f"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -194,6 +199,7 @@
     "id": "senerawa",
     "name": "SENERAWA",
     "description": "SENERAWA palette projection with measured light and dark primary pairs.",
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -222,6 +228,7 @@
     "theming": {
       "primary_color": "#cc0000"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },
@@ -250,6 +257,7 @@
     "theming": {
       "primary_color": "#003865"
     },
+    "version": "1.0.0",
     "status": "ready",
     "projection": "nextcloud-core-v1"
   },

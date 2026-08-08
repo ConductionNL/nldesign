@@ -6,7 +6,13 @@ namespace OCA\NLDesign\Tests\Unit\AppInfo;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Domain\Profile\ProfileCataloguePolicy;
+use OCA\NLDesign\Infrastructure\Nextcloud\Presentation\OcpNextcloudRuntimeProvider;
+use OCA\NLDesign\Infrastructure\Nextcloud\Presentation\VersionedCoreSurfaceAdapter;
+use OCA\NLDesign\Infrastructure\Profile\AppDataInstalledProfileRepository;
 use OCA\NLDesign\Listener\TemplateStylesListener;
+use OCA\NLDesign\Port\Profile\InstalledProfileRepository;
+use OCA\NLDesign\Port\Presentation\CoreSurfaceAdapter;
+use OCA\NLDesign\Port\Presentation\NextcloudRuntimeProvider;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
@@ -20,9 +26,14 @@ class ApplicationTest extends TestCase
     public function testRegistersOnlyPublicProfileRuntimeServices(): void
     {
         $context = $this->createMock(IRegistrationContext::class);
-        $context->expects(self::once())
+        $aliases = [];
+        $context->expects(self::exactly(4))
             ->method('registerServiceAlias')
-            ->with(ProfileCataloguePolicy::class, TokenSetService::class);
+            ->willReturnCallback(
+                static function (string $alias, string $target) use (&$aliases): void {
+                    $aliases[] = [$alias, $target];
+                }
+            );
 
         $listeners = [];
         $context->expects(self::exactly(2))
@@ -35,6 +46,16 @@ class ApplicationTest extends TestCase
 
         $application = (new ReflectionClass(Application::class))->newInstanceWithoutConstructor();
         $application->register(context: $context);
+
+        self::assertSame(
+            [
+                [ProfileCataloguePolicy::class, TokenSetService::class],
+                [InstalledProfileRepository::class, AppDataInstalledProfileRepository::class],
+                [NextcloudRuntimeProvider::class, OcpNextcloudRuntimeProvider::class],
+                [CoreSurfaceAdapter::class, VersionedCoreSurfaceAdapter::class],
+            ],
+            $aliases
+        );
 
         self::assertSame(
             [

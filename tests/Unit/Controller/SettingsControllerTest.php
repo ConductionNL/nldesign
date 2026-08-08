@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Tests\Unit\Controller;
 
 use OCA\NLDesign\Application\Branding\ManualThemingPlanBuilder;
+use OCA\NLDesign\Application\Presentation\CoreRuntimeCompatibility;
+use OCA\NLDesign\Application\Presentation\RuntimeStylesheetPlan;
 use OCA\NLDesign\Controller\SettingsController;
 use OCA\NLDesign\Domain\Profile\ProfileStateNormalizer;
+use OCA\NLDesign\Domain\Presentation\NextcloudRuntime;
+use OCA\NLDesign\Infrastructure\Nextcloud\Presentation\VersionedCoreSurfaceAdapter;
 use OCA\NLDesign\Infrastructure\Nextcloud\ProfileStateMutationGuard;
 use OCA\NLDesign\Infrastructure\Profile\PackagedProfileFiles;
 use OCA\NLDesign\Infrastructure\Profile\ProfileCatalogueEnvelope;
 use OCA\NLDesign\Infrastructure\Profile\ProfileManifestEntryNormalizer;
+use OCA\NLDesign\Port\Profile\InstalledProfileRepository;
+use OCA\NLDesign\Port\Presentation\NextcloudRuntimeProvider;
 use OCA\NLDesign\Service\ProfileStateService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCA\NLDesign\Settings\Admin;
@@ -56,6 +62,7 @@ class SettingsControllerTest extends TestCase
                     'profiles'        => [
                         [
                             'id'          => 'rijkshuisstijl',
+                            'version'     => '1.0.0',
                             'name'        => 'Rijkshuisstijl',
                             'description' => 'Test profile',
                             'status'      => 'ready',
@@ -67,6 +74,7 @@ class SettingsControllerTest extends TestCase
                         ],
                         [
                             'id'          => 'utrecht',
+                            'version'     => '1.0.0',
                             'name'        => 'Gemeente Utrecht',
                             'description' => 'Test profile',
                             'status'      => 'ready',
@@ -323,7 +331,8 @@ class SettingsControllerTest extends TestCase
         $admin = new Admin(
             l: $l10n,
             tokenSetService: $runtime['tokenSets'],
-            profileStateService: $runtime['profileState']
+            profileStateService: $runtime['profileState'],
+            stylesheetPlan: $this->createStylesheetPlan()
         );
 
         self::assertSame('theming', $admin->getSection());
@@ -332,7 +341,7 @@ class SettingsControllerTest extends TestCase
         self::assertSame(
             [
                 'nldesign' => [
-                    '/^(active_profile_state|active_profile_revision|profile_state_history|token_set)$/',
+                    '/^(active_profile_state|active_profile_revision|active_profile_version|profile_state_history|token_set)$/',
                 ],
             ],
             $admin->getAuthorizedAppConfig()
@@ -345,6 +354,11 @@ class SettingsControllerTest extends TestCase
         self::assertCount(2, $params['tokenSets']);
         self::assertNull($params['currentTokenSet']);
         self::assertFalse($params['currentTokenSetAvailable']);
+        self::assertTrue($params['runtimeCompatibility']['supported']);
+        self::assertSame(
+            'nextcloud-core-v1',
+            $params['runtimeCompatibility']['adapter_id']
+        );
 
         $initial = $runtime['profileState']->getActiveProfileState();
         $runtime['controller']->setTokenSet(
@@ -371,10 +385,14 @@ class SettingsControllerTest extends TestCase
         $appManager = $this->createMock(IAppManager::class);
         $appManager->method('getAppPath')->willReturn($this->appPath);
         $profileFiles = new PackagedProfileFiles(appManager: $appManager);
+        $installed    = $this->createMock(InstalledProfileRepository::class);
+        $installed->method('listRecords')->willReturn([]);
+        $installed->method('find')->willReturn(null);
         $tokenSets    = new TokenSetService(
             profileFiles: $profileFiles,
             envelope: new ProfileCatalogueEnvelope(),
-            normalizer: new ProfileManifestEntryNormalizer(profileFiles: $profileFiles)
+            normalizer: new ProfileManifestEntryNormalizer(profileFiles: $profileFiles),
+            installed: $installed
         );
         $profileState = new ProfileStateService(
             config: $config ?? $this->createConfig(),
@@ -431,6 +449,21 @@ class SettingsControllerTest extends TestCase
 
         return $config;
     }//end createConfig()
+
+    private function createStylesheetPlan(int $major=32): RuntimeStylesheetPlan
+    {
+        $runtimeProvider = $this->createMock(NextcloudRuntimeProvider::class);
+        $runtimeProvider->method('current')->willReturn(
+            new NextcloudRuntime($major, 0, 0)
+        );
+
+        return new RuntimeStylesheetPlan(
+            new CoreRuntimeCompatibility(
+                $runtimeProvider,
+                new VersionedCoreSurfaceAdapter()
+            )
+        );
+    }//end createStylesheetPlan()
 
     /**
      * @return array<string, mixed>

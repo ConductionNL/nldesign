@@ -4,8 +4,10 @@ sidebar_position: 2
 
 # Nextcloud projection mappings
 
-The executable mapping is deliberately limited to `css/theme.css`. A ready
-profile supplies four app-owned values:
+The executable mapping is deliberately limited to
+`css/compatibility/nextcloud-core-v1.css`. The runtime major allowlist maps
+Nextcloud 32–34 to this one audited common contract. A ready profile supplies
+four app-owned values:
 
 | App-owned input | Nextcloud outputs |
 | --- | --- |
@@ -32,6 +34,10 @@ Nextcloud remains responsible for:
 
 The projection also yields to the explicit OpenDyslexic theme and to both
 explicit and operating-system high-contrast preferences.
+
+There is intentionally no separate stylesheet per supported major. A new
+contract is introduced only when a source and browser audit finds a semantic
+difference in a property or theme-state mechanism used here.
 
 ## Retired selector experiments
 

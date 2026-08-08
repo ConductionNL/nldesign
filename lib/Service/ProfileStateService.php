@@ -16,6 +16,8 @@ namespace OCA\NLDesign\Service;
 
 use JsonException;
 use OCA\NLDesign\Domain\Profile\ProfileCataloguePolicy;
+use OCA\NLDesign\Domain\Profile\ProfileHistoryNormalizer;
+use OCA\NLDesign\Domain\Profile\ProfileRollbackTargetResolver;
 use OCA\NLDesign\Domain\Profile\ProfileStateNormalizer;
 use OCA\NLDesign\Infrastructure\Nextcloud\ProfileStateMutationGuard;
 use OCP\AppFramework\Services\IAppConfig;
@@ -28,28 +30,52 @@ use Throwable;
  */
 final class ProfileStateService
 {
-    private const ACTIVE_PROFILE_STATE_KEY  = 'active_profile_state';
-    private const PROFILE_STATE_HISTORY_KEY = 'profile_state_history';
-    private const MAX_HISTORY_ENTRIES       = 10;
-    private const MAX_STATE_BYTES           = 4096;
-    private const MAX_HISTORY_BYTES         = 32768;
+    private const ACTIVE_PROFILE_STATE_KEY = 'active_profile_state';
+    private const MAX_STATE_BYTES          = 4096;
+
+    /**
+     * Profile history persistence.
+     *
+     * @var ProfileHistoryStore
+     */
+    private ProfileHistoryStore $historyStore;
+
+    /**
+     * Exact rollback-target policy.
+     *
+     * @var ProfileRollbackTargetResolver
+     */
+    private ProfileRollbackTargetResolver $rollbackResolver;
 
     /**
      * Constructor.
      *
-     * @param IAppConfig                $config        App-scoped config service.
-     * @param LoggerInterface           $logger        Application logger.
-     * @param ProfileStateMutationGuard $mutationGuard Nextcloud mutation boundary.
-     * @param ProfileStateNormalizer    $normalizer    Profile-state validator.
-     * @param ProfileCataloguePolicy    $profiles      Package profile policy.
+     * @param IAppConfig                         $config           App-scoped config service.
+     * @param LoggerInterface                    $logger           Application logger.
+     * @param ProfileStateMutationGuard          $mutationGuard    Nextcloud mutation boundary.
+     * @param ProfileStateNormalizer             $normalizer       Profile-state validator.
+     * @param ProfileCataloguePolicy             $profiles         Package profile policy.
+     * @param ProfileHistoryStore|null           $historyStore     Profile history persistence.
+     * @param ProfileRollbackTargetResolver|null $rollbackResolver Rollback-target policy.
      */
     public function __construct(
         private IAppConfig $config,
         private LoggerInterface $logger,
         private ProfileStateMutationGuard $mutationGuard,
         private ProfileStateNormalizer $normalizer,
-        private ProfileCataloguePolicy $profiles
+        private ProfileCataloguePolicy $profiles,
+        ?ProfileHistoryStore $historyStore=null,
+        ?ProfileRollbackTargetResolver $rollbackResolver=null
     ) {
+        $this->historyStore     = $historyStore ?? new ProfileHistoryStore(
+            config: $config,
+            logger: $logger,
+            normalizer: new ProfileHistoryNormalizer(stateNormalizer: $normalizer)
+        );
+        $this->rollbackResolver = $rollbackResolver ?? new ProfileRollbackTargetResolver(
+            normalizer: $normalizer,
+            profiles: $profiles
+        );
     }//end __construct()
 
     /**
@@ -57,6 +83,7 @@ final class ProfileStateService
      *
      * @return array{
      *     active_profile_id: string|null,
+     *     active_profile_version: string|null,
      *     active_profile_revision: string,
      *     previous_profile_snapshot: array<string, mixed>|null,
      *     updated_at: string|null,
@@ -95,7 +122,23 @@ final class ProfileStateService
             }
         }
 
-        $revision = $this->buildInitialRevision(tokenSetId: $activeProfileId);
+        $activeProfileVersion = $state['active_profile_version'] ?? null;
+        if (is_string($activeProfileId) === true
+            && is_string($activeProfileVersion) === false
+        ) {
+            $activeProfileVersion = $this->profiles->resolveTokenSetVersion(
+                tokenSetId: $activeProfileId
+            );
+        }
+
+        if ($activeProfileId === null) {
+            $activeProfileVersion = null;
+        }
+
+        $revision = $this->buildInitialRevision(
+            tokenSetId: $activeProfileId,
+            profileVersion: $activeProfileVersion
+        );
         if ($canonicalStateExists === true
             && isset($state['active_profile_revision']) === true
             && is_string($state['active_profile_revision']) === true
@@ -105,6 +148,7 @@ final class ProfileStateService
 
         return [
             'active_profile_id'         => $activeProfileId,
+            'active_profile_version'    => $activeProfileVersion,
             'active_profile_revision'   => $revision,
             'previous_profile_snapshot' => $state['previous_profile_snapshot'] ?? null,
             'updated_at'                => $state['updated_at'] ?? null,
@@ -117,6 +161,7 @@ final class ProfileStateService
      *
      * @param string $tokenSetId       New profile id.
      * @param string $expectedRevision Revision observed by the caller.
+     * @param string $profileVersion   Exact profile version, or newest when omitted.
      * @param string $actor            Acting user identifier.
      *
      * @return array<string, mixed> Operation result.
@@ -124,16 +169,26 @@ final class ProfileStateService
     public function publishProfile(
         string $tokenSetId,
         string $expectedRevision,
+        string $profileVersion='',
         string $actor='admin'
     ): array {
+        if ($profileVersion === '') {
+            $profileVersion = $this->profiles->resolveTokenSetVersion(tokenSetId: $tokenSetId) ?? '';
+        }
+
         if ($this->normalizer->isProfileId(profileId: $tokenSetId) === false
-            || $this->profiles->isValidTokenSet(tokenSetId: $tokenSetId) === false
+            || $this->normalizer->isProfileVersion(profileVersion: $profileVersion) === false
+            || $this->profiles->isValidTokenSet(
+                tokenSetId: $tokenSetId,
+                profileVersion: $profileVersion
+            ) === false
         ) {
             return ['status' => 'invalid_profile'];
         }
 
         return $this->transitionProfile(
             tokenSetId: $tokenSetId,
+            profileVersion: $profileVersion,
             expectedRevision: $expectedRevision,
             actor: $actor
         );
@@ -153,6 +208,7 @@ final class ProfileStateService
     ): array {
         return $this->transitionProfile(
             tokenSetId: null,
+            profileVersion: null,
             expectedRevision: $expectedRevision,
             actor: $actor
         );
@@ -162,6 +218,7 @@ final class ProfileStateService
      * Run one profile transition under the shared exclusive lock.
      *
      * @param string|null $tokenSetId       Target profile, or native Nextcloud.
+     * @param string|null $profileVersion   Exact version, or null for native Nextcloud.
      * @param string      $expectedRevision Revision observed by the caller.
      * @param string      $actor            Acting user identifier.
      *
@@ -169,6 +226,7 @@ final class ProfileStateService
      */
     private function transitionProfile(
         ?string $tokenSetId,
+        ?string $profileVersion,
         string $expectedRevision,
         string $actor
     ): array {
@@ -177,10 +235,11 @@ final class ProfileStateService
         }
 
         return $this->mutationGuard->run(
-            operation: function () use ($tokenSetId, $actor, $expectedRevision): array {
+            operation: function () use ($tokenSetId, $profileVersion, $actor, $expectedRevision): array {
                 $currentState = $this->getActiveProfileState();
                 return $this->transitionProfileWhileLocked(
                     tokenSetId: $tokenSetId,
+                    profileVersion: $profileVersion,
                     actor: $actor,
                     expectedRevision: $expectedRevision,
                     currentState: $currentState
@@ -193,6 +252,7 @@ final class ProfileStateService
      * Publish after the exclusive state lock has been acquired.
      *
      * @param string|null          $tokenSetId       Target profile, or native Nextcloud.
+     * @param string|null          $profileVersion   Exact version, or null for native Nextcloud.
      * @param string               $actor            Acting user identifier.
      * @param string               $expectedRevision Revision observed by the caller.
      * @param array<string, mixed> $currentState     State freshly read under the lock.
@@ -201,6 +261,7 @@ final class ProfileStateService
      */
     private function transitionProfileWhileLocked(
         ?string $tokenSetId,
+        ?string $profileVersion,
         string $actor,
         string $expectedRevision,
         array $currentState
@@ -212,7 +273,9 @@ final class ProfileStateService
             ];
         }
 
-        if ($currentState['active_profile_id'] === $tokenSetId) {
+        if ($currentState['active_profile_id'] === $tokenSetId
+            && $currentState['active_profile_version'] === $profileVersion
+        ) {
             return [
                 'status'  => 'noop',
                 'current' => $currentState,
@@ -223,16 +286,19 @@ final class ProfileStateService
         try {
             $nextState = [
                 'active_profile_id'         => $tokenSetId,
+                'active_profile_version'    => $profileVersion,
                 'active_profile_revision'   => $this->buildRevision(
                     tokenSetId: $tokenSetId,
+                    profileVersion: $profileVersion,
                     previous: $currentState['active_profile_revision'],
                     timestamp: $timestamp
                 ),
                 'previous_profile_snapshot' => [
-                    'profile_id' => $currentState['active_profile_id'],
-                    'revision'   => $currentState['active_profile_revision'],
-                    'updated_at' => $currentState['updated_at'],
-                    'updated_by' => $currentState['updated_by'],
+                    'profile_id'      => $currentState['active_profile_id'],
+                    'profile_version' => $currentState['active_profile_version'],
+                    'revision'        => $currentState['active_profile_revision'],
+                    'updated_at'      => $currentState['updated_at'],
+                    'updated_by'      => $currentState['updated_by'],
                 ],
                 'updated_at'                => $timestamp,
                 'updated_by'                => $this->normalizer->normalizeActor(actor: $actor),
@@ -321,37 +387,30 @@ final class ProfileStateService
             ];
         }
 
-        $previous = $currentState['previous_profile_snapshot'];
-        if (is_array($previous) === false
-            || array_key_exists('profile_id', $previous) === false
-        ) {
+        $target = $this->rollbackResolver->resolve(
+            snapshot: $currentState['previous_profile_snapshot']
+        );
+        if ($target === null) {
             return [
                 'status'  => 'no_previous_snapshot',
                 'current' => $currentState,
             ];
         }
 
-        $previousProfileId = $previous['profile_id'];
-        if ($previousProfileId !== null
-            && (is_string($previousProfileId) === false
-            || $this->normalizer->isProfileId(profileId: $previousProfileId) === false
-            || $this->profiles->isValidTokenSet(tokenSetId: $previousProfileId) === false)
-        ) {
-            return [
-                'status'  => 'no_previous_snapshot',
-                'current' => $currentState,
-            ];
-        }
+        $previousProfileId = $target['profile_id'];
+        $previousVersion   = $target['profile_version'];
 
         $result = $this->transitionProfileWhileLocked(
             tokenSetId: $previousProfileId,
+            profileVersion: $previousVersion,
             actor: $actor,
             expectedRevision: $expectedRevision,
             currentState: $currentState
         );
 
-        $result['rolled_back_from']  = $currentState['active_profile_id'];
-        $result['target_profile_id'] = $previousProfileId;
+        $result['rolled_back_from']       = $currentState['active_profile_id'];
+        $result['target_profile_id']      = $previousProfileId;
+        $result['target_profile_version'] = $previousVersion;
 
         return $result;
     }//end rollbackProfileWhileLocked()
@@ -363,34 +422,7 @@ final class ProfileStateService
      */
     public function getHistory(): array
     {
-        $rawHistory = $this->config->getAppValueString(
-            key: self::PROFILE_STATE_HISTORY_KEY,
-            default: '[]'
-        );
-        if (strlen($rawHistory) > self::MAX_HISTORY_BYTES) {
-            $this->logger->warning('Ignoring oversized NL Design profile history.');
-            return [];
-        }
-
-        try {
-            $decoded = json_decode(
-                json: $rawHistory,
-                associative: true,
-                flags: JSON_THROW_ON_ERROR
-            );
-        } catch (JsonException $exception) {
-            $this->logger->warning(
-                'Ignoring malformed NL Design profile history.',
-                ['exception' => $exception]
-            );
-            return [];
-        }
-
-        if (is_array($decoded) === false || array_is_list($decoded) === false) {
-            return [];
-        }
-
-        return $this->normalizer->normalizeHistory(decoded: $decoded);
+        return $this->historyStore->getHistory();
     }//end getHistory()
 
     /**
@@ -419,6 +451,10 @@ final class ProfileStateService
                 key: 'active_profile_revision',
                 value: (string) $nextState['active_profile_revision']
             );
+            $this->config->setAppValueString(
+                key: 'active_profile_version',
+                value: (string) $nextState['active_profile_version']
+            );
         } catch (Throwable $exception) {
             $this->logger->warning(
                 'NL Design profile published, but a compatibility mirror write failed.',
@@ -427,7 +463,7 @@ final class ProfileStateService
         }//end try
 
         try {
-            $this->recordHistory(
+            $this->historyStore->record(
                 previousState: $previousState,
                 nextState: $nextState,
                 actor: $actor,
@@ -442,54 +478,20 @@ final class ProfileStateService
     }//end writeAuxiliaryState()
 
     /**
-     * Append an activation operation to bounded history.
-     *
-     * @param array<string, mixed> $previousState Prior state.
-     * @param array<string, mixed> $nextState     New state.
-     * @param string               $actor         Actor identifier.
-     * @param string               $timestamp     UTC timestamp.
-     *
-     * @return void
-     *
-     * @throws JsonException When history cannot be encoded.
-     */
-    private function recordHistory(
-        array $previousState,
-        array $nextState,
-        string $actor,
-        string $timestamp
-    ): void {
-        $history = $this->getHistory();
-        array_unshift(
-            $history,
-            [
-                'actor'                 => $actor,
-                'timestamp'             => $timestamp,
-                'from_profile_id'       => $previousState['active_profile_id'] ?? null,
-                'from_profile_revision' => $previousState['active_profile_revision'] ?? null,
-                'to_profile_id'         => $nextState['active_profile_id'] ?? null,
-                'to_profile_revision'   => $nextState['active_profile_revision'] ?? null,
-            ]
-        );
-
-        $history = array_slice($history, 0, self::MAX_HISTORY_ENTRIES);
-        $this->config->setAppValueString(
-            key: self::PROFILE_STATE_HISTORY_KEY,
-            value: json_encode(value: $history, flags: JSON_THROW_ON_ERROR)
-        );
-    }//end recordHistory()
-
-    /**
      * Build the stable revision for state that predates canonical persistence.
      *
-     * @param string|null $tokenSetId Profile identifier, or native Nextcloud.
+     * @param string|null $tokenSetId     Profile identifier, or native Nextcloud.
+     * @param string|null $profileVersion Exact profile version.
      *
      * @return string Revision token.
      */
-    private function buildInitialRevision(?string $tokenSetId): string
+    private function buildInitialRevision(?string $tokenSetId, ?string $profileVersion): string
     {
         return substr(
-            hash(algo: 'sha256', data: ($tokenSetId ?? 'native').'|initial'),
+            hash(
+                algo: 'sha256',
+                data: ($tokenSetId ?? 'native').'|'.($profileVersion ?? 'native').'|initial'
+            ),
             0,
             20
         );
@@ -498,18 +500,34 @@ final class ProfileStateService
     /**
      * Build a transition revision.
      *
-     * @param string|null $tokenSetId Profile identifier, or native Nextcloud.
-     * @param string      $previous   Previous revision.
-     * @param string      $timestamp  UTC timestamp.
+     * @param string|null $tokenSetId     Profile identifier, or native Nextcloud.
+     * @param string|null $profileVersion Exact profile version.
+     * @param string      $previous       Previous revision.
+     * @param string      $timestamp      UTC timestamp.
      *
      * @return string Revision token.
      */
-    private function buildRevision(?string $tokenSetId, string $previous, string $timestamp): string
-    {
+    private function buildRevision(
+        ?string $tokenSetId,
+        ?string $profileVersion,
+        string $previous,
+        string $timestamp
+    ): string {
+        $revisionInput = implode(
+            separator: '|',
+            array: [
+                $tokenSetId ?? 'native',
+                $profileVersion ?? 'native',
+                $previous,
+                $timestamp,
+                bin2hex(random_bytes(16)),
+            ]
+        );
+
         return substr(
             hash(
                 algo: 'sha256',
-                data: ($tokenSetId ?? 'native').'|'.$previous.'|'.$timestamp.'|'.bin2hex(random_bytes(16))
+                data: $revisionInput
             ),
             0,
             20

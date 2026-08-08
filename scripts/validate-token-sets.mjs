@@ -24,6 +24,7 @@ try {
 const manifestPath = path.join(projectRoot, 'token-sets.json');
 const tokenDirectory = path.join(projectRoot, 'css', 'tokens');
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const versionPattern = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+)(?:\.(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+))*)?$/;
 const colorPattern = /^#[0-9a-f]{6}$/i;
 const assetPattern = /^img\/(?:logos|backgrounds)\/[a-zA-Z0-9._-]+\.(?:svg|png|jpe?g|webp)$/i;
 const cssAssetPattern = /^\.\.\/\.\.\/img\/(?:logos|backgrounds)\/[a-zA-Z0-9._-]+\.(?:svg|png|jpe?g|webp)$/i;
@@ -43,7 +44,15 @@ const darkProjectionProperties = requiredProjectionProperties.filter(
 	(property) => property !== '--nldesign-font-family'
 );
 const allowedCatalogueFields = new Set(['schema', 'default_profile', 'profiles']);
-const allowedProfileFields = new Set(['id', 'name', 'description', 'status', 'projection', 'theming']);
+const allowedProfileFields = new Set([
+	'id',
+	'version',
+	'name',
+	'description',
+	'status',
+	'projection',
+	'theming',
+]);
 const allowedReadyProperties = new Set(requiredProjectionProperties);
 // Nextcloud writes five theme states onto <body>, not two. `data-theme-default`
 // follows the operating system and is what every account has until someone opens
@@ -57,6 +66,7 @@ const allowedReadySelectors = new Set([':root', '[data-theme-dark]', '[data-them
 const allowedReadyAtRulePattern = /^@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)$/;
 const nextcloudOwnedPropertyPattern = /^--(?:color-|font-face$|border-radius(?:-|$)|body-|header-|default-|animation-)/;
 const maxIdLength = 64;
+const maxVersionLength = 64;
 const maxNameLength = 160;
 const maxDescriptionLength = 500;
 const maxManifestBytes = 256 * 1024;
@@ -218,7 +228,7 @@ for (const [index, entry] of manifest.entries()) {
 		continue;
 	}
 
-	const { id, name, description, status, projection, theming } = entry;
+	const { id, version, name, description, status, projection, theming } = entry;
 	for (const field of Object.keys(entry)) {
 		report(allowedProfileFields.has(field), `${prefix} contains unsupported field ${field}.`);
 	}
@@ -236,9 +246,16 @@ for (const [index, entry] of manifest.entries()) {
 	if (status === 'ready') {
 		readyIds.add(id);
 		report(projection === projectionId, `${id}: ready profile must declare ${projectionId}.`);
+		report(
+			typeof version === 'string'
+				&& version.length <= maxVersionLength
+				&& versionPattern.test(version),
+			`${id}: ready profile must declare a supported semantic version.`
+		);
 	} else if (status === 'source-only') {
 		report(projection === undefined, `${id}: source-only profile must not declare a projection.`);
 		report(theming === undefined, `${id}: source-only profile must not declare Theming hints.`);
+		report(version === undefined, `${id}: source-only profile must not declare a compiled profile version.`);
 	}
 	report(
 		typeof name === 'string'

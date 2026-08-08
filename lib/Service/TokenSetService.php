@@ -18,6 +18,7 @@ use OCA\NLDesign\Domain\Profile\ProfileCataloguePolicy;
 use OCA\NLDesign\Infrastructure\Profile\PackagedProfileFiles;
 use OCA\NLDesign\Infrastructure\Profile\ProfileCatalogueEnvelope;
 use OCA\NLDesign\Infrastructure\Profile\ProfileManifestEntryNormalizer;
+use OCA\NLDesign\Port\Profile\InstalledProfileRepository;
 
 /**
  * Discover ready profiles from the packaged profile manifest.
@@ -39,11 +40,13 @@ final class TokenSetService implements ProfileCataloguePolicy
      * @param PackagedProfileFiles           $profileFiles Immutable package boundary.
      * @param ProfileCatalogueEnvelope       $envelope     Versioned envelope decoder.
      * @param ProfileManifestEntryNormalizer $normalizer   Profile metadata boundary.
+     * @param InstalledProfileRepository     $installed    Installed profile boundary.
      */
     public function __construct(
         private PackagedProfileFiles $profileFiles,
         private ProfileCatalogueEnvelope $envelope,
-        private ProfileManifestEntryNormalizer $normalizer
+        private ProfileManifestEntryNormalizer $normalizer,
+        private InstalledProfileRepository $installed
     ) {
     }//end __construct()
 
@@ -62,9 +65,31 @@ final class TokenSetService implements ProfileCataloguePolicy
                 continue;
             }
 
-            $tokenSets[] = $metadata;
+            $tokenSets[$this->buildVersionKey(
+                profileId: $id,
+                profileVersion: (string) $metadata['version']
+            )] = $metadata;
         }
 
+        foreach ($this->installed->listRecords() as $record) {
+            $metadata = $record['metadata'] ?? null;
+            if (is_array($metadata) === false
+                || is_string($metadata['id'] ?? null) === false
+                || is_string($metadata['version'] ?? null) === false
+            ) {
+                continue;
+            }
+
+            $key = $this->buildVersionKey(
+                profileId: $metadata['id'],
+                profileVersion: $metadata['version']
+            );
+            if (isset($tokenSets[$key]) === false) {
+                $tokenSets[$key] = $metadata;
+            }
+        }
+
+        $tokenSets = array_values($tokenSets);
         usort(
             $tokenSets,
             static function (array $left, array $right): int {
@@ -77,7 +102,15 @@ final class TokenSetService implements ProfileCataloguePolicy
                     return $nameOrder;
                 }
 
-                return strcmp((string) $left['id'], (string) $right['id']);
+                $idOrder = strcmp((string) $left['id'], (string) $right['id']);
+                if ($idOrder !== 0) {
+                    return $idOrder;
+                }
+
+                return version_compare(
+                    (string) $right['version'],
+                    (string) $left['version']
+                );
             }
         );
 
@@ -88,37 +121,157 @@ final class TokenSetService implements ProfileCataloguePolicy
      * Check whether a profile is declared and resolves to a readable stylesheet
      * inside the app's token directory.
      *
-     * @param string $tokenSetId Profile identifier.
+     * @param string $tokenSetId     Profile identifier.
+     * @param string $profileVersion Exact version, or newest when omitted.
      *
      * @return bool Whether the profile is usable.
      */
-    public function isValidTokenSet(string $tokenSetId): bool
+    public function isValidTokenSet(string $tokenSetId, string $profileVersion=''): bool
     {
-        if ($this->normalizer->isValidId(id: $tokenSetId) === false) {
-            return false;
-        }
-
-        $metadata = $this->getManifestIndex()[$tokenSetId] ?? null;
-        return is_array($metadata) === true
-            && $metadata['status'] === self::READY_STATUS
-            && $this->profileFiles->hasSafeStylesheet(profileId: $tokenSetId) === true;
+        return $this->getTokenSetMetadata(
+            tokenSetId: $tokenSetId,
+            profileVersion: $profileVersion
+        ) !== null;
     }//end isValidTokenSet()
 
     /**
      * Get normalized metadata for a usable profile.
      *
-     * @param string $tokenSetId Profile identifier.
+     * @param string $tokenSetId     Profile identifier.
+     * @param string $profileVersion Exact version, or newest when omitted.
      *
      * @return array<string, mixed>|null Profile metadata.
      */
-    public function getTokenSetMetadata(string $tokenSetId): ?array
+    public function getTokenSetMetadata(string $tokenSetId, string $profileVersion=''): ?array
     {
-        if ($this->isValidTokenSet(tokenSetId: $tokenSetId) === false) {
+        if ($this->normalizer->isValidId(id: $tokenSetId) === false) {
             return null;
         }
 
-        return $this->getManifestIndex()[$tokenSetId] ?? null;
+        if ($profileVersion === '') {
+            $profileVersion = $this->resolveTokenSetVersion(tokenSetId: $tokenSetId) ?? '';
+        }
+
+        if ($this->normalizer->isValidVersion(version: $profileVersion) === false) {
+            return null;
+        }
+
+        $packaged = $this->getManifestIndex()[$tokenSetId] ?? null;
+        if (is_array($packaged) === true
+            && ($packaged['status'] ?? null) === self::READY_STATUS
+            && ($packaged['version'] ?? null) === $profileVersion
+            && $this->profileFiles->hasSafeStylesheet(profileId: $tokenSetId) === true
+        ) {
+            return $packaged;
+        }
+
+        $record   = $this->installed->find(
+            profileId: $tokenSetId,
+            profileVersion: $profileVersion
+        );
+        $metadata = $record['metadata'] ?? null;
+        if (is_array($metadata) === true) {
+            return $metadata;
+        }
+
+        return null;
     }//end getTokenSetMetadata()
+
+    /**
+     * Resolve the newest available immutable version of one profile.
+     *
+     * @param string $tokenSetId Profile identifier.
+     *
+     * @return string|null Resolved version.
+     */
+    public function resolveTokenSetVersion(string $tokenSetId): ?string
+    {
+        if ($this->normalizer->isValidId(id: $tokenSetId) === false) {
+            return null;
+        }
+
+        $versions = [];
+        foreach ($this->getAvailableTokenSets() as $metadata) {
+            if (($metadata['id'] ?? null) === $tokenSetId
+                && is_string($metadata['version'] ?? null) === true
+            ) {
+                $versions[] = $metadata['version'];
+            }
+        }
+
+        if ($versions === []) {
+            return null;
+        }
+
+        usort(
+            $versions,
+            static fn (string $left, string $right): int => version_compare($right, $left)
+        );
+        return $versions[0];
+    }//end resolveTokenSetVersion()
+
+    /**
+     * Resolve how one exact profile stylesheet is attached at runtime.
+     *
+     * @param string $profileId      Stable profile identifier.
+     * @param string $profileVersion Exact profile version.
+     *
+     * @return array<string, string>|null Runtime stylesheet descriptor.
+     */
+    public function getRuntimeStylesheet(string $profileId, string $profileVersion): ?array
+    {
+        $metadata = $this->getTokenSetMetadata(
+            tokenSetId: $profileId,
+            profileVersion: $profileVersion
+        );
+        if ($metadata === null || is_string($metadata['content_hash'] ?? null) === false) {
+            return null;
+        }
+
+        if (($metadata['origin'] ?? null) === 'built-in') {
+            return [
+                'type'         => 'packaged',
+                'path'         => 'tokens/'.$profileId,
+                'content_hash' => $metadata['content_hash'],
+            ];
+        }
+
+        if (($metadata['origin'] ?? null) === 'installed') {
+            return [
+                'type'         => 'installed',
+                'content_hash' => $metadata['content_hash'],
+            ];
+        }
+
+        return null;
+    }//end getRuntimeStylesheet()
+
+    /**
+     * Read verified generated CSS for one installed version and digest.
+     *
+     * @param string $profileId      Stable profile identifier.
+     * @param string $profileVersion Exact profile version.
+     * @param string $contentHash    Expected immutable digest.
+     *
+     * @return string|null Generated CSS.
+     */
+    public function getInstalledStylesheet(
+        string $profileId,
+        string $profileVersion,
+        string $contentHash
+    ): ?string {
+        $record = $this->installed->find(
+            profileId: $profileId,
+            profileVersion: $profileVersion
+        );
+        if (($record['metadata']['content_hash'] ?? null) !== $contentHash
+            || is_string($record['css'] ?? null) === false
+        ) {
+            return null;
+        }
+
+        return $record['css'];
+    }//end getInstalledStylesheet()
 
     /**
      * Load and index the manifest once per request.
@@ -172,4 +325,17 @@ final class TokenSetService implements ProfileCataloguePolicy
 
         return $this->manifestIndex;
     }//end getManifestIndex()
+
+    /**
+     * Build a collision-free in-memory identity key.
+     *
+     * @param string $profileId      Stable profile identifier.
+     * @param string $profileVersion Exact profile version.
+     *
+     * @return string Version key.
+     */
+    private function buildVersionKey(string $profileId, string $profileVersion): string
+    {
+        return $profileId.'@'.$profileVersion;
+    }//end buildVersionKey()
 }//end class

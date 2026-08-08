@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Settings;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Application\Presentation\RuntimeStylesheetPlan;
 use OCA\NLDesign\Service\ProfileStateService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -54,14 +55,16 @@ final class Admin implements IDelegatedSettings
     /**
      * Constructor.
      *
-     * @param IL10N               $l                   The localization service.
-     * @param TokenSetService     $tokenSetService     Token set discovery service.
-     * @param ProfileStateService $profileStateService Profile state tracking service.
+     * @param IL10N                 $l                   The localization service.
+     * @param TokenSetService       $tokenSetService     Token set discovery service.
+     * @param ProfileStateService   $profileStateService Profile state tracking service.
+     * @param RuntimeStylesheetPlan $stylesheetPlan      Runtime compatibility plan.
      */
     public function __construct(
         IL10N $l,
         TokenSetService $tokenSetService,
-        ProfileStateService $profileStateService
+        ProfileStateService $profileStateService,
+        private RuntimeStylesheetPlan $stylesheetPlan
     ) {
         $this->l = $l;
         $this->tokenSetService     = $tokenSetService;
@@ -79,10 +82,13 @@ final class Admin implements IDelegatedSettings
         $tokenSets       = $this->tokenSetService->getAvailableTokenSets();
         $profileState    = $this->profileStateService->getActiveProfileState();
         $currentTokenSet = $profileState['active_profile_id'];
+        $currentVersion  = $profileState['active_profile_version'];
+        $runtimePlan     = $this->stylesheetPlan->build();
 
         $currentIsAvailable = $this->isCurrentTokenSetAvailable(
             tokenSets: $tokenSets,
-            currentTokenSet: $currentTokenSet
+            currentTokenSet: $currentTokenSet,
+            currentVersion: $currentVersion
         );
 
         return new TemplateResponse(
@@ -91,8 +97,10 @@ final class Admin implements IDelegatedSettings
             [
                 'tokenSets'                => $tokenSets,
                 'currentTokenSet'          => $currentTokenSet,
+                'currentProfileVersion'    => $currentVersion,
                 'currentTokenSetAvailable' => $currentIsAvailable,
                 'profileState'             => $profileState,
+                'runtimeCompatibility'     => $runtimePlan,
             ]
         );
     }//end getForm()
@@ -102,13 +110,19 @@ final class Admin implements IDelegatedSettings
      *
      * @param array<int, array<string, mixed>> $tokenSets       Available token sets from discovery.
      * @param string|null                      $currentTokenSet Stored token set.
+     * @param string|null                      $currentVersion  Stored profile version.
      *
      * @return bool True when token set exists.
      */
-    private function isCurrentTokenSetAvailable(array $tokenSets, ?string $currentTokenSet): bool
-    {
+    private function isCurrentTokenSetAvailable(
+        array $tokenSets,
+        ?string $currentTokenSet,
+        ?string $currentVersion
+    ): bool {
         foreach ($tokenSets as $tokenSet) {
-            if (($tokenSet['id'] ?? '') === $currentTokenSet) {
+            if (($tokenSet['id'] ?? '') === $currentTokenSet
+                && ($tokenSet['version'] ?? '') === $currentVersion
+            ) {
                 return true;
             }
         }
@@ -155,7 +169,7 @@ final class Admin implements IDelegatedSettings
     {
         return [
             Application::APP_ID => [
-                '/^(active_profile_state|active_profile_revision|profile_state_history|token_set)$/',
+                '/^(active_profile_state|active_profile_revision|active_profile_version|profile_state_history|token_set)$/',
             ],
         ];
     }//end getAuthorizedAppConfig()

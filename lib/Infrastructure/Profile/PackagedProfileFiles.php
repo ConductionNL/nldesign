@@ -119,6 +119,27 @@ final class PackagedProfileFiles
     }//end hasSafeStylesheet()
 
     /**
+     * Return the content identity of a bounded packaged stylesheet.
+     *
+     * @param string $profileId Valid profile identifier.
+     *
+     * @return string|null SHA-256 digest, or null for an unsafe stylesheet.
+     */
+    public function getStylesheetHash(string $profileId): ?string
+    {
+        if ($this->hasSafeStylesheet(profileId: $profileId) === false) {
+            return null;
+        }
+
+        $digest = hash_file(algo: 'sha256', filename: $this->getAppPath().'/css/tokens/'.$profileId.'.css');
+        if (is_string($digest) === true) {
+            return $digest;
+        }
+
+        return null;
+    }//end getStylesheetHash()
+
+    /**
      * Confirm that a manual theming asset is a bounded regular package file.
      *
      * @param string $asset App-relative asset path.

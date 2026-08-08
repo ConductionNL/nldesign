@@ -22,7 +22,8 @@ states.
 a required null activation sentinel, and a profile list. The
 `default_profile` field may not name an organisation: every fresh installation
 stays on native Nextcloud until an administrator acts. Every
-record has an `id`, `name`, `description`, and one of these statuses:
+record has an `id`, `name`, `description`, and one of these statuses. Every
+`ready` record also has an immutable semantic `version`:
 
 - `source-only`: inventory retained for provenance and future mapping work;
   never administrator-selectable and may not declare Theming hints.
@@ -33,6 +34,26 @@ record has an `id`, `name`, `description`, and one of these statuses:
 The current package contains 40 records and matching CSS files: 8 ready and 32
 source-only. Directory discovery cannot promote a file into the runtime
 catalogue.
+
+## Built-in and installed versions
+
+The runtime catalogue is a composition, not a PHP enumeration:
+
+- built-in versions come from `token-sets.json` plus reviewed packaged CSS and
+  are read-only;
+- instance-local versions come from validated `nldesign-profile-pack/v1`
+  documents and live as immutable integrity-checked records in Nextcloud app data.
+
+The identity of a selectable projection is always `id` + `version`. Multiple
+versions of one profile can coexist. Activation, rollback history, CSS lookup,
+and uninstall protection all retain that exact identity. The newest version is
+used only when migrating older unversioned state or when a caller explicitly
+omits a version; installing a newer version never silently activates it.
+
+The installed format is deliberately narrower than the future build-time
+source pipeline. It carries only the current Nextcloud projection input. It
+does not accept an upstream DTCG graph, arbitrary CSS, external assets, or
+Nextcloud configuration fields.
 
 ## Namespace and ownership
 

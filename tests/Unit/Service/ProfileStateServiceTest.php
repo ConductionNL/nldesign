@@ -106,6 +106,7 @@ class ProfileStateServiceTest extends TestCase
 
         self::assertSame('ok', $result['status']);
         self::assertSame('utrecht', $result['next']['active_profile_id']);
+        self::assertSame('1.0.0', $result['next']['active_profile_version']);
         self::assertSame(
             'utrecht',
             $store['token_set']
@@ -116,6 +117,7 @@ class ProfileStateServiceTest extends TestCase
         self::assertCount(1, $history);
         self::assertNull($history[0]['from_profile_id']);
         self::assertSame('utrecht', $history[0]['to_profile_id']);
+        self::assertSame('1.0.0', $history[0]['to_profile_version']);
         self::assertSame('user:admin', $history[0]['actor']);
     }//end testPublishPersistsCanonicalStateAndHistory()
 
@@ -605,10 +607,18 @@ class ProfileStateServiceTest extends TestCase
     private function createProfileCataloguePolicy(): ProfileCataloguePolicy
     {
         return new class implements ProfileCataloguePolicy {
-            public function isValidTokenSet(string $tokenSetId): bool
+            public function isValidTokenSet(string $tokenSetId, string $profileVersion=''): bool
             {
-                return in_array($tokenSetId, ['rijkshuisstijl', 'utrecht'], true);
+                return in_array($tokenSetId, ['rijkshuisstijl', 'utrecht'], true)
+                    && ($profileVersion === '' || $profileVersion === '1.0.0');
             }//end isValidTokenSet()
+
+            public function resolveTokenSetVersion(string $tokenSetId): ?string
+            {
+                return $this->isValidTokenSet(tokenSetId: $tokenSetId) === true
+                    ? '1.0.0'
+                    : null;
+            }//end resolveTokenSetVersion()
         };
     }//end createProfileCataloguePolicy()
 }//end class

@@ -1,0 +1,27 @@
+{
+  "schema": "nldesign-profile-pack/v1",
+  "profile": {
+    "id": "voorbeeld-profiel",
+    "version": "1.0.0",
+    "name": "Voorbeeldprofiel",
+    "description": "Veilig voorbeeld van een installeerbaar Nextcloud-profiel.",
+    "publisher": "Lokale Nextcloud-beheerder",
+    "license": "CC0-1.0",
+    "source": "local-profile-pack",
+    "source_revision": "example-1",
+    "projection": "nextcloud-core-v1",
+    "tokens": {
+      "font_stack": "fira-sans",
+      "light": {
+        "primary": "#183a37",
+        "primary_text": "#faf7f0",
+        "primary_hover": "#3f5a57"
+      },
+      "dark": {
+        "primary": "#efd6ac",
+        "primary_text": "#04151f",
+        "primary_hover": "#e7ece8"
+      }
+    }
+  }
+}

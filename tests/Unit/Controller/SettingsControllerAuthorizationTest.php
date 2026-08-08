@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace OCA\NLDesign\Tests\Unit\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
+use OCA\NLDesign\Controller\ProfileLibraryController;
 use OCA\NLDesign\Controller\SettingsController;
+use OCA\NLDesign\Controller\StylesheetController;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -60,6 +64,36 @@ class SettingsControllerAuthorizationTest extends TestCase
         self::assertSame($coveredActions, $actions);
     }
 
+    /**
+     * @return array<string, array{string}> Profile-library actions.
+     */
+    public static function libraryActionProvider(): array
+    {
+        return [
+            'list versions'     => ['getProfiles'],
+            'install version'   => ['installProfile'],
+            'uninstall version' => ['uninstallProfile'],
+        ];
+    }
+
+    #[DataProvider('libraryActionProvider')]
+    public function testLibraryActionRequiresAuthorizedAdminSetting(string $methodName): void
+    {
+        $method     = new ReflectionMethod(ProfileLibraryController::class, $methodName);
+        $attributes = $method->getAttributes(AuthorizedAdminSetting::class);
+
+        self::assertCount(1, $attributes);
+        self::assertSame(Admin::class, $attributes[0]->newInstance()->getSettings());
+    }
+
+    public function testDigestAddressedStylesheetIsTheOnlyPublicAction(): void
+    {
+        $method = new ReflectionMethod(StylesheetController::class, 'getProfile');
+
+        self::assertCount(1, $method->getAttributes(PublicPage::class));
+        self::assertCount(1, $method->getAttributes(NoCSRFRequired::class));
+    }
+
     public function testRouteTableContainsOnlyAuditedTypedActions(): void
     {
         /** @var array{routes: array<int, array{name: string, url: string, verb: string}>} $routes */
@@ -73,6 +107,21 @@ class SettingsControllerAuthorizationTest extends TestCase
                 ['name' => 'settings#getThemingPlan', 'url' => '/settings/theming-plan', 'verb' => 'GET'],
                 ['name' => 'settings#rollbackTokenSet', 'url' => '/settings/rollback', 'verb' => 'POST'],
                 ['name' => 'settings#getProfileHistory', 'url' => '/settings/profile-history', 'verb' => 'GET'],
+                ['name' => 'profileLibrary#getProfiles', 'url' => '/api/v1/profiles', 'verb' => 'GET'],
+                ['name' => 'profileLibrary#installProfile', 'url' => '/api/v1/profiles/install', 'verb' => 'POST'],
+                ['name' => 'profileLibrary#uninstallProfile', 'url' => '/api/v1/profiles/uninstall', 'verb' => 'POST'],
+                [
+                    'name'         => 'stylesheet#getProfile',
+                    'url'          => '/styles/profiles/{profileId}/{profileVersion}/{contentHash}',
+                    'verb'         => 'GET',
+                    'requirements' => [
+                        'profileId'      => '[a-z0-9]+(?:-[a-z0-9]+)*',
+                        'profileVersion' => '(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)'.
+                            '(?:-(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+)'.
+                            '(?:\.(?:(?!0\d+(?:\.|$))[0-9A-Za-z-]+))*)?',
+                        'contentHash'    => '[a-f0-9]{64}',
+                    ],
+                ],
             ],
             $routes['routes']
         );
@@ -85,7 +134,7 @@ class SettingsControllerAuthorizationTest extends TestCase
         self::assertSame(
             [
                 Application::APP_ID => [
-                    '/^(active_profile_state|active_profile_revision|profile_state_history|token_set)$/',
+                    '/^(active_profile_state|active_profile_revision|active_profile_version|profile_state_history|token_set)$/',
                 ],
             ],
             $admin->getAuthorizedAppConfig()

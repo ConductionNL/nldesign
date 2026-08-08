@@ -22,9 +22,19 @@ interface ProfileCataloguePolicy
     /**
      * Check whether a profile is currently ready and package-safe.
      *
-     * @param string $tokenSetId Profile identifier.
+     * @param string $tokenSetId     Profile identifier.
+     * @param string $profileVersion Exact version, or newest when omitted.
      *
      * @return bool Whether the profile may be published.
      */
-    public function isValidTokenSet(string $tokenSetId): bool;
+    public function isValidTokenSet(string $tokenSetId, string $profileVersion=''): bool;
+
+    /**
+     * Resolve the newest available immutable version of one profile.
+     *
+     * @param string $tokenSetId Profile identifier.
+     *
+     * @return string|null Resolved version.
+     */
+    public function resolveTokenSetVersion(string $tokenSetId): ?string;
 }//end interface

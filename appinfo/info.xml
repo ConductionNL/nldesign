@@ -6,17 +6,23 @@
 	<summary>Select bounded Dutch public-sector profile projections in Nextcloud</summary>
 	<description><![CDATA[
 This app leaves a new installation on native Nextcloud until an administrator
-selects a packaged design profile. It maps only that profile's font and primary
-interaction roles to a bounded Nextcloud core CSS surface.
+selects an exact version of a bounded design profile. It maps only that
+profile's font and primary interaction roles to a bounded Nextcloud core CSS
+surface.
 
 The package inventories 40 profile snapshots. Only the 8 records carrying the
 statically validated nextcloud-core-v1 projection are selectable in administration settings.
+
+Administrators can also install immutable instance-local versions from the
+closed nldesign-profile-pack/v1 JSON format. The app generates their CSS and
+stores integrity-checked records in Nextcloud app data; arbitrary CSS, executable
+content, remote assets, and generic Nextcloud settings are not accepted.
 
 This is the core profile plane. Theming app fields are surfaced separately as
 manual-only bridge guidance until a compatibility driver is explicitly
 version-verified, recovery-tested, and enabled.
 	]]></description>
-	<version>0.2.0-rc1</version>
+	<version>0.2.0-rc2</version>
 	<licence>EUPL-1.2</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>NLDesign</namespace>

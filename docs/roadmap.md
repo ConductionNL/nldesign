@@ -1,6 +1,7 @@
 # NL Design for Nextcloud — Product and Architecture Roadmap
 
-**Status:** Architecture reset in progress; profile foundation implemented locally
+**Status:** Profile foundation and bounded installer implemented; one live NC34 candidate flow passed, packaged multi-version matrix pending
+
 **Last reviewed:** 2026-08-08
 **Evidence snapshot:** starting baseline `senerawa-token-set` at `720e7a5`; current uncommitted working tree reviewed 2026-08-08
 **Planning method:** evidence gates, not calendar promises
@@ -28,7 +29,17 @@ The current working tree has completed the bounded profile foundation:
   state; enabling the app does not silently select an organisation;
 - active state uses app-scoped configuration, strict revisions, a Nextcloud
   exclusive lock, a public app-config cache refresh before the locked read,
-  one-step rollback, explicit persistence failure, and bounded history;
+  exact profile versions, one-step rollback, explicit persistence failure, and
+  bounded version history;
+- the administration UI is now a profile library: built-in versions remain
+  read-only, while a closed `nldesign-profile-pack/v1` installer can add
+  immutable instance-local versions to Nextcloud app data without accepting
+  arbitrary CSS, assets, URLs, or Nextcloud settings;
+- every installed record contains a normalized descriptor, deterministic CSS,
+  digest, timestamp, and actor; reads revalidate the complete record, and
+  active or rollback-retained versions cannot be uninstalled;
+- installed CSS is exposed only through an immutable digest-addressed route and
+  enters the same fonts/profile/core-projection precedence as packaged CSS;
 - normal and login templates receive a three-layer core cascade with no
   component or structural selectors;
 - ready profiles contain only the four mapped roles (38 declarations across
@@ -43,8 +54,21 @@ The current working tree has completed the bounded profile foundation:
 - private `OCA\Theming` code is isolated in an unregistered, non-load-bearing
   compatibility prototype.
 
-This checkpoint is implemented and locally testable, not released. Packaged
-Nextcloud-major/browser tests, provenance and identity evidence, and any
+The base profile checkpoint has a prerelease line. On 2026-08-08 the current
+candidate completed one live Nextcloud 34.0.2 browser flow: two immutable
+versions of a synthetic local profile were installed, grouped, activated,
+served from distinct digest-addressed CSS URLs on Files, switched, rolled back,
+protected while active or retained, and removed. The original application
+code, app configuration, and app-data state were then restored exactly.
+
+That is integration evidence for one candidate and two surfaces, not release
+or compatibility-matrix evidence. The final package still has to pass clean
+install and upgrade paths, dark and accessibility modes, Nextcloud 32/33, and
+the declared app surfaces. The live instance also carries administrator custom
+CSS with `!important` core-variable overrides. Those overrides correctly win;
+visual profile comparison therefore disabled that stylesheet only inside the
+test browser tab while the server-side profile and digest routes remained
+unchanged. Provenance and identity evidence, the source compiler, and any
 automatic core-settings bridge remain gated roadmap work.
 
 ## 1. Executive decision
@@ -565,7 +589,8 @@ This table prevents the large historical backlog from silently becoming the road
 | Explicit core-Theming change plan | Keep and reframe | Needed for non-CSS branding surfaces |
 | Hide slogan with CSS | Retire from core | The selector hid the complete guest footer, including the instance identity link; use Theming-owned state or design a narrower evidenced adapter |
 | Replace app-menu icons with labels | Retire from core | The structural selector lacked supported-major evidence; any successor belongs in a separately tested navigation adapter |
-| Custom token-profile import | Later | Useful only after the normalized contract and safe persistence exist |
+| Bounded projected-profile installation | Added, narrow | Closed semantic v1 envelope, immutable app-data versions, generated CSS, and separate activation; not a DTCG/source importer |
+| General source-token or configuration import/export | Later | Requires the richer compiler, review plan, migration, rights, assets, secrets, and recovery contracts |
 | Freeform custom CSS | Reject from the core app | High security, support, and upgrade cost; a separate expert extension could own it |
 | Custom font upload | Later, opt-in | Licensing, MIME, CSP, layout, privacy, and app-data concerns |
 | Per-app theming exclusion | Later escape hatch | Potentially useful after the compatibility matrix reveals real failures |
@@ -648,7 +673,8 @@ If development cannot reproduce its claimed tests against its packaged artifact,
 
 Work:
 
-1. Define and validate profile-manifest version 1.
+1. Define and validate profile-manifest version 1. **Implemented for the
+   packaged catalogue and the narrow installed-profile envelope.**
 2. Keep a nullable native-Nextcloud state representing “no NL Design
    override,” without inventing a synthetic organisation profile. **Implemented
    in the profile foundation.**
@@ -659,9 +685,13 @@ Work:
 4. Pin the NL Design System Start theme as a compiler-conformance fixture. It may be a profile's base only when that inheritance is explicit in the manifest; it is never an invisible runtime fallback.
 5. Implement deterministic import for only the semantic fields required by the slice, with a source trace for every emitted value.
 6. Store active profile ID, profile version, and previous snapshot in IAppConfig.
-7. Store generated or uploaded runtime assets in app data.
-8. Inject styles only on template-render events and fail open.
-9. Map the smallest useful set of Nextcloud variables.
+   **Implemented.**
+7. Store generated or uploaded runtime assets in app data. **Implemented for
+   installed profile descriptors and generated CSS; binary assets remain out
+   of scope.**
+8. Inject styles only on template-render events and fail open. **Implemented.**
+9. Map the smallest useful set of Nextcloud variables. **Implemented for the
+   current four-role projection; compatibility evidence remains incomplete.**
 10. Build an accessible admin flow:
    - inspect;
    - preview for the current administrator;
@@ -873,7 +903,9 @@ Exit criteria:
 
 Only consider these after Milestone 5:
 
-- custom profile import using the same manifest and validation pipeline;
+- richer DTCG/NL Design System source-profile import; the narrow projected-pack
+  installer is already part of the profile foundation and must not expand by
+  schema accretion;
 - a narrow semantic override editor, not an editor for arbitrary Nextcloud internals;
 - configuration export/import with secrets and assets handled explicitly;
 - source-provided dark variants;
@@ -944,7 +976,7 @@ A stable release must have:
 | Risk | Failure mode | Control | Kill or downgrade criterion |
 |---|---|---|---|
 | Branch divergence | Features are duplicated, lost, or falsely considered released | Gate 0 ledger and clean baseline | No feature merge until package and tests are reproducible |
-| Private Theming API | Nextcloud upgrade breaks settings or silently omits required side effects | Stable local ports; per-major adapter; allowlist; real lifecycle tests | Disable bridge for that major and use generated manual plan |
+| Private Theming API | Nextcloud upgrade breaks settings or silently omits required side effects | Stable local ports; explicit major-to-contract mapping; allowlist; real lifecycle tests | Disable bridge for that major and use generated manual plan |
 | Upstream API speculation | An unmerged `OCP\Theming\IDefaults` draft changes or is abandoned after local code depends on it | Track by revision; align vocabulary; bind only after release | Keep the existing reader adapter; never raise minimum support for a draft |
 | Over-broad mutation API | Generic setters expose policy, user state, or implementation keys as branding | Separate read and write interfaces; typed patch; field classes | Reject upstream or local API shape until arbitrary-key mutation is impossible |
 | Token semantic mismatch | A profile exists but changes nothing or changes the wrong UI concept | Normalized contract and explicit mapping | Profile remains compiled/experimental, never verified |
@@ -1044,18 +1076,40 @@ Calendar estimates may be added only after Gate 0. Estimate milestones from meas
 
 The next work should be:
 
-1. Preserve the current SENERAWA/profile-discovery work as its own bounded change.
-2. Create the main/development/release feature ledger and audit all current catalogue entries as source claims rather than supported municipalities.
-3. Choose and record the architecture-v1 baseline, then make the package test harness fail honestly.
-4. Freeze the NL Design System source contract: artifact roles, canonical token format, Basis/Common family adapter, explicit Start inheritance, pinned toolchain, local descriptors, and upstream-index policy.
-5. Write the remaining Gate 0 decisions, including profile status/source facts, fallback and CSS precedence, the `IDefaults`-aligned reader, separate mutation manager, and private-adapter boundary.
-6. Remove or relabel false release, endorsement, theme-count, and compliance claims.
-7. Build the pinned Start conformance fixture and neutral Nextcloud profile before importing an organisation profile.
-8. Select one source-authorized NL Design System pilot and one independent/local pilot; if authority or identity rights cannot be established, use synthetic fixtures and say so.
-9. Implement and prove the two-profile vertical slice: source trace, preview, publish, rollback, read-only operation, deterministic build, and offline runtime.
-10. Build the first real surface and frozen-Baseline matrix, with a projected-output budget.
-11. Freeze the core-Theming field/capability matrix and open the upstream API design discussion in parallel; upstream agreement is not a prerequisite for the contained compatibility driver.
-12. After the vertical slice and matrix are proven, implement the private core-Theming adapter. Keep broad profile expansion behind the same evidence gates.
+1. Finish the current profile-library change as one reviewable unit: pack
+   contract, exact-version state migration, immutable repository, API, UI,
+   documentation, tests, and package inventory must agree.
+2. Build the release archive from a clean checkout and inspect its complete
+   contents, permissions, app-metadata validation, dependency audits, and
+   reproducibility. Include an example pack or link to the exact schema used by
+   the installed version.
+3. Install that archive on a disposable supported Nextcloud instance and prove
+   the real administrator path: built-in activation, pack installation without
+   activation, multi-version selection, visible CSS switching, light/dark
+   preview, rollback, blocked active/rollback removal, inactive removal,
+   restart, disable/enable, and upgrade preservation.
+4. Add browser screenshots or visual-regression evidence for the library and
+   for at least login, Files, and administration settings. Repeat the relevant
+   checks in default, dark, and high-contrast preferences; a colour-card preview
+   is not evidence that a Nextcloud surface is compatible.
+5. Record profile-pack schema evolution rules and a migration policy before a
+   v2 field is accepted. Keep assets, fonts, raw CSS, DTCG graphs, and Theming
+   settings out of v1.
+6. Audit all current catalogue entries as source claims rather than supported
+   municipalities, then select one source-authorized NL Design System pilot and
+   one independent/local pilot. Use synthetic fixtures when authority or
+   identity rights cannot be established.
+7. Freeze the richer NL Design System source contract: artifact roles,
+   canonical token format, Basis/Common family adapter, explicit Start
+   inheritance, pinned toolchain, local descriptors, and upstream-index policy.
+8. Implement the build-time source trace and reproducible compiler without
+   changing the runtime profile-pack boundary or requiring Node/network access
+   inside Nextcloud.
+9. Build the first real surface and frozen-Baseline matrix, with a projected
+   output budget and explicit unsupported cells.
+10. Freeze the core-Theming field/capability matrix and continue the upstream
+    API design discussion. Only after the vertical slice and matrix are proven
+    should the private core-Theming adapter become an opt-in implementation.
 
 The first implementation milestone is not “finish the endpoints.” It is “prove one safe, reversible translation from a versioned profile into a documented Nextcloud surface.”
 

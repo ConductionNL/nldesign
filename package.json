@@ -1,6 +1,6 @@
 {
   "name": "nldesign",
-  "version": "0.2.0-rc1",
+  "version": "0.2.0-rc2",
   "description": "Bounded NL Design profile projections for Nextcloud",
   "keywords": [
     "nextcloud",
@@ -21,12 +21,14 @@
     "build:fonts": "node scripts/build-fonts.js",
     "check:architecture": "bash scripts/check-architecture-boundary.sh",
     "check:manifest": "node scripts/validate-token-sets.mjs",
+    "test:admin-contract": "node scripts/test-admin-ui-contract.mjs",
+    "test:compatibility": "node scripts/test-nextcloud-compatibility.mjs",
     "test:manifest-gate": "node scripts/test-token-set-validator.mjs",
     "lint": "composer lint",
     "stylelint": "stylelint \"css/**/*.css\"",
     "stylelint:fix": "npm run stylelint -- --fix",
-    "test:js": "node --check js/admin.js && node --check scripts/build-fonts.js && node --check scripts/validate-token-sets.mjs && node --check scripts/test-token-set-validator.mjs",
-    "test": "npm run check:architecture && npm run check:manifest && npm run test:manifest-gate && npm run test:js && npm run stylelint",
+    "test:js": "node --check js/admin.js && node --check scripts/build-fonts.js && node --check scripts/validate-token-sets.mjs && node --check scripts/test-token-set-validator.mjs && node --check scripts/test-admin-ui-contract.mjs && node --check scripts/test-nextcloud-compatibility.mjs",
+    "test": "npm run check:architecture && npm run check:manifest && npm run test:manifest-gate && npm run test:admin-contract && npm run test:compatibility && npm run test:js && npm run stylelint",
     "lint:php": "composer lint",
     "quality:php": "composer lint && composer phpcs && composer phpmd && composer psalm && composer phpstan"
   },

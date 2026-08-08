@@ -15,9 +15,7 @@ declare(strict_types=1);
 namespace OCA\NLDesign\AppInfo;
 
 use OCP\AppFramework\App;
-use OCA\NLDesign\Domain\Profile\ProfileCataloguePolicy;
 use OCA\NLDesign\Listener\TemplateStylesListener;
-use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\Events\BeforeLoginTemplateRenderedEvent;
 use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 use OCP\AppFramework\Bootstrap\IBootContext;
@@ -50,10 +48,7 @@ final class Application extends App implements IBootstrap
      */
     public function register(IRegistrationContext $context): void
     {
-        $context->registerServiceAlias(
-            ProfileCataloguePolicy::class,
-            TokenSetService::class
-        );
+        ServiceRegistration::register(context: $context);
 
         $context->registerEventListener(
             BeforeTemplateRenderedEvent::class,
