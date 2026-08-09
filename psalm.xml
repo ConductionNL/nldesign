@@ -21,6 +21,11 @@
              interface and the RegisterShareableConfigTypesEvent generic in
              lib/Service/Config/ + lib/Listener/. Never autoloaded at runtime. -->
         <file name="stubs/openregister-config.php" />
+        <!-- Nextcloud's legacy global OC_App. It lives in lib/private/ in the
+             server, so it is absent from the nextcloud/ocp package the
+             analysers see. Required by the ADR-040 autoload prelude in
+             lib/AppInfo/Application.php. Never autoloaded at runtime. -->
+        <file name="stubs/nextcloud-legacy.php" />
     </stubs>
     <issueHandlers>
         <UndefinedDocblockClass errorLevel="suppress"/>

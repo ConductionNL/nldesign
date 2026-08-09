@@ -110,8 +110,29 @@ class Application extends App implements IBootstrap
 
         // Federated configuration sharing (openregister): contribute the NL Design
         // theme as a shareable config type so a theme can be published to and
-        // installed from GitHub over OpenRegister's one fleet mechanism. Guarded
-        // on the event class so an instance without OpenRegister still boots.
+        // installed from GitHub over OpenRegister's one fleet mechanism.
+        //
+        // THE PRELUDE IS LOAD-BEARING, NOT DEFENSIVE (ADR-040).
+        //
+        // `Coordinator::registerApps()` walks the SORTED app list, calling
+        // `OC_App::registerAutoloading()` and then `register()` for one app at
+        // a time. `nldesign` sorts before `openregister`, so this method runs
+        // while the `OCA\OpenRegister\` PSR-4 prefix does not yet exist — on a
+        // completely healthy instance with OpenRegister installed and enabled.
+        //
+        // Without the prelude below, the `class_exists()` on the next line
+        // answered FALSE every time, the listener was never registered, and
+        // nldesign contributed NO shareable config type at all. Nothing
+        // reported it: the app stayed enabled, every route resolved, the
+        // theme still applied — the only symptom was that federated config
+        // sharing (openspec/specs/federated-config-sharing/spec.md) silently
+        // did nothing.
+        //
+        // See lib/AppInfo/OpenRegisterAutoloader.php: idempotent, swallows a
+        // missing/disabled OpenRegister, and returns false in that case so the
+        // guard below answers FALSE truthfully.
+        (new OpenRegisterAutoloader())->ensure();
+
         if (class_exists(\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class) === true) {
             $context->registerEventListener(
                 \OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class,
