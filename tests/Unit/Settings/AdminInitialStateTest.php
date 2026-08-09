@@ -152,8 +152,16 @@ class AdminInitialStateTest extends TestCase
 
         $this->assertSame(self::TOKEN_SETS, $captured['tokenSets']);
         $this->assertSame('lasuite', $captured['currentTokenSet']);
-        $this->assertNull($captured['activePreview']);
         $this->assertSame('design-system', $captured['iconPackSource']);
+
+        // NOT null. Nextcloud's InitialStateService accepts a scalar, an
+        // array or a JsonSerializable and silently DISCARDS anything else,
+        // logging `Invalid activePreview data provided`. Passing null there
+        // publishes no key at all — and since `loadState`'s fallback is also
+        // null, the panel still renders correctly and nothing but the server
+        // log records that the contract was broken. This assertion is what
+        // stops that from being reintroduced.
+        $this->assertSame([], $captured['activePreview']);
     }//end testEveryKeyTheScriptReadsIsProvided()
 
     /**

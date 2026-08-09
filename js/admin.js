@@ -104,7 +104,17 @@ function nldesignAdminMain() {
 
 	// The requesting admin's active theme preview ("proefdraaien"), if any —
 	// provided by lib/Settings/Admin.php through the same channel.
+	//
+	// Normalised to null when there is no preview. "No preview" can arrive
+	// three ways — the key absent (fallback), an empty array (what the PHP
+	// side sends, because Nextcloud's initial state refuses a bare null), or
+	// a payload without a token set — and `[]` is TRUTHY in JavaScript, so a
+	// bare `!== null` test further down would have treated an empty array as
+	// a live preview and then read `.tokenSet` off it as undefined.
 	var activePreview = loadInitialState('activePreview', null);
+	if (activePreview === null || typeof activePreview.tokenSet !== 'string') {
+		activePreview = null;
+	}
 
 	// Which source decided the active icon pack: the appconfig `icon_pack`
 	// override, or the token set. When an override is active it always wins,

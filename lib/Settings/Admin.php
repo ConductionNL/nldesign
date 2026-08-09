@@ -217,7 +217,17 @@ class Admin implements IDelegatedSettings
         // reads them from.
         $this->initialState->provideInitialState('tokenSets', $tokenSets);
         $this->initialState->provideInitialState('currentTokenSet', $currentTokenSet);
-        $this->initialState->provideInitialState('activePreview', $activePreview);
+        // `?? []` and not `$activePreview` on its own. Nextcloud's
+        // InitialStateService accepts a scalar, an array, or a
+        // JsonSerializable — and NULL IS NONE OF THOSE. It does not throw on
+        // one: it writes `Invalid activePreview data provided to
+        // provideInitialState by nldesign` to the log and provides nothing at
+        // all. The key would then simply be absent, `loadState` would return
+        // its fallback, and because that fallback is also null the panel
+        // would look correct while the server logged a warning on every
+        // admin page load. An empty array is the same "no preview" fact in a
+        // shape the service actually carries.
+        $this->initialState->provideInitialState('activePreview', ($activePreview ?? []));
         $this->initialState->provideInitialState('iconPackSource', $iconPackSource);
 
         return new TemplateResponse(
