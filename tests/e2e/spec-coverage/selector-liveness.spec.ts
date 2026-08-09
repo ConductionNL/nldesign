@@ -49,6 +49,15 @@
 import { expect, test } from '@playwright/test'
 import { THEMING_URL, getTokenSet, requestToken, setTokenSet } from '../workflows/_helpers'
 
+/**
+ * A node that only exists once Nextcloud's Vue chrome has mounted.
+ *
+ * Both halves are Vue-rendered and absent from the server document, so the
+ * presence of either is proof that the bundles have run and the header
+ * subtree the theme targets is really there to be probed.
+ */
+const CHROME_READY = '#header .app-menu, #header .unified-search-input'
+
 /** Surfaces surveyed. Each contributes its DOM to the union. */
 const SURFACES: Array<{ name: string; path: string }> = [
 	{ name: 'files', path: '/apps/files/' },
@@ -184,6 +193,7 @@ test.describe('lasuite selector liveness', () => {
 		let sheetSeenOnce = false
 
 		const unreachable: string[] = []
+		const chromeless: string[] = []
 
 		for (const surface of SURFACES) {
 			// A surface that will not load on a loaded dev box must not fail the
@@ -198,8 +208,50 @@ test.describe('lasuite selector liveness', () => {
 				unreachable.push(surface.name)
 				continue
 			}
-			// Vue apps mount after load; give the shell a moment to render.
-			await page.waitForTimeout(2500)
+			// WAIT FOR THE CHROME TO EXIST, DO NOT GUESS AT IT.
+			//
+			// This was `await page.waitForTimeout(2500)` after a
+			// `waitUntil: 'domcontentloaded'` goto. Nextcloud's header and
+			// navigation are Vue components — absent from the server-rendered
+			// document, present only once the bundles execute — so a fixed
+			// sleep is a race, and losing it makes every selector under
+			// `#header` or `#app-navigation-vue` read as dead.
+			//
+			// WHAT THIS DID NOT FIX, MEASURED. I expected this to clear most
+			// of the 31 selectors the guard reports dead. It cleared NONE:
+			// 31 before, 31 after, with the run's own log confirming the
+			// chrome DID mount on files, dashboard and settings. So the
+			// timing was real but it was not the cause, and the honest
+			// reading of the remaining 31 is still open — see the PR.
+			//
+			// The reason the sleep still had to go is the FAILURE MODE, not
+			// the count. A run that probes before the chrome mounts and a run
+			// that probes a genuinely stale stylesheet produced the SAME
+			// output, and the message invites the reader to "fix them against
+			// the real DOM" — which, acted on, means deleting theme CSS to
+			// satisfy a measurement. Probed by hand against a full Nextcloud,
+			// all 15 `#header` and 11 `#app-navigation-vue` selectors match
+			// with counts of 1-2, so at least some of this list is not dead
+			// CSS but a survey whose instance does not render the chrome
+			// these rules target.
+			//
+			// So: wait for a Vue-rendered node, and record the surfaces where
+			// none ever appeared instead of silently probing an empty shell.
+			let chromeMounted = true
+			try {
+				await page.waitForSelector(CHROME_READY, { state: 'attached', timeout: 60_000 })
+			} catch {
+				chromeMounted = false
+				chromeless.push(surface.name)
+			}
+			// The left navigation is legitimately absent on some surfaces
+			// (Dashboard has none), so this one is opportunistic — the hard
+			// gate is the header above.
+			if (chromeMounted) {
+				await page
+					.waitForSelector('#app-navigation-vue', { state: 'attached', timeout: 10_000 })
+					.catch(() => {})
+			}
 
 			const result = await page.evaluate(() => {
 				const sheet = [...document.styleSheets].find(
@@ -260,6 +312,22 @@ test.describe('lasuite selector liveness', () => {
 			// surfaces looks identical to a clean one otherwise.
 			console.warn(`[selector-liveness] surfaces that did not load: ${unreachable.join(', ')}`)
 		}
+		if (chromeless.length > 0) {
+			console.warn(`[selector-liveness] surfaces whose Vue chrome never mounted: ${chromeless.join(', ')}`)
+		}
+
+		// A survey that reached its surfaces but never saw the chrome mount
+		// measured a server-rendered skeleton, and EVERY selector under
+		// `#header` or `#app-navigation-vue` would be reported dead. That is
+		// the exact false accusation this test made before the wait above
+		// existed, and it must be impossible to make silently: fail on the
+		// measurement, naming it, rather than on the CSS it cannot see.
+		expect(
+			chromeless.length,
+			`The Vue chrome never mounted on ${chromeless.join(', ')} — those surfaces were measured as a `
+				+ `server-rendered skeleton. Every #header / #app-navigation-vue selector would read as dead. `
+				+ `This is a failure of the MEASUREMENT, not of the stylesheet: do not "fix" the CSS on it.`,
+		).toBeLessThan(SURFACES.length)
 		expect(
 			unreachable.length,
 			`Too few surfaces loaded (${unreachable.join(', ')}) — the union would be too narrow to trust`,
