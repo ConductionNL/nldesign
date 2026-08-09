@@ -130,7 +130,19 @@ style('nldesign', 'admin');
 			<input type="text" id="nldesign-upload-name" class="nldesign-upload-name"
 				   placeholder="<?php p($l->t('e.g. Gemeente Voorbeeld')); ?>"
 				   maxlength="64">
-			<input type="file" id="nldesign-upload-input" accept=".css,.json,.tokens.json" style="display:none">
+			<!-- Named, even though it is hidden. The visible <button> below is
+			     the trigger; this input only ever opens the file dialog via
+			     .click(). A `display:none` control is out of the
+			     accessibility tree WHILE hidden — but unlike an
+			     `aria-hidden` one it can be exposed again by a single style
+			     change from script or a user stylesheet, and at that moment
+			     an unnamed file input is a real WCAG 4.1.2 failure. The name
+			     costs nothing while hidden and is correct the instant it is
+			     not. (ConductionNL/.github#273 declines to exempt this shape
+			     for exactly that reason.) -->
+			<input type="file" id="nldesign-upload-input" accept=".css,.json,.tokens.json"
+				   aria-label="<?php p($l->t('Token set file to upload (NL Design CSS or W3C Design Tokens JSON)')); ?>"
+				   style="display:none">
 			<button type="button" id="nldesign-upload-btn" class="button">
 				<?php p($l->t('Choose file and upload')); ?>
 			</button>
@@ -161,7 +173,9 @@ style('nldesign', 'admin');
 				<option value="body"><?php p($l->t('Body text')); ?></option>
 				<option value="heading"><?php p($l->t('Heading')); ?></option>
 			</select>
-			<input type="file" id="nldesign-font-input" accept=".woff2" style="display:none">
+			<input type="file" id="nldesign-font-input" accept=".woff2"
+				   aria-label="<?php p($l->t('Font file to upload (WOFF2)')); ?>"
+				   style="display:none">
 			<button type="button" id="nldesign-font-upload-btn" class="button">
 				<?php p($l->t('Choose font and upload')); ?>
 			</button>
@@ -499,7 +513,9 @@ style('nldesign', 'admin');
 			<button type="button" id="nldesign-config-bundle-download-btn" class="button">
 				<?php p($l->t('Download configuration')); ?>
 			</button>
-			<input type="file" id="nldesign-config-bundle-input" accept=".json" style="display:none">
+			<input type="file" id="nldesign-config-bundle-input" accept=".json"
+				   aria-label="<?php p($l->t('Configuration bundle file to upload (JSON)')); ?>"
+				   style="display:none">
 			<button type="button" id="nldesign-config-bundle-upload-btn" class="button">
 				<?php p($l->t('Upload configuration')); ?>
 			</button>
