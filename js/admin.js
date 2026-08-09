@@ -35,13 +35,45 @@ function nldesignAdminMain() {
 				return;
 			}
 			if (window.OC && OC.Notification && typeof OC.Notification.showTemporary === 'function') {
-				notify(message);
+				OC.Notification.showTemporary(message);
 				return;
 			}
 		} catch (e) {
 			// Fall through to the console fallback below.
 		}
 		console.info('[nldesign] ' + message);
+	}
+
+	/**
+	 * Read a server-provided value out of Nextcloud's initial state.
+	 *
+	 * This is the canonical direction of travel for server data (ADR-004):
+	 * `IInitialState::provideInitialState()` in PHP, `loadState()` here. It
+	 * replaces four `getAttribute('data-…')` reads that pulled the same
+	 * values off server-rendered DOM nodes. Data attributes are not merely
+	 * unidiomatic — a CSP-hardened instance and any markup change can move or
+	 * drop the carrying element, and the failure is silent: the parse yields
+	 * the fallback and the panel renders as if the server had sent nothing.
+	 *
+	 * `loadState` throws when a key is absent and no fallback is supplied, so
+	 * every call here passes one and the throw is contained. A missing key is
+	 * a server-side bug, not a reason to break the whole settings panel.
+	 *
+	 * @param {string} key      The initial-state key, as provided by lib/Settings/Admin.php.
+	 * @param {*}      fallback Value to use when the key is absent or unreadable.
+	 * @return {*} The decoded value, or `fallback`.
+	 */
+	function loadInitialState(key, fallback) {
+		if (typeof OCP === 'undefined' || !OCP.InitialState || typeof OCP.InitialState.loadState !== 'function') {
+			return fallback;
+		}
+		try {
+			var value = OCP.InitialState.loadState('nldesign', key, fallback);
+			return (value === undefined || value === null) ? fallback : value;
+		} catch (e) {
+			console.error('[nldesign] initial state "' + key + '" could not be read:', e);
+			return fallback;
+		}
 	}
 
 	var settingsEl = document.getElementById('nldesign-settings');
@@ -59,30 +91,30 @@ function nldesignAdminMain() {
 		return v || fallback;
 	}
 
-	// Parse token sets data from the template
+	// Token set inventory, provided by lib/Settings/Admin.php. Already decoded
+	// by loadState — there is no JSON.parse here on purpose, because the
+	// transport is no longer a string attribute.
 	var tokenSetsData = {};
-	try {
-		var tokenSets = JSON.parse(settingsEl.getAttribute('data-token-sets') || '[]');
+	var tokenSets = loadInitialState('tokenSets', []);
+	if (Array.isArray(tokenSets) === true) {
 		tokenSets.forEach(function(ts) {
 			tokenSetsData[ts.id] = ts;
 		});
-	} catch (e) {
-		console.error('Failed to parse token sets data:', e);
 	}
 
-	// Parse the requesting admin's active theme preview ("proefdraaien"), if
-	// any — server-rendered by lib/Settings/Admin.php, same data-attribute
-	// convention as data-token-sets/data-current-token-set above.
-	var activePreview = null;
-	try {
-		activePreview = JSON.parse(settingsEl.getAttribute('data-active-preview') || 'null');
-	} catch (e) {
-		console.error('Failed to parse active preview data:', e);
-	}
+	// The requesting admin's active theme preview ("proefdraaien"), if any —
+	// provided by lib/Settings/Admin.php through the same channel.
+	var activePreview = loadInitialState('activePreview', null);
+
+	// Which source decided the active icon pack: the appconfig `icon_pack`
+	// override, or the token set. When an override is active it always wins,
+	// so the client-side indicator must not be re-derived from the dropdown.
+	var iconPackSource = loadInitialState('iconPackSource', '');
 
 	/**
 	 * Derive preview colors dynamically from the token set's theming metadata
-	 * (primary_color field in token-sets.json, already passed in data-token-sets).
+	 * (primary_color field in token-sets.json, already passed in the `tokenSets`
+	 * initial state).
 	 * Falls back to a neutral dark if no data is available.
 	 * This replaces the old hardcoded 9-entry palette (issue #123).
 	 */
@@ -191,7 +223,7 @@ function nldesignAdminMain() {
 		var indicator = document.getElementById('nldesign-icon-pack-indicator');
 		var valueEl = document.getElementById('nldesign-icon-pack-value');
 		if (!indicator || !valueEl) return;
-		if (indicator.getAttribute('data-icon-pack-source') === 'override') return;
+		if (iconPackSource === 'override') return;
 
 		var option = tokenSetSelect ? tokenSetSelect.querySelector('option[value="' + tokenSetId + '"]') : null;
 		var dsId = option ? (option.getAttribute('data-design-system') || 'nldesign') : 'nldesign';
@@ -252,7 +284,7 @@ function nldesignAdminMain() {
 	var previewBtn        = document.getElementById('nldesign-preview-btn');
 	var previewPublishBtn = document.getElementById('nldesign-preview-publish-btn');
 	var previewDiscardBtn = document.getElementById('nldesign-preview-discard-btn');
-	var currentTokenSetId = settingsEl ? settingsEl.getAttribute('data-current-token-set') : '';
+	var currentTokenSetId = loadInitialState('currentTokenSet', '');
 
 	// Start a preview of the currently selected token set — session-only,
 	// instance-wide token_set is left untouched.
@@ -1842,7 +1874,7 @@ function nldesignAdminMain() {
 	 * ========================================================================== */
 
 	// Build the non-blocking contrast-warning banner for a token set, from the
-	// warnings persisted on the dropdown's data-token-sets payload.
+	// warnings carried on the `tokenSets` initial-state payload.
 	function buildContrastWarningHtml(tokenSetId) {
 		var ts = tokenSetsData[tokenSetId];
 		if (!ts || !ts.warnings || ts.warnings.length === 0) {

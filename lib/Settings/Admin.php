@@ -30,6 +30,7 @@ use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\ThemePreviewService;
 use OCA\NLDesign\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
+use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IUserSession;
@@ -100,6 +101,20 @@ class Admin implements IDelegatedSettings
     private DesignSystemService $designSystemService;
 
     /**
+     * Carries server-side state to js/admin.js.
+     *
+     * The panel used to serialise this state into `data-*` attributes on the
+     * `#nldesign-settings` div and have admin.js read it back with
+     * `getAttribute()`. That is the pattern ADR-004 rules out: it breaks on
+     * CSP-hardened instances, and it breaks SILENTLY — any markup change that
+     * moves or renames the carrying element leaves admin.js parsing an empty
+     * string and rendering as though the server had sent nothing at all.
+     *
+     * @var IInitialState
+     */
+    private IInitialState $initialState;
+
+    /**
      * Constructor.
      *
      * @param IConfig             $config              The config service.
@@ -109,6 +124,7 @@ class Admin implements IDelegatedSettings
      * @param ThemePreviewService $previewService      The theme preview service.
      * @param IUserSession        $userSession         The user session.
      * @param DesignSystemService $designSystemService Resolves the active icon pack.
+     * @param IInitialState       $initialState        Carries server state to admin.js.
      */
     public function __construct(
         IConfig $config,
@@ -117,7 +133,8 @@ class Admin implements IDelegatedSettings
         EmailThemingService $emailThemingService,
         ThemePreviewService $previewService,
         IUserSession $userSession,
-        DesignSystemService $designSystemService
+        DesignSystemService $designSystemService,
+        IInitialState $initialState
     ) {
         $this->config = $config;
         $this->l      = $l;
@@ -126,6 +143,7 @@ class Admin implements IDelegatedSettings
         $this->previewService      = $previewService;
         $this->userSession         = $userSession;
         $this->designSystemService = $designSystemService;
+        $this->initialState        = $initialState;
     }//end __construct()
 
     /**
@@ -191,6 +209,16 @@ class Admin implements IDelegatedSettings
         $activePreview = $this->getActivePreviewForCurrentUser();
 
         [$activeIconPacks, $iconPackSource] = $this->getActiveIconPackIndicator(tokenSetId: $currentTokenSet);
+
+        // Server state that js/admin.js needs at boot, carried over the
+        // canonical channel (ADR-004) rather than `data-*` attributes on the
+        // rendered markup. The template still receives these values for the
+        // parts it renders server-side; what changed is where the SCRIPT
+        // reads them from.
+        $this->initialState->provideInitialState('tokenSets', $tokenSets);
+        $this->initialState->provideInitialState('currentTokenSet', $currentTokenSet);
+        $this->initialState->provideInitialState('activePreview', $activePreview);
+        $this->initialState->provideInitialState('iconPackSource', $iconPackSource);
 
         return new TemplateResponse(
             Application::APP_ID,

@@ -30,11 +30,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /** Build the minimal settings-page DOM the script expects, per token-set config. */
+/**
+ * Stand in for Nextcloud's initial-state channel.
+ *
+ * js/admin.js reads its server data through `OCP.InitialState.loadState()`
+ * (ADR-004), so a fixture has to hand it over the same way the settings page
+ * does. The `data-*` attributes these fixtures used to carry no longer reach
+ * the script, and the template no longer emits them.
+ *
+ * @param {object} state Initial-state keys as provided by lib/Settings/Admin.php.
+ */
+function installInitialState(state) {
+	global.OCP = Object.assign(global.OCP || {}, {
+		InitialState: {
+			loadState: (app, key, fallback) => (
+				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
+			),
+		},
+	})
+}
+
 function buildDom(tokenSets, currentTokenSet) {
+	installInitialState({ tokenSets, currentTokenSet, activePreview: null, iconPackSource: '' })
 	document.body.innerHTML = `
-		<div id="nldesign-settings" class="section"
-			 data-token-sets='${JSON.stringify(tokenSets)}'
-			 data-current-token-set="${currentTokenSet}">
+		<div id="nldesign-settings" class="section">
 			<select id="nldesign-token-set-select" name="nldesign-token-set">
 				${tokenSets.map((ts) => `<option value="${ts.id}" data-design-system="nldesign"${ts.id === currentTokenSet ? ' selected' : ''}>${ts.name}</option>`).join('')}
 			</select>

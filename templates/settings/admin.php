@@ -21,10 +21,11 @@ script('nldesign', 'admin');
 style('nldesign', 'admin');
 ?>
 
-<div id="nldesign-settings" class="section"
-	 data-token-sets="<?php p(json_encode($_['tokenSets'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>"
-	 data-current-token-set="<?php p($_['currentTokenSet']); ?>"
-	 data-active-preview="<?php p(json_encode($_['activePreview'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>">
+<!-- Server state for js/admin.js (tokenSets, currentTokenSet, activePreview,
+     iconPackSource) travels via IInitialState, provided in
+     lib/Settings/Admin.php and read with OCP.InitialState.loadState() — NOT
+     via data-* attributes on this element. See ADR-004. -->
+<div id="nldesign-settings" class="section">
 	<div class="nldesign-settings-header">
 		<h2><?php p($l->t('NL Design System Theme')); ?></h2>
 		<a href="https://nldesign.app" target="_blank" rel="noopener noreferrer" class="nldesign-doc-link">
@@ -57,8 +58,7 @@ style('nldesign', 'admin');
 	     openspec/specs/icon-packs/spec.md). Reflects the currently PERSISTED
 	     token set (not an unpublished dropdown selection); no write control
 	     for the appconfig `icon_pack` override in this change. -->
-	<div class="nldesign-icon-pack-indicator" id="nldesign-icon-pack-indicator"
-		 data-icon-pack-source="<?php p($_['iconPackSource']); ?>">
+	<div class="nldesign-icon-pack-indicator" id="nldesign-icon-pack-indicator">
 		<h3><?php p($l->t('Active icon pack')); ?></h3>
 		<p class="nldesign-icon-pack-value" id="nldesign-icon-pack-value">
 			<?php if (empty($_['activeIconPacks'])): ?>

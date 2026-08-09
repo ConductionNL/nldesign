@@ -17,11 +17,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /** Build the minimal settings-page DOM the script expects, plus the group-theming section. */
+/**
+ * Stand in for Nextcloud's initial-state channel.
+ *
+ * js/admin.js reads its server data through `OCP.InitialState.loadState()`
+ * (ADR-004), so a fixture has to hand it over the same way the settings page
+ * does. The `data-*` attributes these fixtures used to carry no longer reach
+ * the script, and the template no longer emits them.
+ *
+ * @param {object} state Initial-state keys as provided by lib/Settings/Admin.php.
+ */
+function installInitialState(state) {
+	global.OCP = Object.assign(global.OCP || {}, {
+		InitialState: {
+			loadState: (app, key, fallback) => (
+				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
+			),
+		},
+	})
+}
+
 function buildDom() {
+	installInitialState({ tokenSets: [], currentTokenSet: 'nextcloud', activePreview: null, iconPackSource: '' })
 	document.body.innerHTML = `
-		<div id="nldesign-settings" class="section"
-			 data-token-sets='[]'
-			 data-current-token-set="nextcloud">
+		<div id="nldesign-settings" class="section">
 			<select id="nldesign-token-set-select" name="nldesign-token-set"></select>
 			<span id="nldesign-design-system-badge"></span>
 			<input type="checkbox" id="nldesign-hide-slogan">
