@@ -285,18 +285,31 @@ style('nldesign', 'admin');
 		</div>
 
 		<div class="nldesign-email-footer-fields">
+			<!-- autocomplete="off" on all three: these are INSTANCE-WIDE
+			     configuration values (the organisation shown in every
+			     outgoing mail, and that organisation's public statement
+			     URLs), not personal details of the admin filling the form.
+			     WCAG 2.2 SC 1.3.5 asks for an autocomplete token when a
+			     field collects information ABOUT THE USER; none of these
+			     do, so declaring the purpose as "off" is the accurate
+			     answer, and it stops a browser offering the admin's own
+			     profile data as the value for a setting that applies to
+			     everyone on the instance. -->
 			<label for="nldesign-email-footer-org-name"><?php p($l->t('Organization name')); ?></label>
 			<input type="text" id="nldesign-email-footer-org-name" class="nldesign-email-footer-input"
+				   autocomplete="off"
 				   value="<?php p($_['emailFooterConfig']['orgName']); ?>"
 				   placeholder="<?php p($l->t('e.g. Gemeente Voorbeeld')); ?>" maxlength="2048">
 
 			<label for="nldesign-email-footer-accessibility-url"><?php p($l->t('Accessibility statement URL')); ?></label>
 			<input type="url" id="nldesign-email-footer-accessibility-url" class="nldesign-email-footer-input"
+				   autocomplete="off"
 				   value="<?php p($_['emailFooterConfig']['accessibilityUrl']); ?>"
 				   placeholder="https://example.org/toegankelijkheidsverklaring" maxlength="2048">
 
 			<label for="nldesign-email-footer-privacy-url"><?php p($l->t('Privacy statement URL')); ?></label>
 			<input type="url" id="nldesign-email-footer-privacy-url" class="nldesign-email-footer-input"
+				   autocomplete="off"
 				   value="<?php p($_['emailFooterConfig']['privacyUrl']); ?>"
 				   placeholder="https://example.org/privacy" maxlength="2048">
 		</div>
@@ -457,10 +470,10 @@ style('nldesign', 'admin');
 		<table class="nldesign-audit-table" id="nldesign-audit-table">
 			<thead>
 				<tr>
-					<th><?php p($l->t('Timestamp')); ?></th>
-					<th><?php p($l->t('User')); ?></th>
-					<th><?php p($l->t('Action')); ?></th>
-					<th><?php p($l->t('Details')); ?></th>
+					<th scope="col"><?php p($l->t('Timestamp')); ?></th>
+					<th scope="col"><?php p($l->t('User')); ?></th>
+					<th scope="col"><?php p($l->t('Action')); ?></th>
+					<th scope="col"><?php p($l->t('Details')); ?></th>
 				</tr>
 			</thead>
 			<tbody id="nldesign-audit-table-body">
