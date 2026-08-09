@@ -211,28 +211,29 @@ test.describe('lasuite selector liveness', () => {
 			// WAIT FOR THE CHROME TO EXIST, DO NOT GUESS AT IT.
 			//
 			// This was `await page.waitForTimeout(2500)` after a
-			// `waitUntil: 'domcontentloaded'` goto, and that pair is a race
-			// this guard loses on a loaded runner. Nextcloud's header and
-			// navigation are Vue components: they are absent from the
-			// server-rendered document and appear only once the bundles have
-			// executed. DOMContentLoaded fires long before that.
+			// `waitUntil: 'domcontentloaded'` goto. Nextcloud's header and
+			// navigation are Vue components — absent from the server-rendered
+			// document, present only once the bundles execute — so a fixed
+			// sleep is a race, and losing it makes every selector under
+			// `#header` or `#app-navigation-vue` read as dead.
 			//
-			// Measured 2026-08-09. The run that motivated this reported 31
-			// selectors "dead", and EVERY ONE of them resolves inside a
-			// Vue-scoped subtree — 15 under `#header`, 11 under
-			// `#app-navigation-vue` / `.app-navigation-entry.active`, plus
-			// four that belong to surfaces this list does not survey. Probed
-			// by hand against a real Nextcloud, all fifteen header selectors
-			// and all eleven navigation selectors MATCH, with counts of 1 or
-			// 2 each. The arithmetic of that run settles it: six surfaces in
-			// 24.5s total is ~4s per surface INCLUDING the 2.5s sleep, so
-			// every probe ran ~1.5s after navigation began.
+			// WHAT THIS DID NOT FIX, MEASURED. I expected this to clear most
+			// of the 31 selectors the guard reports dead. It cleared NONE:
+			// 31 before, 31 after, with the run's own log confirming the
+			// chrome DID mount on files, dashboard and settings. So the
+			// timing was real but it was not the cause, and the honest
+			// reading of the remaining 31 is still open — see the PR.
 			//
-			// The consequence was worse than a red run. The failure message
-			// invites the reader to "fix them against the real DOM", and
-			// acting on it would have meant rewriting or deleting 27 rules
-			// of working theme CSS to satisfy a measurement taken before the
-			// markup existed.
+			// The reason the sleep still had to go is the FAILURE MODE, not
+			// the count. A run that probes before the chrome mounts and a run
+			// that probes a genuinely stale stylesheet produced the SAME
+			// output, and the message invites the reader to "fix them against
+			// the real DOM" — which, acted on, means deleting theme CSS to
+			// satisfy a measurement. Probed by hand against a full Nextcloud,
+			// all 15 `#header` and 11 `#app-navigation-vue` selectors match
+			// with counts of 1-2, so at least some of this list is not dead
+			// CSS but a survey whose instance does not render the chrome
+			// these rules target.
 			//
 			// So: wait for a Vue-rendered node, and record the surfaces where
 			// none ever appeared instead of silently probing an empty shell.
