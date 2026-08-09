@@ -214,9 +214,9 @@ The admin settings MUST be implemented using vanilla PHP templates and vanilla J
 
 #### Scenario: XSS prevention via output escaping
 - GIVEN dynamic values are rendered in the template
-- WHEN token set data is output in HTML attributes
-- THEN `p(json_encode(...))` MUST be used for the `data-token-sets` attribute (the `p()` helper HTML-escapes the JSON output)
-- AND `p()` helper MUST be used for individual value output (escapes HTML)
+- WHEN server values are output into the template
+- THEN `p()` MUST be used for every individual value output (escapes HTML)
+- AND structured server data MUST NOT be hand-encoded into an attribute at all — it travels via initial state, which owns its own encoding
 - AND localized strings MUST use `p($l->t(...))` for safe output
 
 #### Scenario: No build step required
@@ -293,27 +293,44 @@ The settings panel MUST include instructional text explaining the purpose of the
 - THEN they MUST understand that they can either select a preset token set OR customize individual tokens
 - AND the two-action guidance prevents confusion about the panel's dual purpose
 
-### Requirement: Data Attributes for JavaScript Initialization
-The settings panel MUST pass configuration data to JavaScript via HTML data attributes.
+### Requirement: Initial State for JavaScript Initialization
+The settings panel MUST pass configuration data to JavaScript via Nextcloud's
+initial-state channel, and MUST NOT pass it via HTML `data-*` attributes.
 
-#### Scenario: Token sets data attribute
+This requirement previously mandated the opposite. It was rewritten because it
+contradicted ADR-004, which is the company-wide rule and wins: server data
+reaches the frontend through `IInitialState::provideInitialState()` in PHP and
+`loadState()` in JavaScript. Data attributes are not merely unidiomatic — they
+break on CSP-hardened instances, and they break SILENTLY, because any markup
+change that moves or renames the carrying element leaves the script parsing an
+empty string and rendering as though the server had sent nothing at all.
+
+#### Scenario: Token sets provided as initial state
 - GIVEN the settings panel renders
-- WHEN the `#nldesign-settings` div is output
-- THEN it MUST have a `data-token-sets` attribute containing JSON-encoded array of all token sets
-- AND the JSON MUST be HTML-escaped via `p(json_encode(...))` to prevent XSS
+- WHEN `lib/Settings/Admin.php` builds the form
+- THEN it MUST call `provideInitialState('tokenSets', ...)` with the full token set array
+- AND the `#nldesign-settings` div MUST NOT carry a `data-token-sets` attribute
+- AND encoding MUST be left to the initial-state channel rather than to `p(json_encode(...))` in the template
 
-#### Scenario: Current token set data attribute
+#### Scenario: Current token set provided as initial state
 - GIVEN the active token set is "amsterdam"
-- WHEN the `#nldesign-settings` div is output
-- THEN it MUST have a `data-current-token-set` attribute with value "amsterdam"
-- AND the value MUST be HTML-escaped via `p()`
+- WHEN `lib/Settings/Admin.php` builds the form
+- THEN it MUST call `provideInitialState('currentTokenSet', 'amsterdam')`
+- AND the `#nldesign-settings` div MUST NOT carry a `data-current-token-set` attribute
 
-#### Scenario: JavaScript reads data attributes on initialization
-@e2e exclude Internal JS initialization detail — observable effect (correct dropdown state + preview) is covered by admin-settings spec-coverage; data-attribute presence is also verified.
+#### Scenario: Active preview and icon pack source provided as initial state
+- GIVEN a theme preview is running for the requesting admin, or an `icon_pack` override is set
+- WHEN `lib/Settings/Admin.php` builds the form
+- THEN it MUST call `provideInitialState('activePreview', ...)` and `provideInitialState('iconPackSource', ...)`
+- AND neither value MUST appear as a `data-*` attribute on any rendered element
+
+#### Scenario: JavaScript reads initial state on initialization
+@e2e exclude Internal JS initialization detail — the observable effect (correct dropdown state, preview, and icon-pack indicator) is covered by admin-settings spec-coverage; the read path itself is covered by tests/vitest/admin-a11y.spec.js and tests/vitest/admin-dark-mode.spec.js, which fail if the script falls back to defaults.
 - GIVEN the admin.js script loads
 - WHEN it initializes the settings panel
-- THEN it MUST read token set data from `data-token-sets` and parse it as JSON
-- AND it MUST read the current token set from `data-current-token-set`
+- THEN it MUST read token set data via `OCP.InitialState.loadState('nldesign', 'tokenSets', [])`
+- AND it MUST read the current token set via `OCP.InitialState.loadState('nldesign', 'currentTokenSet', '')`
+- AND it MUST NOT call `getAttribute('data-…')` for any server-provided value
 - AND these values MUST drive the initial state of the dropdown and preview
 
 ### Requirement: Localization Support
@@ -515,10 +532,10 @@ path and covers the complete configuration, unlike the overrides-only download.
 - External link to `https://nldesign.app` with `target="_blank"` and `rel="noopener noreferrer"` (`templates/settings/admin.php` lines 16-19)
 - External link to `https://nldesignsystem.nl/` with arrow indicator (`templates/settings/admin.php` lines 80-82)
 - Vanilla PHP template loads `script('nldesign', 'admin')` and `style('nldesign', 'admin')` with no Vue/webpack (`templates/settings/admin.php` lines 7-8)
-- XSS prevention via `p(json_encode(...))` for `data-token-sets` and `p()` for other values (`templates/settings/admin.php` lines 12-13)
+- XSS prevention via `p()` for every value rendered into the template; structured server data is not hand-encoded into markup at all (`templates/settings/admin.php`)
 - `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods (`lib/Controller/SettingsController.php`)
 - Token editor mount point at `#nldesign-token-editor` (`templates/settings/admin.php` lines 74-77)
-- Data attributes on `#nldesign-settings` div for JS initialization (`templates/settings/admin.php` lines 11-13)
+- Initial state (`tokenSets`, `currentTokenSet`, `activePreview`, `iconPackSource`) provided for JS initialization (`lib/Settings/Admin.php`); no `data-*` attributes on the `#nldesign-settings` div
 - All user-visible text uses `$l->t()` for localization
 - Design system badge element `#nldesign-design-system-badge` (`templates/settings/admin.php` line 36)
 

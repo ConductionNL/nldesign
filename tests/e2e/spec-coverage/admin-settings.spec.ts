@@ -65,7 +65,7 @@ test.describe('admin-settings', () => {
 
 	// Scenario: Token sets include design system metadata
 	// @e2e exclude openspec/specs/admin-settings/spec.md#token-sets-include-design-system-metadata
-	// Asserts JSON structure of data-token-sets attribute content (design_system field) — backend data model.
+	// Asserts JSON structure of the `tokenSets` initial-state payload (design_system field) — backend data model.
 
 	// Scenario: Default values for fresh installation
 	// @e2e exclude openspec/specs/admin-settings/spec.md#default-values-for-fresh-installation
@@ -350,39 +350,88 @@ test.describe('admin-settings', () => {
 	// REQ-ASET-012: Data Attributes for JavaScript Initialization
 	// -----------------------------------------------------------------------
 
+	/**
+	 * Read one initial-state value the way Nextcloud publishes it.
+	 *
+	 * `IInitialState::provideInitialState('foo', …)` renders a hidden input
+	 * with id `initial-state-<app>-<key>` whose value is base64-encoded JSON.
+	 * Asserting on that element — rather than on whatever `loadState()`
+	 * happens to return once scripts have run — keeps this a test of the
+	 * SERVER's output, which is what the scenarios above are about.
+	 */
+	const readInitialState = async (page, key: string) => {
+		const el = page.locator(`#initial-state-nldesign-${key}`)
+		await expect(el).toBeAttached()
+		const encoded = await el.getAttribute('value')
+		expect(encoded).toBeTruthy()
+		return JSON.parse(Buffer.from(encoded as string, 'base64').toString('utf-8'))
+	}
+
 	test(
-		// @e2e openspec/specs/admin-settings/spec.md#token-sets-data-attribute
-		'Token sets data attribute present on settings div',
+		// @e2e openspec/specs/admin-settings/spec.md#token-sets-provided-as-initial-state
+		'Token sets provided as initial state, not as a data attribute',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
 			await page.waitForLoadState('domcontentloaded')
+
 			const settingsDiv = page.locator('#nldesign-settings')
 			await expect(settingsDiv).toBeAttached()
-			const attr = await settingsDiv.getAttribute('data-token-sets')
-			expect(attr).toBeTruthy()
-			// Must be valid JSON array
-			const parsed = JSON.parse(attr as string)
+
+			const parsed = await readInitialState(page, 'tokenSets')
 			expect(Array.isArray(parsed)).toBe(true)
 			expect(parsed.length).toBeGreaterThan(0)
+
+			// The old transport must be gone, not merely unused. Asserting on
+			// the ITEM (the attribute) rather than on the panel rendering
+			// correctly is deliberate: the panel would render correctly with
+			// both mechanisms present, and that is exactly the state this
+			// change exists to leave behind.
+			expect(await settingsDiv.getAttribute('data-token-sets')).toBeNull()
 		},
 	)
 
 	test(
-		// @e2e openspec/specs/admin-settings/spec.md#current-token-set-data-attribute
-		'Current token set data attribute present on settings div',
+		// @e2e openspec/specs/admin-settings/spec.md#current-token-set-provided-as-initial-state
+		'Current token set provided as initial state, not as a data attribute',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
 			await page.waitForLoadState('domcontentloaded')
+
+			const current = await readInitialState(page, 'currentTokenSet')
+			expect(typeof current).toBe('string')
+			expect(current.length).toBeGreaterThan(0)
+
 			const settingsDiv = page.locator('#nldesign-settings')
-			const attr = await settingsDiv.getAttribute('data-current-token-set')
-			expect(attr).toBeTruthy()
+			expect(await settingsDiv.getAttribute('data-current-token-set')).toBeNull()
 		},
 	)
 
-	// Scenario: JavaScript reads data attributes on initialization
-	// @e2e exclude openspec/specs/admin-settings/spec.md#javascript-reads-data-attributes-on-initialization
+	test(
+		// @e2e openspec/specs/admin-settings/spec.md#active-preview-and-icon-pack-source-provided-as-initial-state
+		'Active preview and icon pack source provided as initial state',
+		async ({ page }) => {
+			await page.goto(THEMING_URL)
+			await page.waitForLoadState('domcontentloaded')
+
+			// `activePreview` is null when no preview is running — a null is a
+			// value here, so the assertion is that the KEY is published, not
+			// that it is truthy.
+			await expect(page.locator('#initial-state-nldesign-activePreview')).toBeAttached()
+
+			const source = await readInitialState(page, 'iconPackSource')
+			expect(typeof source).toBe('string')
+
+			expect(await page.locator('#nldesign-settings').getAttribute('data-active-preview')).toBeNull()
+			expect(
+				await page.locator('#nldesign-icon-pack-indicator').getAttribute('data-icon-pack-source'),
+			).toBeNull()
+		},
+	)
+
+	// Scenario: JavaScript reads initial state on initialization
+	// @e2e exclude openspec/specs/admin-settings/spec.md#javascript-reads-initial-state-on-initialization
 	// Internal JS initialization logic; observable outcome (dropdown shows correct option) covered by
-	// dropdown-populated test.
+	// dropdown-populated test, and the read path itself by tests/vitest/admin-a11y.spec.js.
 
 	// -----------------------------------------------------------------------
 	// REQ-ASET-013: Localization Support
