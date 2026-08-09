@@ -128,16 +128,10 @@ class Application extends App implements IBootstrap
         // sharing (openspec/specs/federated-config-sharing/spec.md) silently
         // did nothing.
         //
-        // `registerAutoloading()` touches only the autoloader and is
-        // idempotent, so pulling the prefix in here is safe regardless of
-        // which apps ran before this one.
-        try {
-            $orPath = \OCP\Server::get(\OCP\App\IAppManager::class)->getAppPath('openregister');
-            \OC_App::registerAutoloading('openregister', $orPath);
-        } catch (\Throwable) {
-            // OpenRegister absent or disabled — the guard below then answers
-            // FALSE truthfully, and the app degrades as designed.
-        }
+        // See lib/AppInfo/OpenRegisterAutoloader.php: idempotent, swallows a
+        // missing/disabled OpenRegister, and returns false in that case so the
+        // guard below answers FALSE truthfully.
+        (new OpenRegisterAutoloader())->ensure();
 
         if (class_exists(\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class) === true) {
             $context->registerEventListener(
