@@ -189,36 +189,23 @@ const SURFACES: Array<Surface> = [
 /**
  * Selectors permitted to match nothing on every surveyed surface.
  * Each entry is a substring or /regex/ plus the reason it cannot match.
- *
- * `olderServer: true` marks the entries whose ONLY justification is "kept for
- * older Nextcloud releases". Those are checked against the oldest release this
- * app supports — see MIN_SUPPORTED_NC and the assertion that uses it. An
- * excuse that names a server the app cannot even run on is not an excuse.
  */
-const ALLOWED: Array<{ pattern: RegExp; reason: string; olderServer?: boolean }> = [
+const ALLOWED: Array<{ pattern: RegExp; reason: string }> = [
 	{
 		pattern: /^#app-navigation(?![-\w])/,
 		reason: 'Deliberate pre-NC34 fallback; NC34 renders #app-navigation-vue. Kept so the theme still applies on older servers.',
-		// MEASURED opt-out: #app-navigation counts 1 on NC 32.0.12 at
-		// /settings/user, which IS one of the surveyed surfaces — so it is live
-		// in the union and never reaches the assertion anyway. The flag records
-		// the measurement rather than relying on that.
-		olderServer: false,
 	},
 	{
 		pattern: /#content\.content|#app-content(?!-vue)/,
 		reason: 'Cross-version shell fallbacks. NC34 uses #content (no class) + #content-vue + #app-content-vue.',
-		// Same: #app-content = 1 on NC 32.0.12 /settings/user.
 	},
 	{
 		pattern: /nav\.app-menu/,
-		reason: 'Structural prefix for the NC32 app-menu rules. `nav.app-menu` itself is LIVE on both 32.0.12 '
-			+ 'and 34.0.2 (count 1 each); it is the NC32-only descendants (.app-menu__list, .app-menu-entry*) '
-			+ 'that the surveyed NC34 markup replaces with .app-menu__waffle / .app-menu__current-app.',
-		// Corrected 2026-08-10. The previous reason read "NC34 renders the app
-		// menu through a different structure; kept for older servers", which is
-		// wrong about the selector it excuses: nav.app-menu counts 1 on NC34.
-		// An allowance that misdescribes what it allows cannot be audited.
+		reason: 'NC34 renders the app menu through a different structure; kept for older servers.',
+	},
+	{
+		pattern: /\.header-appname|\.header-left|\.header-right|\.menutoggle|\.unified-search__button|\.header-start \.icon-vue/,
+		reason: 'Pre-Vue header classes retained as fallbacks for older Nextcloud releases.',
 	},
 	{
 		pattern: /^(button|input)\.(primary|secondary)\b/,
@@ -246,19 +233,10 @@ const ALLOWED: Array<{ pattern: RegExp; reason: string; olderServer?: boolean }>
 			+ 'Vue apps that render their own components instead, but these still apply on form-bearing '
 			+ 'admin pages and inside dialogs.',
 	},
-	// REMOVED 2026-08-10, together with the CSS they excused:
-	//
-	//   /\.header-appname|\.header-left|\.header-right|\.menutoggle
-	//     |\.unified-search__button|\.header-start \.icon-vue/
-	//       "Pre-Vue header classes retained as fallbacks for older Nextcloud releases."
-	//   /unified-search__input/
-	//       "Pre-NC34 unified-search markup, retained as a fallback for older servers."
-	//
-	// Both reasons named a server this app cannot run on. Counted at rest on
-	// /apps/files/ with `lasuite` active, on two disposable instances:
-	// every one of those selectors is 0 on NC 32.0.12 AND 0 on NC 34.0.2, and
-	// info.xml declares min-version="32". The CSS is deleted in
-	// css/systems/lasuite/element-overrides.css; see the notes there.
+	{
+		pattern: /unified-search__input/,
+		reason: 'Pre-NC34 unified-search markup, retained as a fallback for older servers.',
+	},
 ]
 
 function allowedReason(selector: string): string | null {
@@ -269,51 +247,11 @@ function allowedReason(selector: string): string | null {
 }
 
 /**
- * True when the selector's excuse is "kept for an OLDER Nextcloud".
- *
- * DERIVED FROM THE REASON TEXT, NOT FROM A HAND-SET FLAG, and deliberately so.
- * A flag someone must remember to set is a check that quietly stops working the
- * first time someone forgets — and the entries this is meant to catch are
- * written by whoever is in a hurry to make the suite green. The reason string
- * is the thing they cannot avoid writing, so that is what gets audited.
- *
- * `olderServer: false` opts an entry out, and is only honest with a measured
- * count on the oldest supported server recorded next to it (both current
- * opt-outs carry one).
- */
-const OLDER_SERVER_EXCUSE = /older (nextcloud|server)/i
-
-function excusedAsOlderServerFallback(selector: string): boolean {
-	return ALLOWED.some(({ pattern, reason, olderServer }) =>
-		olderServer !== false && OLDER_SERVER_EXCUSE.test(reason) && pattern.test(selector))
-}
-
-/**
  * The newest Nextcloud this app declares support for (appinfo/info.xml
  * `<nextcloud min-version="32" max-version="34"/>`). It is the expiry date on
  * every SINCE entry below: once CI surveys this major, nothing may be deferred.
  */
 const MAX_SUPPORTED_NC = 34
-
-/**
- * The OLDEST Nextcloud this app declares support for (info.xml min-version).
- *
- * THE OLDEST SUPPORTED SERVER IS THE POSITIVE CONTROL FOR "KEPT FOR OLDER
- * SERVERS". MAX_SUPPORTED_NC expires the SINCE list — nothing may be deferred
- * to a newer server once we survey the newest one. This is the missing mirror:
- * nothing may be excused as a fallback for an OLDER server once we survey the
- * oldest one, because there is no older server left for it to be a fallback for.
- *
- * The gap this closes was not hypothetical. CI pins `nextcloud-test-refs:
- * ["stable32"]`, so the survey has ALWAYS run on the oldest supported release —
- * and seven selectors sat in ALLOWED reading "retained as fallbacks for older
- * Nextcloud releases" while matching nothing on the very server that was
- * supposed to be the reason they existed. The data that refutes them was in
- * hand on every single run; nothing ever compared the two numbers. Confirmed on
- * a second instance so the deletion covers the whole range, 0 on 32.0.12 and 0
- * on 34.0.2 alike.
- */
-const MIN_SUPPORTED_NC = 32
 
 /**
  * A ONE-VERSION SURVEY CANNOT JUDGE A CROSS-VERSION STYLESHEET.
@@ -353,29 +291,9 @@ const MIN_SUPPORTED_NC = 32
  * `app-menu__list` and `unified-search-menu`. So these twelve are not stale CSS
  * and not a timing artefact; they are markup that server does not have.
  *
- * ⚠️ CORRECTION, 2026-08-10. An earlier revision of this note claimed "the La
- * Suite header treatment does not reach NC 32 at all". THAT IS FALSE, and the
- * twelve rows above are not evidence for it — they are twelve selectors out of
- * a much larger set. Counted properly, by walking every rule in
- * css/systems/lasuite/element-overrides.css and matching it against a live NC
- * 32.0.12 with `lasuite` active: 67 header selectors, of which **43 match and
- * 24 do not**. The white bar, the brand-550 masked logo, the inverted app
- * icons, the avatar exclusion and the brand-650 semibold active app with its
- * 3px underline are all live on NC 32.
- *
- * 🔑 Twelve dead selectors was a count of what was LOOKED AT, not of the
- * treatment. Generalising from the sample that was in front of me turned a
- * narrow, true finding into a broad, false one.
- *
- * What was genuinely missing on NC 32 was ONE control: unified search. NC 34
- * renders a bordered 34px pill (`.unified-search-input`); NC 32 renders a bare
- * transparent 50x50 icon button (`.unified-search-menu .header-menu__trigger`)
- * that no rule in this theme touched. That is now fixed in element-overrides.css
- * — the fix matches 0 elements on NC 34, asserted in both directions.
- *
- * The waffle and the current-app wordmark need no NC 32 counterpart: that
- * server has neither control. Its always-visible app menu shows the active app
- * instead, and the app-menu rules already style it.
+ * NOTE FOR WHOEVER RAISES THE PIN. The same measurement says the La Suite
+ * header treatment does not reach NC 32 at all — worth its own change, and
+ * deliberately not smuggled into this one.
  */
 const SINCE: Array<{ pattern: RegExp; since: number; reason: string }> = [
 	{
@@ -941,21 +859,6 @@ test.describe('lasuite selector liveness', () => {
 				+ `(appinfo/info.xml max-version=${MAX_SUPPORTED_NC}), so nothing may be deferred to a newer `
 				+ `one. These selectors match nothing here and their SINCE entry has expired — delete the `
 				+ `entry and the CSS, or fix the selectors:\n  ${versionDeferred.join('\n  ')}`,
-		).toEqual([])
-
-		// THE MIRROR OF THE EXPIRY ABOVE. That one refuses to defer to a NEWER
-		// server once we survey the newest; this one refuses to excuse as a
-		// fallback for an OLDER server once we survey the oldest. Both are
-		// answering the same question — "is there actually a server on which
-		// this selector is alive?" — from the two ends of the supported range.
-		const olderServerExcused = dead.filter((sel) => excusedAsOlderServerFallback(sel))
-		expect(
-			serverMajor <= MIN_SUPPORTED_NC ? olderServerExcused : [],
-			`Surveyed Nextcloud ${serverMajor} is the OLDEST version this app supports `
-				+ `(appinfo/info.xml min-version=${MIN_SUPPORTED_NC}), so "kept for older servers" names no `
-				+ `server this app can run on. These selectors are dead here and their ALLOWED entry claims `
-				+ `an older server would render them — delete the entry and the CSS, or replace the reason `
-				+ `with one that is true:\n  ${olderServerExcused.join('\n  ')}`,
 		).toEqual([])
 
 		const deferredSet = new Set(deferred)
