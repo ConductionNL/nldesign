@@ -45,21 +45,30 @@ header#header {
 	display: none !important;
 }
 
-/* Header foreground — dark text/icons on the white bar. */
-#header .header-appname,
-#header .header-left a {
-	color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
-	font-weight: 600 !important;
-}
+/* Two rules stood here — `.header-appname`/`.header-left a` and
+   `.header-right a`/`.header-right button`/`.menutoggle`/`.unified-search__button`
+   — carried as "pre-Vue header classes retained as fallbacks for older
+   Nextcloud releases".
 
-#header .header-right a,
-#header .header-right button,
-#header .menutoggle,
-#header .unified-search__button {
-	color: var(--lasuite-content-primary, var(--lasuite-color-gray-900)) !important;
-	filter: none !important;
-	opacity: 1 !important;
-}
+   THE OLDEST SUPPORTED RELEASE REFUTES THAT. appinfo/info.xml declares
+   `min-version="32"`, so NC 32 IS the oldest server this theme can run on.
+   Counted on /apps/files/ at rest with `lasuite` active, on two disposable
+   instances built for the comparison:
+
+       selector                        NC 32.0.12   NC 34.0.2
+       #header .header-appname              0            0
+       #header .header-left a               0            0
+       #header .header-right a              0            0
+       #header .header-right button         0            0
+       #header .menutoggle                  0            0
+       #header .unified-search__button      0            0
+
+   Zero at BOTH ends of the supported range is not a fallback, it is dead CSS:
+   there is no server this app supports on which these can match. Deleted.
+
+   The header foreground they were meant to set is delivered on both versions by
+   the `.header-end`/`.header-start` glyph rule and the app-menu rules below,
+   which are live on 32 and 34 alike. */
 
 /* Nextcloud ships every header glyph WHITE, because its own header is normally
    a dark brand colour. On our white bar they render white-on-white and the bar
@@ -84,11 +93,16 @@ header#header {
         black disc — the exclusion list below it could never have worked, no
         matter which avatar selector it named. Colour inherits; filters do not
         un-inherit. */
+/* `#header .header-start .icon-vue` was listed here and is deleted: counted 0
+   on NC 32.0.12 AND 0 on NC 34.0.2, i.e. dead across the whole supported range.
+   Its siblings are NOT dead and stay — `.header-start .button-vue__icon` (0 on
+   32, 2 on 34) and `.header-start svg` (0 on 32, 1 on 34) are NC33+ markup with
+   a live target on the newer half of the range, which is what the SINCE list in
+   tests/e2e/spec-coverage/selector-liveness.spec.ts exists to defer. */
 #header .header-end .button-vue__icon,
 #header .header-end .icon-vue,
 #header .header-end svg,
 #header .header-start .button-vue__icon,
-#header .header-start .icon-vue,
 #header .header-start svg,
 #header .app-menu__waffle,
 #header .app-menu__waffle svg {
@@ -148,9 +162,17 @@ header#header {
    visual weight is what makes the two headers read alike; the two strings are
    not structurally the same thing (product name vs current app), so this is a
    deliberate visual match rather than a like-for-like mapping. */
+/* `#header .header-start .header-appname` was a third selector here and is
+   deleted for the same reason as the two rules near the top of the file:
+   `.header-appname` counts 0 on NC 32.0.12 and 0 on NC 34.0.2.
+
+   NC 32 needs no replacement for this. It has no current-app chip at all — the
+   active app is an entry in the always-visible app menu, and the app-menu rules
+   below already give it brand-650 at weight 600 with the 3px underline. The
+   wordmark treatment is NC33+ markup with an NC32 equivalent that is already
+   styled, not a hole. */
 #header .app-menu__current-app-name,
-#header .app-menu__current-app .button-vue__text,
-#header .header-start .header-appname {
+#header .app-menu__current-app .button-vue__text {
 	/* MEASURED, not estimated. La Suite Docs renders its wordmark as TEXT (unlike
 	   Messages, which ships an image and offers no computed value), so these are
 	   read straight off the live app at localhost:3000:
@@ -183,9 +205,12 @@ header#header {
    structural hairline (see the sidebar rule), rather than the measured
    #d3d4e0 — that value falls between two ramp steps and consistency with the
    rest of the theme is worth more than matching one control exactly. */
+/* `#header .unified-search__input` was listed here as "pre-NC34 unified-search
+   markup, retained as a fallback for older servers" and is deleted: 0 on NC
+   32.0.12 and 0 on NC 34.0.2. NC 32 is the oldest server this app supports, so
+   there is no "older server" left for it to be a fallback FOR. */
 #header .unified-search-input,
-#header .unified-search-input__button,
-#header .unified-search__input {
+#header .unified-search-input__button {
 	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
 	border: 1px solid var(--lasuite--contextuals--border--surface--primary, var(--lasuite-color-gray-100)) !important;
 	border-radius: var(--lasuite-border-radius) !important;
@@ -221,6 +246,81 @@ header#header {
    so it opts out of the brand colour applied to header glyphs above. */
 #header .unified-search-input__icon,
 #header .unified-search-input svg {
+	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
+}
+
+/* ─── THE SAME CONTROL ON NEXTCLOUD 32 ────────────────────────────────────────
+ *
+ * Everything above targets `.unified-search-input`, which NC 32 does not have.
+ * NC 32 renders unified search as an icon-only 50x50 button instead:
+ *
+ *     <div class="unified-search-menu">
+ *       <div id="unified-search" class="header-menu">
+ *         <button class="header-menu__trigger button-vue button-vue--icon-only"
+ *                 aria-label="Unified search">
+ *
+ * so on the oldest server this theme supports, the one control that carries La
+ * Suite's most recognisable header affordance had NO treatment at all: a bare
+ * transparent square where NC 34 shows a bordered field. Measured at rest on
+ * /apps/files/ with `lasuite` active:
+ *
+ *                                              NC 32.0.12   NC 34.0.2
+ *     #header .unified-search-input                 0            1
+ *     #header .unified-search-menu                  1            1
+ *     #header .unified-search-menu
+ *             .header-menu__trigger                 1            0
+ *
+ * THE SELECTOR IS VERSION-DISCRIMINATING ON ITS OWN. `.header-menu__trigger`
+ * inside `.unified-search-menu` exists only on 32 (on 34 the three
+ * `.header-menu__trigger`s in the bar are Notifications, Contacts and the
+ * settings menu — none of them is search), so this block needs no `:has()`
+ * guard, no version sniff and no `@supports`: on NC 34 it matches nothing and
+ * changes nothing. That is asserted in both directions below.
+ *
+ * The values are the ones measured on NC 34's own pill in the same session —
+ * background rgb(248,248,249), 1px rgb(226,226,234), 34px, radius 4px — so the
+ * two servers land on the same control rather than on two interpretations of it.
+ *
+ * THE LABEL IS `attr(aria-label)`, NOT A STRING. NC 32's trigger has no visible
+ * text, and hard-coding an English prompt here would ship an untranslated word
+ * to every locale. `aria-label` is already translated by Nextcloud, so the
+ * generated text follows the user's language for free. It reads "Unified
+ * search" where NC 34 reads "Search apps, files, tags, messages …"; the two
+ * servers word it differently and that is Nextcloud's wording, not ours.
+ * Generated content cannot alter the accessible name here — `aria-label` wins
+ * over contents in the name computation — so this is decorative only, and the
+ * control keeps a 34px hit box (above the 24x24 WCAG 2.5.8 minimum, and the
+ * same height NC 34's pill already uses). */
+#header .unified-search-menu .header-menu__trigger {
+	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+	border: 1px solid var(--lasuite--contextuals--border--surface--primary, var(--lasuite-color-gray-100)) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+	block-size: 34px !important;
+	min-block-size: 0 !important;
+	min-inline-size: 0 !important;
+	inline-size: auto !important;
+	padding: 0 10px !important;
+	justify-content: flex-start !important;
+}
+
+#header .unified-search-menu .header-menu__trigger .button-vue__wrapper {
+	gap: 8px !important;
+}
+
+#header .unified-search-menu .header-menu__trigger::after {
+	content: attr(aria-label);
+	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+	white-space: nowrap;
+}
+
+/* Same reasoning as the NC 34 magnifier above: neutral affordance, not a
+   brand-tinted action. This has to out-specify the `.header-end svg` brand tint
+   earlier in the file, and it does — (1 id, 2 classes, 1 type) against
+   (1 id, 1 class, 1 type) — so the ordering here is not load-bearing. */
+#header .unified-search-menu .header-menu__trigger .icon-vue,
+#header .unified-search-menu .header-menu__trigger svg {
 	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
 }
 
