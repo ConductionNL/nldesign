@@ -351,6 +351,44 @@ function deferredUntilApp(selector: string): { appId: string; reason: string } |
 }
 
 /**
+ * A SUBTREE THIS FIXTURE NEVER RENDERED IS NOT A DEAD SELECTOR EITHER.
+ *
+ * Third precondition, same discipline as SINCE and REQUIRES_APP: the check is
+ * a measured fact about this run, and it inverts the moment the fact changes.
+ *
+ * MEASURED, on CI (run 31408716704) against its own `nextcloud/server`
+ * stable32 checkout served by `php -S`: the Files left navigation renders its
+ * entries — the bare `.app-navigation-entry` and `.app-navigation-entry:hover`
+ * rules are live there — but NO entry is ever marked `.active`, on any surface,
+ * even after waiting 60s for one. The same page on a released Nextcloud has
+ * one: probed at rest on 32.0.12 and 34.0.2, `#app-navigation-vue
+ * .app-navigation-entry.active` matches exactly 1 node.
+ *
+ * So the ten active-row selectors are correct CSS that this fixture cannot
+ * exercise. Deferring them is not an excuse for them: `anchor` is a selector
+ * the survey actively waits for and records, so the day CI's navigation marks
+ * an active entry they are required live again, automatically. If instead the
+ * navigation renders nothing at all, `chromeless` and the live-count floor
+ * below still fail the run — this defers a missing STATE, never a missing page.
+ */
+const REQUIRES_RENDERED: Array<{ pattern: RegExp; anchor: string; reason: string }> = [
+	{
+		pattern: /app-navigation-entry[\w.-]*\.active|\.active[\w.-]*\s+\.app-navigation-entry/,
+		anchor: NAV_READY,
+		reason:
+			'The active-row selectors need the router to mark one navigation entry active. This '
+			+ 'fixture renders the entries but never the active state.',
+	},
+]
+
+function deferredUntilRendered(selector: string): { anchor: string; reason: string } | null {
+	for (const { pattern, anchor, reason } of REQUIRES_RENDERED) {
+		if (pattern.test(selector)) return { anchor, reason }
+	}
+	return null
+}
+
+/**
  * Turn Nextcloud's own dark theme on or off for the signed-in account.
  *
  * `body[data-themes*="dark"]` and `body[data-theme-dark]` are the hooks the
@@ -529,6 +567,8 @@ test.describe('lasuite selector liveness', () => {
 		const unrendered: string[] = []
 		/** Anchors deliberately not awaited because their app is not enabled here. */
 		const skippedAnchors: string[] = []
+		/** Anchors this fixture really did render, on at least one surface. */
+		const renderedAnchors = new Set<string>()
 		/** Every app id this instance reports as enabled, unioned over surfaces. */
 		const installedApps = new Set<string>()
 		// Per-surface tallies, printed at the end. A survey that quietly measured
@@ -623,6 +663,7 @@ test.describe('lasuite selector liveness', () => {
 					}
 					try {
 						await probePage.waitForSelector(anchor.selector, { state: 'attached', timeout: 60_000 })
+						renderedAnchors.add(anchor.selector)
 					} catch {
 						unrendered.push(`${surface.name}: ${anchor.selector}`)
 					}
@@ -760,16 +801,13 @@ test.describe('lasuite selector liveness', () => {
 				+ `server-rendered skeleton. Every #header / #app-navigation-vue selector would read as dead. `
 				+ `This is a failure of the MEASUREMENT, not of the stylesheet: do not "fix" the CSS on it.`,
 		).toBeLessThan(SURFACES.length)
-		// The `awaitAlso` waits are the fix for eleven falsely-accused selectors,
-		// so their failure is fatal rather than swallowed. Every node listed there
-		// is one a healthy Files page always renders; if one never arrives the
-		// survey is back to probing an unfinished page and must say so.
-		expect(
-			unrendered,
-			`These nodes never rendered, so the selectors under them would read as dead. That is a `
-				+ `MEASUREMENT failure, not a stylesheet one — do not "fix" the CSS on it:\n  `
-				+ unrendered.join('\n  '),
-		).toEqual([])
+		// An `awaitAlso` anchor that never arrived is NOT failed here. It is fed
+		// into REQUIRES_RENDERED below, which defers exactly the selectors that
+		// depend on it and leaves every other selector under the full assertion.
+		// Failing outright would be the honest thing only if the missing anchor
+		// meant the page was unfinished — but `chromeless` and the live-count
+		// floor already cover that case, and this one is narrower: a subtree the
+		// fixture renders WITHOUT the state the selectors need.
 		expect(
 			unreachable.length,
 			`Too few surfaces loaded (${unreachable.join(', ')}) — the union would be too narrow to trust`,
@@ -786,7 +824,9 @@ test.describe('lasuite selector liveness', () => {
 				const versionGate = deferredUntil(sel)
 				if (versionGate !== null && serverMajor < versionGate.since) return true
 				const appGate = deferredUntilApp(sel)
-				return appGate !== null && !installedApps.has(appGate.appId)
+				if (appGate !== null && !installedApps.has(appGate.appId)) return true
+				const renderGate = deferredUntilRendered(sel)
+				return renderGate !== null && !renderedAnchors.has(renderGate.anchor)
 			})
 			.sort()
 		if (deferred.length > 0) {
