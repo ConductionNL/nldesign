@@ -84,6 +84,20 @@ class ContrastController extends Controller
      * @return JSONResponse `{ results: [...] }`, or 400 on a malformed request.
      *
      * @spec openspec/specs/app-token-set-selection/spec.md
+     *
+     * @no-admin-idor-exempt Pure function over caller-supplied VALUES — there is
+     * no direct object reference to substitute, so IDOR is not structurally
+     * possible. The method takes zero parameters; the only request input is a
+     * `background` colour string and a `candidates` list of {name, value, role}
+     * triples, all of which the caller already possesses. It reads no id, no
+     * path and no session identity, and `ContrastService` has no constructor
+     * and no dependencies at all — no mapper, no ObjectService, no config, no
+     * filesystem — so the response is WCAG contrast arithmetic over the request
+     * body and nothing else. There is no stored object this endpoint can be
+     * pointed at, hence nothing an authorization guard could scope: adding one
+     * would assert a boundary that does not exist. `#[NoAdminRequired]` (not
+     * `#[PublicPage]`) is deliberate and remains the access control — the
+     * endpoint still requires an authenticated session.
      */
     #[NoAdminRequired]
     public function evaluate(): JSONResponse
