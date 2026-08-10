@@ -907,19 +907,29 @@ body[data-themes*="dark"] {
                     background rgb(238,241,250)   (brand-050 tint)
                     ::before   rgb(94,92,208), 3px, left 0   (the rail)
 
-   Both the BEM `--active` and the plain `.active` spelling are covered: this
-   file has now been bitten four separate times by naming only one of two live
-   spellings. */
-.navigation-list__link--active,
-.navigation-list__link.active {
+   ONLY the BEM `--active` spelling. This block used to carry a plain
+   `.navigation-list__link.active` alongside it, on the general principle that
+   this file has been bitten four times by naming one of two live spellings.
+   That principle is sound and the application of it here was not: measured on
+   the open dialog, on Nextcloud 32.0.12 AND 34.0.2, nc-vue's settings-dialog
+   navigation emits
+
+       class="navigation-list__link navigation-list__link--active"   (1 node)
+       class="navigation-list__link"                                 (5 nodes)
+
+   and never the bare `.active`. `.navigation-list__link.active` therefore
+   matched nothing on any supported server — dead CSS carried by a guess about
+   a component that has only ever had one spelling — and its two selectors were
+   two of the twenty-nine this file's own liveness sweep reported. Carry both
+   spellings where BOTH are observed; here, one is. */
+.navigation-list__link--active {
 	background: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 	color: var(--lasuite-content-primary, var(--lasuite-color-gray-850)) !important;
 	font-weight: 400 !important;
 }
 
-.navigation-list__link--active::before,
-.navigation-list__link.active::before {
+.navigation-list__link--active::before {
 	content: none !important;
 	display: none !important;
 }
