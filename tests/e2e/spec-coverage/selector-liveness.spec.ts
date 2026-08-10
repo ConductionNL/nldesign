@@ -106,6 +106,25 @@ const NAV_READY = '#app-navigation-vue .app-navigation-entry.active'
 /** The notifications bell — a third bundle again, and its own mount clock. */
 const BELL_READY = '#header .notifications-button__icon'
 
+/**
+ * An EXPLICITLY EMPTY session, for the surfaces that must be anonymous.
+ *
+ * `storageState: undefined` is not this. Playwright merges context options
+ * over the config's `use` block, and an `undefined` value reads as "not
+ * specified" — so the root `use.storageState` (tests/e2e/.auth/admin.json)
+ * is inherited anyway and the context is quietly logged in as admin. An
+ * empty state OBJECT cannot be merged away: there is nothing ambiguous about
+ * zero cookies and zero origins.
+ *
+ * Measured, and the reason this constant exists: with `undefined`, CI's run
+ * of this spec reported `body-user` on `/login` — Nextcloud had served the
+ * dashboard to a session the "anonymous" context should not have had. It was
+ * caught only because the login surface asserts its own body id; the selector
+ * verdict itself would have been green, because token gating does not depend
+ * on the caller.
+ */
+const EMPTY_SESSION = { cookies: [], origins: [] }
+
 type Surface = {
 	name: string
 	path: string
@@ -529,7 +548,7 @@ test.describe('lasuite selector liveness', () => {
 			// the survey would measure a logged-in app while reporting that it had
 			// measured the login screen — green, and about the wrong page.
 			const context = surface.anonymous === true
-				? await browser.newContext()
+				? await browser.newContext({ storageState: EMPTY_SESSION })
 				: null
 			const probePage = context === null ? page : await context.newPage()
 
