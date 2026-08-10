@@ -593,3 +593,20 @@
 	margin-top: 0.5em;
 	color: var(--color-text-maxcontrast);
 }
+
+/* ==========================================================================
+   Reduced motion — WCAG 2.2 SC 2.3.3
+   ==========================================================================
+
+   Unlike the design-system layers, the motion here is NOT `!important`, so a
+   same-specificity rule later in the file is enough. The selectors are
+   repeated rather than reset through `*` so that this block states exactly
+   which motion it removes. */
+@media (prefers-reduced-motion: reduce) {
+	.nldesign-token-set,
+	.nldesign-preview-button,
+	.nldesign-app-dropdown-trigger::after {
+		transition: none !important;
+		animation: none !important;
+	}
+}

@@ -456,3 +456,36 @@ body .app-item:focus-visible .app-item__circle,
 body .app-item.active .app-item__circle {
 	background-color: var(--summer-color-primary-light-hover) !important;
 }
+
+/* ==========================================================================
+   Reduced motion — WCAG 2.2 SC 2.3.3
+   ==========================================================================
+
+   The motion declarations above are `!important` at class-level specificity,
+   so a universal `*`-based reset (specificity 0) would lose the cascade to
+   them and turn the audit green without removing any motion. The selectors
+   are therefore repeated verbatim — equal specificity, later in source order.
+
+   `transform` is included in the card hover, so `transition: none` here also
+   removes the sliding/scaling motion, not only the colour fades. */
+@media (prefers-reduced-motion: reduce) {
+	.cn-card,
+	.cn-object-card,
+	.panel,
+	.widget,
+	.dashboard-widget,
+	.dashboard-panel,
+	.app-content-list-item,
+	input[type="text"],
+	input[type="search"],
+	input[type="email"],
+	input[type="url"],
+	input[type="tel"],
+	.input-field__input,
+	.button-vue,
+	button,
+	.button {
+		transition: none !important;
+		animation: none !important;
+	}
+}

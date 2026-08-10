@@ -867,3 +867,42 @@ button,
 	box-shadow: none !important;
 	-webkit-box-shadow: none !important;
 }
+
+/* ==========================================================================
+   Reduced motion — WCAG 2.2 SC 2.3.3
+   ==========================================================================
+
+   Every motion declaration in this file is `!important` and carries class- or
+   attribute-level specificity. A universal `* { transition-duration: 0.01ms
+   !important }` reset therefore does NOT override them: between two
+   `!important` author declarations the more specific selector wins, and `*`
+   has specificity 0. Such a reset would silence the audit while leaving the
+   motion on screen.
+
+   So the selectors are repeated verbatim below — equal specificity, later in
+   source order, which is what actually wins the cascade. Keep this block in
+   step with the motion declarations above. */
+@media (prefers-reduced-motion: reduce) {
+	#body-login .button-vue--vue-primary,
+	#body-login input[type="submit"],
+	#body-login button.primary,
+	.login-form button[type="submit"],
+	.button-vue,
+	button,
+	.button,
+	#app-navigation li.active > a,
+	#app-navigation .app-navigation-entry.active,
+	a,
+	input[type="text"],
+	input[type="password"],
+	input[type="email"],
+	input[type="search"],
+	input[type="url"],
+	input[type="tel"],
+	input[type="number"],
+	textarea,
+	select {
+		transition: none !important;
+		animation: none !important;
+	}
+}
