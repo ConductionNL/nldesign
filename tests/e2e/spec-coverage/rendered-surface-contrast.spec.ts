@@ -221,6 +221,54 @@ test.describe('rendered-surface contrast', () => {
 	}
 
 	test(
+		'the on-surface opt-out does not repaint links in body text',
+		async ({ page }) => {
+			// `--nldesign-color-on-surface` is read by two rules that want
+			// DIFFERENT foregrounds: body text and link text. Resetting it to a
+			// colour inside the dashboard's white widgets — rather than to
+			// `initial`, which restores each rule's own fallback — silently
+			// repaints every link there in body text. That regression was
+			// introduced by the contrast fix itself and is INVISIBLE to every
+			// assertion above, because body text on white passes AA comfortably.
+			//
+			// The token set is set explicitly, and to one using the nldesign
+			// design system: the rules under test do not exist in the others, so
+			// inheriting whatever set the previous test left behind makes this
+			// pass alone and fail in suite order. It did exactly that.
+			await page.goto(THEMING_URL)
+			await setTokenSet(page, await requestToken(page), 'rijkshuisstijl')
+
+			await page.goto('/apps/dashboard/')
+			await page.waitForLoadState('domcontentloaded')
+			await page.waitForTimeout(2000)
+
+			const seen = await page.evaluate(() => {
+				const link = document.querySelector('#app-dashboard [class*="panel"] a, #app-dashboard [class*="widget"] a')
+				if (!link) return null
+				const root = getComputedStyle(document.documentElement)
+				const hex = (v: string) => {
+					const m = v.match(/rgba?\((\d+), (\d+), (\d+)/)
+					return m ? '#' + [m[1], m[2], m[3]].map(n => Number(n).toString(16).padStart(2, '0')).join('') : v
+				}
+				return {
+					linkColor: hex(getComputedStyle(link as Element).color),
+					linkToken: root.getPropertyValue('--nldesign-color-link').trim().toLowerCase(),
+					textToken: root.getPropertyValue('--nldesign-color-text').trim().toLowerCase(),
+				}
+			})
+
+			// No link on the dashboard is not a pass — it means the guard is inert.
+			expect(seen, 'no link inside a dashboard widget — this guard measured nothing').not.toBeNull()
+			expect(
+				seen!.linkColor,
+				`a link inside a dashboard widget renders ${seen!.linkColor}, not the link token `
+				+ `${seen!.linkToken}. If it equals the body-text token ${seen!.textToken}, an on-surface `
+				+ 'opt-out named a colour where it should have used `initial`.',
+			).toBe(seen!.linkToken)
+		},
+	)
+
+	test(
 		'every status note card carries its body text at AA, whatever variants ship',
 		async ({ page }) => {
 			await page.goto('/settings/admin')

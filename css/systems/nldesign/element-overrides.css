@@ -332,17 +332,28 @@ a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
 #app-dashboard {
 	--nldesign-color-on-surface: var(--color-background-plain-text, #ffffff);
 
-	color: var(--nldesign-color-on-surface) !important;
+	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
 }
 
 /*
  * …but SOLID BACKGROUNDS above repaints every panel/widget INSIDE the dashboard
  * opaque white, and the property inherits. Those opt back in, with the same
  * selector list that painted them, or the widgets render white-on-white.
+ *
+ * `initial`, and NOT `var(--nldesign-color-text)`. One property is read by two
+ * rules that want DIFFERENT foregrounds — body text and link text — so naming
+ * the text colour here repaints every link inside a dashboard widget in body
+ * text. Measured: the recommended-files links went #01689b → #0f172a. That is a
+ * real regression introduced by the contrast fix itself, and INVISIBLE to any
+ * contrast check, because body text on white passes AA comfortably.
+ *
+ * Setting a custom property to `initial` makes it the guaranteed-invalid value,
+ * so every `var(--nldesign-color-on-surface, X)` falls back to its OWN X — text
+ * to the text colour, links to the link colour. One reset, both roles correct.
  */
 #app-dashboard [class*="panel"],
 #app-dashboard [class*="widget"] {
-	--nldesign-color-on-surface: var(--nldesign-color-text);
+	--nldesign-color-on-surface: initial;
 }
 
 .preview-card__header {
