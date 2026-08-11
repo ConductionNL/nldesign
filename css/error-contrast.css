@@ -32,3 +32,47 @@
 .nc-chip--error {
 	color: #fff !important;
 }
+
+/**
+ * The same inversion, on the other three statuses — NcNoteCard.
+ *
+ * The header above describes the error case; it is not special. Measured on a
+ * Nextcloud 34 instance, changing only whether nldesign is enabled:
+ *
+ *   stock          --color-success #D8F3DA  --color-info #D5F1FA   (pale fills)
+ *   rijkshuisstijl --color-success #39870c  --color-info #007bc7   (brand fills)
+ *
+ * NcNoteCard paints its ENTIRE surface with `--note-background`, which resolves
+ * to `--color-<status>`, and the body text on it stays near-black. So the
+ * saturated fill lands at 3.94:1 (success) and 3.95:1 (info) against a 4.5
+ * floor — and on the `hoog-contrast` set, whose entire purpose is contrast, at
+ * 2.44:1 and 2.06:1.
+ *
+ * Pinning the foreground the way the buttons above do would not work here: the
+ * right foreground is token-set dependent. White clears #39870c at 4.52:1 but
+ * only reaches 3.22:1 on the Rijkshuisstijl orange, where black is correct at
+ * 6.52:1. Any single literal is wrong for some shipped set, and picking per set
+ * would mean a value in each of the ~40 token files.
+ *
+ * So restore the FILL instead, at the component that paints it, leaving the
+ * tokens saturated for the ~96 fleet call sites the header describes. Mixing
+ * against `--color-main-background` rather than a literal white is what makes
+ * one rule correct for every token set and for dark mode: the fill always moves
+ * TOWARD the surface the body text is already legible on, so the pairing cannot
+ * invert. Measured after: 0 color-contrast violations on all four sets.
+ */
+.notecard--error {
+	--note-background: color-mix(in srgb, var(--color-error) 15%, var(--color-main-background, #ffffff)) !important;
+}
+
+.notecard--warning {
+	--note-background: color-mix(in srgb, var(--color-warning) 15%, var(--color-main-background, #ffffff)) !important;
+}
+
+.notecard--success {
+	--note-background: color-mix(in srgb, var(--color-success) 15%, var(--color-main-background, #ffffff)) !important;
+}
+
+.notecard--info {
+	--note-background: color-mix(in srgb, var(--color-info) 15%, var(--color-main-background, #ffffff)) !important;
+}
