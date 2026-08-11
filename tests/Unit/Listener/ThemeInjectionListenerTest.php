@@ -23,6 +23,7 @@ use OCP\EventDispatcher\Event;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Unit tests for ThemeInjectionListener.
@@ -52,6 +53,13 @@ class ThemeInjectionListenerTest extends TestCase
     private $request;
 
     /**
+     * The logger mock.
+     *
+     * @var LoggerInterface&MockObject
+     */
+    private $logger;
+
+    /**
      * The listener under test.
      *
      * @var ThemeInjectionListener
@@ -67,10 +75,12 @@ class ThemeInjectionListenerTest extends TestCase
         $this->cssInjectionService = $this->createMock(CssInjectionService::class);
         $this->appThemingService   = $this->createMock(AppThemingService::class);
         $this->request             = $this->createMock(IRequest::class);
+        $this->logger              = $this->createMock(LoggerInterface::class);
         $this->listener            = new ThemeInjectionListener(
             $this->cssInjectionService,
             $this->appThemingService,
-            $this->request
+            $this->request,
+            $this->logger
         );
 
         // No blanket `isThemingDisabledFor()` default here: PHPUnit's

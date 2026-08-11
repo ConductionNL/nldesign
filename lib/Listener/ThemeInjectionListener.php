@@ -29,6 +29,7 @@ use OCP\AppFramework\Http\TemplateResponse;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -76,20 +77,30 @@ class ThemeInjectionListener implements IEventListener
     private IRequest $request;
 
     /**
+     * Records a swallowed listener failure, so failing open is never silent.
+     *
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
      * Constructor.
      *
      * @param CssInjectionService $cssInjectionService The CSS injection service.
      * @param AppThemingService   $appThemingService   The per-app theming guard resolver.
      * @param IRequest            $request             The current request.
+     * @param LoggerInterface     $logger              The logger for swallowed failures.
      */
     public function __construct(
         CssInjectionService $cssInjectionService,
         AppThemingService $appThemingService,
-        IRequest $request
+        IRequest $request,
+        LoggerInterface $logger
     ) {
         $this->cssInjectionService = $cssInjectionService;
         $this->appThemingService   = $appThemingService;
         $this->request = $request;
+        $this->logger  = $logger;
     }//end __construct()
 
     /**
@@ -123,7 +134,18 @@ class ThemeInjectionListener implements IEventListener
         } catch (Throwable $e) {
             // Fail open: a listener failure must never break page rendering
             // (theming is presentation, never a hard dependency).
-        }
+            //
+            // It must not be INVISIBLE either. This catch used to have an empty
+            // body, so an aborted cascade reached no log at any level and
+            // presented as "one theming feature is broken" (nldesign#264).
+            // Individual layers are isolated in CssInjectionService::runLayer()
+            // and never arrive here; anything that does is a real listener bug.
+            $this->logger->warning(
+                'nldesign: theme injection failed for this render; the page was served unthemed.',
+                ['app' => 'nldesign', 'exception' => $e]
+            );
+        }//end try
+
     }//end handle()
 
     /**
