@@ -31,65 +31,18 @@
  * control works". The control arm is what makes the refusal mean "because you
  * are not an admin" rather than "because nothing works".
  */
-import { test, expect, type Browser, type Page, type APIResponse } from '@playwright/test'
+import { test, expect, type Page, type APIResponse } from '@playwright/test'
 
-/** Credentials for the dedicated non-admin fixture user. */
-const NONADMIN_USER = process.env.NC_NONADMIN_USER ?? 'e2enonadmin'
-const NONADMIN_PASS = process.env.NC_NONADMIN_PASS ?? 'nldesign-e2e-nonadmin-pw'
+import { ensureNonAdminUser, loginAs, api, adminContext, NONADMIN_USER, NONADMIN_PASS } from './_fixtures'
 
 /**
- * Log a user in through the real login form and return the authenticated page.
+ * Issue a request and return only its numeric status.
  *
- * Mirrors tests/e2e/global-setup.ts: the form is Vue-rendered so the fields do
- * not exist in the initial HTML, and the post-login redirect must be observed
- * by polling the URL rather than with waitForURL — the click is `noWaitAfter`,
- * so the navigation has usually already happened and waitForURL would sit
- * waiting for a second one that never comes.
- */
-async function loginAs(browser: Browser, user: string, pass: string): Promise<{ page: Page, close: () => Promise<void> }> {
-	const context = await browser.newContext({ storageState: undefined })
-	const page = await context.newPage()
-
-	await page.goto('/index.php/login', { waitUntil: 'domcontentloaded' })
-	const userField = page.locator('input[name="user"]')
-	await userField.waitFor({ state: 'visible', timeout: 30_000 })
-	await userField.fill(user)
-	await page.locator('input[name="password"]').fill(pass)
-	await page.locator('button[type="submit"]').first().click({ noWaitAfter: true })
-
-	const deadline = Date.now() + 60_000
-	while (Date.now() < deadline) {
-		if (!/\/login(\?|$|\/)/.test(page.url())) break
-		await page.waitForTimeout(500)
-	}
-	if (/\/login(\?|$|\/)/.test(page.url())) {
-		throw new Error(`Login failed for ${user} — still on ${page.url()}. `
-			+ 'The fixture user must exist; see tests/e2e/README-fixtures.md.')
-	}
-
-	return { page, close: async () => { await context.close() } }
-}
-
-/**
- * Issue a request from inside the authenticated page, with a valid CSRF token.
- *
- * Returns the numeric status so assertions can name it — a body parsed as
- * "empty" hides whether the call was refused (403) or merely CSRF-rejected
- * (412), and those mean opposite things here.
+ * Thin wrapper over the shared `api()` helper: every assertion in this file is
+ * about the STATUS CODE, and naming it keeps the assertions readable.
  */
 async function statusOf(page: Page, method: string, path: string, body?: unknown): Promise<number> {
-	return page.evaluate(async ({ method, path, body }) => {
-		const headers: Record<string, string> = {
-			requesttoken: (window as any).OC.requestToken,
-		}
-		if (body !== undefined) headers['Content-Type'] = 'application/json'
-		const res = await fetch(path, {
-			method,
-			headers,
-			body: body === undefined ? undefined : JSON.stringify(body),
-		})
-		return res.status
-	}, { method, path, body })
+	return (await api(page, method, path, body)).status
 }
 
 const APP = '/index.php/apps/nldesign'
@@ -98,6 +51,22 @@ test.describe('admin-only enforcement', () => {
 	let nonAdmin: { page: Page, close: () => Promise<void> }
 
 	test.beforeAll(async ({ browser }) => {
+		// SETUP budget, not an assertion budget. This hook provisions an account
+		// and then performs a full Vue-rendered form login — on a cold instance
+		// that is comfortably more than the 30s a single test gets, and it timed
+		// out there. Nothing is asserted about the product inside this hook
+		// except fixture preconditions, so a longer clock here cannot hide a
+		// product failure; it only stops setup being mistaken for one.
+		test.setTimeout(180_000)
+
+		// Provision through an ADMIN context — the fixture user may not exist on
+		// a fresh instance.
+		const adminCtx = await adminContext(browser)
+		const adminPage = await adminCtx.newPage()
+		await adminPage.goto('/settings/admin/theming', { waitUntil: 'domcontentloaded' })
+		await ensureNonAdminUser(adminPage)
+		await adminCtx.close()
+
 		nonAdmin = await loginAs(browser, NONADMIN_USER, NONADMIN_PASS)
 	})
 

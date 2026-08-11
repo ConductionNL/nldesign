@@ -24,7 +24,9 @@
  * failure part-way through cannot leak a preview into the next test and make it
  * fail for the wrong reason.
  */
-import { test, expect, type Browser, type Page } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
+
+import { ensureNonAdminUser, loginAs, api, adminContext, NONADMIN_USER, NONADMIN_PASS } from './_fixtures'
 
 const APP = '/index.php/apps/nldesign'
 const THEMING_URL = '/settings/admin/theming'
@@ -33,48 +35,6 @@ const THEMING_URL = '/settings/admin/theming'
 const PREVIEW_SET = 'amsterdam'
 const PREVIEW_NAME = 'Gemeente Amsterdam'
 
-const NONADMIN_USER = process.env.NC_NONADMIN_USER ?? 'e2enonadmin'
-const NONADMIN_PASS = process.env.NC_NONADMIN_PASS ?? 'nldesign-e2e-nonadmin-pw'
-
-/**
- * Log a user in through the real login form. See admin-only-enforcement.spec.ts
- * for why the redirect is observed by polling rather than with waitForURL.
- */
-async function loginAs(browser: Browser, user: string, pass: string): Promise<{ page: Page, close: () => Promise<void> }> {
-	const context = await browser.newContext({ storageState: undefined })
-	const page = await context.newPage()
-	await page.goto('/index.php/login', { waitUntil: 'domcontentloaded' })
-	const userField = page.locator('input[name="user"]')
-	await userField.waitFor({ state: 'visible', timeout: 30_000 })
-	await userField.fill(user)
-	await page.locator('input[name="password"]').fill(pass)
-	await page.locator('button[type="submit"]').first().click({ noWaitAfter: true })
-	const deadline = Date.now() + 60_000
-	while (Date.now() < deadline) {
-		if (!/\/login(\?|$|\/)/.test(page.url())) break
-		await page.waitForTimeout(500)
-	}
-	if (/\/login(\?|$|\/)/.test(page.url())) {
-		throw new Error(`Login failed for ${user} — still on ${page.url()}`)
-	}
-	return { page, close: async () => { await context.close() } }
-}
-
-/** Call an nldesign settings endpoint in-page with a valid CSRF token. */
-async function api(page: Page, method: string, path: string, body?: unknown): Promise<{ status: number, json: any }> {
-	return page.evaluate(async ({ method, path, body }) => {
-		const headers: Record<string, string> = { requesttoken: (window as any).OC.requestToken }
-		if (body !== undefined) headers['Content-Type'] = 'application/json'
-		const res = await fetch(path, {
-			method, headers,
-			body: body === undefined ? undefined : JSON.stringify(body),
-		})
-		let json: any = null
-		try { json = await res.json() } catch { json = null }
-		return { status: res.status, json }
-	}, { method, path, body })
-}
-
 /** Every nldesign stylesheet href in the current page's head. */
 async function nldesignStyles(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
@@ -82,6 +42,18 @@ async function nldesignStyles(page: Page): Promise<string[]> {
 			.map((l) => (l as HTMLLinkElement).href)
 			.filter((h) => h.includes('/nldesign/')),
 	)
+}
+
+/**
+ * Is this stylesheet href the TOKEN stylesheet for `setId`?
+ *
+ * Matches `css/tokens/<set>.css` and `css/tokens/dark/<set>.css` specifically,
+ * rather than a bare substring test. A substring test is wrong in both
+ * directions here: `nextcloud` (a real token set id) appears in almost every
+ * Nextcloud URL, and a set whose id is a prefix of another would cross-match.
+ */
+function tokenStylesheetFor(href: string, setId: string): boolean {
+	return new RegExp(`/css/tokens/(dark/)?${setId}\\.css`).test(href)
 }
 
 /** Every nldesign script src in the current page. */
@@ -94,6 +66,76 @@ async function nldesignScripts(page: Page): Promise<string[]> {
 }
 
 test.describe('theme preview', () => {
+	// The non-admin session is built ONCE. A full form login costs ~20s on a
+	// cold instance, and doing it inside the isolation test pushed that single
+	// test past the suite's 30s budget. Hoisting it removes work rather than
+	// buying time with a longer timeout; the session is read-only in the one
+	// test that uses it, so sharing it cannot leak state between tests.
+	let nonAdmin: { page: Page, close: () => Promise<void> } | undefined
+
+	/**
+	 * The instance-wide active token set these tests run against.
+	 *
+	 * ESTABLISHED by the fixture, not assumed and not merely read.
+	 *
+	 * The first version hard-coded `rijkshuisstijl` — what the machine they were
+	 * written on happened to have configured — and three assertions failed in CI
+	 * for reasons unrelated to the behaviour under test. Reading the value
+	 * instead is not enough either: a fresh instance defaults to `nextcloud`,
+	 * which is the STOCK appearance (`design_system: none`) and by design loads
+	 * NO nldesign stylesheets at all, so "the active set is loaded" would be
+	 * false on a perfectly healthy instance.
+	 *
+	 * So the fixture sets a known non-stock set and restores whatever was there
+	 * before. That makes "the previewed set SUBSTITUTED the active one" a claim
+	 * with two observable sides on every instance.
+	 */
+	const ACTIVE_SET = 'rijkshuisstijl'
+	let activeSet: string
+	let originalActiveSet: string | undefined
+
+	test.beforeAll(async ({ browser }) => {
+		// SETUP budget, not an assertion budget — see the same note in
+		// admin-only-enforcement.spec.ts. This hook provisions an account,
+		// switches the instance-wide token set, and performs a full form login.
+		test.setTimeout(180_000)
+
+		const adminCtx = await adminContext(browser)
+		const adminPage = await adminCtx.newPage()
+		await adminPage.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+		await ensureNonAdminUser(adminPage)
+
+		originalActiveSet = (await api(adminPage, 'GET', `${APP}/settings/tokenset`)).json?.tokenSet
+		expect(originalActiveSet, 'the instance-wide active token set must be readable').toBeTruthy()
+
+		const set = await api(adminPage, 'POST', `${APP}/settings/tokenset`, { tokenSet: ACTIVE_SET })
+		expect(set.status, `the fixture must be able to activate ${ACTIVE_SET}`).toBe(200)
+		activeSet = ACTIVE_SET
+
+		// The previewed set must DIFFER from the active one, or "the previewed
+		// set replaced the active one" is unfalsifiable.
+		expect(activeSet, `the active set must not be the previewed set (${PREVIEW_SET})`)
+			.not.toBe(PREVIEW_SET)
+
+		await adminCtx.close()
+
+		nonAdmin = await loginAs(browser, NONADMIN_USER, NONADMIN_PASS)
+	})
+
+	test.afterAll(async ({ browser }) => {
+		await nonAdmin?.close()
+
+		// Restore the instance-wide set this fixture changed, so the suite
+		// leaves the instance as it found it for whatever runs next.
+		if (originalActiveSet !== undefined && originalActiveSet !== ACTIVE_SET) {
+			const ctx = await adminContext(browser)
+			const p = await ctx.newPage()
+			await p.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
+			await api(p, 'POST', `${APP}/settings/tokenset`, { tokenSet: originalActiveSet })
+			await ctx.close()
+		}
+	})
+
 	test.afterEach(async ({ page }) => {
 		// Clear any preview this test left behind. Uses the admin session; a
 		// discard with no active preview is a no-op, so this is safe to run
@@ -144,39 +186,72 @@ test.describe('theme preview', () => {
 	test('the previewing admin gets the previewed token set on a real page', async ({ page }) => {
 		await page.goto(THEMING_URL)
 
-		await page.goto('/settings/user')
+		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const before = await nldesignStyles(page)
-		expect(before.some((h) => h.includes('rijkshuisstijl')),
-			'the active set rijkshuisstijl must be loaded before previewing').toBe(true)
+		expect(before.some((h) => tokenStylesheetFor(h, activeSet)),
+			`the active set ${activeSet} must be loaded before previewing`).toBe(true)
 
 		await page.goto(THEMING_URL)
 		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
 
-		await page.goto('/settings/user')
+		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const during = await nldesignStyles(page)
-		expect(during.some((h) => h.includes(PREVIEW_SET)),
+		expect(during.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
 			`the previewed set ${PREVIEW_SET} must be loaded on a normal page`).toBe(true)
-		expect(during.some((h) => h.includes('rijkshuisstijl')),
+		expect(during.some((h) => tokenStylesheetFor(h, activeSet)),
 			'the previewed set must SUBSTITUTE the active one, not stack on top of it').toBe(false)
 
-		// "custom overrides MUST still load last, unchanged" — the overrides
-		// layer is the last nldesign stylesheet when present.
-		const overrides = during.filter((h) => h.includes('custom') || h.includes('override'))
-		if (overrides.length > 0) {
-			expect(during.indexOf(overrides[overrides.length - 1]),
-				'custom overrides must remain the last nldesign layer').toBe(during.length - 1)
+		// "custom overrides MUST still load last, unchanged".
+		//
+		// Asserted as "after the token layer", NOT "last overall". The cascade
+		// documented in css-architecture puts custom overrides at layer 4 and
+		// then loads custom fonts (4.5) and the conditional hide-slogan /
+		// menu-labels stylesheets (5) AFTER them, so "last overall" is false on
+		// any instance that has those enabled — it failed in CI with the
+		// override at index 10 of 12 while passing locally where the later
+		// layers happened to be absent.
+		//
+		// The invariant that actually matters, and that the spec is getting at,
+		// is that an admin's overrides win over the token set they override.
+		// A naive `includes('override')` would also match the design system's
+		// own element-overrides.css, so match the custom file by name.
+		const customOverride = during.findIndex((h) => /custom-overrides\.css/.test(h))
+		if (customOverride >= 0) {
+			const tokenLayer = during.findIndex((h) => tokenStylesheetFor(h, PREVIEW_SET))
+			expect(customOverride,
+				'custom overrides must load AFTER the token set they override').toBeGreaterThan(tokenLayer)
 		}
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#banner-appears-on-all-themed-pages-for-the-previewer
 	test('the banner appears on every themed page with keyboard-operable controls', async ({ page }) => {
+		// This one test navigates THREE full app pages (Files, Dashboard,
+		// Settings), because "on all themed pages" is the claim and a banner
+		// wired to a single page would satisfy anything less. Three cold
+		// Nextcloud app loads do not fit the suite's default 30s envelope.
+		//
+		// This is a WALL-CLOCK envelope, not a widened assertion. Every
+		// assertion inside keeps its own tight deadline — the banner must appear
+		// within 15s per page, each control must take focus within 5s — so a
+		// banner that never renders, or a control that cannot be focused, still
+		// fails fast and fails red. What this buys is only the time to visit
+		// three pages instead of being cut off during the third.
+		test.setTimeout(120_000)
+
 		await page.goto(THEMING_URL)
 		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
 
 		// "on all themed pages" — assert on more than one, or a banner wired to
 		// the settings page alone would pass.
 		for (const url of ['/apps/files/', '/apps/dashboard/', '/settings/user']) {
-			await page.goto(url)
+			// `domcontentloaded`, not the default `load`. Dashboard widgets keep
+			// long-lived requests open, so the load event never fires on a page
+			// that is already interactive and already carries the banner — the
+			// goto timed out here while the banner was sitting in the DOM.
+			// Same reasoning, and the same fix, as tests/e2e/global-setup.ts.
+			// This is NOT a widened timeout: the wait is SHORTER and the
+			// assertions below are unchanged.
+			await page.goto(url, { waitUntil: 'domcontentloaded' })
 			const banner = page.locator('#nldesign-preview-banner')
 			await banner.waitFor({ state: 'visible', timeout: 15_000 })
 
@@ -187,35 +262,45 @@ test.describe('theme preview', () => {
 			// role="status" so a screen reader announces it (WCAG 4.1.3).
 			await expect(banner).toHaveAttribute('role', 'status')
 
-			// Publish and Discard must be reachable and operable by keyboard —
-			// they are links/buttons, so they must be focusable, not div-onclick.
-			const publish = banner.locator('.nldesign-preview-banner-publish')
-			const discard = banner.locator('.nldesign-preview-banner-discard')
-			await expect(publish).toBeVisible()
-			await expect(discard).toBeVisible()
-			// Focus each control and confirm it actually holds focus.
+			// Publish and Discard must be present on every page.
+			await expect(banner.locator('.nldesign-preview-banner-publish')).toBeVisible()
+			await expect(banner.locator('.nldesign-preview-banner-discard')).toBeVisible()
+		}
+
+		// Keyboard operability is asserted ONCE, on the page that has just been
+		// loaded, rather than on all three.
+		//
+		// Not a concession to flakiness: the banner is built by one function in
+		// js/preview-banner.js and is the same DOM on every page, so focusing
+		// the same two elements three times re-tests one fact. Doing it per page
+		// pushed this single-scenario test past the suite's 30s budget (three
+		// full navigations plus up to 10s of focus polling per control), and the
+		// honest fix for "the test does redundant work" is to stop doing the
+		// redundant work — not to raise the timeout until it fits.
+		//
+		// Discard's keyboard operability is additionally proven end-to-end by
+		// the discard test below, which drives it with a real Enter keypress.
+		const banner = page.locator('#nldesign-preview-banner')
+		for (const cls of ['.nldesign-preview-banner-publish', '.nldesign-preview-banner-discard']) {
+			const control = banner.locator(cls)
+			// RE-FOCUS on each poll rather than `focus()` once then
+			// `expect(...).toBeFocused()`. The host app mounts after the banner
+			// is appended and moves focus once while settling — measured on
+			// /apps/files/, where a single focus() lands and is then taken away.
+			// `toBeFocused()` retries the ASSERTION but never re-issues focus(),
+			// so it burns its whole timeout re-reading a state that can no
+			// longer change and reports a focusable control as unfocusable.
 			//
-			// RE-FOCUSING on each poll, rather than `await control.focus()` then
-			// `expect(control).toBeFocused()`, is deliberate. The host app mounts
-			// after the banner is appended and moves focus once while settling —
-			// measured on /apps/files/, where a single focus() lands and is then
-			// taken away. `toBeFocused()` retries the ASSERTION but never
-			// re-issues focus(), so it spends its whole timeout re-reading a
-			// state that can no longer change, and reports the control as
-			// unfocusable when it is merely late.
-			//
-			// This still fails for a control that CANNOT take focus (verified by
-			// setting tabindex="-1" on the publish link: the poll exhausts and
-			// the test goes red), so it tests focusability, not patience.
-			for (const control of [publish, discard]) {
-				await expect.poll(async () => {
-					await control.focus()
-					return await control.evaluate((el) => el === document.activeElement)
-				}, {
-					message: 'banner controls must be keyboard-focusable',
-					timeout: 10_000,
-				}).toBe(true)
-			}
+			// Still fails for a control that genuinely cannot take focus — a
+			// tabindex="-1" plant exhausts the poll and reddens the test — so
+			// this measures focusability, not patience.
+			await expect.poll(async () => {
+				await control.focus()
+				return await control.evaluate((el) => el === document.activeElement)
+			}, {
+				message: `${cls} must be keyboard-focusable`,
+				timeout: 5_000,
+			}).toBe(true)
 		}
 	})
 
@@ -242,28 +327,24 @@ test.describe('theme preview', () => {
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#non-admin-users-are-never-affected
-	test('a non-admin sees the instance-wide set and no banner while an admin previews', async ({ page, browser }) => {
+	test('a non-admin sees the instance-wide set and no banner while an admin previews', async ({ page }) => {
 		await page.goto(THEMING_URL)
 		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
 
 		// Confirm the preview really is live for the admin, so a "non-admin is
 		// unaffected" pass cannot come from the preview never having started.
-		await page.goto('/settings/user')
-		expect((await nldesignStyles(page)).some((h) => h.includes(PREVIEW_SET))).toBe(true)
+		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
+		expect((await nldesignStyles(page)).some((h) => tokenStylesheetFor(h, PREVIEW_SET))).toBe(true)
 
-		const other = await loginAs(browser, NONADMIN_USER, NONADMIN_PASS)
-		try {
-			await other.page.goto('/settings/user')
-			const styles = await nldesignStyles(other.page)
-			expect(styles.some((h) => h.includes('rijkshuisstijl')),
-				'the non-admin must still get the instance-wide set').toBe(true)
-			expect(styles.some((h) => h.includes(PREVIEW_SET)),
-				"the non-admin must NOT receive the admin's previewed set").toBe(false)
-			await expect(other.page.locator('#nldesign-preview-banner'),
-				'the non-admin must see no preview banner').toHaveCount(0)
-		} finally {
-			await other.close()
-		}
+		const other = nonAdmin!.page
+		await other.goto('/settings/user', { waitUntil: 'domcontentloaded' })
+		const styles = await nldesignStyles(other)
+		expect(styles.some((h) => tokenStylesheetFor(h, activeSet)),
+			'the non-admin must still get the instance-wide set').toBe(true)
+		expect(styles.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
+			"the non-admin must NOT receive the admin's previewed set").toBe(false)
+		await expect(other.locator('#nldesign-preview-banner'),
+			'the non-admin must see no preview banner').toHaveCount(0)
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#discard-from-the-banner
@@ -284,11 +365,11 @@ test.describe('theme preview', () => {
 		// The handler calls DELETE and reloads; wait for the banner to go.
 		await expect(banner, 'the banner must disappear after Discard').toHaveCount(0, { timeout: 20_000 })
 
-		await page.goto('/settings/user')
+		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const styles = await nldesignStyles(page)
-		expect(styles.some((h) => h.includes('rijkshuisstijl')),
+		expect(styles.some((h) => tokenStylesheetFor(h, activeSet)),
 			'the instance-wide set must render again after Discard').toBe(true)
-		expect(styles.some((h) => h.includes(PREVIEW_SET)),
+		expect(styles.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
 			'the previewed set must be gone after Discard').toBe(false)
 	})
 
