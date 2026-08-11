@@ -214,6 +214,29 @@ jobs:
       # `enable-axe` deliberately NOT set: a vanilla Nextcloud 34 already carries
       # serious/critical violations on core's OWN routes that DOM scoping does
       # not remove. Enabling axe is a separate decision.
+      #
+      # ⚠️ That reason is a claim about a state of the world, so it was tested
+      # (nldesign#268). It is HALF true, and the false half cost us four serious
+      # WCAG AA failures. Measured with axe on one NC 34 rig, changing only
+      # whether this app was enabled: core carries 1 serious and 0 critical
+      # across /settings/user, /apps/dashboard/ and /settings/admin, and ZERO
+      # `color-contrast` violations — while nldesign added FOUR, including
+      # 2.06:1 on the `hoog-contrast` set. So core's noise was never loud enough
+      # to hide our own signal; the premise that it would be is what kept this
+      # unmeasured, in the theming and accessibility app of all places.
+      #
+      # Fixed, and the profile is now byte-identical to core's on those routes.
+      # A quiet gate-33 still means runtime a11y is UNVERIFIED here, never
+      # verified-clean. What now enforces the specific class, without waiting on
+      # this decision, is tests/e2e/spec-coverage/rendered-surface-contrast.spec.ts
+      # — a rendered-surface contrast check in a suite CI already runs.
+      #
+      # If this is ever turned on: read `.github#351` first. `axe-run.cjs` reads
+      # a null `page.goto()` as HTTP 0 and hard-dies, and the error blames YOUR
+      # config, so the natural response is to delete routes until it goes green
+      # — which narrows a11y coverage to the landing page while looking like a
+      # fix. Scope it to the rules where core is clean rather than dropping
+      # routes.
       enable-hydra-gates: true
       # No `hydra-gates-ref` here on purpose. The shared workflow defaults it
       # to @main, and this workflow is itself consumed at @main, so the two

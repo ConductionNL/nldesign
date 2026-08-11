@@ -679,11 +679,19 @@ hr {
 	background-image: none !important;
 }
 
-/* Fix "Goedemorgen" text visibility - ensure it's the right color */
+/*
+ * Fix "Goedemorgen" text visibility — ensure it's the right color.
+ *
+ * "The right color" depends on what it sits on. Pinning a near-black literal
+ * here is what made the dashboard heading fail WCAG AA at 2.91:1 against the
+ * plain background; `--nldesign-color-on-surface` lets the painted surface say
+ * which pairing it needs (see the ON-SURFACE PAIRINGS block in
+ * systems/nldesign/element-overrides.css).
+ */
 h2,
 .dashboard-heading,
 .greeting {
-	color: var(--nldesign-color-text) !important;
+	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
 	background: transparent !important;
 	background-color: transparent !important;
 }
