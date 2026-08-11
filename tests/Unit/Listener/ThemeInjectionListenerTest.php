@@ -23,6 +23,7 @@ use OCP\EventDispatcher\Event;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Unit tests for ThemeInjectionListener.
@@ -52,6 +53,13 @@ class ThemeInjectionListenerTest extends TestCase
     private $request;
 
     /**
+     * The logger mock.
+     *
+     * @var LoggerInterface&MockObject
+     */
+    private $logger;
+
+    /**
      * The listener under test.
      *
      * @var ThemeInjectionListener
@@ -67,10 +75,12 @@ class ThemeInjectionListenerTest extends TestCase
         $this->cssInjectionService = $this->createMock(CssInjectionService::class);
         $this->appThemingService   = $this->createMock(AppThemingService::class);
         $this->request             = $this->createMock(IRequest::class);
+        $this->logger              = $this->createMock(LoggerInterface::class);
         $this->listener            = new ThemeInjectionListener(
             $this->cssInjectionService,
             $this->appThemingService,
-            $this->request
+            $this->request,
+            $this->logger
         );
 
         // No blanket `isThemingDisabledFor()` default here: PHPUnit's
@@ -230,17 +240,35 @@ class ThemeInjectionListenerTest extends TestCase
     }//end testUnrelatedEventIsNoOp()
 
     /**
-     * A throwing CssInjectionService never lets the exception escape `handle()`.
+     * A throwing CssInjectionService never lets the exception escape `handle()`
+     * — and, since nldesign#264, never does so SILENTLY.
+     *
+     * Failing open is correct (theming is presentation, never a hard
+     * dependency), but this catch used to have an empty body, so an aborted
+     * cascade reached no log at any level and presented as "one theming
+     * feature is broken". The `assertNotEmpty` below is the half that was
+     * missing: without it this test passes over a swallow that tells nobody.
      */
-    public function testInjectionServiceThrowingNeverEscapes(): void
+    public function testInjectionServiceThrowingNeverEscapesButIsLogged(): void
     {
         $response = new TemplateResponse('files', 'index', [], TemplateResponse::RENDER_AS_USER);
 
         $this->cssInjectionService->method('inject')->willThrowException(new \RuntimeException('boom'));
 
+        $warnings = [];
+        $this->logger->method('warning')->willReturnCallback(
+            function (string $message) use (&$warnings) {
+                $warnings[] = $message;
+            }
+        );
+
+        // Not throwing IS the assertion for the fail-open half; if `handle()`
+        // let it escape, PHPUnit would report the RuntimeException here.
         $this->listener->handle(new BeforeTemplateRenderedEvent(true, $response));
-        $this->addToAssertionCount(1);
-    }//end testInjectionServiceThrowingNeverEscapes()
+
+        $this->assertCount(1, $warnings);
+        $this->assertStringContainsString('served unthemed', $warnings[0]);
+    }//end testInjectionServiceThrowingNeverEscapesButIsLogged()
 
     /**
      * Double dispatch of the same event yields exactly two `inject()` calls

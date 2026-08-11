@@ -24,6 +24,8 @@ use OCP\IConfig;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
  * Unit tests for CssInjectionService.
@@ -98,6 +100,13 @@ class CssInjectionServiceTest extends TestCase
     private $previewBannerService;
 
     /**
+     * The logger mock — asserts that a skipped layer is never silent.
+     *
+     * @var LoggerInterface&MockObject
+     */
+    private $logger;
+
+    /**
      * Set up mocks before each test.
      */
     protected function setUp(): void
@@ -111,6 +120,7 @@ class CssInjectionServiceTest extends TestCase
         $this->urlGenerator           = $this->createMock(IURLGenerator::class);
         $this->groupThemingService    = $this->createMock(GroupThemingService::class);
         $this->previewBannerService   = $this->createMock(ThemePreviewBannerService::class);
+        $this->logger                 = $this->createMock(LoggerInterface::class);
 
         // Default: no group mapping configured, so the resolver returns the
         // plain appconfig token set — byte-identical to pre-per-group behaviour.
@@ -150,6 +160,7 @@ class CssInjectionServiceTest extends TestCase
                     $this->urlGenerator,
                     $this->groupThemingService,
                     $this->previewBannerService,
+                    $this->logger,
                 ]
             )
             ->onlyMethods(['emitStyle', 'emitFontLink'])
@@ -219,6 +230,15 @@ class CssInjectionServiceTest extends TestCase
             ]
         );
 
+        // REGISTERED BEFORE THE CALL, DELIBERATELY. This line used to sit
+        // AFTER `inject()` and read `expects($this->never())` — and a mock
+        // expectation only counts invocations made AFTER it is registered, so
+        // it observed 0 calls and could never fail, while the production code
+        // was in fact calling `ensureExists()` on every render. Proven by
+        // A/B: with the line in its old position, both `never()` and
+        // `exactly(2)` pass. In this position `exactly(2)` fails, as it should.
+        $this->customOverridesService->expects($this->once())->method('ensureExists');
+
         $styleLog = [];
         $fontLog  = [];
         $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
@@ -240,7 +260,6 @@ class CssInjectionServiceTest extends TestCase
             $styleLog
         );
         $this->assertSame([], $fontLog);
-        $this->customOverridesService->expects($this->never())->method('ensureExists');
     }//end testStandardNldesignOrder()
 
     /**
@@ -717,4 +736,198 @@ class CssInjectionServiceTest extends TestCase
 
         $this->assertNotContains('custom-css', $styleLog);
     }//end testCustomCssNotEmittedWhenEmpty()
+
+    /**
+     * Configure the mocks so every layer after the overrides layer has
+     * something observable to emit: a custom font (layer 4.5), both
+     * conditional stylesheets (layer 5) and the preview banner (layer 6).
+     *
+     * Without this the "later layers still ran" assertions below would be
+     * vacuous — an empty style log is what a cancelled cascade produces too.
+     *
+     * @return void
+     */
+    private function configureAllLaterLayers(): void
+    {
+        $this->configureAppValues(
+            [
+                'hide_slogan'      => '1',
+                'show_menu_labels' => '1',
+            ]
+        );
+        $this->designSystemService->method('getTokenSetMeta')->willReturn(['design_system' => 'nldesign']);
+        $this->designSystemService->method('getDesignSystem')->willReturn(
+            ['stylesheets' => ['systems/nldesign/fonts']]
+        );
+        $this->fontService->method('hasFonts')->willReturn(true);
+        $this->urlGenerator->method('linkToRoute')->willReturn('/index.php/apps/nldesign/fonts.css');
+    }//end configureAllLaterLayers()
+
+    /**
+     * nldesign#264 — a failing `css/` write must not cancel the rest of the
+     * cascade.
+     *
+     * `CustomOverridesService::ensureExists()` WRITES into the app directory,
+     * which throws on a read-only or non-www-data-owned install. Before the
+     * fix that exception escaped `inject()` into the listener's catch-all, so
+     * custom fonts, the conditional stylesheets and the preview banner all
+     * silently vanished while the page still looked correctly themed.
+     *
+     * @spec openspec/specs/css-architecture/spec.md#custom-overrides-always-loaded-last
+     */
+    public function testAFailingOverridesWriteDoesNotCancelTheLaterLayers(): void
+    {
+        $this->configureAllLaterLayers();
+        $this->customOverridesService->method('ensureExists')->willThrowException(
+            new RuntimeException('Could not write custom-overrides.css.tmp')
+        );
+
+        $bannerInjected = false;
+        $this->previewBannerService->method('inject')->willReturnCallback(
+            function () use (&$bannerInjected) {
+                $bannerInjected = true;
+            }
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        // The layer that failed is the ONLY one missing: there is no file to
+        // link, so emitting the tag would be a guaranteed 404.
+        $this->assertNotContains('custom-overrides', $styleLog);
+
+        // Layer 2 ran (it precedes the failure) ...
+        $this->assertContains('systems/nldesign/fonts', $styleLog);
+        // ... and so did every layer AFTER it. This is the regression.
+        $this->assertCount(1, $fontLog, 'layer 4.5 was cancelled');
+        $this->assertStringContainsString('/index.php/apps/nldesign/fonts.css', $fontLog[0]);
+        $this->assertContains('hide-slogan', $styleLog, 'layer 5 was cancelled');
+        $this->assertContains('show-menu-labels', $styleLog, 'layer 5 was cancelled');
+        $this->assertTrue($bannerInjected, 'layer 6 (preview banner) was cancelled');
+    }//end testAFailingOverridesWriteDoesNotCancelTheLaterLayers()
+
+    /**
+     * A skipped layer must reach the log. The pre-fix code swallowed the
+     * throw in an EMPTY catch block, so the failure was invisible at every
+     * log level and presented as "one theming feature is broken".
+     *
+     * @spec openspec/specs/css-architecture/spec.md#custom-overrides-always-loaded-last
+     */
+    public function testASkippedOverridesLayerIsLogged(): void
+    {
+        $this->configureAllLaterLayers();
+        $this->customOverridesService->method('ensureExists')->willThrowException(
+            new RuntimeException('Could not write custom-overrides.css.tmp')
+        );
+
+        $warnings = [];
+        $this->logger->method('warning')->willReturnCallback(
+            function (string $message) use (&$warnings) {
+                $warnings[] = $message;
+            }
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertCount(1, $warnings);
+        $this->assertStringContainsString('custom-overrides.css', $warnings[0]);
+    }//end testASkippedOverridesLayerIsLogged()
+
+    /**
+     * The isolation is general, not a special case for the overrides layer:
+     * a failure in an EARLY layer must not cancel the later ones either.
+     *
+     * @spec openspec/specs/css-architecture/spec.md#standard-css-load-order-for-nldesign-design-system
+     */
+    public function testAFailingDesignSystemLayerDoesNotCancelTheLaterLayers(): void
+    {
+        $this->configureAppValues(['hide_slogan' => '1']);
+        $this->designSystemService->method('getTokenSetMeta')->willReturn(['design_system' => 'nldesign']);
+        $this->designSystemService->method('getDesignSystem')->willThrowException(
+            new RuntimeException('design-systems.json is unreadable')
+        );
+
+        $bannerInjected = false;
+        $this->previewBannerService->method('inject')->willReturnCallback(
+            function () use (&$bannerInjected) {
+                $bannerInjected = true;
+            }
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertContains('custom-overrides', $styleLog, 'layer 4 was cancelled');
+        $this->assertContains('hide-slogan', $styleLog, 'layer 5 was cancelled');
+        $this->assertTrue($bannerInjected, 'layer 6 (preview banner) was cancelled');
+    }//end testAFailingDesignSystemLayerDoesNotCancelTheLaterLayers()
+
+    /**
+     * A failure in the LAST layer must not escape `inject()` either — it used
+     * to reach the listener's catch-all, which is what made the whole class
+     * of failures invisible.
+     *
+     * @spec openspec/specs/theme-preview/spec.md
+     */
+    public function testAFailingPreviewBannerIsContainedAndLogged(): void
+    {
+        $this->configureAllLaterLayers();
+        $this->previewBannerService->method('inject')->willThrowException(
+            new RuntimeException('initial state unavailable')
+        );
+
+        $warnings = [];
+        $this->logger->method('warning')->willReturnCallback(
+            function (string $message) use (&$warnings) {
+                $warnings[] = $message;
+            }
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertContains('custom-overrides', $styleLog);
+        $this->assertCount(1, $warnings);
+        $this->assertStringContainsString('preview-banner', $warnings[0]);
+    }//end testAFailingPreviewBannerIsContainedAndLogged()
+
+    /**
+     * The prerequisite block is NOT a layer: if the active token set cannot be
+     * resolved there is nothing for any layer to be a function of, so the
+     * render is left unthemed — but it is logged, and it still does not throw.
+     *
+     * @spec openspec/specs/css-architecture/spec.md#standard-css-load-order-for-nldesign-design-system
+     */
+    public function testAnUnresolvableTokenSetLeavesThePageUnthemedAndLogged(): void
+    {
+        $this->configureAppValues();
+        $this->designSystemService->method('getTokenSetMeta')->willThrowException(
+            new RuntimeException('token set manifest unreadable')
+        );
+
+        $warnings = [];
+        $this->logger->method('warning')->willReturnCallback(
+            function (string $message) use (&$warnings) {
+                $warnings[] = $message;
+            }
+        );
+
+        $styleLog = [];
+        $fontLog  = [];
+        $service  = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
+        $service->inject('user');
+
+        $this->assertSame([], $styleLog);
+        $this->assertCount(1, $warnings);
+        $this->assertStringContainsString('could not resolve the active token set', $warnings[0]);
+    }//end testAnUnresolvableTokenSetLeavesThePageUnthemedAndLogged()
 }//end class

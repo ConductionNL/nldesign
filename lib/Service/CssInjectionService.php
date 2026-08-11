@@ -24,6 +24,8 @@ namespace OCA\NLDesign\Service;
 use OCA\NLDesign\AppInfo\Application;
 use OCP\IConfig;
 use OCP\IURLGenerator;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * Injects the nldesign stylesheet cascade for a themed render context.
@@ -123,6 +125,13 @@ class CssInjectionService
     private ThemePreviewBannerService $previewBannerService;
 
     /**
+     * Records a layer that failed, so a skipped layer is never silent.
+     *
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
      * Constructor.
      *
      * @param IConfig                   $config               The config service.
@@ -133,6 +142,7 @@ class CssInjectionService
      * @param IURLGenerator             $urlGenerator         The URL generator.
      * @param GroupThemingService       $groupThemingService  The per-group token-set resolver.
      * @param ThemePreviewBannerService $previewBannerService The theme-preview banner injector.
+     * @param LoggerInterface           $logger               The logger for skipped layers.
      */
     public function __construct(
         IConfig $config,
@@ -142,7 +152,8 @@ class CssInjectionService
         FontService $fontService,
         IURLGenerator $urlGenerator,
         GroupThemingService $groupThemingService,
-        ThemePreviewBannerService $previewBannerService
+        ThemePreviewBannerService $previewBannerService,
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->designSystemService  = $designSystemService;
@@ -152,7 +163,48 @@ class CssInjectionService
         $this->urlGenerator         = $urlGenerator;
         $this->groupThemingService  = $groupThemingService;
         $this->previewBannerService = $previewBannerService;
+        $this->logger = $logger;
     }//end __construct()
+
+    /**
+     * Run one cascade layer, isolated from every other layer.
+     *
+     * WHY THIS EXISTS (nldesign#264)
+     * ------------------------------
+     * The layers below used to be plain sequential calls, and
+     * `ThemeInjectionListener` swallowed anything that escaped `inject()`. So a
+     * failure in ANY layer silently cancelled EVERY LATER LAYER. The observed
+     * case: layer 4 writes `css/custom-overrides.css` inside the app
+     * directory, which throws on a read-only or non-www-data-owned install —
+     * and that took custom fonts, the conditional hide-slogan / menu-labels
+     * stylesheets and the theme-preview banner down with it. The earlier
+     * layers were already in the page, so the instance looked correctly themed
+     * and only the LAST features were missing, which reads as "one feature is
+     * broken" rather than "injection aborted".
+     *
+     * A layer is presentation. One failing layer must degrade only itself, and
+     * must say so — the failure used to reach no log at any level.
+     *
+     * @param string   $layer A short name for the layer, used in the log line.
+     * @param callable $work  The layer body.
+     *
+     * @return void
+     */
+    private function runLayer(string $layer, callable $work): void
+    {
+        try {
+            $work();
+        } catch (Throwable $e) {
+            $this->logger->warning(
+                'nldesign: stylesheet layer "'.$layer.'" was skipped; the rest of the cascade still ran.',
+                [
+                    'app'       => Application::APP_ID,
+                    'layer'     => $layer,
+                    'exception' => $e,
+                ]
+            );
+        }
+    }//end runLayer()
 
     /**
      * Inject the full nldesign stylesheet cascade for a render context.
@@ -182,28 +234,53 @@ class CssInjectionService
         // The active set is the per-group resolution (group mapping → instance
         // default). With no mapping configured this is the plain appconfig
         // value, so behaviour is byte-identical to a single-tenant instance.
-        $tokenSet = $this->groupThemingService->resolveTokenSetForRequest();
+        //
+        // This block is the one PREREQUISITE, not a layer: every layer below
+        // is a function of it, so there is nothing to degrade to if it fails.
+        // It is still isolated, so a resolver failure logs and renders the
+        // page unthemed instead of throwing into the listener's catch-all.
+        try {
+            $tokenSet       = $this->groupThemingService->resolveTokenSetForRequest();
+            $tokenSetMeta   = $this->designSystemService->getTokenSetMeta(tokenSetId: $tokenSet);
+            $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
+        } catch (Throwable $e) {
+            $this->logger->warning(
+                'nldesign: could not resolve the active token set; no stylesheet layer was injected.',
+                [
+                    'app'       => Application::APP_ID,
+                    'exception' => $e,
+                ]
+            );
+            return;
+        }
 
-        // 1. Resolve which design system this token set uses.
-        $tokenSetMeta   = $this->designSystemService->getTokenSetMeta(tokenSetId: $tokenSet);
-        $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
-
+        // EVERY LAYER BELOW IS INDEPENDENT — see runLayer() and nldesign#264.
+        // One failing layer must not be able to cancel the layers after it.
         // 2/2b/3. Design-system stylesheets, Marianne, token + contrast layers.
-        $this->injectDesignSystemStyles(designSystemId: $designSystemId, tokenSet: $tokenSet);
+        $this->runLayer(
+            layer: 'design-system-styles',
+            work: fn () => $this->injectDesignSystemStyles(designSystemId: $designSystemId, tokenSet: $tokenSet)
+        );
 
         // 4/4.1. Custom overrides, then freeform custom CSS.
-        $this->injectOverrideStyles();
+        $this->runLayer(layer: 'override-styles', work: fn () => $this->injectOverrideStyles());
 
         // 4.5. Custom fonts.
-        $this->injectCustomFontLink(designSystemId: $designSystemId);
+        $this->runLayer(
+            layer: 'custom-font-link',
+            work: fn () => $this->injectCustomFontLink(designSystemId: $designSystemId)
+        );
 
         // 5. Conditional stylesheets.
-        $this->injectConditionalStyles();
+        $this->runLayer(layer: 'conditional-styles', work: fn () => $this->injectConditionalStyles());
 
         // 6. Preview banner — ONLY when a theme preview is active for this
         // request's user. Every other user (and every anonymous render) pays
         // nothing: no script, no style, no initial state.
-        $this->previewBannerService->inject(tokenSet: $tokenSet, tokenSetMeta: $tokenSetMeta);
+        $this->runLayer(
+            layer: 'preview-banner',
+            work: fn () => $this->previewBannerService->inject(tokenSet: $tokenSet, tokenSetMeta: $tokenSetMeta)
+        );
     }//end inject()
 
     /**
@@ -268,8 +345,33 @@ class CssInjectionService
     private function injectOverrideStyles(): void
     {
         // 4. Custom overrides — admin-defined token overrides, always loaded last.
-        $this->overridesService->ensureExists();
-        $this->emitStyle(file: 'custom-overrides');
+        //
+        // `ensureExists()` WRITES `css/custom-overrides.css` INSIDE THE APP
+        // DIRECTORY, which is exactly the write a read-only or
+        // root-owned-checkout deployment refuses (nldesign#264). It throws only
+        // when the file is absent AND could not be created, so on failure there
+        // is no file to link — emitting the tag anyway would add a guaranteed
+        // 404 to every page. The freeform layer below is unrelated and still
+        // runs, and the skip is logged rather than silent.
+        $overridesReady = true;
+        try {
+            $this->overridesService->ensureExists();
+        } catch (Throwable $e) {
+            $overridesReady = false;
+            $this->logger->warning(
+                'nldesign: css/custom-overrides.css is absent and could not be created, so the custom-overrides '
+                .'layer was skipped. The app directory is not writable by the web server; generated CSS belongs '
+                .'in appdata (see nldesign#264).',
+                [
+                    'app'       => Application::APP_ID,
+                    'exception' => $e,
+                ]
+            );
+        }
+
+        if ($overridesReady === true) {
+            $this->emitStyle(file: 'custom-overrides');
+        }
 
         // 4.1 Freeform custom CSS — admin-authored arbitrary rules. Emitted
         // AFTER custom-overrides so administrator intent wins the cascade, and
