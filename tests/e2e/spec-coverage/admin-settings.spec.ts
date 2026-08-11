@@ -199,8 +199,24 @@ test.describe('admin-settings', () => {
 	// REQ-ASET-006: Show Menu Labels Checkbox
 	// -----------------------------------------------------------------------
 
+	// ANCHOR NOTE (applies to this test and the accessibility one below):
+	// these previously read `...#checkbox-reflects-enabled-state-1` and
+	// `...#checkbox-label-text-and-accessibility-1`. Neither slug exists.
+	// admin-settings/spec.md declares the SAME four scenario titles twice —
+	// once under the hide-slogan checkbox requirement (spec.md:128-152) and
+	// again under the show-menu-labels one (spec.md:156-176) — and gate-19
+	// slugifies a heading's text alone, with no de-duplicating `-1` suffix.
+	// The `-1` anchors therefore resolved to nothing and were silently ignored
+	// (the gate reports neither dangling anchors nor collisions).
+	//
+	// Pointing them at the real slug makes them truthful about what this test
+	// asserts. It does NOT change the gate's count: because both requirements
+	// produce the identical ref, ONE reference already marks BOTH scenarios
+	// covered — so the menu-labels scenarios have been credited by the
+	// hide-slogan tests all along. That over-crediting is a gate defect and is
+	// filed upstream; it cannot be fixed from the test side.
 	test(
-		// @e2e openspec/specs/admin-settings/spec.md#checkbox-reflects-enabled-state-1
+		// @e2e openspec/specs/admin-settings/spec.md#checkbox-reflects-enabled-state
 		'Show menu labels checkbox is present and has correct label',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)
@@ -218,7 +234,7 @@ test.describe('admin-settings', () => {
 	// Depends on IConfig runtime state.
 
 	test(
-		// @e2e openspec/specs/admin-settings/spec.md#checkbox-label-text-and-accessibility-1
+		// @e2e openspec/specs/admin-settings/spec.md#checkbox-label-text-and-accessibility
 		'Show menu labels checkbox label text and accessibility',
 		async ({ page }) => {
 			await page.goto(THEMING_URL)

@@ -97,7 +97,21 @@ class Application extends App implements IBootstrap
         // process-wide, not only inside this app's own container — required so a
         // cross-app event listener (e.g. the OpenRegister federated-config type)
         // can be constructed by another app's dispatcher. Mirrors hermiq.
-        include_once __DIR__.'/../../vendor/autoload.php';
+        //
+        // GUARDED because this app has no runtime composer dependencies —
+        // composer.json requires only `php: ^8.3`, everything else is
+        // require-dev. So a released/production install legitimately ships NO
+        // vendor/ directory, and the bare `include_once` emitted two PHP
+        // warnings ("Failed to open stream" + "Failed opening for inclusion")
+        // on EVERY request that boots the app. Measured on a clean install:
+        // 150 such lines in the log from a handful of page loads, which is both
+        // noise in its own right and cover for a real warning nobody will spot
+        // among them. `include_once` never fatals, so the app worked throughout
+        // — this only stops it shouting about a file it does not need.
+        $autoloader = __DIR__.'/../../vendor/autoload.php';
+        if (\file_exists($autoloader) === true) {
+            include_once $autoloader;
+        }
 
         // Health endpoint served by Controller\HealthController, which drives
         // the AppHost engine by composition — no explicit registration needed.
