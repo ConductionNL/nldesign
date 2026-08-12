@@ -31,7 +31,7 @@
 		"build:fonts:marianne": "node scripts/build-fonts-marianne.js",
 		"build:icons": "node scripts/build-icons.js",
 		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
-		"stylelint": "stylelint 'css/**/*.css'",
+		"stylelint": "stylelint \"src/**/*.{vue,scss,css}\"",
 		"stylelint:fix": "stylelint 'css/**/*.css' --fix",
 		"test": "echo 'No tests yet'",
 		"test:unit": "vitest run",

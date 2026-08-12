@@ -79,7 +79,7 @@ jobs:
       # nldesign's own appinfo/info.xml floor stays at 28: this app declares no
       # <app> dependency and src/manifest.json declares none either — the NC32
       # constraint is a property of the CI fixture, not of nldesign's code.
-      nextcloud-test-refs: '["stable32"]'
+      nextcloud-test-refs: '["stable34"]'
       # These three were `false`, and that is worse than it sounds. The shared
       # workflow builds one matrix leg per tool unconditionally; a disabled leg
       # prints "<tool> is disabled — skipping." and `exit 0`. The job therefore
