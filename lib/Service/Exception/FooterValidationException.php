@@ -27,39 +27,36 @@ namespace OCA\NLDesign\Service\Exception;
  *
  * @spec openspec/specs/email-theming/spec.md
  */
-class FooterValidationException extends \InvalidArgumentException
-{
+class FooterValidationException extends \InvalidArgumentException {
 
-    /**
-     * The footer field that failed validation.
-     *
-     * @var string
-     */
-    private string $field;
+	/**
+	 * The footer field that failed validation.
+	 *
+	 * @var string
+	 */
+	private string $field;
 
-    /**
-     * Constructor.
-     *
-     * @param string $field   The footer field that failed validation.
-     * @param string $message The validation error message.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function __construct(string $field, string $message)
-    {
-        parent::__construct(message: $message);
-        $this->field = $field;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $field The footer field that failed validation.
+	 * @param string $message The validation error message.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function __construct(string $field, string $message) {
+		parent::__construct(message: $message);
+		$this->field = $field;
+	}//end __construct()
 
-    /**
-     * Get the footer field that failed validation.
-     *
-     * @return string The field name.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function getField(): string
-    {
-        return $this->field;
-    }//end getField()
+	/**
+	 * Get the footer field that failed validation.
+	 *
+	 * @return string The field name.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function getField(): string {
+		return $this->field;
+	}//end getField()
 }//end class

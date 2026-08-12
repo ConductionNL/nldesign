@@ -38,89 +38,85 @@ use OCP\IRequest;
  *
  * @spec openspec/specs/theming-audit/spec.md#requirement-admin-audit-endpoints
  */
-class AuditController extends Controller
-{
+class AuditController extends Controller {
 
-    /**
-     * The hard cap on the `limit` query parameter.
-     *
-     * @var int
-     */
-    private const MAX_LIMIT = 200;
+	/**
+	 * The hard cap on the `limit` query parameter.
+	 *
+	 * @var int
+	 */
+	private const MAX_LIMIT = 200;
 
-    /**
-     * The theming audit trail service.
-     *
-     * @var ThemingAuditService
-     */
-    private ThemingAuditService $auditService;
+	/**
+	 * The theming audit trail service.
+	 *
+	 * @var ThemingAuditService
+	 */
+	private ThemingAuditService $auditService;
 
-    /**
-     * Constructor.
-     *
-     * @param string              $appName      The app name.
-     * @param IRequest            $request      The request object.
-     * @param ThemingAuditService $auditService The theming audit trail service.
-     */
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        ThemingAuditService $auditService
-    ) {
-        parent::__construct(appName: $appName, request: $request);
-        $this->auditService = $auditService;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $appName The app name.
+	 * @param IRequest $request The request object.
+	 * @param ThemingAuditService $auditService The theming audit trail service.
+	 */
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		ThemingAuditService $auditService,
+	) {
+		parent::__construct(appName: $appName, request: $request);
+		$this->auditService = $auditService;
+	}//end __construct()
 
-    /**
-     * List the most recent audit entries, newest first.
-     *
-     * @param int $limit Requested entry count (default 20, hard-capped at 200).
-     *
-     * @return JSONResponse `{ entries: [...] }`.
-     *
-     * @spec openspec/specs/theming-audit/spec.md#requirement-admin-audit-endpoints
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function list(int $limit=20): JSONResponse
-    {
-        return new JSONResponse(['entries' => $this->auditService->getRecent(limit: $this->capLimit(limit: $limit))]);
-    }//end list()
+	/**
+	 * List the most recent audit entries, newest first.
+	 *
+	 * @param int $limit Requested entry count (default 20, hard-capped at 200).
+	 *
+	 * @return JSONResponse `{ entries: [...] }`.
+	 *
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-admin-audit-endpoints
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function list(int $limit = 20): JSONResponse {
+		return new JSONResponse(['entries' => $this->auditService->getRecent(limit: $this->capLimit(limit: $limit))]);
+	}//end list()
 
-    /**
-     * Stream the full retained log (rotated generation + current file) as a
-     * JSONL download.
-     *
-     * @return DataDownloadResponse The `nldesign-audit.jsonl` attachment.
-     *
-     * @spec openspec/specs/theming-audit/spec.md#requirement-admin-audit-endpoints
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function export(): DataDownloadResponse
-    {
-        return new DataDownloadResponse(
-            data: $this->auditService->exportAll(),
-            filename: 'nldesign-audit.jsonl',
-            contentType: 'application/x-ndjson'
-        );
-    }//end export()
+	/**
+	 * Stream the full retained log (rotated generation + current file) as a
+	 * JSONL download.
+	 *
+	 * @return DataDownloadResponse The `nldesign-audit.jsonl` attachment.
+	 *
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-admin-audit-endpoints
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function export(): DataDownloadResponse {
+		return new DataDownloadResponse(
+			data: $this->auditService->exportAll(),
+			filename: 'nldesign-audit.jsonl',
+			contentType: 'application/x-ndjson'
+		);
+	}//end export()
 
-    /**
-     * Clamp the requested limit to `[0, MAX_LIMIT]`.
-     *
-     * @param int $limit The requested limit.
-     *
-     * @return int The clamped limit.
-     */
-    private function capLimit(int $limit): int
-    {
-        if ($limit < 0) {
-            return 0;
-        }
+	/**
+	 * Clamp the requested limit to `[0, MAX_LIMIT]`.
+	 *
+	 * @param int $limit The requested limit.
+	 *
+	 * @return int The clamped limit.
+	 */
+	private function capLimit(int $limit): int {
+		if ($limit < 0) {
+			return 0;
+		}
 
-        if ($limit > self::MAX_LIMIT) {
-            return self::MAX_LIMIT;
-        }
+		if ($limit > self::MAX_LIMIT) {
+			return self::MAX_LIMIT;
+		}
 
-        return $limit;
-    }//end capLimit()
+		return $limit;
+	}//end capLimit()
 }//end class

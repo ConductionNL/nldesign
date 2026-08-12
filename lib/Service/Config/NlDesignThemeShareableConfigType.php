@@ -42,129 +42,119 @@ use Psr\Container\ContainerInterface;
  *
  * @spec openspec/specs/federated-config-sharing/spec.md
  */
-class NlDesignThemeShareableConfigType implements IShareableConfigType
-{
-    /**
-     * Constructor.
-     *
-     * The `ConfigBundleService` is resolved lazily rather than injected: this
-     * type is constructed whenever the shareable-type catalogue is read (which a
-     * cross-app request does), but the bundle service — with its deep theming
-     * dependency chain — is only needed when a theme is actually serialised or
-     * installed. Resolving it eagerly would drag that whole chain into every
-     * catalogue read, in a container context that may not autowire it.
-     *
-     * @param ContainerInterface $container Resolves the bundle service on demand.
-     */
-    public function __construct(private readonly ContainerInterface $container)
-    {
+class NlDesignThemeShareableConfigType implements IShareableConfigType {
+	/**
+	 * Constructor.
+	 *
+	 * The `ConfigBundleService` is resolved lazily rather than injected: this
+	 * type is constructed whenever the shareable-type catalogue is read (which a
+	 * cross-app request does), but the bundle service — with its deep theming
+	 * dependency chain — is only needed when a theme is actually serialised or
+	 * installed. Resolving it eagerly would drag that whole chain into every
+	 * catalogue read, in a container context that may not autowire it.
+	 *
+	 * @param ContainerInterface $container Resolves the bundle service on demand.
+	 */
+	public function __construct(
+		private readonly ContainerInterface $container,
+	) {
 
-    }//end __construct()
+	}//end __construct()
 
-    /**
-     * The theme export/import service, resolved on first use.
-     *
-     * @return ConfigBundleService The bundle service.
-     */
-    private function bundle(): ConfigBundleService
-    {
-        return $this->container->get(ConfigBundleService::class);
+	/**
+	 * The theme export/import service, resolved on first use.
+	 *
+	 * @return ConfigBundleService The bundle service.
+	 */
+	private function bundle(): ConfigBundleService {
+		return $this->container->get(ConfigBundleService::class);
+	}//end bundle()
 
-    }//end bundle()
+	/**
+	 * The type id.
+	 *
+	 * @return string The id.
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function getId(): string {
+		return 'nldesign.theme';
+	}//end getId()
 
-    /**
-     * The type id.
-     *
-     * @return string The id.
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function getId(): string
-    {
-        return 'nldesign.theme';
+	/**
+	 * The display name.
+	 *
+	 * @return string The name.
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function getDisplayName(): string {
+		return 'NL Design theme';
+	}//end getDisplayName()
 
-    }//end getId()
+	/**
+	 * The discovery topic.
+	 *
+	 * @return string The topic.
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function getTopic(): string {
+		return 'nldesign-theme';
+	}//end getTopic()
 
-    /**
-     * The display name.
-     *
-     * @return string The name.
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function getDisplayName(): string
-    {
-        return 'NL Design theme';
+	/**
+	 * Package the instance's NL Design theme into a portable bundle.
+	 *
+	 * The selection is ignored: a theme is the instance's one theme
+	 * configuration, which `ConfigBundleService` already exports as a
+	 * self-describing, portable bundle (no secrets — theming carries none).
+	 *
+	 * @param array $selection Unused for themes.
+	 *
+	 * @return array `{type, version, bundle}`.
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter) - $selection is required by
+	 * the IShareableConfigType::serialise() contract; a theme has no selection.
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function serialise(array $selection): array {
+		return [
+			'type' => $this->getId(),
+			'version' => '1.0',
+			'bundle' => $this->bundle()->export(),
+		];
 
-    }//end getDisplayName()
+	}//end serialise()
 
-    /**
-     * The discovery topic.
-     *
-     * @return string The topic.
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function getTopic(): string
-    {
-        return 'nldesign-theme';
+	/**
+	 * Apply a shared NL Design theme to this instance.
+	 *
+	 * @param array $bundle A bundle produced by this type.
+	 *
+	 * @return array `{installed: ['nldesign-theme'], import: {...}}`.
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function deserialise(array $bundle): array {
+		// `(array) $scalar` WRAPS rather than empties: `(array) 'x'` is `['x']`,
+		// not `[]`. So a peer sending `{"bundle": "x"}` — or any scalar — reached
+		// the importer as a one-element list instead of the empty default the
+		// `?? []` was written to provide. The import path rejects it either way,
+		// so this was never exploitable, but "malformed becomes empty" is what
+		// this line is supposed to say and `(array)` does not say it.
+		$payload = ($bundle['bundle'] ?? null);
+		if (is_array($payload) === false) {
+			$payload = [];
+		}
 
-    }//end getTopic()
+		$result = $this->bundle()->import($payload, false);
 
-    /**
-     * Package the instance's NL Design theme into a portable bundle.
-     *
-     * The selection is ignored: a theme is the instance's one theme
-     * configuration, which `ConfigBundleService` already exports as a
-     * self-describing, portable bundle (no secrets — theming carries none).
-     *
-     * @param array $selection Unused for themes.
-     *
-     * @return array `{type, version, bundle}`.
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - $selection is required by
-     * the IShareableConfigType::serialise() contract; a theme has no selection.
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function serialise(array $selection): array
-    {
-        return [
-            'type'    => $this->getId(),
-            'version' => '1.0',
-            'bundle'  => $this->bundle()->export(),
-        ];
+		return [
+			'installed' => ['nldesign-theme'],
+			'import' => $result,
+		];
 
-    }//end serialise()
-
-    /**
-     * Apply a shared NL Design theme to this instance.
-     *
-     * @param array $bundle A bundle produced by this type.
-     *
-     * @return array `{installed: ['nldesign-theme'], import: {...}}`.
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function deserialise(array $bundle): array
-    {
-        // `(array) $scalar` WRAPS rather than empties: `(array) 'x'` is `['x']`,
-        // not `[]`. So a peer sending `{"bundle": "x"}` — or any scalar — reached
-        // the importer as a one-element list instead of the empty default the
-        // `?? []` was written to provide. The import path rejects it either way,
-        // so this was never exploitable, but "malformed becomes empty" is what
-        // this line is supposed to say and `(array)` does not say it.
-        $payload = ($bundle['bundle'] ?? null);
-        if (is_array($payload) === false) {
-            $payload = [];
-        }
-
-        $result = $this->bundle()->import($payload, false);
-
-        return [
-            'installed' => ['nldesign-theme'],
-            'import'    => $result,
-        ];
-
-    }//end deserialise()
+	}//end deserialise()
 }//end class

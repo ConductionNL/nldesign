@@ -39,34 +39,33 @@ use OCP\EventDispatcher\IEventListener;
  *
  * @spec openspec/specs/federated-config-sharing/spec.md
  */
-class ShareableConfigTypeListener implements IEventListener
-{
-    /**
-     * Constructor.
-     *
-     * @param NlDesignThemeShareableConfigType $theme The theme type.
-     */
-    public function __construct(private readonly NlDesignThemeShareableConfigType $theme)
-    {
+class ShareableConfigTypeListener implements IEventListener {
+	/**
+	 * Constructor.
+	 *
+	 * @param NlDesignThemeShareableConfigType $theme The theme type.
+	 */
+	public function __construct(
+		private readonly NlDesignThemeShareableConfigType $theme,
+	) {
 
-    }//end __construct()
+	}//end __construct()
 
-    /**
-     * Contribute the theme type.
-     *
-     * @param Event $event The dispatched event.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function handle(Event $event): void
-    {
-        if (($event instanceof RegisterShareableConfigTypesEvent) === false) {
-            return;
-        }
+	/**
+	 * Contribute the theme type.
+	 *
+	 * @param Event $event The dispatched event.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function handle(Event $event): void {
+		if (($event instanceof RegisterShareableConfigTypesEvent) === false) {
+			return;
+		}
 
-        $event->registerType(type: $this->theme);
+		$event->registerType(type: $this->theme);
 
-    }//end handle()
+	}//end handle()
 }//end class

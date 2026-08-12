@@ -39,107 +39,102 @@ use Throwable;
  *
  * @spec openspec/specs/config-portability/spec.md
  */
-class ConfigExport extends Command
-{
+class ConfigExport extends Command {
 
-    /**
-     * The configuration bundle service.
-     *
-     * @var ConfigBundleService
-     */
-    private ConfigBundleService $service;
+	/**
+	 * The configuration bundle service.
+	 *
+	 * @var ConfigBundleService
+	 */
+	private ConfigBundleService $service;
 
-    /**
-     * Constructor.
-     *
-     * @param ConfigBundleService $service The configuration bundle service.
-     */
-    public function __construct(ConfigBundleService $service)
-    {
-        parent::__construct();
-        $this->service = $service;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param ConfigBundleService $service The configuration bundle service.
+	 */
+	public function __construct(ConfigBundleService $service) {
+		parent::__construct();
+		$this->service = $service;
+	}//end __construct()
 
-    /**
-     * Configure the command name, description and arguments.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    protected function configure(): void
-    {
-        $this->setName(name: 'nldesign:config:export')
-            ->setDescription(
-                'Export the complete NL Design configuration (token set, toggles, per-app '
-                .'exclusions, overrides, custom token sets, email footer, custom-font metadata, '
-                .'upstream-freshness toggle) as a single JSON bundle, for OTAP promotion.'
-            )
-            ->addArgument(
-                name: 'file',
-                mode: InputArgument::OPTIONAL,
-                description: 'Write the bundle to this file path instead of stdout'
-            );
-    }//end configure()
+	/**
+	 * Configure the command name, description and arguments.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	protected function configure(): void {
+		$this->setName(name: 'nldesign:config:export')
+			->setDescription(
+				'Export the complete NL Design configuration (token set, toggles, per-app '
+				. 'exclusions, overrides, custom token sets, email footer, custom-font metadata, '
+				. 'upstream-freshness toggle) as a single JSON bundle, for OTAP promotion.'
+			)
+			->addArgument(
+				name: 'file',
+				mode: InputArgument::OPTIONAL,
+				description: 'Write the bundle to this file path instead of stdout'
+			);
+	}//end configure()
 
-    /**
-     * Execute the command.
-     *
-     * @param InputInterface  $input  The console input.
-     * @param OutputInterface $output The console output.
-     *
-     * @return int The exit code — 0 on success, non-zero on generation/write failure.
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        try {
-            $bundle = $this->service->export();
-        } catch (Throwable $e) {
-            $output->writeln('<error>Configuration export failed: '.$e->getMessage().'</error>');
+	/**
+	 * Execute the command.
+	 *
+	 * @param InputInterface $input The console input.
+	 * @param OutputInterface $output The console output.
+	 *
+	 * @return int The exit code — 0 on success, non-zero on generation/write failure.
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	protected function execute(InputInterface $input, OutputInterface $output): int {
+		try {
+			$bundle = $this->service->export();
+		} catch (Throwable $e) {
+			$output->writeln('<error>Configuration export failed: ' . $e->getMessage() . '</error>');
 
-            return Command::FAILURE;
-        }
+			return Command::FAILURE;
+		}
 
-        $json = json_encode($bundle, (JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        if ($json === false) {
-            $output->writeln('<error>Configuration export failed: could not encode the bundle as JSON.</error>');
+		$json = json_encode($bundle, (JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+		if ($json === false) {
+			$output->writeln('<error>Configuration export failed: could not encode the bundle as JSON.</error>');
 
-            return Command::FAILURE;
-        }
+			return Command::FAILURE;
+		}
 
-        $filePath = $input->getArgument('file');
-        if (is_string($filePath) === true && $filePath !== '') {
-            return $this->writeToFile(output: $output, path: $filePath, content: $json);
-        }
+		$filePath = $input->getArgument('file');
+		if (is_string($filePath) === true && $filePath !== '') {
+			return $this->writeToFile(output: $output, path: $filePath, content: $json);
+		}
 
-        $output->writeln($json);
+		$output->writeln($json);
 
-        return Command::SUCCESS;
-    }//end execute()
+		return Command::SUCCESS;
+	}//end execute()
 
-    /**
-     * Write the exported bundle to a file path, reporting success/failure.
-     *
-     * @param OutputInterface $output  The console output.
-     * @param string          $path    The destination file path.
-     * @param string          $content The bundle JSON.
-     *
-     * @return int The exit code.
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    private function writeToFile(OutputInterface $output, string $path, string $content): int
-    {
-        if (file_put_contents($path, $content.PHP_EOL) === false) {
-            $output->writeln('<error>Could not write the bundle to '.$path.'</error>');
+	/**
+	 * Write the exported bundle to a file path, reporting success/failure.
+	 *
+	 * @param OutputInterface $output The console output.
+	 * @param string $path The destination file path.
+	 * @param string $content The bundle JSON.
+	 *
+	 * @return int The exit code.
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	private function writeToFile(OutputInterface $output, string $path, string $content): int {
+		if (file_put_contents($path, $content . PHP_EOL) === false) {
+			$output->writeln('<error>Could not write the bundle to ' . $path . '</error>');
 
-            return Command::FAILURE;
-        }
+			return Command::FAILURE;
+		}
 
-        $output->writeln('<info>Configuration bundle written to '.$path.'</info>');
+		$output->writeln('<info>Configuration bundle written to ' . $path . '</info>');
 
-        return Command::SUCCESS;
-    }//end writeToFile()
+		return Command::SUCCESS;
+	}//end writeToFile()
 }//end class

@@ -35,68 +35,65 @@ use Psr\Log\LoggerInterface;
  *
  * @spec openspec/specs/upstream-freshness/spec.md
  */
-class UpstreamFreshnessJob extends TimedJob
-{
+class UpstreamFreshnessJob extends TimedJob {
 
-    /**
-     * The one-day interval, in seconds.
-     *
-     * @var int
-     */
-    private const INTERVAL_SECONDS = 86400;
+	/**
+	 * The one-day interval, in seconds.
+	 *
+	 * @var int
+	 */
+	private const INTERVAL_SECONDS = 86400;
 
-    /**
-     * The freshness service the job delegates to.
-     *
-     * @var UpstreamFreshnessService
-     */
-    private UpstreamFreshnessService $service;
+	/**
+	 * The freshness service the job delegates to.
+	 *
+	 * @var UpstreamFreshnessService
+	 */
+	private UpstreamFreshnessService $service;
 
-    /**
-     * The logger for the belt-and-braces catch.
-     *
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
+	/**
+	 * The logger for the belt-and-braces catch.
+	 *
+	 * @var LoggerInterface
+	 */
+	private LoggerInterface $logger;
 
-    /**
-     * Constructor.
-     *
-     * @param ITimeFactory             $time    The time factory required by the parent Job class.
-     * @param UpstreamFreshnessService $service The freshness service.
-     * @param LoggerInterface          $logger  The logger.
-     */
-    public function __construct(ITimeFactory $time, UpstreamFreshnessService $service, LoggerInterface $logger)
-    {
-        parent::__construct(time: $time);
-        $this->setInterval(seconds: self::INTERVAL_SECONDS);
-        $this->setTimeSensitivity(sensitivity: self::TIME_INSENSITIVE);
-        $this->service = $service;
-        $this->logger  = $logger;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param ITimeFactory $time The time factory required by the parent Job class.
+	 * @param UpstreamFreshnessService $service The freshness service.
+	 * @param LoggerInterface $logger The logger.
+	 */
+	public function __construct(ITimeFactory $time, UpstreamFreshnessService $service, LoggerInterface $logger) {
+		parent::__construct(time: $time);
+		$this->setInterval(seconds: self::INTERVAL_SECONDS);
+		$this->setTimeSensitivity(sensitivity: self::TIME_INSENSITIVE);
+		$this->service = $service;
+		$this->logger = $logger;
+	}//end __construct()
 
-    /**
-     * Run the job: delegate to the service. Wrapped in its own try/catch —
-     * belt and braces on top of the service's own catch-all — so a job
-     * failure can never escape into cron processing.
-     *
-     * @param mixed $argument Unused; TimedJob does not pass an argument here.
-     *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by the abstract Job::run() signature
-     *
-     * @spec openspec/specs/upstream-freshness/spec.md
-     */
-    protected function run($argument): void
-    {
-        try {
-            $this->service->runCheck();
-        } catch (\Throwable $e) {
-            $this->logger->info(
-                'nldesign UpstreamFreshnessJob failed: '.$e->getMessage(),
-                ['exception' => $e]
-            );
-        }
-    }//end run()
+	/**
+	 * Run the job: delegate to the service. Wrapped in its own try/catch —
+	 * belt and braces on top of the service's own catch-all — so a job
+	 * failure can never escape into cron processing.
+	 *
+	 * @param mixed $argument Unused; TimedJob does not pass an argument here.
+	 *
+	 * @return void
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by the abstract Job::run() signature
+	 *
+	 * @spec openspec/specs/upstream-freshness/spec.md
+	 */
+	protected function run($argument): void {
+		try {
+			$this->service->runCheck();
+		} catch (\Throwable $e) {
+			$this->logger->info(
+				'nldesign UpstreamFreshnessJob failed: ' . $e->getMessage(),
+				['exception' => $e]
+			);
+		}
+	}//end run()
 }//end class

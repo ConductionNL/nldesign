@@ -35,104 +35,98 @@ use ReflectionMethod;
  * admin-only posture (non-admin rejection is enforced by that attribute,
  * verified here the same way SettingsControllerUpstreamFreshnessTest does).
  */
-class SettingsControllerDarkVariantsTest extends TestCase
-{
+class SettingsControllerDarkVariantsTest extends TestCase {
 
-    /**
-     * In-memory app config store backing the IConfig mock.
-     *
-     * @var array<string, string>
-     */
-    private array $configStore = [];
+	/**
+	 * In-memory app config store backing the IConfig mock.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $configStore = [];
 
-    /**
-     * Build a SettingsController wired to the in-memory config store, with
-     * stubbed sibling dependencies not exercised by the dark-variants endpoints.
-     *
-     * @return SettingsController The controller under test.
-     */
-    private function makeController(): SettingsController
-    {
-        $config = $this->createMock(IConfig::class);
-        $config->method('getAppValue')->willReturnCallback(
-            function (string $app, string $key, $default = '') {
-                return ($this->configStore[$key] ?? $default);
-            }
-        );
-        $config->method('setAppValue')->willReturnCallback(
-            function (string $app, string $key, $value) {
-                $this->configStore[$key] = $value;
-            }
-        );
+	/**
+	 * Build a SettingsController wired to the in-memory config store, with
+	 * stubbed sibling dependencies not exercised by the dark-variants endpoints.
+	 *
+	 * @return SettingsController The controller under test.
+	 */
+	private function makeController(): SettingsController {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getAppValue')->willReturnCallback(
+			function (string $app, string $key, $default = '') {
+				return ($this->configStore[$key] ?? $default);
+			}
+		);
+		$config->method('setAppValue')->willReturnCallback(
+			function (string $app, string $key, $value) {
+				$this->configStore[$key] = $value;
+			}
+		);
 
-        return new SettingsController(
-            'nldesign',
-            $this->createMock(IRequest::class),
-            $config,
-            $this->createMock(TokenSetService::class),
-            $this->createMock(ThemingService::class),
-            $this->createMock(TokenSetPreviewService::class),
-            $this->createMock(AppThemingService::class),
-            $this->createMock(ComplianceReportService::class),
-            $this->createMock(ThemingAuditService::class),
-            $this->createMock(EmailThemingService::class),
-            $this->createMock(UpstreamFreshnessService::class),
-            $this->createMock(GroupThemingService::class)
-        );
-    }//end makeController()
+		return new SettingsController(
+			'nldesign',
+			$this->createMock(IRequest::class),
+			$config,
+			$this->createMock(TokenSetService::class),
+			$this->createMock(ThemingService::class),
+			$this->createMock(TokenSetPreviewService::class),
+			$this->createMock(AppThemingService::class),
+			$this->createMock(ComplianceReportService::class),
+			$this->createMock(ThemingAuditService::class),
+			$this->createMock(EmailThemingService::class),
+			$this->createMock(UpstreamFreshnessService::class),
+			$this->createMock(GroupThemingService::class)
+		);
+	}//end makeController()
 
-    /**
-     * Both dark-variants routes carry #[AuthorizedAdminSetting] — non-admin
-     * requests are rejected by that posture before the method body runs.
-     */
-    public function testBothEndpointsCarryAuthorizedAdminSetting(): void
-    {
-        foreach (['getDarkVariants', 'setDarkVariants'] as $method) {
-            $reflection = new ReflectionMethod(SettingsController::class, $method);
-            $attributes = $reflection->getAttributes(AuthorizedAdminSetting::class);
-            $this->assertNotEmpty($attributes, "$method must carry #[AuthorizedAdminSetting]");
-        }
-    }//end testBothEndpointsCarryAuthorizedAdminSetting()
+	/**
+	 * Both dark-variants routes carry #[AuthorizedAdminSetting] — non-admin
+	 * requests are rejected by that posture before the method body runs.
+	 */
+	public function testBothEndpointsCarryAuthorizedAdminSetting(): void {
+		foreach (['getDarkVariants', 'setDarkVariants'] as $method) {
+			$reflection = new ReflectionMethod(SettingsController::class, $method);
+			$attributes = $reflection->getAttributes(AuthorizedAdminSetting::class);
+			$this->assertNotEmpty($attributes, "$method must carry #[AuthorizedAdminSetting]");
+		}
+	}//end testBothEndpointsCarryAuthorizedAdminSetting()
 
-    /**
-     * A fresh install (no `dark_variants` config value) defaults to enabled.
-     */
-    public function testDefaultIsEnabled(): void
-    {
-        $controller = $this->makeController();
+	/**
+	 * A fresh install (no `dark_variants` config value) defaults to enabled.
+	 */
+	public function testDefaultIsEnabled(): void {
+		$controller = $this->makeController();
 
-        $data = $controller->getDarkVariants()->getData();
+		$data = $controller->getDarkVariants()->getData();
 
-        $this->assertTrue($data['enabled']);
-    }//end testDefaultIsEnabled()
+		$this->assertTrue($data['enabled']);
+	}//end testDefaultIsEnabled()
 
-    /**
-     * A POST persists the disabled state, reflected by the subsequent GET.
-     */
-    public function testTogglePersists(): void
-    {
-        $controller = $this->makeController();
+	/**
+	 * A POST persists the disabled state, reflected by the subsequent GET.
+	 */
+	public function testTogglePersists(): void {
+		$controller = $this->makeController();
 
-        $setResponse = $controller->setDarkVariants(false);
-        $this->assertSame(['status' => 'ok', 'enabled' => false], $setResponse->getData());
+		$setResponse = $controller->setDarkVariants(false);
+		$this->assertSame(['status' => 'ok', 'enabled' => false], $setResponse->getData());
 
-        $after = $controller->getDarkVariants()->getData();
-        $this->assertFalse($after['enabled']);
+		$after = $controller->getDarkVariants()->getData();
+		$this->assertFalse($after['enabled']);
 
-        $this->assertSame('0', $this->configStore['dark_variants']);
-    }//end testTogglePersists()
+		$this->assertSame('0', $this->configStore['dark_variants']);
+	}//end testTogglePersists()
 
-    /**
-     * Re-enabling after a disable persists '1'.
-     */
-    public function testReEnablePersists(): void
-    {
-        $controller = $this->makeController();
+	/**
+	 * Re-enabling after a disable persists '1'.
+	 */
+	public function testReEnablePersists(): void {
+		$controller = $this->makeController();
 
-        $controller->setDarkVariants(false);
-        $controller->setDarkVariants(true);
+		$controller->setDarkVariants(false);
+		$controller->setDarkVariants(true);
 
-        $this->assertSame('1', $this->configStore['dark_variants']);
-        $this->assertTrue($controller->getDarkVariants()->getData()['enabled']);
-    }//end testReEnablePersists()
+		$this->assertSame('1', $this->configStore['dark_variants']);
+		$this->assertTrue($controller->getDarkVariants()->getData()['enabled']);
+	}//end testReEnablePersists()
 }//end class

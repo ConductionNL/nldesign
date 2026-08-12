@@ -237,6 +237,19 @@ const ALLOWED: Array<{ pattern: RegExp; reason: string }> = [
 		pattern: /unified-search__input/,
 		reason: 'Pre-NC34 unified-search markup, retained as a fallback for older servers.',
 	},
+	{
+		pattern: /\.app-menu-entry__|\.app-menu-icon\b|\.unified-search-menu\b/,
+		reason: 'NC 32/33 header markup — the mirror image of the SINCE list below, and dead here for '
+			+ 'exactly the reason its entries were dead before the pin moved. The survey now runs on '
+			+ 'stable34 (nextcloud-test-refs[0]), where the header is built from app-menu__waffle and '
+			+ 'unified-search-input; NC 32 builds it from app-menu-entry*, app-menu-icon and '
+			+ 'unified-search-menu instead. MEASURED both ways: the NC 32.0.12 / NC 34.0.2 table below '
+			+ 'records the NC34-only half, and run 31588593102 — the first survey ever taken on '
+			+ 'stable34 — recorded these eight matching nothing on any surface. appinfo/info.xml '
+			+ 'declares min-version="32" and the PHPUnit matrix still carries a stable32 leg, so this '
+			+ 'half of the stylesheet is kept on purpose: it is what themes the header on the oldest '
+			+ 'server this app is offered to.',
+	},
 ]
 
 function allowedReason(selector: string): string | null {
@@ -268,9 +281,11 @@ const MAX_SUPPORTED_NC = 34
  * defer anything at all once the survey reaches MAX_SUPPORTED_NC. A stale
  * entry therefore fails the moment CI moves up, instead of rotting quietly.
  *
- * MEASURED, not assumed. CI pins `nextcloud-test-refs: ["stable32"]` (see
- * .github/workflows/code-quality.yml — openregister cannot install below 32).
- * Probing both versions with `lasuite` active, on /apps/files/ at rest:
+ * MEASURED, not assumed. CI pins
+ * `nextcloud-test-refs: ["stable34", "stable32"]` (see
+ * .github/workflows/code-quality.yml — openregister cannot install below 32),
+ * and Playwright surveys entry [0], so THIS SPEC NOW RUNS ON NC 34. Probing
+ * both versions with `lasuite` active, on /apps/files/ at rest:
  *
  *   selector                                    NC 32.0.12   NC 34.0.2
  *   #header .app-menu__waffle                        0            1
@@ -291,9 +306,20 @@ const MAX_SUPPORTED_NC = 34
  * `app-menu__list` and `unified-search-menu`. So these twelve are not stale CSS
  * and not a timing artefact; they are markup that server does not have.
  *
- * NOTE FOR WHOEVER RAISES THE PIN. The same measurement says the La Suite
- * header treatment does not reach NC 32 at all — worth its own change, and
- * deliberately not smuggled into this one.
+ * THE PIN HAS SINCE BEEN RAISED, and the entry below did exactly what it was
+ * built to do: on the first survey of NC 34 every selector it defers came back
+ * live, so `versionDeferred` is empty and the expiry assertion passes without
+ * anyone having to remember it. The entry is kept rather than deleted because
+ * it remains a true statement about NC 32 — the app's declared floor, and the
+ * second leg of the PHPUnit matrix — and it re-arms by itself if the refs are
+ * ever reordered.
+ *
+ * That same survey exposed the mirror set, which nothing could measure while CI
+ * stayed on 32: eight NC 32/33-only header selectors that match nothing on NC
+ * 34. They are in ALLOWED above, with the same measurement behind them.
+ *
+ * STILL OPEN, and deliberately not smuggled in here: the table above also says
+ * the La Suite header treatment does not reach NC 32 at all — its own change.
  */
 const SINCE: Array<{ pattern: RegExp; since: number; reason: string }> = [
 	{

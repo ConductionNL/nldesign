@@ -44,10 +44,13 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		        where the two declarations stop contradicting each other.
 
 		     2. It is what is actually tested. `.github/workflows/code-quality.yml`
-		        pins `nextcloud-test-refs: '["stable32"]'` (#240) and the only
-		        PHPUnit legs that exist are `NC stable32`. Nothing has exercised
-		        28-31 since #240. Declaring support for versions no leg touches is
-		        a promise the app store passes on to users.
+		        pins `nextcloud-test-refs: '["stable34", "stable32"]'`, so both
+		        ends of this range carry PHPUnit legs: `NC stable32` proves the
+		        floor is real, `NC stable34` proves the ceiling is. Nothing has
+		        exercised 28-31 since #240. Declaring support for versions no leg
+		        touches is a promise the app store passes on to users, which is
+		        why tests/Unit/ClaimAccuracyTest asserts that the lowest ref in
+		        that matrix EQUALS the min-version on the line below.
 
 		     History, because this attribute has moved twice: #241 raised it to 32
 		     and #242 restored 28, on the stated premise that "this repo does not
@@ -69,12 +72,6 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		<job>OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob</job>
 	</background-jobs>
 
-	<commands>
-		<command>OCA\NLDesign\Command\ComplianceReport</command>
-		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
-		<command>OCA\NLDesign\Command\ConfigExport</command>
-		<command>OCA\NLDesign\Command\ConfigImport</command>
-	</commands>
 	<repair-steps>
 		<post-migration>
 			<!-- Dark-mode token variants (openspec/specs/dark-mode/spec.md):
@@ -84,6 +81,12 @@ Gratis en open source onder de EUPL-1.2 licentie.
 			<step>OCA\NLDesign\Migration\GenerateDarkVariantsRepairStep</step>
 		</post-migration>
 	</repair-steps>
+	<commands>
+		<command>OCA\NLDesign\Command\ComplianceReport</command>
+		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
+		<command>OCA\NLDesign\Command\ConfigExport</command>
+		<command>OCA\NLDesign\Command\ConfigImport</command>
+	</commands>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
 		<admin-section>theming</admin-section>

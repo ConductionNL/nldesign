@@ -26,31 +26,29 @@ use PHPUnit\Framework\TestCase;
  * static regression guard that the notice ships at all and is not
  * accidentally moved below the upload control or dropped in a future edit.
  */
-class AdminFontNoticeTest extends TestCase
-{
+class AdminFontNoticeTest extends TestCase {
 
-    /**
-     * The license notice must be present, translatable (ENGLISH key), and
-     * positioned before the upload control markup.
-     */
-    public function testLicenseNoticePrecedesUploadControl(): void
-    {
-        $path = __DIR__.'/../../../templates/settings/admin.php';
-        $this->assertFileExists($path);
+	/**
+	 * The license notice must be present, translatable (ENGLISH key), and
+	 * positioned before the upload control markup.
+	 */
+	public function testLicenseNoticePrecedesUploadControl(): void {
+		$path = __DIR__ . '/../../../templates/settings/admin.php';
+		$this->assertFileExists($path);
 
-        $template = (string) file_get_contents($path);
+		$template = (string)file_get_contents($path);
 
-        $noticeKey = 'Only upload fonts your organization holds a license to self-host. Licensing responsibility rests with the uploader.';
-        $noticePos = strpos($template, $noticeKey);
-        $this->assertNotFalse($noticePos, 'The license-responsibility notice must ship in the admin template.');
+		$noticeKey = 'Only upload fonts your organization holds a license to self-host. Licensing responsibility rests with the uploader.';
+		$noticePos = strpos($template, $noticeKey);
+		$this->assertNotFalse($noticePos, 'The license-responsibility notice must ship in the admin template.');
 
-        $uploadButtonPos = strpos($template, 'nldesign-font-upload-btn');
-        $this->assertNotFalse($uploadButtonPos, 'The font upload control must ship in the admin template.');
+		$uploadButtonPos = strpos($template, 'nldesign-font-upload-btn');
+		$this->assertNotFalse($uploadButtonPos, 'The font upload control must ship in the admin template.');
 
-        $this->assertLessThan(
-            $uploadButtonPos,
-            $noticePos,
-            'The license notice must appear above the upload control in document order.'
-        );
-    }//end testLicenseNoticePrecedesUploadControl()
+		$this->assertLessThan(
+			$uploadButtonPos,
+			$noticePos,
+			'The license notice must appear above the upload control in document order.'
+		);
+	}//end testLicenseNoticePrecedesUploadControl()
 }//end class

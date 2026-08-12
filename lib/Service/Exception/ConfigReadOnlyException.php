@@ -29,60 +29,56 @@ namespace OCA\NLDesign\Service\Exception;
  *
  * @spec openspec/specs/email-theming/spec.md
  */
-class ConfigReadOnlyException extends \RuntimeException
-{
+class ConfigReadOnlyException extends \RuntimeException {
 
-    /**
-     * The occ command to enable the branded template manually.
-     *
-     * @var string
-     */
-    private string $occEnableCommand;
+	/**
+	 * The occ command to enable the branded template manually.
+	 *
+	 * @var string
+	 */
+	private string $occEnableCommand;
 
-    /**
-     * The occ command to disable the branded template manually.
-     *
-     * @var string
-     */
-    private string $occDisableCommand;
+	/**
+	 * The occ command to disable the branded template manually.
+	 *
+	 * @var string
+	 */
+	private string $occDisableCommand;
 
-    /**
-     * Constructor.
-     *
-     * @param string          $occEnableCommand  The occ command to enable manually.
-     * @param string          $occDisableCommand The occ command to disable manually.
-     * @param \Throwable|null $previous          The previous exception, if any.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function __construct(string $occEnableCommand, string $occDisableCommand, ?\Throwable $previous=null)
-    {
-        parent::__construct(message: 'config.php is read-only; mail_template_class cannot be written.', code: 0, previous: $previous);
-        $this->occEnableCommand  = $occEnableCommand;
-        $this->occDisableCommand = $occDisableCommand;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $occEnableCommand The occ command to enable manually.
+	 * @param string $occDisableCommand The occ command to disable manually.
+	 * @param \Throwable|null $previous The previous exception, if any.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function __construct(string $occEnableCommand, string $occDisableCommand, ?\Throwable $previous = null) {
+		parent::__construct(message: 'config.php is read-only; mail_template_class cannot be written.', code: 0, previous: $previous);
+		$this->occEnableCommand = $occEnableCommand;
+		$this->occDisableCommand = $occDisableCommand;
+	}//end __construct()
 
-    /**
-     * Get the occ command to enable the branded template manually.
-     *
-     * @return string The occ command.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function getOccEnableCommand(): string
-    {
-        return $this->occEnableCommand;
-    }//end getOccEnableCommand()
+	/**
+	 * Get the occ command to enable the branded template manually.
+	 *
+	 * @return string The occ command.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function getOccEnableCommand(): string {
+		return $this->occEnableCommand;
+	}//end getOccEnableCommand()
 
-    /**
-     * Get the occ command to disable the branded template manually.
-     *
-     * @return string The occ command.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function getOccDisableCommand(): string
-    {
-        return $this->occDisableCommand;
-    }//end getOccDisableCommand()
+	/**
+	 * Get the occ command to disable the branded template manually.
+	 *
+	 * @return string The occ command.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function getOccDisableCommand(): string {
+		return $this->occDisableCommand;
+	}//end getOccDisableCommand()
 }//end class

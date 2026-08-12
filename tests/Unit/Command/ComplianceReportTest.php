@@ -22,145 +22,136 @@ use Symfony\Component\Console\Tester\CommandTester;
 /**
  * Covers tasks.md#task-4.6: format/output options and exit codes.
  */
-class ComplianceReportTest extends TestCase
-{
+class ComplianceReportTest extends TestCase {
 
-    /**
-     * The mocked compliance report service.
-     *
-     * @var ComplianceReportService&\PHPUnit\Framework\MockObject\MockObject
-     */
-    private $service;
+	/**
+	 * The mocked compliance report service.
+	 *
+	 * @var ComplianceReportService&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private $service;
 
-    /**
-     * The command tester.
-     *
-     * @var CommandTester
-     */
-    private CommandTester $tester;
+	/**
+	 * The command tester.
+	 *
+	 * @var CommandTester
+	 */
+	private CommandTester $tester;
 
-    /**
-     * A temp file path used by the --output tests (cleaned up in tearDown).
-     *
-     * @var string|null
-     */
-    private ?string $outputPath = null;
+	/**
+	 * A temp file path used by the --output tests (cleaned up in tearDown).
+	 *
+	 * @var string|null
+	 */
+	private ?string $outputPath = null;
 
-    /**
-     * Set up the command with a mocked service.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
+	/**
+	 * Set up the command with a mocked service.
+	 */
+	protected function setUp(): void {
+		parent::setUp();
 
-        $this->service = $this->createMock(ComplianceReportService::class);
-        $this->service->method('renderJson')->willReturn("{\"scope\":\"x\"}\n");
-        $this->service->method('renderMarkdown')->willReturn("# Report\n");
+		$this->service = $this->createMock(ComplianceReportService::class);
+		$this->service->method('renderJson')->willReturn("{\"scope\":\"x\"}\n");
+		$this->service->method('renderMarkdown')->willReturn("# Report\n");
 
-        $command = new ComplianceReport($this->service);
+		$command = new ComplianceReport($this->service);
 
-        $application = new Application();
-        $application->add($command);
+		$application = new Application();
+		$application->add($command);
 
-        $this->tester = new CommandTester($application->find('nldesign:compliance-report'));
-    }//end setUp()
+		$this->tester = new CommandTester($application->find('nldesign:compliance-report'));
+	}//end setUp()
 
-    /**
-     * Remove any temp output file after each test.
-     */
-    protected function tearDown(): void
-    {
-        if ($this->outputPath !== null && file_exists($this->outputPath) === true) {
-            unlink($this->outputPath);
-        }
+	/**
+	 * Remove any temp output file after each test.
+	 */
+	protected function tearDown(): void {
+		if ($this->outputPath !== null && file_exists($this->outputPath) === true) {
+			unlink($this->outputPath);
+		}
 
-        parent::tearDown();
-    }//end tearDown()
+		parent::tearDown();
+	}//end tearDown()
 
-    /**
-     * Default format (json) prints the JSON report to stdout with exit code 0.
-     */
-    public function testDefaultFormatPrintsJsonAndExitsZero(): void
-    {
-        $exitCode = $this->tester->execute([]);
+	/**
+	 * Default format (json) prints the JSON report to stdout with exit code 0.
+	 */
+	public function testDefaultFormatPrintsJsonAndExitsZero(): void {
+		$exitCode = $this->tester->execute([]);
 
-        $this->assertSame(0, $exitCode);
-        $this->assertStringContainsString('"scope":"x"', $this->tester->getDisplay());
-    }//end testDefaultFormatPrintsJsonAndExitsZero()
+		$this->assertSame(0, $exitCode);
+		$this->assertStringContainsString('"scope":"x"', $this->tester->getDisplay());
+	}//end testDefaultFormatPrintsJsonAndExitsZero()
 
-    /**
-     * --format=markdown prints the Markdown report to stdout with exit code 0.
-     */
-    public function testMarkdownFormatPrintsMarkdownAndExitsZero(): void
-    {
-        $exitCode = $this->tester->execute(['--format' => 'markdown']);
+	/**
+	 * --format=markdown prints the Markdown report to stdout with exit code 0.
+	 */
+	public function testMarkdownFormatPrintsMarkdownAndExitsZero(): void {
+		$exitCode = $this->tester->execute(['--format' => 'markdown']);
 
-        $this->assertSame(0, $exitCode);
-        $this->assertStringContainsString('# Report', $this->tester->getDisplay());
-    }//end testMarkdownFormatPrintsMarkdownAndExitsZero()
+		$this->assertSame(0, $exitCode);
+		$this->assertStringContainsString('# Report', $this->tester->getDisplay());
+	}//end testMarkdownFormatPrintsMarkdownAndExitsZero()
 
-    /**
-     * An unknown format is a generation failure: non-zero exit, no report content.
-     */
-    public function testUnknownFormatFailsWithNonZeroExit(): void
-    {
-        $exitCode = $this->tester->execute(['--format' => 'yaml']);
+	/**
+	 * An unknown format is a generation failure: non-zero exit, no report content.
+	 */
+	public function testUnknownFormatFailsWithNonZeroExit(): void {
+		$exitCode = $this->tester->execute(['--format' => 'yaml']);
 
-        $this->assertNotSame(0, $exitCode);
-        $this->assertStringContainsString('Unknown format', $this->tester->getDisplay());
-    }//end testUnknownFormatFailsWithNonZeroExit()
+		$this->assertNotSame(0, $exitCode);
+		$this->assertStringContainsString('Unknown format', $this->tester->getDisplay());
+	}//end testUnknownFormatFailsWithNonZeroExit()
 
-    /**
-     * --output=<path> writes the identical bytes to the file instead of stdout,
-     * and still exits 0.
-     */
-    public function testOutputOptionWritesIdenticalBytesToFile(): void
-    {
-        $this->outputPath = sys_get_temp_dir().'/nldesign-compliance-cmd-test-'.uniqid().'.md';
+	/**
+	 * --output=<path> writes the identical bytes to the file instead of stdout,
+	 * and still exits 0.
+	 */
+	public function testOutputOptionWritesIdenticalBytesToFile(): void {
+		$this->outputPath = sys_get_temp_dir() . '/nldesign-compliance-cmd-test-' . uniqid() . '.md';
 
-        $exitCode = $this->tester->execute(['--format' => 'markdown', '--output' => $this->outputPath]);
+		$exitCode = $this->tester->execute(['--format' => 'markdown', '--output' => $this->outputPath]);
 
-        $this->assertSame(0, $exitCode);
-        $this->assertFileExists($this->outputPath);
-        $this->assertSame("# Report\n", file_get_contents($this->outputPath));
-        $this->assertStringNotContainsString('# Report', $this->tester->getDisplay());
-    }//end testOutputOptionWritesIdenticalBytesToFile()
+		$this->assertSame(0, $exitCode);
+		$this->assertFileExists($this->outputPath);
+		$this->assertSame("# Report\n", file_get_contents($this->outputPath));
+		$this->assertStringNotContainsString('# Report', $this->tester->getDisplay());
+	}//end testOutputOptionWritesIdenticalBytesToFile()
 
-    /**
-     * The exit code is 0 even when the (mocked) report content represents a
-     * failing verdict — the command only fails on generation errors.
-     */
-    public function testExitCodeIsZeroRegardlessOfVerdict(): void
-    {
-        $this->service = $this->createMock(ComplianceReportService::class);
-        $this->service->method('renderJson')->willReturn("{\"summary\":{\"verdict\":\"fail\"}}\n");
+	/**
+	 * The exit code is 0 even when the (mocked) report content represents a
+	 * failing verdict — the command only fails on generation errors.
+	 */
+	public function testExitCodeIsZeroRegardlessOfVerdict(): void {
+		$this->service = $this->createMock(ComplianceReportService::class);
+		$this->service->method('renderJson')->willReturn("{\"summary\":{\"verdict\":\"fail\"}}\n");
 
-        $command     = new ComplianceReport($this->service);
-        $application = new Application();
-        $application->add($command);
-        $tester = new CommandTester($application->find('nldesign:compliance-report'));
+		$command = new ComplianceReport($this->service);
+		$application = new Application();
+		$application->add($command);
+		$tester = new CommandTester($application->find('nldesign:compliance-report'));
 
-        $exitCode = $tester->execute([]);
+		$exitCode = $tester->execute([]);
 
-        $this->assertSame(0, $exitCode);
-    }//end testExitCodeIsZeroRegardlessOfVerdict()
+		$this->assertSame(0, $exitCode);
+	}//end testExitCodeIsZeroRegardlessOfVerdict()
 
-    /**
-     * A generation exception is reported and yields a non-zero exit code.
-     */
-    public function testGenerationFailureExitsNonZero(): void
-    {
-        $failingService = $this->createMock(ComplianceReportService::class);
-        $failingService->method('renderJson')->willThrowException(new \RuntimeException('boom'));
+	/**
+	 * A generation exception is reported and yields a non-zero exit code.
+	 */
+	public function testGenerationFailureExitsNonZero(): void {
+		$failingService = $this->createMock(ComplianceReportService::class);
+		$failingService->method('renderJson')->willThrowException(new \RuntimeException('boom'));
 
-        $command     = new ComplianceReport($failingService);
-        $application = new Application();
-        $application->add($command);
-        $tester = new CommandTester($application->find('nldesign:compliance-report'));
+		$command = new ComplianceReport($failingService);
+		$application = new Application();
+		$application->add($command);
+		$tester = new CommandTester($application->find('nldesign:compliance-report'));
 
-        $exitCode = $tester->execute([]);
+		$exitCode = $tester->execute([]);
 
-        $this->assertNotSame(0, $exitCode);
-        $this->assertStringContainsString('boom', $tester->getDisplay());
-    }//end testGenerationFailureExitsNonZero()
+		$this->assertNotSame(0, $exitCode);
+		$this->assertStringContainsString('boom', $tester->getDisplay());
+	}//end testGenerationFailureExitsNonZero()
 }//end class

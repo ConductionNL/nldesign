@@ -76,10 +76,25 @@ jobs:
       # their single server, so with the inherited default those three jobs ran
       # entirely on the version openregister cannot load.
       #
-      # nldesign's own appinfo/info.xml floor stays at 28: this app declares no
-      # <app> dependency and src/manifest.json declares none either — the NC32
-      # constraint is a property of the CI fixture, not of nldesign's code.
-      nextcloud-test-refs: '["stable32"]'
+      # BOTH ENDS OF THE DECLARED RANGE, NOT ONE. appinfo/info.xml declares
+      # <nextcloud min-version="32" max-version="34"/>, and
+      # tests/Unit/ClaimAccuracyTest::testDeclaredNextcloudRangeMatchesTheTestedMatrix
+      # asserts that the lowest ref here EQUALS that floor. A matrix of stable34
+      # alone therefore advertises 32 and 33 to the app store while exercising
+      # neither — the exact drift #241/#242 introduced and that test was written
+      # to stop. Adding stable34 to the existing stable32 leg is what the NC 34
+      # adoption actually needs: the stable34 leg is the only thing that can
+      # catch a symbol REMOVED in 33/34, and the stable32 leg is the only thing
+      # that can catch a symbol that does not exist yet at the floor.
+      #
+      # stable34 is FIRST deliberately. Playwright is the job that reads [0], and
+      # tests/e2e/spec-coverage/selector-liveness.spec.ts is a cross-version
+      # stylesheet audit whose SINCE deferrals expire only once the survey
+      # reaches the newest supported major (MAX_SUPPORTED_NC). Surveying 32 would
+      # defer the NC33+ header selectors indefinitely; surveying 34 forces them
+      # to be proven live — which is how the eight dead NC 32/33-only selectors
+      # now recorded in that file's ALLOWED list were found.
+      nextcloud-test-refs: '["stable34", "stable32"]'
       # These three were `false`, and that is worse than it sounds. The shared
       # workflow builds one matrix leg per tool unconditionally; a disabled leg
       # prints "<tool> is disabled — skipping." and `exit 0`. The job therefore
