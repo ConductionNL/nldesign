@@ -76,7 +76,7 @@ jobs:
       # their single server, so with the inherited default those three jobs ran
       # entirely on the version openregister cannot load.
       #
-      # BOTH ENDS OF THE DECLARED RANGE, NOT ONE. appinfo/info.xml declares
+      # EVERY MAJOR IN THE DECLARED RANGE, NOT JUST ITS ENDS. appinfo/info.xml declares
       # <nextcloud min-version="32" max-version="34"/>, and
       # tests/Unit/ClaimAccuracyTest::testDeclaredNextcloudRangeMatchesTheTestedMatrix
       # asserts that the lowest ref here EQUALS that floor. A matrix of stable34
@@ -87,6 +87,13 @@ jobs:
       # catch a symbol REMOVED in 33/34, and the stable32 leg is the only thing
       # that can catch a symbol that does not exist yet at the floor.
       #
+      # stable33 IS now included, where an earlier revision argued it was
+      # unnecessary. Ends-only leaves the middle major advertised to the App Store
+      # and touched by nothing, and Nextcloud's own version-matrix action derives a
+      # leg for every branch in the declared range — so ends-only is a divergence
+      # in the LOOSER direction, which this fleet does not take. The floor is still
+      # 32, so ClaimAccuracyTest's lowest-ref-equals-floor assertion is unaffected.
+      #
       # stable34 is FIRST deliberately. Playwright is the job that reads [0], and
       # tests/e2e/spec-coverage/selector-liveness.spec.ts is a cross-version
       # stylesheet audit whose SINCE deferrals expire only once the survey
@@ -94,7 +101,7 @@ jobs:
       # defer the NC33+ header selectors indefinitely; surveying 34 forces them
       # to be proven live — which is how the eight dead NC 32/33-only selectors
       # now recorded in that file's ALLOWED list were found.
-      nextcloud-test-refs: '["stable34", "stable32"]'
+      nextcloud-test-refs: '["stable34", "stable32", "stable33"]'
       # These three were `false`, and that is worse than it sounds. The shared
       # workflow builds one matrix leg per tool unconditionally; a disabled leg
       # prints "<tool> is disabled — skipping." and `exit 0`. The job therefore
