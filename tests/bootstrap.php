@@ -28,24 +28,24 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // entries via reflection so every nldesign class — new AND edited — falls
 // through to the (now-corrected) PSR-4 rule and loads from THIS checkout.
 foreach (spl_autoload_functions() as $autoloadFunction) {
-    if (is_array($autoloadFunction) === false || ($autoloadFunction[0] instanceof \Composer\Autoload\ClassLoader) === false) {
-        continue;
-    }
+	if (is_array($autoloadFunction) === false || ($autoloadFunction[0] instanceof \Composer\Autoload\ClassLoader) === false) {
+		continue;
+	}
 
-    $loader = $autoloadFunction[0];
-    $loader->setPsr4('OCA\\NLDesign\\', [__DIR__ . '/../lib']);
+	$loader = $autoloadFunction[0];
+	$loader->setPsr4('OCA\\NLDesign\\', [__DIR__ . '/../lib']);
 
-    $classMapProperty = (new \ReflectionClass($loader))->getProperty('classMap');
-    $classMapProperty->setAccessible(true);
-    $classMap = $classMapProperty->getValue($loader);
-    foreach (array_keys($classMap) as $mappedClass) {
-        if (str_starts_with($mappedClass, 'OCA\\NLDesign\\') === true) {
-            unset($classMap[$mappedClass]);
-        }
-    }
+	$classMapProperty = (new \ReflectionClass($loader))->getProperty('classMap');
+	$classMapProperty->setAccessible(true);
+	$classMap = $classMapProperty->getValue($loader);
+	foreach (array_keys($classMap) as $mappedClass) {
+		if (str_starts_with($mappedClass, 'OCA\\NLDesign\\') === true) {
+			unset($classMap[$mappedClass]);
+		}
+	}
 
-    $classMapProperty->setValue($loader, $classMap);
-    break;
+	$classMapProperty->setValue($loader, $classMap);
+	break;
 }
 
 // Register the OCP/NCU namespaces from the nextcloud/ocp dev dependency so that
@@ -56,22 +56,22 @@ foreach (spl_autoload_functions() as $autoloadFunction) {
 // Registered as a fallback autoloader (appended) so a real Nextcloud
 // environment's own OCP classes always win when present.
 spl_autoload_register(static function (string $class): void {
-    $prefixes = [
-        'OCP\\' => __DIR__ . '/../vendor/nextcloud/ocp/OCP/',
-        'NCU\\' => __DIR__ . '/../vendor/nextcloud/ocp/NCU/',
-    ];
-    foreach ($prefixes as $prefix => $baseDir) {
-        if (str_starts_with($class, $prefix) === false) {
-            continue;
-        }
+	$prefixes = [
+		'OCP\\' => __DIR__ . '/../vendor/nextcloud/ocp/OCP/',
+		'NCU\\' => __DIR__ . '/../vendor/nextcloud/ocp/NCU/',
+	];
+	foreach ($prefixes as $prefix => $baseDir) {
+		if (str_starts_with($class, $prefix) === false) {
+			continue;
+		}
 
-        $path = $baseDir . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
-        if (is_file($path) === true) {
-            require_once $path;
-        }
+		$path = $baseDir . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+		if (is_file($path) === true) {
+			require_once $path;
+		}
 
-        return;
-    }
+		return;
+	}
 });
 
 // Server-internal `OC\` classes (e.g. OC\Mail\EMailTemplate, extended by
@@ -85,28 +85,28 @@ spl_autoload_register(static function (string $class): void {
 // actually needs the class simply fails with a clear "class not found"
 // rather than the bootstrap itself failing.
 spl_autoload_register(static function (string $class): void {
-    if (str_starts_with($class, 'OC\\') === false) {
-        return;
-    }
+	if (str_starts_with($class, 'OC\\') === false) {
+		return;
+	}
 
-    $path = '/var/www/html/lib/private/' . str_replace('\\', '/', substr($class, strlen('OC\\'))) . '.php';
-    if (is_file($path) === true) {
-        require_once $path;
-    }
+	$path = '/var/www/html/lib/private/' . str_replace('\\', '/', substr($class, strlen('OC\\'))) . '.php';
+	if (is_file($path) === true) {
+		require_once $path;
+	}
 });
 
 if (!defined('OC_CONSOLE')) {
-    if (file_exists(__DIR__ . '/../../../lib/base.php')) {
-        require_once __DIR__ . '/../../../lib/base.php';
-    }
+	if (file_exists(__DIR__ . '/../../../lib/base.php')) {
+		require_once __DIR__ . '/../../../lib/base.php';
+	}
 
-    if (file_exists(__DIR__ . '/../../../tests/autoload.php')) {
-        require_once __DIR__ . '/../../../tests/autoload.php';
-    }
+	if (file_exists(__DIR__ . '/../../../tests/autoload.php')) {
+		require_once __DIR__ . '/../../../tests/autoload.php';
+	}
 
-    if (class_exists('\OC_App')) {
-        \OC_App::loadApps();
-        \OC_App::loadApp('nldesign');
-        OC_Hook::clear();
-    }
+	if (class_exists('\OC_App')) {
+		\OC_App::loadApps();
+		\OC_App::loadApp('nldesign');
+		OC_Hook::clear();
+	}
 }

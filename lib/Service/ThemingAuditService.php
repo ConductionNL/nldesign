@@ -60,493 +60,478 @@ use Psr\Log\LoggerInterface;
  * @spec openspec/specs/theming-audit/spec.md#requirement-append-only-audit-entries
  * @spec openspec/specs/theming-audit/spec.md#requirement-jsonl-appdata-storage-with-capped-rotation
  */
-class ThemingAuditService
-{
+class ThemingAuditService {
 
-    /**
-     * The appdata folder name holding the audit trail.
-     *
-     * @var string
-     */
-    private const FOLDER_NAME = 'audit';
+	/**
+	 * The appdata folder name holding the audit trail.
+	 *
+	 * @var string
+	 */
+	private const FOLDER_NAME = 'audit';
 
-    /**
-     * The current audit log file name.
-     *
-     * @var string
-     */
-    private const FILE_NAME = 'audit.jsonl';
+	/**
+	 * The current audit log file name.
+	 *
+	 * @var string
+	 */
+	private const FILE_NAME = 'audit.jsonl';
 
-    /**
-     * The single rotated generation file name.
-     *
-     * @var string
-     */
-    private const ROTATED_NAME = 'audit.jsonl.1';
+	/**
+	 * The single rotated generation file name.
+	 *
+	 * @var string
+	 */
+	private const ROTATED_NAME = 'audit.jsonl.1';
 
-    /**
-     * Rotation threshold in bytes (1 MB).
-     *
-     * @var int
-     */
-    private const MAX_BYTES = 1048576;
+	/**
+	 * Rotation threshold in bytes (1 MB).
+	 *
+	 * @var int
+	 */
+	private const MAX_BYTES = 1048576;
 
-    /**
-     * The IConfig app value key for the monotonic entry counter.
-     *
-     * @var string
-     */
-    private const COUNTER_KEY = 'audit_entries_total';
+	/**
+	 * The IConfig app value key for the monotonic entry counter.
+	 *
+	 * @var string
+	 */
+	private const COUNTER_KEY = 'audit_entries_total';
 
-    /**
-     * The closed action vocabulary. Extending it requires a spec change.
-     *
-     * `group_theming_changed` added by `openspec/specs/per-group-theming/spec.md`
-     * (the group→token-set mapping save).
-     *
-     * @var array<int, string>
-     */
-    private const VOCABULARY = [
-        'token_set_changed',
-        'toggle_changed',
-        'overrides_written',
-        'overrides_imported',
-        'app_exclusions_changed',
-        'custom_set_uploaded',
-        'custom_set_deleted',
-        'theming_sync_applied',
-        'config_imported',
-        'preview_published',
-        'group_theming_changed',
-    ];
+	/**
+	 * The closed action vocabulary. Extending it requires a spec change.
+	 *
+	 * `group_theming_changed` added by `openspec/specs/per-group-theming/spec.md`
+	 * (the group→token-set mapping save).
+	 *
+	 * @var array<int, string>
+	 */
+	private const VOCABULARY = [
+		'token_set_changed',
+		'toggle_changed',
+		'overrides_written',
+		'overrides_imported',
+		'app_exclusions_changed',
+		'custom_set_uploaded',
+		'custom_set_deleted',
+		'theming_sync_applied',
+		'config_imported',
+		'preview_published',
+		'group_theming_changed',
+	];
 
-    /**
-     * Context keys that are never copied verbatim into the persisted entry —
-     * they are either consumed to build 'old'/'new' or feed tokenSetVersion.
-     *
-     * @var array<int, string>
-     */
-    private const RESERVED_CONTEXT_KEYS = [
-        'old',
-        'new',
-        'oldIsCss',
-        'newIsCss',
-        'contentHash',
-        'tokenSetVersion',
-    ];
+	/**
+	 * Context keys that are never copied verbatim into the persisted entry —
+	 * they are either consumed to build 'old'/'new' or feed tokenSetVersion.
+	 *
+	 * @var array<int, string>
+	 */
+	private const RESERVED_CONTEXT_KEYS = [
+		'old',
+		'new',
+		'oldIsCss',
+		'newIsCss',
+		'contentHash',
+		'tokenSetVersion',
+	];
 
-    /**
-     * Constructor.
-     *
-     * @param IAppDataFactory $appDataFactory The appdata factory (folder `audit`, file `audit.jsonl`).
-     * @param IConfig         $config         The config service (counter + installed_version).
-     * @param IUserSession    $userSession    The user session (actor resolution).
-     * @param ITimeFactory    $timeFactory    The time factory (testable timestamps).
-     * @param LoggerInterface $logger         Logger for warnings on unknown actions / write failures.
-     */
-    public function __construct(
-        private readonly IAppDataFactory $appDataFactory,
-        private readonly IConfig $config,
-        private readonly IUserSession $userSession,
-        private readonly ITimeFactory $timeFactory,
-        private readonly LoggerInterface $logger
-    ) {
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param IAppDataFactory $appDataFactory The appdata factory (folder `audit`, file `audit.jsonl`).
+	 * @param IConfig $config The config service (counter + installed_version).
+	 * @param IUserSession $userSession The user session (actor resolution).
+	 * @param ITimeFactory $timeFactory The time factory (testable timestamps).
+	 * @param LoggerInterface $logger Logger for warnings on unknown actions / write failures.
+	 */
+	public function __construct(
+		private readonly IAppDataFactory $appDataFactory,
+		private readonly IConfig $config,
+		private readonly IUserSession $userSession,
+		private readonly ITimeFactory $timeFactory,
+		private readonly LoggerInterface $logger,
+	) {
+	}//end __construct()
 
-    /**
-     * Append one audit entry.
-     *
-     * Builds `{ts, actor, action, old, new, tokenSetVersion}` plus any extra
-     * scalar context keys (e.g. `key` for toggle_changed, `id`/`name` for
-     * custom set operations) copied through verbatim. Unknown actions are
-     * refused (warning logged, nothing written, counter untouched). Every
-     * filesystem/appdata Throwable is caught, logged as a warning, and
-     * swallowed — the caller's operation MUST succeed regardless.
-     *
-     * Context contract:
-     * - `old` / `new` (mixed, optional): scalars are stored verbatim; arrays
-     *   (exclusion lists, override maps) are summarized as an entry count
-     *   plus a top-level `changed` list of identities that differ between
-     *   old and new.
-     * - `oldIsCss` / `newIsCss` (bool, optional): when true, the matching
-     *   `old`/`new` value is treated as a raw CSS payload and summarized as
-     *   `{hash: "sha256:<12 hex>", bytes: <int>}` — the CSS text itself is
-     *   never persisted.
-     * - `contentHash` (string, optional): a precomputed `sha256:<12 hex>`
-     *   hash appended to `tokenSetVersion` for custom-* set entries.
-     * - `tokenSetVersion` (string, optional): overrides the resolved
-     *   version (see class docblock for why the service does not read
-     *   token-sets.json itself).
-     * - any other key is copied into the entry verbatim (small scalars only
-     *   — never CSS bodies).
-     *
-     * @param string               $action  One of the closed vocabulary actions.
-     * @param array<string, mixed> $context The entry context (see above).
-     *
-     * @return void
-     *
-     * @spec openspec/specs/theming-audit/spec.md#requirement-append-only-audit-entries
-     */
-    public function log(string $action, array $context=[]): void
-    {
-        if (in_array($action, self::VOCABULARY, true) === false) {
-            $this->logger->warning(
-                'nldesign audit: rejected unknown action "{action}" — entry dropped',
-                ['action' => $action]
-            );
-            return;
-        }
+	/**
+	 * Append one audit entry.
+	 *
+	 * Builds `{ts, actor, action, old, new, tokenSetVersion}` plus any extra
+	 * scalar context keys (e.g. `key` for toggle_changed, `id`/`name` for
+	 * custom set operations) copied through verbatim. Unknown actions are
+	 * refused (warning logged, nothing written, counter untouched). Every
+	 * filesystem/appdata Throwable is caught, logged as a warning, and
+	 * swallowed — the caller's operation MUST succeed regardless.
+	 *
+	 * Context contract:
+	 * - `old` / `new` (mixed, optional): scalars are stored verbatim; arrays
+	 *   (exclusion lists, override maps) are summarized as an entry count
+	 *   plus a top-level `changed` list of identities that differ between
+	 *   old and new.
+	 * - `oldIsCss` / `newIsCss` (bool, optional): when true, the matching
+	 *   `old`/`new` value is treated as a raw CSS payload and summarized as
+	 *   `{hash: "sha256:<12 hex>", bytes: <int>}` — the CSS text itself is
+	 *   never persisted.
+	 * - `contentHash` (string, optional): a precomputed `sha256:<12 hex>`
+	 *   hash appended to `tokenSetVersion` for custom-* set entries.
+	 * - `tokenSetVersion` (string, optional): overrides the resolved
+	 *   version (see class docblock for why the service does not read
+	 *   token-sets.json itself).
+	 * - any other key is copied into the entry verbatim (small scalars only
+	 *   — never CSS bodies).
+	 *
+	 * @param string $action One of the closed vocabulary actions.
+	 * @param array<string, mixed> $context The entry context (see above).
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-append-only-audit-entries
+	 */
+	public function log(string $action, array $context = []): void {
+		if (in_array($action, self::VOCABULARY, true) === false) {
+			$this->logger->warning(
+				'nldesign audit: rejected unknown action "{action}" — entry dropped',
+				['action' => $action]
+			);
+			return;
+		}
 
-        $entry = $this->buildEntry(action: $action, context: $context);
+		$entry = $this->buildEntry(action: $action, context: $context);
 
-        $line = json_encode($entry, JSON_UNESCAPED_SLASHES);
-        if ($line === false) {
-            $this->logger->warning('nldesign audit: could not encode entry for action "{action}"', ['action' => $action]);
-            return;
-        }
+		$line = json_encode($entry, JSON_UNESCAPED_SLASHES);
+		if ($line === false) {
+			$this->logger->warning('nldesign audit: could not encode entry for action "{action}"', ['action' => $action]);
+			return;
+		}
 
-        try {
-            $this->appendLine(line: $line);
+		try {
+			$this->appendLine(line: $line);
 
-            $total = ((int) $this->config->getAppValue(Application::APP_ID, self::COUNTER_KEY, '0') + 1);
-            $this->config->setAppValue(Application::APP_ID, self::COUNTER_KEY, (string) $total);
-        } catch (\Throwable $e) {
-            $this->logger->warning(
-                'nldesign audit: failed to persist entry for action "{action}": {message}',
-                ['action' => $action, 'message' => $e->getMessage()]
-            );
-        }
-    }//end log()
+			$total = ((int)$this->config->getAppValue(Application::APP_ID, self::COUNTER_KEY, '0') + 1);
+			$this->config->setAppValue(Application::APP_ID, self::COUNTER_KEY, (string)$total);
+		} catch (\Throwable $e) {
+			$this->logger->warning(
+				'nldesign audit: failed to persist entry for action "{action}": {message}',
+				['action' => $action, 'message' => $e->getMessage()]
+			);
+		}
+	}//end log()
 
-    /**
-     * Read the most recent entries, newest first.
-     *
-     * Spans the rotated generation and the current file when needed. Read
-     * failures are logged and degrade to an empty array rather than
-     * propagating — the admin panel should show "no entries" rather than 500.
-     *
-     * @param int $limit Maximum number of entries to return (0 returns none).
-     *
-     * @return array<int, array<string, mixed>> The parsed entries, newest first.
-     *
-     * @spec openspec/specs/theming-audit/spec.md#requirement-jsonl-appdata-storage-with-capped-rotation
-     */
-    public function getRecent(int $limit): array
-    {
-        $capped = $limit;
-        if ($capped < 0) {
-            $capped = 0;
-        }
+	/**
+	 * Read the most recent entries, newest first.
+	 *
+	 * Spans the rotated generation and the current file when needed. Read
+	 * failures are logged and degrade to an empty array rather than
+	 * propagating — the admin panel should show "no entries" rather than 500.
+	 *
+	 * @param int $limit Maximum number of entries to return (0 returns none).
+	 *
+	 * @return array<int, array<string, mixed>> The parsed entries, newest first.
+	 *
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-jsonl-appdata-storage-with-capped-rotation
+	 */
+	public function getRecent(int $limit): array {
+		$capped = $limit;
+		if ($capped < 0) {
+			$capped = 0;
+		}
 
-        try {
-            $folder  = $this->getAuditFolder();
-            $rotated = $this->parseLines(raw: $this->readRaw(folder: $folder, name: self::ROTATED_NAME));
-            $current = $this->parseLines(raw: $this->readRaw(folder: $folder, name: self::FILE_NAME));
-        } catch (\Throwable $e) {
-            $this->logger->warning('nldesign audit: failed to read entries: {message}', ['message' => $e->getMessage()]);
-            return [];
-        }
+		try {
+			$folder = $this->getAuditFolder();
+			$rotated = $this->parseLines(raw: $this->readRaw(folder: $folder, name: self::ROTATED_NAME));
+			$current = $this->parseLines(raw: $this->readRaw(folder: $folder, name: self::FILE_NAME));
+		} catch (\Throwable $e) {
+			$this->logger->warning('nldesign audit: failed to read entries: {message}', ['message' => $e->getMessage()]);
+			return [];
+		}
 
-        // Oldest-first overall (rotated generation precedes the current file),
-        // then reversed for the newest-first contract.
-        $chronological = array_merge($rotated, $current);
-        $newestFirst   = array_reverse($chronological);
+		// Oldest-first overall (rotated generation precedes the current file),
+		// then reversed for the newest-first contract.
+		$chronological = array_merge($rotated, $current);
+		$newestFirst = array_reverse($chronological);
 
-        return array_slice($newestFirst, 0, $capped);
-    }//end getRecent()
+		return array_slice($newestFirst, 0, $capped);
+	}//end getRecent()
 
-    /**
-     * Export the full retained log as raw JSONL, oldest first.
-     *
-     * The rotated generation (if any) precedes the current file — exactly
-     * the byte layout an admin downloads via AuditController::export().
-     * Read failures degrade to an empty string rather than propagating.
-     *
-     * @return string The concatenated JSONL content (may be empty).
-     *
-     * @spec openspec/specs/theming-audit/spec.md#requirement-jsonl-appdata-storage-with-capped-rotation
-     */
-    public function exportAll(): string
-    {
-        try {
-            $folder = $this->getAuditFolder();
+	/**
+	 * Export the full retained log as raw JSONL, oldest first.
+	 *
+	 * The rotated generation (if any) precedes the current file — exactly
+	 * the byte layout an admin downloads via AuditController::export().
+	 * Read failures degrade to an empty string rather than propagating.
+	 *
+	 * @return string The concatenated JSONL content (may be empty).
+	 *
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-jsonl-appdata-storage-with-capped-rotation
+	 */
+	public function exportAll(): string {
+		try {
+			$folder = $this->getAuditFolder();
 
-            return $this->readRaw(folder: $folder, name: self::ROTATED_NAME).$this->readRaw(folder: $folder, name: self::FILE_NAME);
-        } catch (\Throwable $e) {
-            $this->logger->warning('nldesign audit: failed to export entries: {message}', ['message' => $e->getMessage()]);
-            return '';
-        }
-    }//end exportAll()
+			return $this->readRaw(folder: $folder, name: self::ROTATED_NAME) . $this->readRaw(folder: $folder, name: self::FILE_NAME);
+		} catch (\Throwable $e) {
+			$this->logger->warning('nldesign audit: failed to export entries: {message}', ['message' => $e->getMessage()]);
+			return '';
+		}
+	}//end exportAll()
 
-    /**
-     * Build the entry array for one log() call (before JSON encoding).
-     *
-     * @param string               $action  The validated action.
-     * @param array<string, mixed> $context The caller-supplied context.
-     *
-     * @return array<string, mixed> The entry.
-     */
-    private function buildEntry(string $action, array $context): array
-    {
-        $entry = [
-            'ts'     => gmdate('Y-m-d\TH:i:s\Z', $this->timeFactory->getTime()),
-            'actor'  => $this->resolveActor(),
-            'action' => $action,
-        ];
+	/**
+	 * Build the entry array for one log() call (before JSON encoding).
+	 *
+	 * @param string $action The validated action.
+	 * @param array<string, mixed> $context The caller-supplied context.
+	 *
+	 * @return array<string, mixed> The entry.
+	 */
+	private function buildEntry(string $action, array $context): array {
+		$entry = [
+			'ts' => gmdate('Y-m-d\TH:i:s\Z', $this->timeFactory->getTime()),
+			'actor' => $this->resolveActor(),
+			'action' => $action,
+		];
 
-        $oldRaw   = ($context['old'] ?? null);
-        $newRaw   = ($context['new'] ?? null);
-        $oldIsCss = (($context['oldIsCss'] ?? false) === true);
-        $newIsCss = (($context['newIsCss'] ?? false) === true);
+		$oldRaw = ($context['old'] ?? null);
+		$newRaw = ($context['new'] ?? null);
+		$oldIsCss = (($context['oldIsCss'] ?? false) === true);
+		$newIsCss = (($context['newIsCss'] ?? false) === true);
 
-        $entry['old'] = $this->summarizeValue(value: $oldRaw, isCss: $oldIsCss);
-        $entry['new'] = $this->summarizeValue(value: $newRaw, isCss: $newIsCss);
+		$entry['old'] = $this->summarizeValue(value: $oldRaw, isCss: $oldIsCss);
+		$entry['new'] = $this->summarizeValue(value: $newRaw, isCss: $newIsCss);
 
-        if (is_array($oldRaw) === true && is_array($newRaw) === true && $oldIsCss === false && $newIsCss === false) {
-            $entry['changed'] = $this->diffArrayIdentity(old: $oldRaw, new: $newRaw);
-        }
+		if (is_array($oldRaw) === true && is_array($newRaw) === true && $oldIsCss === false && $newIsCss === false) {
+			$entry['changed'] = $this->diffArrayIdentity(old: $oldRaw, new: $newRaw);
+		}
 
-        foreach ($context as $key => $value) {
-            if (in_array($key, self::RESERVED_CONTEXT_KEYS, true) === true) {
-                continue;
-            }
+		foreach ($context as $key => $value) {
+			if (in_array($key, self::RESERVED_CONTEXT_KEYS, true) === true) {
+				continue;
+			}
 
-            $entry[$key] = $value;
-        }
+			$entry[$key] = $value;
+		}
 
-        $entry['tokenSetVersion'] = $this->resolveTokenSetVersion(context: $context);
+		$entry['tokenSetVersion'] = $this->resolveTokenSetVersion(context: $context);
 
-        return $entry;
-    }//end buildEntry()
+		return $entry;
+	}//end buildEntry()
 
-    /**
-     * Resolve the acting identity: session uid, else `cli` for occ/CLI
-     * contexts, else `system`.
-     *
-     * @return string The resolved actor.
-     */
-    private function resolveActor(): string
-    {
-        $user = $this->userSession->getUser();
-        if ($user !== null) {
-            return $user->getUID();
-        }
+	/**
+	 * Resolve the acting identity: session uid, else `cli` for occ/CLI
+	 * contexts, else `system`.
+	 *
+	 * @return string The resolved actor.
+	 */
+	private function resolveActor(): string {
+		$user = $this->userSession->getUser();
+		if ($user !== null) {
+			return $user->getUID();
+		}
 
-        if ($this->isRunningInCli() === true) {
-            return 'cli';
-        }
+		if ($this->isRunningInCli() === true) {
+			return 'cli';
+		}
 
-        return 'system';
-    }//end resolveActor()
+		return 'system';
+	}//end resolveActor()
 
-    /**
-     * Whether the current request runs in a CLI/occ context.
-     *
-     * Extracted to its own (overridable) method so unit tests can exercise
-     * the `system` fallback branch, which PHP_SAPI itself cannot express
-     * inside a PHPUnit process (always `cli`).
-     *
-     * @return bool True when running under PHP's CLI SAPI.
-     */
-    protected function isRunningInCli(): bool
-    {
-        return PHP_SAPI === 'cli';
-    }//end isRunningInCli()
+	/**
+	 * Whether the current request runs in a CLI/occ context.
+	 *
+	 * Extracted to its own (overridable) method so unit tests can exercise
+	 * the `system` fallback branch, which PHP_SAPI itself cannot express
+	 * inside a PHPUnit process (always `cli`).
+	 *
+	 * @return bool True when running under PHP's CLI SAPI.
+	 */
+	protected function isRunningInCli(): bool {
+		return PHP_SAPI === 'cli';
+	}//end isRunningInCli()
 
-    /**
-     * Resolve `tokenSetVersion`: an explicit context override, else the app's
-     * `installed_version`, with a `contentHash` (custom-* sets) appended.
-     *
-     * @param array<string, mixed> $context The log() context.
-     *
-     * @return string The resolved version string.
-     */
-    private function resolveTokenSetVersion(array $context): string
-    {
-        $version = $context['tokenSetVersion'] ?? null;
-        if (is_string($version) === false || $version === '') {
-            $version = (string) $this->config->getAppValue(Application::APP_ID, 'installed_version', '0.0.0');
-        }
+	/**
+	 * Resolve `tokenSetVersion`: an explicit context override, else the app's
+	 * `installed_version`, with a `contentHash` (custom-* sets) appended.
+	 *
+	 * @param array<string, mixed> $context The log() context.
+	 *
+	 * @return string The resolved version string.
+	 */
+	private function resolveTokenSetVersion(array $context): string {
+		$version = $context['tokenSetVersion'] ?? null;
+		if (is_string($version) === false || $version === '') {
+			$version = (string)$this->config->getAppValue(Application::APP_ID, 'installed_version', '0.0.0');
+		}
 
-        $contentHash = ($context['contentHash'] ?? null);
-        if (is_string($contentHash) === true && $contentHash !== '') {
-            $version .= '+'.$contentHash;
-        }
+		$contentHash = ($context['contentHash'] ?? null);
+		if (is_string($contentHash) === true && $contentHash !== '') {
+			$version .= '+' . $contentHash;
+		}
 
-        return $version;
-    }//end resolveTokenSetVersion()
+		return $version;
+	}//end resolveTokenSetVersion()
 
-    /**
-     * Summarize a value per the entry's value-summary rules.
-     *
-     * @param mixed $value The raw value.
-     * @param bool  $isCss Whether the value is a raw CSS payload to be hashed.
-     *
-     * @return mixed The verbatim scalar, a CSS hash+size map, or an array count map.
-     */
-    private function summarizeValue(mixed $value, bool $isCss): mixed
-    {
-        if ($isCss === true && is_string($value) === true) {
-            return [
-                'hash'  => 'sha256:'.substr(hash(algo: 'sha256', data: $value), 0, 12),
-                'bytes' => strlen($value),
-            ];
-        }
+	/**
+	 * Summarize a value per the entry's value-summary rules.
+	 *
+	 * @param mixed $value The raw value.
+	 * @param bool $isCss Whether the value is a raw CSS payload to be hashed.
+	 *
+	 * @return mixed The verbatim scalar, a CSS hash+size map, or an array count map.
+	 */
+	private function summarizeValue(mixed $value, bool $isCss): mixed {
+		if ($isCss === true && is_string($value) === true) {
+			return [
+				'hash' => 'sha256:' . substr(hash(algo: 'sha256', data: $value), 0, 12),
+				'bytes' => strlen($value),
+			];
+		}
 
-        if (is_array($value) === true) {
-            return ['count' => count($value)];
-        }
+		if (is_array($value) === true) {
+			return ['count' => count($value)];
+		}
 
-        return $value;
-    }//end summarizeValue()
+		return $value;
+	}//end summarizeValue()
 
-    /**
-     * Diff two arrays' identities: list values, or assoc keys plus any key
-     * whose value differs between old and new.
-     *
-     * @param array<int|string, mixed> $old The prior array.
-     * @param array<int|string, mixed> $new The new array.
-     *
-     * @return array<int, int|string> The changed identities.
-     */
-    private function diffArrayIdentity(array $old, array $new): array
-    {
-        $isList = (array_is_list($old) === true && array_is_list($new) === true);
+	/**
+	 * Diff two arrays' identities: list values, or assoc keys plus any key
+	 * whose value differs between old and new.
+	 *
+	 * @param array<int|string, mixed> $old The prior array.
+	 * @param array<int|string, mixed> $new The new array.
+	 *
+	 * @return array<int, int|string> The changed identities.
+	 */
+	private function diffArrayIdentity(array $old, array $new): array {
+		$isList = (array_is_list($old) === true && array_is_list($new) === true);
 
-        if ($isList === true) {
-            $oldValues = array_map(strval(...), $old);
-            $newValues = array_map(strval(...), $new);
+		if ($isList === true) {
+			$oldValues = array_map(strval(...), $old);
+			$newValues = array_map(strval(...), $new);
 
-            return array_values(
-                array_unique(
-                    array_merge(
-                        array_diff($oldValues, $newValues),
-                        array_diff($newValues, $oldValues)
-                    )
-                )
-            );
-        }
+			return array_values(
+				array_unique(
+					array_merge(
+						array_diff($oldValues, $newValues),
+						array_diff($newValues, $oldValues)
+					)
+				)
+			);
+		}
 
-        $oldKeys = array_keys($old);
-        $newKeys = array_keys($new);
+		$oldKeys = array_keys($old);
+		$newKeys = array_keys($new);
 
-        $changed = array_merge(
-            array_diff($oldKeys, $newKeys),
-            array_diff($newKeys, $oldKeys)
-        );
+		$changed = array_merge(
+			array_diff($oldKeys, $newKeys),
+			array_diff($newKeys, $oldKeys)
+		);
 
-        foreach (array_intersect($oldKeys, $newKeys) as $key) {
-            if ($old[$key] !== $new[$key]) {
-                $changed[] = $key;
-            }
-        }
+		foreach (array_intersect($oldKeys, $newKeys) as $key) {
+			if ($old[$key] !== $new[$key]) {
+				$changed[] = $key;
+			}
+		}
 
-        return array_values(array_unique($changed));
-    }//end diffArrayIdentity()
+		return array_values(array_unique($changed));
+	}//end diffArrayIdentity()
 
-    /**
-     * Parse a raw JSONL blob into an ordered list of entry arrays, skipping
-     * any malformed line rather than failing the whole read.
-     *
-     * @param string $raw The raw file content.
-     *
-     * @return array<int, array<string, mixed>> The parsed entries, file order.
-     */
-    private function parseLines(string $raw): array
-    {
-        $entries = [];
-        foreach (explode("\n", $raw) as $line) {
-            if (trim($line) === '') {
-                continue;
-            }
+	/**
+	 * Parse a raw JSONL blob into an ordered list of entry arrays, skipping
+	 * any malformed line rather than failing the whole read.
+	 *
+	 * @param string $raw The raw file content.
+	 *
+	 * @return array<int, array<string, mixed>> The parsed entries, file order.
+	 */
+	private function parseLines(string $raw): array {
+		$entries = [];
+		foreach (explode("\n", $raw) as $line) {
+			if (trim($line) === '') {
+				continue;
+			}
 
-            $decoded = json_decode($line, true);
-            if (is_array($decoded) === true) {
-                $entries[] = $decoded;
-            }
-        }
+			$decoded = json_decode($line, true);
+			if (is_array($decoded) === true) {
+				$entries[] = $decoded;
+			}
+		}
 
-        return $entries;
-    }//end parseLines()
+		return $entries;
+	}//end parseLines()
 
-    /**
-     * Append one JSON line to `audit.jsonl`, rotating when the result exceeds
-     * the size cap.
-     *
-     * @param string $line The JSON-encoded entry (without trailing newline).
-     *
-     * @return void
-     *
-     * @throws \Throwable Any appdata failure — caught by the caller (log()).
-     */
-    private function appendLine(string $line): void
-    {
-        $folder  = $this->getAuditFolder();
-        $current = $this->readRaw(folder: $folder, name: self::FILE_NAME);
-        $updated = $current.$line."\n";
+	/**
+	 * Append one JSON line to `audit.jsonl`, rotating when the result exceeds
+	 * the size cap.
+	 *
+	 * @param string $line The JSON-encoded entry (without trailing newline).
+	 *
+	 * @return void
+	 *
+	 * @throws \Throwable Any appdata failure — caught by the caller (log()).
+	 */
+	private function appendLine(string $line): void {
+		$folder = $this->getAuditFolder();
+		$current = $this->readRaw(folder: $folder, name: self::FILE_NAME);
+		$updated = $current . $line . "\n";
 
-        if (strlen($updated) > self::MAX_BYTES) {
-            // The full (overflowing) content becomes the single rotated
-            // generation; the current file starts fresh and empty.
-            $this->writeRaw(folder: $folder, name: self::ROTATED_NAME, content: $updated);
-            $this->writeRaw(folder: $folder, name: self::FILE_NAME, content: '');
-            return;
-        }
+		if (strlen($updated) > self::MAX_BYTES) {
+			// The full (overflowing) content becomes the single rotated
+			// generation; the current file starts fresh and empty.
+			$this->writeRaw(folder: $folder, name: self::ROTATED_NAME, content: $updated);
+			$this->writeRaw(folder: $folder, name: self::FILE_NAME, content: '');
+			return;
+		}
 
-        $this->writeRaw(folder: $folder, name: self::FILE_NAME, content: $updated);
-    }//end appendLine()
+		$this->writeRaw(folder: $folder, name: self::FILE_NAME, content: $updated);
+	}//end appendLine()
 
-    /**
-     * Get (creating if needed) the `audit` appdata folder.
-     *
-     * @return ISimpleFolder The audit folder.
-     *
-     * @throws \Throwable Any appdata failure.
-     */
-    private function getAuditFolder(): ISimpleFolder
-    {
-        $root = $this->appDataFactory->get(Application::APP_ID);
+	/**
+	 * Get (creating if needed) the `audit` appdata folder.
+	 *
+	 * @return ISimpleFolder The audit folder.
+	 *
+	 * @throws \Throwable Any appdata failure.
+	 */
+	private function getAuditFolder(): ISimpleFolder {
+		$root = $this->appDataFactory->get(Application::APP_ID);
 
-        try {
-            return $root->getFolder(self::FOLDER_NAME);
-        } catch (NotFoundException $e) {
-            return $root->newFolder(self::FOLDER_NAME);
-        }
-    }//end getAuditFolder()
+		try {
+			return $root->getFolder(self::FOLDER_NAME);
+		} catch (NotFoundException $e) {
+			return $root->newFolder(self::FOLDER_NAME);
+		}
+	}//end getAuditFolder()
 
-    /**
-     * Read a file's content, or an empty string when it does not exist.
-     *
-     * @param ISimpleFolder $folder The audit folder.
-     * @param string        $name   The file name.
-     *
-     * @return string The file content (empty when absent).
-     */
-    private function readRaw(ISimpleFolder $folder, string $name): string
-    {
-        if ($folder->fileExists($name) === false) {
-            return '';
-        }
+	/**
+	 * Read a file's content, or an empty string when it does not exist.
+	 *
+	 * @param ISimpleFolder $folder The audit folder.
+	 * @param string $name The file name.
+	 *
+	 * @return string The file content (empty when absent).
+	 */
+	private function readRaw(ISimpleFolder $folder, string $name): string {
+		if ($folder->fileExists($name) === false) {
+			return '';
+		}
 
-        return $folder->getFile($name)->getContent();
-    }//end readRaw()
+		return $folder->getFile($name)->getContent();
+	}//end readRaw()
 
-    /**
-     * Write (creating or overwriting) a file's full content.
-     *
-     * @param ISimpleFolder $folder  The audit folder.
-     * @param string        $name    The file name.
-     * @param string        $content The full content to persist.
-     *
-     * @return void
-     */
-    private function writeRaw(ISimpleFolder $folder, string $name, string $content): void
-    {
-        if ($folder->fileExists($name) === true) {
-            $folder->getFile($name)->putContent($content);
-            return;
-        }
+	/**
+	 * Write (creating or overwriting) a file's full content.
+	 *
+	 * @param ISimpleFolder $folder The audit folder.
+	 * @param string $name The file name.
+	 * @param string $content The full content to persist.
+	 *
+	 * @return void
+	 */
+	private function writeRaw(ISimpleFolder $folder, string $name, string $content): void {
+		if ($folder->fileExists($name) === true) {
+			$folder->getFile($name)->putContent($content);
+			return;
+		}
 
-        $folder->newFile($name, $content);
-    }//end writeRaw()
+		$folder->newFile($name, $content);
+	}//end writeRaw()
 }//end class

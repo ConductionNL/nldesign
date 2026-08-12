@@ -37,119 +37,114 @@ use Psr\Log\LoggerInterface;
  * routed methods carry the admin-only attribute, the toggle POST persists,
  * and a dismiss POST round-trips into the filtered getStatus() output.
  */
-class SettingsControllerUpstreamFreshnessTest extends TestCase
-{
+class SettingsControllerUpstreamFreshnessTest extends TestCase {
 
-    /**
-     * In-memory app config store backing the IConfig mock.
-     *
-     * @var array<string, string>
-     */
-    private array $configStore = [];
+	/**
+	 * In-memory app config store backing the IConfig mock.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $configStore = [];
 
-    /**
-     * Build a SettingsController wired to a real UpstreamFreshnessService
-     * (backed by the in-memory config store) and stubbed sibling
-     * dependencies not exercised by the upstream-freshness endpoints.
-     */
-    private function makeController(): SettingsController
-    {
-        $config = $this->createMock(IConfig::class);
-        $config->method('getAppValue')->willReturnCallback(
-            function (string $app, string $key, $default='') {
-                return ($this->configStore[$key] ?? $default);
-            }
-        );
-        $config->method('setAppValue')->willReturnCallback(
-            function (string $app, string $key, $value) {
-                $this->configStore[$key] = $value;
-            }
-        );
+	/**
+	 * Build a SettingsController wired to a real UpstreamFreshnessService
+	 * (backed by the in-memory config store) and stubbed sibling
+	 * dependencies not exercised by the upstream-freshness endpoints.
+	 */
+	private function makeController(): SettingsController {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getAppValue')->willReturnCallback(
+			function (string $app, string $key, $default = '') {
+				return ($this->configStore[$key] ?? $default);
+			}
+		);
+		$config->method('setAppValue')->willReturnCallback(
+			function (string $app, string $key, $value) {
+				$this->configStore[$key] = $value;
+			}
+		);
 
-        $tokenSetService = $this->createMock(TokenSetService::class);
-        $tokenSetService->method('getAvailableTokenSets')->willReturn([]);
+		$tokenSetService = $this->createMock(TokenSetService::class);
+		$tokenSetService->method('getAvailableTokenSets')->willReturn([]);
 
-        $upstreamFreshnessService = new UpstreamFreshnessService(
-            $config,
-            $this->createMock(IClientService::class),
-            $tokenSetService,
-            $this->createMock(LoggerInterface::class)
-        );
+		$upstreamFreshnessService = new UpstreamFreshnessService(
+			$config,
+			$this->createMock(IClientService::class),
+			$tokenSetService,
+			$this->createMock(LoggerInterface::class)
+		);
 
-        return new SettingsController(
-            'nldesign',
-            $this->createMock(IRequest::class),
-            $config,
-            $tokenSetService,
-            $this->createMock(ThemingService::class),
-            $this->createMock(TokenSetPreviewService::class),
-            $this->createMock(AppThemingService::class),
-            $this->createMock(ComplianceReportService::class),
-            $this->createMock(ThemingAuditService::class),
-            $this->createMock(EmailThemingService::class),
-            $upstreamFreshnessService,
-            $this->createMock(GroupThemingService::class)
-        );
-    }//end makeController()
+		return new SettingsController(
+			'nldesign',
+			$this->createMock(IRequest::class),
+			$config,
+			$tokenSetService,
+			$this->createMock(ThemingService::class),
+			$this->createMock(TokenSetPreviewService::class),
+			$this->createMock(AppThemingService::class),
+			$this->createMock(ComplianceReportService::class),
+			$this->createMock(ThemingAuditService::class),
+			$this->createMock(EmailThemingService::class),
+			$upstreamFreshnessService,
+			$this->createMock(GroupThemingService::class)
+		);
+	}//end makeController()
 
-    /**
-     * All three upstream-freshness routes carry the AuthorizedAdminSetting
-     * attribute — non-admin requests are rejected by that posture before the
-     * method body ever runs.
-     */
-    public function testAllThreeEndpointsCarryAuthorizedAdminSetting(): void
-    {
-        foreach (['getUpstreamFreshness', 'setUpstreamFreshness', 'dismissUpstreamNotice'] as $method) {
-            $reflection = new \ReflectionMethod(SettingsController::class, $method);
-            $attributes = $reflection->getAttributes(AuthorizedAdminSetting::class);
-            $this->assertNotEmpty($attributes, "$method must carry #[AuthorizedAdminSetting]");
-        }
-    }//end testAllThreeEndpointsCarryAuthorizedAdminSetting()
+	/**
+	 * All three upstream-freshness routes carry the AuthorizedAdminSetting
+	 * attribute — non-admin requests are rejected by that posture before the
+	 * method body ever runs.
+	 */
+	public function testAllThreeEndpointsCarryAuthorizedAdminSetting(): void {
+		foreach (['getUpstreamFreshness', 'setUpstreamFreshness', 'dismissUpstreamNotice'] as $method) {
+			$reflection = new \ReflectionMethod(SettingsController::class, $method);
+			$attributes = $reflection->getAttributes(AuthorizedAdminSetting::class);
+			$this->assertNotEmpty($attributes, "$method must carry #[AuthorizedAdminSetting]");
+		}
+	}//end testAllThreeEndpointsCarryAuthorizedAdminSetting()
 
-    /**
-     * The toggle POST persists the enabled state, reflected by the GET.
-     */
-    public function testToggleEnabledPersists(): void
-    {
-        $controller = $this->makeController();
+	/**
+	 * The toggle POST persists the enabled state, reflected by the GET.
+	 */
+	public function testToggleEnabledPersists(): void {
+		$controller = $this->makeController();
 
-        $before = $controller->getUpstreamFreshness()->getData();
-        $this->assertFalse($before['enabled']);
+		$before = $controller->getUpstreamFreshness()->getData();
+		$this->assertFalse($before['enabled']);
 
-        $setResponse = $controller->setUpstreamFreshness(true);
-        $this->assertSame(['status' => 'ok', 'enabled' => true], $setResponse->getData());
+		$setResponse = $controller->setUpstreamFreshness(true);
+		$this->assertSame(['status' => 'ok', 'enabled' => true], $setResponse->getData());
 
-        $after = $controller->getUpstreamFreshness()->getData();
-        $this->assertTrue($after['enabled']);
-    }//end testToggleEnabledPersists()
+		$after = $controller->getUpstreamFreshness()->getData();
+		$this->assertTrue($after['enabled']);
+	}//end testToggleEnabledPersists()
 
-    /**
-     * A dismiss POST round-trips into the filtered getStatus() output: the
-     * dismissed notice disappears from the subsequent GET.
-     */
-    public function testDismissRoundTripsIntoFilteredStatus(): void
-    {
-        $this->configStore['upstream_updates'] = json_encode(
-            [
-                'utrecht' => [
-                    'installedRef'     => 'old-ref',
-                    'installedVersion' => '1.0.0',
-                    'headSha'          => 'sha1',
-                    'upstreamVersion'  => '1.0.0',
-                    'detectedAt'       => 1,
-                ],
-            ]
-        );
+	/**
+	 * A dismiss POST round-trips into the filtered getStatus() output: the
+	 * dismissed notice disappears from the subsequent GET.
+	 */
+	public function testDismissRoundTripsIntoFilteredStatus(): void {
+		$this->configStore['upstream_updates'] = json_encode(
+			[
+				'utrecht' => [
+					'installedRef' => 'old-ref',
+					'installedVersion' => '1.0.0',
+					'headSha' => 'sha1',
+					'upstreamVersion' => '1.0.0',
+					'detectedAt' => 1,
+				],
+			]
+		);
 
-        $controller = $this->makeController();
+		$controller = $this->makeController();
 
-        $before = $controller->getUpstreamFreshness()->getData();
-        $this->assertCount(1, $before['notices']);
+		$before = $controller->getUpstreamFreshness()->getData();
+		$this->assertCount(1, $before['notices']);
 
-        $dismissResponse = $controller->dismissUpstreamNotice('utrecht', '1.0.0');
-        $this->assertSame(['status' => 'ok'], $dismissResponse->getData());
+		$dismissResponse = $controller->dismissUpstreamNotice('utrecht', '1.0.0');
+		$this->assertSame(['status' => 'ok'], $dismissResponse->getData());
 
-        $after = $controller->getUpstreamFreshness()->getData();
-        $this->assertSame([], $after['notices']);
-    }//end testDismissRoundTripsIntoFilteredStatus()
+		$after = $controller->getUpstreamFreshness()->getData();
+		$this->assertSame([], $after['notices']);
+	}//end testDismissRoundTripsIntoFilteredStatus()
 }//end class

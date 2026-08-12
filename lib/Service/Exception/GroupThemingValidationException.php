@@ -30,51 +30,47 @@ namespace OCA\NLDesign\Service\Exception;
  *
  * @spec openspec/specs/per-group-theming/spec.md
  */
-class GroupThemingValidationException extends \InvalidArgumentException
-{
+class GroupThemingValidationException extends \InvalidArgumentException {
 
-    /**
-     * The offending mapping entry, as submitted (may be malformed).
-     *
-     * @var mixed
-     */
-    private mixed $entry;
+	/**
+	 * The offending mapping entry, as submitted (may be malformed).
+	 *
+	 * @var mixed
+	 */
+	private mixed $entry;
 
-    /**
-     * Constructor.
-     *
-     * @param mixed  $entry  The offending mapping entry.
-     * @param string $reason The human-readable validation failure reason.
-     *
-     * @spec openspec/specs/per-group-theming/spec.md
-     */
-    public function __construct(mixed $entry, string $reason)
-    {
-        parent::__construct(message: $reason);
-        $this->entry = $entry;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param mixed $entry The offending mapping entry.
+	 * @param string $reason The human-readable validation failure reason.
+	 *
+	 * @spec openspec/specs/per-group-theming/spec.md
+	 */
+	public function __construct(mixed $entry, string $reason) {
+		parent::__construct(message: $reason);
+		$this->entry = $entry;
+	}//end __construct()
 
-    /**
-     * Get the offending mapping entry.
-     *
-     * @return mixed The entry, exactly as submitted.
-     *
-     * @spec openspec/specs/per-group-theming/spec.md
-     */
-    public function getEntry(): mixed
-    {
-        return $this->entry;
-    }//end getEntry()
+	/**
+	 * Get the offending mapping entry.
+	 *
+	 * @return mixed The entry, exactly as submitted.
+	 *
+	 * @spec openspec/specs/per-group-theming/spec.md
+	 */
+	public function getEntry(): mixed {
+		return $this->entry;
+	}//end getEntry()
 
-    /**
-     * Get the validation failure reason.
-     *
-     * @return string The reason.
-     *
-     * @spec openspec/specs/per-group-theming/spec.md
-     */
-    public function getReason(): string
-    {
-        return $this->getMessage();
-    }//end getReason()
+	/**
+	 * Get the validation failure reason.
+	 *
+	 * @return string The reason.
+	 *
+	 * @spec openspec/specs/per-group-theming/spec.md
+	 */
+	public function getReason(): string {
+		return $this->getMessage();
+	}//end getReason()
 }//end class

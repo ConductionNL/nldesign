@@ -43,169 +43,162 @@ use Throwable;
  *
  * @spec openspec/specs/config-portability/spec.md
  */
-class ConfigImport extends Command
-{
+class ConfigImport extends Command {
 
-    /**
-     * The configuration bundle service.
-     *
-     * @var ConfigBundleService
-     */
-    private ConfigBundleService $service;
+	/**
+	 * The configuration bundle service.
+	 *
+	 * @var ConfigBundleService
+	 */
+	private ConfigBundleService $service;
 
-    /**
-     * Constructor.
-     *
-     * @param ConfigBundleService $service The configuration bundle service.
-     */
-    public function __construct(ConfigBundleService $service)
-    {
-        parent::__construct();
-        $this->service = $service;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param ConfigBundleService $service The configuration bundle service.
+	 */
+	public function __construct(ConfigBundleService $service) {
+		parent::__construct();
+		$this->service = $service;
+	}//end __construct()
 
-    /**
-     * Configure the command name, description, arguments and options.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    protected function configure(): void
-    {
-        $this->setName(name: 'nldesign:config:import')
-            ->setDescription(
-                'Import a complete NL Design configuration bundle (validate-everything-first, '
-                .'then write — any hard validation failure applies nothing).'
-            )
-            ->addArgument(
-                name: 'file',
-                mode: InputArgument::REQUIRED,
-                description: 'The bundle JSON file path'
-            )
-            ->addOption(
-                name: 'dry-run',
-                shortcut: null,
-                mode: InputOption::VALUE_NONE,
-                description: 'Validate only — print what would change, write nothing'
-            );
-    }//end configure()
+	/**
+	 * Configure the command name, description, arguments and options.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	protected function configure(): void {
+		$this->setName(name: 'nldesign:config:import')
+			->setDescription(
+				'Import a complete NL Design configuration bundle (validate-everything-first, '
+				. 'then write — any hard validation failure applies nothing).'
+			)
+			->addArgument(
+				name: 'file',
+				mode: InputArgument::REQUIRED,
+				description: 'The bundle JSON file path'
+			)
+			->addOption(
+				name: 'dry-run',
+				shortcut: null,
+				mode: InputOption::VALUE_NONE,
+				description: 'Validate only — print what would change, write nothing'
+			);
+	}//end configure()
 
-    /**
-     * Execute the command.
-     *
-     * @param InputInterface  $input  The console input.
-     * @param OutputInterface $output The console output.
-     *
-     * @return int 0 on success (or a valid dry-run); non-zero on an
-     *     unreadable/undecodable file or a hard validation failure.
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $bundle = $this->readBundle(output: $output, path: (string) $input->getArgument('file'));
-        if ($bundle === null) {
-            return Command::FAILURE;
-        }
+	/**
+	 * Execute the command.
+	 *
+	 * @param InputInterface $input The console input.
+	 * @param OutputInterface $output The console output.
+	 *
+	 * @return int 0 on success (or a valid dry-run); non-zero on an
+	 *             unreadable/undecodable file or a hard validation failure.
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	protected function execute(InputInterface $input, OutputInterface $output): int {
+		$bundle = $this->readBundle(output: $output, path: (string)$input->getArgument('file'));
+		if ($bundle === null) {
+			return Command::FAILURE;
+		}
 
-        $dryRun = ($input->getOption('dry-run') === true);
+		$dryRun = ($input->getOption('dry-run') === true);
 
-        try {
-            $result = $this->service->import(bundle: $bundle, dryRun: $dryRun);
-        } catch (Throwable $e) {
-            $output->writeln('<error>Configuration import failed: '.$e->getMessage().'</error>');
+		try {
+			$result = $this->service->import(bundle: $bundle, dryRun: $dryRun);
+		} catch (Throwable $e) {
+			$output->writeln('<error>Configuration import failed: ' . $e->getMessage() . '</error>');
 
-            return Command::FAILURE;
-        }
+			return Command::FAILURE;
+		}
 
-        if ($result['valid'] === false) {
-            $this->printErrors(output: $output, errors: $result['errors']);
+		if ($result['valid'] === false) {
+			$this->printErrors(output: $output, errors: $result['errors']);
 
-            return Command::FAILURE;
-        }
+			return Command::FAILURE;
+		}
 
-        $this->printSections(output: $output, result: $result);
+		$this->printSections(output: $output, result: $result);
 
-        return Command::SUCCESS;
-    }//end execute()
+		return Command::SUCCESS;
+	}//end execute()
 
-    /**
-     * Read and JSON-decode the bundle file.
-     *
-     * @param OutputInterface $output The console output.
-     * @param string          $path   The bundle file path.
-     *
-     * @return array<string, mixed>|null The decoded bundle, or null on read/decode failure.
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    private function readBundle(OutputInterface $output, string $path): ?array
-    {
-        if (is_readable($path) === false) {
-            $output->writeln('<error>Cannot read bundle file: '.$path.'</error>');
+	/**
+	 * Read and JSON-decode the bundle file.
+	 *
+	 * @param OutputInterface $output The console output.
+	 * @param string $path The bundle file path.
+	 *
+	 * @return array<string, mixed>|null The decoded bundle, or null on read/decode failure.
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	private function readBundle(OutputInterface $output, string $path): ?array {
+		if (is_readable($path) === false) {
+			$output->writeln('<error>Cannot read bundle file: ' . $path . '</error>');
 
-            return null;
-        }
+			return null;
+		}
 
-        $content = file_get_contents($path);
-        if ($content === false) {
-            $output->writeln('<error>Cannot read bundle file: '.$path.'</error>');
+		$content = file_get_contents($path);
+		if ($content === false) {
+			$output->writeln('<error>Cannot read bundle file: ' . $path . '</error>');
 
-            return null;
-        }
+			return null;
+		}
 
-        $decoded = json_decode($content, true);
-        if (is_array($decoded) === false) {
-            $output->writeln('<error>The bundle file does not contain valid JSON.</error>');
+		$decoded = json_decode($content, true);
+		if (is_array($decoded) === false) {
+			$output->writeln('<error>The bundle file does not contain valid JSON.</error>');
 
-            return null;
-        }
+			return null;
+		}
 
-        return $decoded;
-    }//end readBundle()
+		return $decoded;
+	}//end readBundle()
 
-    /**
-     * Print the full-error listing for a failed (or unresolvable) import.
-     *
-     * @param OutputInterface                  $output The console output.
-     * @param array<int, array<string, mixed>> $errors The per-section errors.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    private function printErrors(OutputInterface $output, array $errors): void
-    {
-        $output->writeln('<error>Configuration bundle validation failed — nothing was applied:</error>');
-        foreach ($errors as $error) {
-            $section = ($error['section'] ?? 'unknown');
-            $message = ($error['message'] ?? 'Unknown error.');
-            $output->writeln('  - ['.$section.'] '.$message);
-        }
-    }//end printErrors()
+	/**
+	 * Print the full-error listing for a failed (or unresolvable) import.
+	 *
+	 * @param OutputInterface $output The console output.
+	 * @param array<int, array<string, mixed>> $errors The per-section errors.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	private function printErrors(OutputInterface $output, array $errors): void {
+		$output->writeln('<error>Configuration bundle validation failed — nothing was applied:</error>');
+		foreach ($errors as $error) {
+			$section = ($error['section'] ?? 'unknown');
+			$message = ($error['message'] ?? 'Unknown error.');
+			$output->writeln('  - [' . $section . '] ' . $message);
+		}
+	}//end printErrors()
 
-    /**
-     * Print the per-section result table for a valid import (applied or dry-run).
-     *
-     * @param OutputInterface      $output The console output.
-     * @param array<string, mixed> $result The service's import() result.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/config-portability/spec.md
-     */
-    private function printSections(OutputInterface $output, array $result): void
-    {
-        $headline = '<info>Configuration bundle applied:</info>';
-        if ($result['dryRun'] === true) {
-            $headline = '<info>Dry run — the following sections would be applied:</info>';
-        }
+	/**
+	 * Print the per-section result table for a valid import (applied or dry-run).
+	 *
+	 * @param OutputInterface $output The console output.
+	 * @param array<string, mixed> $result The service's import() result.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/config-portability/spec.md
+	 */
+	private function printSections(OutputInterface $output, array $result): void {
+		$headline = '<info>Configuration bundle applied:</info>';
+		if ($result['dryRun'] === true) {
+			$headline = '<info>Dry run — the following sections would be applied:</info>';
+		}
 
-        $output->writeln($headline);
+		$output->writeln($headline);
 
-        foreach ($result['sections'] as $section => $summary) {
-            $output->writeln('  - '.$section.': '.json_encode($summary, JSON_UNESCAPED_SLASHES));
-        }
-    }//end printSections()
+		foreach ($result['sections'] as $section => $summary) {
+			$output->writeln('  - ' . $section . ': ' . json_encode($summary, JSON_UNESCAPED_SLASHES));
+		}
+	}//end printSections()
 }//end class

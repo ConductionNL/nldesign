@@ -28,38 +28,35 @@ namespace OCA\NLDesign\Service\Exception;
  *
  * @spec openspec/specs/email-theming/spec.md
  */
-class ForeignMailTemplateClassException extends \RuntimeException
-{
+class ForeignMailTemplateClassException extends \RuntimeException {
 
-    /**
-     * The foreign class currently configured.
-     *
-     * @var string
-     */
-    private string $foreignClass;
+	/**
+	 * The foreign class currently configured.
+	 *
+	 * @var string
+	 */
+	private string $foreignClass;
 
-    /**
-     * Constructor.
-     *
-     * @param string $foreignClass The currently configured foreign class.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function __construct(string $foreignClass)
-    {
-        parent::__construct(message: 'mail_template_class is configured to a foreign class: '.$foreignClass);
-        $this->foreignClass = $foreignClass;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $foreignClass The currently configured foreign class.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function __construct(string $foreignClass) {
+		parent::__construct(message: 'mail_template_class is configured to a foreign class: ' . $foreignClass);
+		$this->foreignClass = $foreignClass;
+	}//end __construct()
 
-    /**
-     * Get the foreign class currently configured.
-     *
-     * @return string The foreign class name.
-     *
-     * @spec openspec/specs/email-theming/spec.md
-     */
-    public function getForeignClass(): string
-    {
-        return $this->foreignClass;
-    }//end getForeignClass()
+	/**
+	 * Get the foreign class currently configured.
+	 *
+	 * @return string The foreign class name.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	public function getForeignClass(): string {
+		return $this->foreignClass;
+	}//end getForeignClass()
 }//end class

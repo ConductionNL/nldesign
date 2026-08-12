@@ -42,300 +42,285 @@ namespace OCA\NLDesign\Service;
  *
  * @spec openspec/specs/custom-css-freeform/spec.md
  */
-class CustomCssValidator
-{
+class CustomCssValidator {
 
-    /**
-     * Maximum accepted payload size in bytes.
-     *
-     * 64 KiB is far beyond any hand-authored theme tweak while keeping the
-     * regex scans below bounded and audit-log entries small.
-     *
-     * @var integer
-     */
-    public const MAX_BYTES = 65536;
+	/**
+	 * Maximum accepted payload size in bytes.
+	 *
+	 * 64 KiB is far beyond any hand-authored theme tweak while keeping the
+	 * regex scans below bounded and audit-log entries small.
+	 *
+	 * @var integer
+	 */
+	public const MAX_BYTES = 65536;
 
-    /**
-     * Variables whose values Nextcloud derives for dark mode.
-     *
-     * REQ-CSS-007: overriding any of these breaks Nextcloud's own automatic
-     * dark-mode derivation. The bridge layer is already forbidden from setting
-     * them; freeform CSS must not become a back door to the same breakage.
-     * Checked across the WHOLE document, not just a `:root` block, since a
-     * freeform author can set them under any selector.
-     *
-     * @var string[]
-     */
-    public const RESERVED_VARIABLES = [
-        '--color-main-background',
-        '--color-main-background-rgb',
-        '--color-main-background-translucent',
-        '--color-main-background-blur',
-        '--color-background-plain',
-        '--color-background-plain-text',
-        '--background-invert-if-dark',
-        '--background-invert-if-bright',
-    ];
+	/**
+	 * Variables whose values Nextcloud derives for dark mode.
+	 *
+	 * REQ-CSS-007: overriding any of these breaks Nextcloud's own automatic
+	 * dark-mode derivation. The bridge layer is already forbidden from setting
+	 * them; freeform CSS must not become a back door to the same breakage.
+	 * Checked across the WHOLE document, not just a `:root` block, since a
+	 * freeform author can set them under any selector.
+	 *
+	 * @var string[]
+	 */
+	public const RESERVED_VARIABLES = [
+		'--color-main-background',
+		'--color-main-background-rgb',
+		'--color-main-background-translucent',
+		'--color-main-background-blur',
+		'--color-background-plain',
+		'--color-background-plain-text',
+		'--background-invert-if-dark',
+		'--background-invert-if-bright',
+	];
 
-    /**
-     * Validate a freeform CSS document.
-     *
-     * @param string $css The admin-submitted CSS.
-     *
-     * @return string[] Human-readable reasons the submission was rejected.
-     *                  An EMPTY array means the CSS is acceptable.
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    public function validate(string $css): array
-    {
-        $errors = [];
+	/**
+	 * Validate a freeform CSS document.
+	 *
+	 * @param string $css The admin-submitted CSS.
+	 *
+	 * @return string[] Human-readable reasons the submission was rejected.
+	 *                  An EMPTY array means the CSS is acceptable.
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	public function validate(string $css): array {
+		$errors = [];
 
-        if (strlen($css) > self::MAX_BYTES) {
-            $errors[] = sprintf(
-                'Custom CSS is %d bytes, which exceeds the %d byte limit.',
-                strlen($css),
-                self::MAX_BYTES
-            );
-        }
+		if (strlen($css) > self::MAX_BYTES) {
+			$errors[] = sprintf(
+				'Custom CSS is %d bytes, which exceeds the %d byte limit.',
+				strlen($css),
+				self::MAX_BYTES
+			);
+		}
 
-        // `@import` fetches a remote stylesheet on every page load — both an
-        // exfiltration channel (the request itself carries the referrer) and a
-        // content-injection vector. `@charset` can change how the remaining
-        // bytes are decoded.
-        if (preg_match('/@(?:import|charset)\b/i', $css) === 1) {
-            $errors[] = '@import and @charset are not allowed.';
-        }
+		// `@import` fetches a remote stylesheet on every page load — both an
+		// exfiltration channel (the request itself carries the referrer) and a
+		// content-injection vector. `@charset` can change how the remaining
+		// bytes are decoded.
+		if (preg_match('/@(?:import|charset)\b/i', $css) === 1) {
+			$errors[] = '@import and @charset are not allowed.';
+		}
 
-        // The url() function is the classic CSS exfiltration channel: with
-        // attribute selectors it can leak page content to a third party via
-        // background-image, @font-face src, cursor or list-style-image.
-        // Relative/same-origin references and data: URIs cannot reach another
-        // origin, so those remain available for legitimate theming.
-        $offendingScheme = $this->firstDisallowedUrlScheme(css: $css);
-        if ($offendingScheme !== null) {
-            $errors[] = sprintf(
-                'External url() references are not allowed (found "%s"); use a relative path or a data: URI.',
-                $offendingScheme
-            );
-        }
+		// The url() function is the classic CSS exfiltration channel: with
+		// attribute selectors it can leak page content to a third party via
+		// background-image, @font-face src, cursor or list-style-image.
+		// Relative/same-origin references and data: URIs cannot reach another
+		// origin, so those remain available for legitimate theming.
+		$offendingScheme = $this->firstDisallowedUrlScheme(css: $css);
+		if ($offendingScheme !== null) {
+			$errors[] = sprintf(
+				'External url() references are not allowed (found "%s"); use a relative path or a data: URI.',
+				$offendingScheme
+			);
+		}
 
-        // Legacy script-execution vectors. Modern engines ignore them, but
-        // they cost nothing to refuse and keep the rule set honest.
-        if (preg_match('/(?:expression\s*\(|behavior\s*:|-moz-binding\s*:)/i', $css) === 1) {
-            $errors[] = 'expression(), behavior: and -moz-binding: are not allowed.';
-        }
+		// Legacy script-execution vectors. Modern engines ignore them, but
+		// they cost nothing to refuse and keep the rule set honest.
+		if (preg_match('/(?:expression\s*\(|behavior\s*:|-moz-binding\s*:)/i', $css) === 1) {
+			$errors[] = 'expression(), behavior: and -moz-binding: are not allowed.';
+		}
 
-        // Defence in depth. The document is served as a linked stylesheet, not
-        // inlined, so a breakout is not currently reachable — but refusing the
-        // sequences means a future change to inline delivery cannot silently
-        // turn this into an XSS sink.
-        if (preg_match('#</\s*style|<\s*script#i', $css) === 1) {
-            $errors[] = 'HTML tags are not allowed in custom CSS.';
-        }
+		// Defence in depth. The document is served as a linked stylesheet, not
+		// inlined, so a breakout is not currently reachable — but refusing the
+		// sequences means a future change to inline delivery cannot silently
+		// turn this into an XSS sink.
+		if (preg_match('#</\s*style|<\s*script#i', $css) === 1) {
+			$errors[] = 'HTML tags are not allowed in custom CSS.';
+		}
 
-        foreach (self::RESERVED_VARIABLES as $reserved) {
-            if (preg_match('/'.preg_quote($reserved, '/').'\s*:/', $css) === 1) {
-                $errors[] = sprintf(
-                    '%s is reserved for Nextcloud dark-mode derivation and cannot be set (REQ-CSS-007).',
-                    $reserved
-                );
-            }
-        }
+		foreach (self::RESERVED_VARIABLES as $reserved) {
+			if (preg_match('/' . preg_quote($reserved, '/') . '\s*:/', $css) === 1) {
+				$errors[] = sprintf(
+					'%s is reserved for Nextcloud dark-mode derivation and cannot be set (REQ-CSS-007).',
+					$reserved
+				);
+			}
+		}
 
-        // The document is emitted verbatim as the last stylesheet. An
-        // unbalanced brace would swallow — or prematurely close — the rules
-        // around it, so the cascade must never receive one.
-        if ($this->bracesAreBalanced(css: $css) === false) {
-            $errors[] = 'Unbalanced braces: every { must have a matching }.';
-        }
+		// The document is emitted verbatim as the last stylesheet. An
+		// unbalanced brace would swallow — or prematurely close — the rules
+		// around it, so the cascade must never receive one.
+		if ($this->bracesAreBalanced(css: $css) === false) {
+			$errors[] = 'Unbalanced braces: every { must have a matching }.';
+		}
 
-        return $errors;
+		return $errors;
+	}//end validate()
 
-    }//end validate()
+	/**
+	 * Return the first url() scheme in the document that is not permitted.
+	 *
+	 * EVERY url() occurrence is judged on its own target. The predecessor of
+	 * this method asked two DOCUMENT-GLOBAL questions instead — "does a data:
+	 * URI appear anywhere?" and "does an http(s)/protocol-relative reference
+	 * appear anywhere?" — so a single legitimate data: URI satisfied the first
+	 * question and, absent a second http(s)-specific hit, accepted every other
+	 * scheme in the same stylesheet (`ftp://`, `chrome-extension://`, …). That
+	 * bypass is issue #193; a per-occurrence scan is the only shape that
+	 * cannot be disarmed by an unrelated, allowed reference elsewhere.
+	 *
+	 * Only `data:` is allowed to carry a scheme. Relative and root-relative
+	 * references (`../img/logo.svg`, `/apps/nldesign/img/logo.svg`) carry no
+	 * scheme at all, so they never match the scan and stay usable.
+	 *
+	 * @param string $css The admin-submitted CSS.
+	 *
+	 * @return string|null The first disallowed scheme (e.g. `ftp:` or `//`),
+	 *                     or NULL when every url() target is permitted.
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	private function firstDisallowedUrlScheme(string $css): ?string {
+		$found = preg_match_all(
+			'#url\(\s*[\'"]?\s*([a-z][a-z0-9+.-]*:|//)#i',
+			$css,
+			$matches
+		);
 
-    /**
-     * Return the first url() scheme in the document that is not permitted.
-     *
-     * EVERY url() occurrence is judged on its own target. The predecessor of
-     * this method asked two DOCUMENT-GLOBAL questions instead — "does a data:
-     * URI appear anywhere?" and "does an http(s)/protocol-relative reference
-     * appear anywhere?" — so a single legitimate data: URI satisfied the first
-     * question and, absent a second http(s)-specific hit, accepted every other
-     * scheme in the same stylesheet (`ftp://`, `chrome-extension://`, …). That
-     * bypass is issue #193; a per-occurrence scan is the only shape that
-     * cannot be disarmed by an unrelated, allowed reference elsewhere.
-     *
-     * Only `data:` is allowed to carry a scheme. Relative and root-relative
-     * references (`../img/logo.svg`, `/apps/nldesign/img/logo.svg`) carry no
-     * scheme at all, so they never match the scan and stay usable.
-     *
-     * @param string $css The admin-submitted CSS.
-     *
-     * @return string|null The first disallowed scheme (e.g. `ftp:` or `//`),
-     *                     or NULL when every url() target is permitted.
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    private function firstDisallowedUrlScheme(string $css): ?string
-    {
-        $found = preg_match_all(
-            '#url\(\s*[\'"]?\s*([a-z][a-z0-9+.-]*:|//)#i',
-            $css,
-            $matches
-        );
+		if ($found === false || $found === 0) {
+			return null;
+		}
 
-        if ($found === false || $found === 0) {
-            return null;
-        }
+		foreach ($matches[1] as $scheme) {
+			if (strcasecmp($scheme, 'data:') !== 0) {
+				return $scheme;
+			}
+		}
 
-        foreach ($matches[1] as $scheme) {
-            if (strcasecmp($scheme, 'data:') !== 0) {
-                return $scheme;
-            }
-        }
+		return null;
+	}//end firstDisallowedUrlScheme()
 
-        return null;
+	/**
+	 * Report whether every `{` has a matching `}`.
+	 *
+	 * Braces appearing inside strings or comments are ignored so a legitimate
+	 * `content: "{"` declaration is not mistaken for a structural brace.
+	 *
+	 * @param string $css The CSS to scan.
+	 *
+	 * @return boolean True when balanced.
+	 */
+	private function bracesAreBalanced(string $css): bool {
+		$depth = 0;
 
-    }//end firstDisallowedUrlScheme()
+		foreach ($this->structuralBraces(css: $css) as $char) {
+			if ($char === '{') {
+				$depth++;
+				continue;
+			}
 
-    /**
-     * Report whether every `{` has a matching `}`.
-     *
-     * Braces appearing inside strings or comments are ignored so a legitimate
-     * `content: "{"` declaration is not mistaken for a structural brace.
-     *
-     * @param string $css The CSS to scan.
-     *
-     * @return boolean True when balanced.
-     */
-    private function bracesAreBalanced(string $css): bool
-    {
-        $depth = 0;
+			$depth--;
+			if ($depth < 0) {
+				return false;
+			}
+		}
 
-        foreach ($this->structuralBraces(css: $css) as $char) {
-            if ($char === '{') {
-                $depth++;
-                continue;
-            }
+		return ($depth === 0);
+	}//end bracesAreBalanced()
 
-            $depth--;
-            if ($depth < 0) {
-                return false;
-            }
-        }
+	/**
+	 * Collect the `{`/`}` characters that carry structural meaning.
+	 *
+	 * Comments and quoted strings are consumed whole by {@see skipComment()}
+	 * and {@see skipQuoted()}, so any brace inside them never reaches the
+	 * result — a legitimate `content: "{"` declaration is not mistaken for a
+	 * structural brace, and neither is a brace inside `/ * … * /`.
+	 *
+	 * @param string $css The CSS to scan.
+	 *
+	 * @return string[] The structural braces, in source order.
+	 */
+	private function structuralBraces(string $css): array {
+		$braces = [];
+		$length = strlen($css);
 
-        return ($depth === 0);
+		for ($i = 0; $i < $length; $i++) {
+			$char = $css[$i];
 
-    }//end bracesAreBalanced()
+			if ($this->opensCommentAt(css: $css, index: $i, length: $length) === true) {
+				$i = $this->skipComment(css: $css, start: $i, length: $length);
+				continue;
+			}
 
-    /**
-     * Collect the `{`/`}` characters that carry structural meaning.
-     *
-     * Comments and quoted strings are consumed whole by {@see skipComment()}
-     * and {@see skipQuoted()}, so any brace inside them never reaches the
-     * result — a legitimate `content: "{"` declaration is not mistaken for a
-     * structural brace, and neither is a brace inside `/ * … * /`.
-     *
-     * @param string $css The CSS to scan.
-     *
-     * @return string[] The structural braces, in source order.
-     */
-    private function structuralBraces(string $css): array
-    {
-        $braces = [];
-        $length = strlen($css);
+			if ($char === '"' || $char === "'") {
+				$i = $this->skipQuoted(css: $css, start: $i, length: $length, quote: $char);
+				continue;
+			}
 
-        for ($i = 0; $i < $length; $i++) {
-            $char = $css[$i];
+			if ($char === '{' || $char === '}') {
+				$braces[] = $char;
+			}
+		}//end for
 
-            if ($this->opensCommentAt(css: $css, index: $i, length: $length) === true) {
-                $i = $this->skipComment(css: $css, start: $i, length: $length);
-                continue;
-            }
+		return $braces;
+	}//end structuralBraces()
 
-            if ($char === '"' || $char === "'") {
-                $i = $this->skipQuoted(css: $css, start: $i, length: $length, quote: $char);
-                continue;
-            }
+	/**
+	 * Report whether a `/*` comment opener starts at the given index.
+	 *
+	 * @param string $css The CSS being scanned.
+	 * @param integer $index The index to test.
+	 * @param integer $length The total length of $css.
+	 *
+	 * @return boolean True when a comment opens at $index.
+	 */
+	private function opensCommentAt(string $css, int $index, int $length): bool {
+		return ($css[$index] === '/' && ($index + 1) < $length && $css[($index + 1)] === '*');
+	}//end opensCommentAt()
 
-            if ($char === '{' || $char === '}') {
-                $braces[] = $char;
-            }
-        }//end for
+	/**
+	 * Return the index of the last character belonging to the comment that
+	 * opens at $start.
+	 *
+	 * An unterminated comment consumes the remainder of the document, which is
+	 * how a browser parses it too.
+	 *
+	 * @param string $css The CSS being scanned.
+	 * @param integer $start The index of the comment's opening slash.
+	 * @param integer $length The total length of $css.
+	 *
+	 * @return integer The index of the closing slash, or $length when unterminated.
+	 */
+	private function skipComment(string $css, int $start, int $length): int {
+		for ($i = ($start + 2); $i < $length; $i++) {
+			if ($css[$i] === '*' && ($i + 1) < $length && $css[($i + 1)] === '/') {
+				return ($i + 1);
+			}
+		}
 
-        return $braces;
+		return $length;
+	}//end skipComment()
 
-    }//end structuralBraces()
+	/**
+	 * Return the index of the quote that closes the string opening at $start.
+	 *
+	 * A backslash escapes the character that follows it, so an escaped quote
+	 * does not terminate the string. An unterminated string consumes the
+	 * remainder of the document.
+	 *
+	 * @param string $css The CSS being scanned.
+	 * @param integer $start The index of the opening quote.
+	 * @param integer $length The total length of $css.
+	 * @param string $quote The quote character that opened the string.
+	 *
+	 * @return integer The index of the closing quote, or $length when unterminated.
+	 */
+	private function skipQuoted(string $css, int $start, int $length, string $quote): int {
+		for ($i = ($start + 1); $i < $length; $i++) {
+			if ($css[$i] === '\\') {
+				$i++;
+				continue;
+			}
 
-    /**
-     * Report whether a `/*` comment opener starts at the given index.
-     *
-     * @param string  $css    The CSS being scanned.
-     * @param integer $index  The index to test.
-     * @param integer $length The total length of $css.
-     *
-     * @return boolean True when a comment opens at $index.
-     */
-    private function opensCommentAt(string $css, int $index, int $length): bool
-    {
-        return ($css[$index] === '/' && ($index + 1) < $length && $css[($index + 1)] === '*');
+			if ($css[$i] === $quote) {
+				return $i;
+			}
+		}
 
-    }//end opensCommentAt()
-
-    /**
-     * Return the index of the last character belonging to the comment that
-     * opens at $start.
-     *
-     * An unterminated comment consumes the remainder of the document, which is
-     * how a browser parses it too.
-     *
-     * @param string  $css    The CSS being scanned.
-     * @param integer $start  The index of the comment's opening slash.
-     * @param integer $length The total length of $css.
-     *
-     * @return integer The index of the closing slash, or $length when unterminated.
-     */
-    private function skipComment(string $css, int $start, int $length): int
-    {
-        for ($i = ($start + 2); $i < $length; $i++) {
-            if ($css[$i] === '*' && ($i + 1) < $length && $css[($i + 1)] === '/') {
-                return ($i + 1);
-            }
-        }
-
-        return $length;
-
-    }//end skipComment()
-
-    /**
-     * Return the index of the quote that closes the string opening at $start.
-     *
-     * A backslash escapes the character that follows it, so an escaped quote
-     * does not terminate the string. An unterminated string consumes the
-     * remainder of the document.
-     *
-     * @param string  $css    The CSS being scanned.
-     * @param integer $start  The index of the opening quote.
-     * @param integer $length The total length of $css.
-     * @param string  $quote  The quote character that opened the string.
-     *
-     * @return integer The index of the closing quote, or $length when unterminated.
-     */
-    private function skipQuoted(string $css, int $start, int $length, string $quote): int
-    {
-        for ($i = ($start + 1); $i < $length; $i++) {
-            if ($css[$i] === '\\') {
-                $i++;
-                continue;
-            }
-
-            if ($css[$i] === $quote) {
-                return $i;
-            }
-        }
-
-        return $length;
-
-    }//end skipQuoted()
+		return $length;
+	}//end skipQuoted()
 }//end class

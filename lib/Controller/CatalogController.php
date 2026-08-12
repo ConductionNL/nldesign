@@ -39,50 +39,48 @@ use OCP\IRequest;
  *
  * @spec openspec/specs/app-token-set-selection/spec.md
  */
-class CatalogController extends Controller
-{
+class CatalogController extends Controller {
 
-    /**
-     * The token set discovery/projection service.
-     *
-     * @var TokenSetService
-     */
-    private TokenSetService $tokenSetService;
+	/**
+	 * The token set discovery/projection service.
+	 *
+	 * @var TokenSetService
+	 */
+	private TokenSetService $tokenSetService;
 
-    /**
-     * Constructor.
-     *
-     * @param string          $appName         The app name.
-     * @param IRequest        $request         The request object.
-     * @param TokenSetService $tokenSetService The token set discovery/projection service.
-     */
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        TokenSetService $tokenSetService
-    ) {
-        parent::__construct(appName: $appName, request: $request);
-        $this->tokenSetService = $tokenSetService;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $appName The app name.
+	 * @param IRequest $request The request object.
+	 * @param TokenSetService $tokenSetService The token set discovery/projection service.
+	 */
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		TokenSetService $tokenSetService,
+	) {
+		parent::__construct(appName: $appName, request: $request);
+		$this->tokenSetService = $tokenSetService;
+	}//end __construct()
 
-    /**
-     * GET /api/token-sets — the closed, non-admin catalogue projection.
-     *
-     * Reuses `TokenSetService::getAvailableTokenSets()` for discovery via
-     * `getPublicCatalogue()` (zero duplication of the scan/manifest-merge
-     * logic) and returns exactly the 5-field shape: `id`, `name`,
-     * `design_system`, `theming` (`primary_color`, `background_color`,
-     * `logo?`), `wcagLevel`. No `description`, `custom`, `warnings`,
-     * `upstreamVersion`, or `upstreamRef` — those are admin-only fields on
-     * the existing `GET /settings/tokensets` response.
-     *
-     * @return JSONResponse `{ tokenSets: [...] }`.
-     *
-     * @spec openspec/specs/app-token-set-selection/spec.md
-     */
-    #[NoAdminRequired]
-    public function tokenSets(): JSONResponse
-    {
-        return new JSONResponse(['tokenSets' => $this->tokenSetService->getPublicCatalogue()]);
-    }//end tokenSets()
+	/**
+	 * GET /api/token-sets — the closed, non-admin catalogue projection.
+	 *
+	 * Reuses `TokenSetService::getAvailableTokenSets()` for discovery via
+	 * `getPublicCatalogue()` (zero duplication of the scan/manifest-merge
+	 * logic) and returns exactly the 5-field shape: `id`, `name`,
+	 * `design_system`, `theming` (`primary_color`, `background_color`,
+	 * `logo?`), `wcagLevel`. No `description`, `custom`, `warnings`,
+	 * `upstreamVersion`, or `upstreamRef` — those are admin-only fields on
+	 * the existing `GET /settings/tokensets` response.
+	 *
+	 * @return JSONResponse `{ tokenSets: [...] }`.
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	#[NoAdminRequired]
+	public function tokenSets(): JSONResponse {
+		return new JSONResponse(['tokenSets' => $this->tokenSetService->getPublicCatalogue()]);
+	}//end tokenSets()
 }//end class

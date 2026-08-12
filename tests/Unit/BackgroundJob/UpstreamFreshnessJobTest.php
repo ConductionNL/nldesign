@@ -26,80 +26,75 @@ use Psr\Log\LoggerInterface;
  * execution, run() delegates to the service, and a service-level throw does
  * not escape run() (belt and braces on top of the service's own catch-all).
  */
-class UpstreamFreshnessJobTest extends TestCase
-{
+class UpstreamFreshnessJobTest extends TestCase {
 
-    /**
-     * Invoke the protected run() method via reflection.
-     *
-     * @param UpstreamFreshnessJob $job      The job instance.
-     * @param mixed                $argument The argument to pass to run().
-     *
-     * @return void
-     */
-    private function invokeRun(UpstreamFreshnessJob $job, $argument=null): void
-    {
-        $method = new \ReflectionMethod($job, 'run');
-        $method->setAccessible(true);
-        $method->invoke($job, $argument);
-    }//end invokeRun()
+	/**
+	 * Invoke the protected run() method via reflection.
+	 *
+	 * @param UpstreamFreshnessJob $job The job instance.
+	 * @param mixed $argument The argument to pass to run().
+	 *
+	 * @return void
+	 */
+	private function invokeRun(UpstreamFreshnessJob $job, $argument = null): void {
+		$method = new \ReflectionMethod($job, 'run');
+		$method->setAccessible(true);
+		$method->invoke($job, $argument);
+	}//end invokeRun()
 
-    /**
-     * The job declares a 24-hour interval and TIME_INSENSITIVE sensitivity.
-     * `getInterval()` is the public OCP getter; time-sensitivity has no
-     * public getter on this Nextcloud version (only `isTimeSensitive()`,
-     * which collapses TIME_INSENSITIVE and TIME_INSENSITIVE_ONLY to the
-     * same `false`), so the protected `timeSensitivity` property is read via
-     * reflection to assert the exact declared level.
-     */
-    public function testDeclaresDailyIntervalAndTimeInsensitive(): void
-    {
-        $time    = $this->createMock(ITimeFactory::class);
-        $service = $this->createMock(UpstreamFreshnessService::class);
-        $logger  = $this->createMock(LoggerInterface::class);
+	/**
+	 * The job declares a 24-hour interval and TIME_INSENSITIVE sensitivity.
+	 * `getInterval()` is the public OCP getter; time-sensitivity has no
+	 * public getter on this Nextcloud version (only `isTimeSensitive()`,
+	 * which collapses TIME_INSENSITIVE and TIME_INSENSITIVE_ONLY to the
+	 * same `false`), so the protected `timeSensitivity` property is read via
+	 * reflection to assert the exact declared level.
+	 */
+	public function testDeclaresDailyIntervalAndTimeInsensitive(): void {
+		$time = $this->createMock(ITimeFactory::class);
+		$service = $this->createMock(UpstreamFreshnessService::class);
+		$logger = $this->createMock(LoggerInterface::class);
 
-        $job = new UpstreamFreshnessJob($time, $service, $logger);
+		$job = new UpstreamFreshnessJob($time, $service, $logger);
 
-        $this->assertSame(24 * 60 * 60, $job->getInterval());
-        $this->assertFalse($job->isTimeSensitive());
+		$this->assertSame(24 * 60 * 60, $job->getInterval());
+		$this->assertFalse($job->isTimeSensitive());
 
-        $property = new \ReflectionProperty(TimedJob::class, 'timeSensitivity');
-        $property->setAccessible(true);
-        $this->assertSame(TimedJob::TIME_INSENSITIVE, $property->getValue($job));
-    }//end testDeclaresDailyIntervalAndTimeInsensitive()
+		$property = new \ReflectionProperty(TimedJob::class, 'timeSensitivity');
+		$property->setAccessible(true);
+		$this->assertSame(TimedJob::TIME_INSENSITIVE, $property->getValue($job));
+	}//end testDeclaresDailyIntervalAndTimeInsensitive()
 
-    /**
-     * run() delegates to UpstreamFreshnessService::runCheck().
-     */
-    public function testRunDelegatesToService(): void
-    {
-        $time    = $this->createMock(ITimeFactory::class);
-        $service = $this->createMock(UpstreamFreshnessService::class);
-        $service->expects($this->once())->method('runCheck');
-        $logger  = $this->createMock(LoggerInterface::class);
+	/**
+	 * run() delegates to UpstreamFreshnessService::runCheck().
+	 */
+	public function testRunDelegatesToService(): void {
+		$time = $this->createMock(ITimeFactory::class);
+		$service = $this->createMock(UpstreamFreshnessService::class);
+		$service->expects($this->once())->method('runCheck');
+		$logger = $this->createMock(LoggerInterface::class);
 
-        $job = new UpstreamFreshnessJob($time, $service, $logger);
+		$job = new UpstreamFreshnessJob($time, $service, $logger);
 
-        $this->invokeRun($job);
-    }//end testRunDelegatesToService()
+		$this->invokeRun($job);
+	}//end testRunDelegatesToService()
 
-    /**
-     * A service-level throw does not escape run() — belt and braces on top
-     * of the service's own catch-all (defence in depth, never relied upon
-     * alone: UpstreamFreshnessService::runCheck() already never throws).
-     */
-    public function testServiceThrowDoesNotEscapeRun(): void
-    {
-        $time    = $this->createMock(ITimeFactory::class);
-        $service = $this->createMock(UpstreamFreshnessService::class);
-        $service->method('runCheck')->willThrowException(new \RuntimeException('unexpected'));
-        $logger  = $this->createMock(LoggerInterface::class);
-        $logger->expects($this->atLeastOnce())->method('info');
+	/**
+	 * A service-level throw does not escape run() — belt and braces on top
+	 * of the service's own catch-all (defence in depth, never relied upon
+	 * alone: UpstreamFreshnessService::runCheck() already never throws).
+	 */
+	public function testServiceThrowDoesNotEscapeRun(): void {
+		$time = $this->createMock(ITimeFactory::class);
+		$service = $this->createMock(UpstreamFreshnessService::class);
+		$service->method('runCheck')->willThrowException(new \RuntimeException('unexpected'));
+		$logger = $this->createMock(LoggerInterface::class);
+		$logger->expects($this->atLeastOnce())->method('info');
 
-        $job = new UpstreamFreshnessJob($time, $service, $logger);
+		$job = new UpstreamFreshnessJob($time, $service, $logger);
 
-        // Must not throw.
-        $this->invokeRun($job);
-        $this->addToAssertionCount(1);
-    }//end testServiceThrowDoesNotEscapeRun()
+		// Must not throw.
+		$this->invokeRun($job);
+		$this->addToAssertionCount(1);
+	}//end testServiceThrowDoesNotEscapeRun()
 }//end class

@@ -20,9 +20,9 @@ use OCA\NLDesign\Service\EmailThemingService;
 use OCA\NLDesign\Service\GroupThemingService;
 use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
-use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
+use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\AppData\IAppDataFactory;
 use OCP\Files\IAppData;
@@ -37,12 +37,10 @@ use Psr\Log\LoggerInterface;
  * exercise the REAL ThemingAuditService's failure-swallowing path from a
  * controller call site, rather than mocking the service itself.
  */
-class SettingsControllerAuditThrowingAppDataFactory implements IAppDataFactory
-{
-    public function get(string $appId): IAppData
-    {
-        throw new \RuntimeException('appdata unavailable');
-    }
+class SettingsControllerAuditThrowingAppDataFactory implements IAppDataFactory {
+	public function get(string $appId): IAppData {
+		throw new \RuntimeException('appdata unavailable');
+	}
 }
 
 /**
@@ -53,156 +51,150 @@ class SettingsControllerAuditThrowingAppDataFactory implements IAppDataFactory
  * failure-swallowing contract is exercised through the real service call
  * site, not re-tested here (see ThemingAuditServiceTest).
  */
-class SettingsControllerAuditTest extends TestCase
-{
+class SettingsControllerAuditTest extends TestCase {
 
-    /**
-     * In-memory appconfig store: key => value.
-     *
-     * @var array<string, string>
-     */
-    private array $appConfig = ['token_set' => 'rijkshuisstijl'];
+	/**
+	 * In-memory appconfig store: key => value.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $appConfig = ['token_set' => 'rijkshuisstijl'];
 
-    /**
-     * The mocked audit service.
-     *
-     * @var ThemingAuditService&\PHPUnit\Framework\MockObject\MockObject
-     */
-    private ThemingAuditService $auditService;
+	/**
+	 * The mocked audit service.
+	 *
+	 * @var ThemingAuditService&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private ThemingAuditService $auditService;
 
-    /**
-     * The mocked token set service.
-     *
-     * @var TokenSetService&\PHPUnit\Framework\MockObject\MockObject
-     */
-    private TokenSetService $tokenSetService;
+	/**
+	 * The mocked token set service.
+	 *
+	 * @var TokenSetService&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private TokenSetService $tokenSetService;
 
-    /**
-     * The controller under test.
-     *
-     * @var SettingsController
-     */
-    private SettingsController $controller;
+	/**
+	 * The controller under test.
+	 *
+	 * @var SettingsController
+	 */
+	private SettingsController $controller;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+	protected function setUp(): void {
+		parent::setUp();
 
-        $this->tokenSetService = $this->createMock(TokenSetService::class);
-        $this->auditService    = $this->createMock(ThemingAuditService::class);
+		$this->tokenSetService = $this->createMock(TokenSetService::class);
+		$this->auditService = $this->createMock(ThemingAuditService::class);
 
-        $this->controller = new SettingsController(
-            'nldesign',
-            $this->createMock(IRequest::class),
-            $this->makeConfigMock(),
-            $this->tokenSetService,
-            $this->createMock(ThemingService::class),
-            $this->createMock(TokenSetPreviewService::class),
-            $this->createMock(AppThemingService::class),
-            $this->createMock(ComplianceReportService::class),
-            $this->auditService,
-            $this->createMock(EmailThemingService::class),
-            $this->createMock(UpstreamFreshnessService::class),
-            $this->createMock(GroupThemingService::class)
-        );
-    }//end setUp()
+		$this->controller = new SettingsController(
+			'nldesign',
+			$this->createMock(IRequest::class),
+			$this->makeConfigMock(),
+			$this->tokenSetService,
+			$this->createMock(ThemingService::class),
+			$this->createMock(TokenSetPreviewService::class),
+			$this->createMock(AppThemingService::class),
+			$this->createMock(ComplianceReportService::class),
+			$this->auditService,
+			$this->createMock(EmailThemingService::class),
+			$this->createMock(UpstreamFreshnessService::class),
+			$this->createMock(GroupThemingService::class)
+		);
+	}//end setUp()
 
-    /**
-     * A successful token set change logs exactly one token_set_changed
-     * entry with the correct old and new values.
-     */
-    public function testSuccessfulTokenSetChangeLogsOneEntry(): void
-    {
-        $this->tokenSetService->method('isValidTokenSet')->willReturn(true);
+	/**
+	 * A successful token set change logs exactly one token_set_changed
+	 * entry with the correct old and new values.
+	 */
+	public function testSuccessfulTokenSetChangeLogsOneEntry(): void {
+		$this->tokenSetService->method('isValidTokenSet')->willReturn(true);
 
-        $this->auditService->expects($this->once())
-            ->method('log')
-            ->with(
-                'token_set_changed',
-                ['old' => 'rijkshuisstijl', 'new' => 'amsterdam']
-            );
+		$this->auditService->expects($this->once())
+			->method('log')
+			->with(
+				'token_set_changed',
+				['old' => 'rijkshuisstijl', 'new' => 'amsterdam']
+			);
 
-        $response = $this->controller->setTokenSet(tokenSet: 'amsterdam');
+		$response = $this->controller->setTokenSet(tokenSet: 'amsterdam');
 
-        $this->assertSame(200, $response->getStatus());
-    }//end testSuccessfulTokenSetChangeLogsOneEntry()
+		$this->assertSame(200, $response->getStatus());
+	}//end testSuccessfulTokenSetChangeLogsOneEntry()
 
-    /**
-     * A rejected (invalid) token set never reaches the audit service.
-     */
-    public function testInvalidTokenSetLogsNothing(): void
-    {
-        $this->tokenSetService->method('isValidTokenSet')->willReturn(false);
+	/**
+	 * A rejected (invalid) token set never reaches the audit service.
+	 */
+	public function testInvalidTokenSetLogsNothing(): void {
+		$this->tokenSetService->method('isValidTokenSet')->willReturn(false);
 
-        $this->auditService->expects($this->never())->method('log');
+		$this->auditService->expects($this->never())->method('log');
 
-        $response = $this->controller->setTokenSet(tokenSet: 'not-a-real-set');
+		$response = $this->controller->setTokenSet(tokenSet: 'not-a-real-set');
 
-        $this->assertSame(400, $response->getStatus());
-        $this->assertSame('rijkshuisstijl', $this->appConfig['token_set']);
-    }//end testInvalidTokenSetLogsNothing()
+		$this->assertSame(400, $response->getStatus());
+		$this->assertSame('rijkshuisstijl', $this->appConfig['token_set']);
+	}//end testInvalidTokenSetLogsNothing()
 
-    /**
-     * The audit service throwing internally does not change setTokenSet()'s
-     * response. Uses the REAL ThemingAuditService wired to a throwing
-     * IAppDataFactory (rather than mocking the service itself) so this
-     * exercises the actual failure-swallowing contract end-to-end from the
-     * controller call site, not just log()'s own unit test.
-     */
-    public function testAuditServiceThrowingDoesNotChangeResponse(): void
-    {
-        $this->tokenSetService->method('isValidTokenSet')->willReturn(true);
+	/**
+	 * The audit service throwing internally does not change setTokenSet()'s
+	 * response. Uses the REAL ThemingAuditService wired to a throwing
+	 * IAppDataFactory (rather than mocking the service itself) so this
+	 * exercises the actual failure-swallowing contract end-to-end from the
+	 * controller call site, not just log()'s own unit test.
+	 */
+	public function testAuditServiceThrowingDoesNotChangeResponse(): void {
+		$this->tokenSetService->method('isValidTokenSet')->willReturn(true);
 
-        $auditConfig = $this->createMock(IConfig::class);
-        $auditConfig->method('getAppValue')->willReturn('0');
+		$auditConfig = $this->createMock(IConfig::class);
+		$auditConfig->method('getAppValue')->willReturn('0');
 
-        $realAuditService = new ThemingAuditService(
-            appDataFactory: new SettingsControllerAuditThrowingAppDataFactory(),
-            config: $auditConfig,
-            userSession: $this->createMock(IUserSession::class),
-            timeFactory: $this->createMock(ITimeFactory::class),
-            logger: $this->createMock(LoggerInterface::class)
-        );
+		$realAuditService = new ThemingAuditService(
+			appDataFactory: new SettingsControllerAuditThrowingAppDataFactory(),
+			config: $auditConfig,
+			userSession: $this->createMock(IUserSession::class),
+			timeFactory: $this->createMock(ITimeFactory::class),
+			logger: $this->createMock(LoggerInterface::class)
+		);
 
-        $controller = new SettingsController(
-            'nldesign',
-            $this->createMock(IRequest::class),
-            $this->makeConfigMock(),
-            $this->tokenSetService,
-            $this->createMock(ThemingService::class),
-            $this->createMock(TokenSetPreviewService::class),
-            $this->createMock(AppThemingService::class),
-            $this->createMock(ComplianceReportService::class),
-            $realAuditService,
-            $this->createMock(EmailThemingService::class),
-            $this->createMock(UpstreamFreshnessService::class),
-            $this->createMock(GroupThemingService::class)
-        );
+		$controller = new SettingsController(
+			'nldesign',
+			$this->createMock(IRequest::class),
+			$this->makeConfigMock(),
+			$this->tokenSetService,
+			$this->createMock(ThemingService::class),
+			$this->createMock(TokenSetPreviewService::class),
+			$this->createMock(AppThemingService::class),
+			$this->createMock(ComplianceReportService::class),
+			$realAuditService,
+			$this->createMock(EmailThemingService::class),
+			$this->createMock(UpstreamFreshnessService::class),
+			$this->createMock(GroupThemingService::class)
+		);
 
-        $response = $controller->setTokenSet(tokenSet: 'amsterdam');
+		$response = $controller->setTokenSet(tokenSet: 'amsterdam');
 
-        $this->assertSame(200, $response->getStatus());
-        $this->assertSame('amsterdam', $response->getData()['tokenSet']);
-        $this->assertSame('amsterdam', $this->appConfig['token_set']);
-    }//end testAuditServiceThrowingDoesNotChangeResponse()
+		$this->assertSame(200, $response->getStatus());
+		$this->assertSame('amsterdam', $response->getData()['tokenSet']);
+		$this->assertSame('amsterdam', $this->appConfig['token_set']);
+	}//end testAuditServiceThrowingDoesNotChangeResponse()
 
-    /**
-     * Build an in-memory IConfig mock backed by $this->appConfig.
-     *
-     * @return IConfig&\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function makeConfigMock(): IConfig
-    {
-        $config = $this->createMock(IConfig::class);
-        $config->method('getAppValue')->willReturnCallback(
-            fn (string $app, string $key, $default='') => ($this->appConfig[$key] ?? $default)
-        );
-        $config->method('setAppValue')->willReturnCallback(
-            function (string $app, string $key, $value): void {
-                $this->appConfig[$key] = $value;
-            }
-        );
+	/**
+	 * Build an in-memory IConfig mock backed by $this->appConfig.
+	 *
+	 * @return IConfig&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function makeConfigMock(): IConfig {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getAppValue')->willReturnCallback(
+			fn (string $app, string $key, $default = '') => ($this->appConfig[$key] ?? $default)
+		);
+		$config->method('setAppValue')->willReturnCallback(
+			function (string $app, string $key, $value): void {
+				$this->appConfig[$key] = $value;
+			}
+		);
 
-        return $config;
-    }//end makeConfigMock()
+		return $config;
+	}//end makeConfigMock()
 }//end class

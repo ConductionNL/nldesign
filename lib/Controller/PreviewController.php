@@ -42,132 +42,127 @@ use RuntimeException;
  *
  * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
  */
-class PreviewController extends Controller
-{
+class PreviewController extends Controller {
 
-    /**
-     * The theme preview service.
-     *
-     * @var ThemePreviewService
-     */
-    private ThemePreviewService $previewService;
+	/**
+	 * The theme preview service.
+	 *
+	 * @var ThemePreviewService
+	 */
+	private ThemePreviewService $previewService;
 
-    /**
-     * The user session — resolves the acting uid.
-     *
-     * @var IUserSession
-     */
-    private IUserSession $userSession;
+	/**
+	 * The user session — resolves the acting uid.
+	 *
+	 * @var IUserSession
+	 */
+	private IUserSession $userSession;
 
-    /**
-     * Constructor.
-     *
-     * @param string              $appName        The app name.
-     * @param IRequest            $request        The request object.
-     * @param ThemePreviewService $previewService The theme preview service.
-     * @param IUserSession        $userSession    The user session.
-     */
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        ThemePreviewService $previewService,
-        IUserSession $userSession
-    ) {
-        parent::__construct(appName: $appName, request: $request);
-        $this->previewService = $previewService;
-        $this->userSession    = $userSession;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $appName The app name.
+	 * @param IRequest $request The request object.
+	 * @param ThemePreviewService $previewService The theme preview service.
+	 * @param IUserSession $userSession The user session.
+	 */
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		ThemePreviewService $previewService,
+		IUserSession $userSession,
+	) {
+		parent::__construct(appName: $appName, request: $request);
+		$this->previewService = $previewService;
+		$this->userSession = $userSession;
+	}//end __construct()
 
-    /**
-     * Start a preview of the given token set in the caller's own session.
-     *
-     * @param string $tokenSet The token set id to preview.
-     *
-     * @return JSONResponse `{status: 'ok', tokenSet, expiresAt}`, or 400 for an invalid id.
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function start(string $tokenSet): JSONResponse
-    {
-        $uid = $this->actingUid();
-        if ($uid === null) {
-            return new JSONResponse(['error' => 'No active user session'], 400);
-        }
+	/**
+	 * Start a preview of the given token set in the caller's own session.
+	 *
+	 * @param string $tokenSet The token set id to preview.
+	 *
+	 * @return JSONResponse `{status: 'ok', tokenSet, expiresAt}`, or 400 for an invalid id.
+	 *
+	 * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function start(string $tokenSet): JSONResponse {
+		$uid = $this->actingUid();
+		if ($uid === null) {
+			return new JSONResponse(['error' => 'No active user session'], 400);
+		}
 
-        try {
-            $state = $this->previewService->startPreview(uid: $uid, tokenSetId: $tokenSet);
-        } catch (InvalidArgumentException $e) {
-            return new JSONResponse(['error' => 'Invalid token set'], 400);
-        }
+		try {
+			$state = $this->previewService->startPreview(uid: $uid, tokenSetId: $tokenSet);
+		} catch (InvalidArgumentException $e) {
+			return new JSONResponse(['error' => 'Invalid token set'], 400);
+		}
 
-        return new JSONResponse(
-            [
-                'status'    => 'ok',
-                'tokenSet'  => $state['tokenSet'],
-                'expiresAt' => $state['expiresAt'],
-            ]
-        );
-    }//end start()
+		return new JSONResponse(
+			[
+				'status' => 'ok',
+				'tokenSet' => $state['tokenSet'],
+				'expiresAt' => $state['expiresAt'],
+			]
+		);
+	}//end start()
 
-    /**
-     * Discard the caller's active preview, if any.
-     *
-     * @return JSONResponse `{status: 'ok'}`.
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function discard(): JSONResponse
-    {
-        $uid = $this->actingUid();
-        if ($uid === null) {
-            return new JSONResponse(['error' => 'No active user session'], 400);
-        }
+	/**
+	 * Discard the caller's active preview, if any.
+	 *
+	 * @return JSONResponse `{status: 'ok'}`.
+	 *
+	 * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function discard(): JSONResponse {
+		$uid = $this->actingUid();
+		if ($uid === null) {
+			return new JSONResponse(['error' => 'No active user session'], 400);
+		}
 
-        $this->previewService->clearPreview(uid: $uid);
+		$this->previewService->clearPreview(uid: $uid);
 
-        return new JSONResponse(['status' => 'ok']);
-    }//end discard()
+		return new JSONResponse(['status' => 'ok']);
+	}//end discard()
 
-    /**
-     * Publish the caller's active preview: promotes it to the instance-wide
-     * active token set and clears the preview.
-     *
-     * @return JSONResponse `{status: 'ok', tokenSet}`, or 400 when no active preview exists.
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function publish(): JSONResponse
-    {
-        $uid = $this->actingUid();
-        if ($uid === null) {
-            return new JSONResponse(['error' => 'No active user session'], 400);
-        }
+	/**
+	 * Publish the caller's active preview: promotes it to the instance-wide
+	 * active token set and clears the preview.
+	 *
+	 * @return JSONResponse `{status: 'ok', tokenSet}`, or 400 when no active preview exists.
+	 *
+	 * @spec openspec/specs/theme-preview/spec.md#requirement-preview-lifecycle-endpoints
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function publish(): JSONResponse {
+		$uid = $this->actingUid();
+		if ($uid === null) {
+			return new JSONResponse(['error' => 'No active user session'], 400);
+		}
 
-        try {
-            $tokenSet = $this->previewService->publishPreview(uid: $uid);
-        } catch (RuntimeException $e) {
-            return new JSONResponse(['error' => 'No active preview to publish'], 400);
-        }
+		try {
+			$tokenSet = $this->previewService->publishPreview(uid: $uid);
+		} catch (RuntimeException $e) {
+			return new JSONResponse(['error' => 'No active preview to publish'], 400);
+		}
 
-        return new JSONResponse(
-            [
-                'status'   => 'ok',
-                'tokenSet' => $tokenSet,
-            ]
-        );
-    }//end publish()
+		return new JSONResponse(
+			[
+				'status' => 'ok',
+				'tokenSet' => $tokenSet,
+			]
+		);
+	}//end publish()
 
-    /**
-     * Resolve the acting uid from the current user session — never from
-     * request input, so an admin can only ever act on their own preview.
-     *
-     * @return string|null The current user's uid, or null when no user is logged in.
-     */
-    private function actingUid(): ?string
-    {
-        return $this->userSession->getUser()?->getUID();
-    }//end actingUid()
+	/**
+	 * Resolve the acting uid from the current user session — never from
+	 * request input, so an admin can only ever act on their own preview.
+	 *
+	 * @return string|null The current user's uid, or null when no user is logged in.
+	 */
+	private function actingUid(): ?string {
+		return $this->userSession->getUser()?->getUID();
+	}//end actingUid()
 }//end class

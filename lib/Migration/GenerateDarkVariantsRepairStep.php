@@ -36,84 +36,80 @@ use Psr\Log\LoggerInterface;
  *
  * @spec openspec/specs/dark-mode/spec.md
  */
-class GenerateDarkVariantsRepairStep implements IRepairStep
-{
+class GenerateDarkVariantsRepairStep implements IRepairStep {
 
-    /**
-     * The dark palette derivation/generation service.
-     *
-     * @var DarkPaletteService
-     */
-    private DarkPaletteService $darkPalette;
+	/**
+	 * The dark palette derivation/generation service.
+	 *
+	 * @var DarkPaletteService
+	 */
+	private DarkPaletteService $darkPalette;
 
-    /**
-     * The logger.
-     *
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
+	/**
+	 * The logger.
+	 *
+	 * @var LoggerInterface
+	 */
+	private LoggerInterface $logger;
 
-    /**
-     * Constructor.
-     *
-     * @param DarkPaletteService $darkPalette The dark palette service.
-     * @param LoggerInterface    $logger      The logger.
-     */
-    public function __construct(DarkPaletteService $darkPalette, LoggerInterface $logger)
-    {
-        $this->darkPalette = $darkPalette;
-        $this->logger      = $logger;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param DarkPaletteService $darkPalette The dark palette service.
+	 * @param LoggerInterface $logger The logger.
+	 */
+	public function __construct(DarkPaletteService $darkPalette, LoggerInterface $logger) {
+		$this->darkPalette = $darkPalette;
+		$this->logger = $logger;
+	}//end __construct()
 
-    /**
-     * Get the step's name.
-     *
-     * @return string The step name.
-     *
-     * @spec openspec/specs/dark-mode/spec.md
-     */
-    public function getName(): string
-    {
-        return 'Generate NL Design dark-mode token variants';
-    }//end getName()
+	/**
+	 * Get the step's name.
+	 *
+	 * @return string The step name.
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	public function getName(): string {
+		return 'Generate NL Design dark-mode token variants';
+	}//end getName()
 
-    /**
-     * Run the repair step: regenerate missing/stale dark variants for every
-     * discovered token set. Never throws — a write failure or unwritable
-     * directory is logged and skipped, not fatal to the migration.
-     *
-     * @param IOutput $output The migration output.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/dark-mode/spec.md
-     */
-    public function run(IOutput $output): void
-    {
-        $results     = $this->darkPalette->generateAll(force: false);
-        $written     = 0;
-        $notWritable = false;
+	/**
+	 * Run the repair step: regenerate missing/stale dark variants for every
+	 * discovered token set. Never throws — a write failure or unwritable
+	 * directory is logged and skipped, not fatal to the migration.
+	 *
+	 * @param IOutput $output The migration output.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	public function run(IOutput $output): void {
+		$results = $this->darkPalette->generateAll(force: false);
+		$written = 0;
+		$notWritable = false;
 
-        foreach ($results as $setId => $result) {
-            if ($result['written'] === true) {
-                $written++;
-            }
+		foreach ($results as $setId => $result) {
+			if ($result['written'] === true) {
+				$written++;
+			}
 
-            if ($result['reason'] === 'not-writable') {
-                $notWritable = true;
-            }
+			if ($result['reason'] === 'not-writable') {
+				$notWritable = true;
+			}
 
-            if ($result['reason'] === 'write-failed') {
-                $this->logger->warning('NL Design dark-variant generation failed for "{set}" during repair.', ['set' => $setId]);
-            }
-        }
+			if ($result['reason'] === 'write-failed') {
+				$this->logger->warning('NL Design dark-variant generation failed for "{set}" during repair.', ['set' => $setId]);
+			}
+		}
 
-        if ($notWritable === true) {
-            $output->warning('css/tokens/dark/ is not writable — dark-mode variants will not be generated; theming continues light-only.');
+		if ($notWritable === true) {
+			$output->warning('css/tokens/dark/ is not writable — dark-mode variants will not be generated; theming continues light-only.');
 
-            return;
-        }
+			return;
+		}
 
-        $output->info('NL Design dark-mode variants: '.$written.' written.');
-    }//end run()
+		$output->info('NL Design dark-mode variants: ' . $written . ' written.');
+	}//end run()
 }//end class

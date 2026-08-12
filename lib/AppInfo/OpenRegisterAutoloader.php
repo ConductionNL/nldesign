@@ -55,51 +55,49 @@ use Throwable;
  *
  * @spec openspec/specs/federated-config-sharing/spec.md
  */
-final class OpenRegisterAutoloader
-{
+final class OpenRegisterAutoloader {
 
-    /**
-     * The app whose autoloading this prelude pulls in.
-     *
-     * @var string
-     */
-    public const OPENREGISTER_APP_ID = 'openregister';
+	/**
+	 * The app whose autoloading this prelude pulls in.
+	 *
+	 * @var string
+	 */
+	public const OPENREGISTER_APP_ID = 'openregister';
 
-    /**
-     * Register OpenRegister's PSR-4 prefix with the running process.
-     *
-     * `registerAutoloading()` touches only the autoloader and is idempotent,
-     * so calling it is safe regardless of which apps registered before this
-     * one. Every failure is swallowed on purpose: OpenRegister is a SOFT
-     * dependency, and "absent or disabled" is a supported state in which the
-     * caller's `class_exists()` guard then answers FALSE truthfully.
-     *
-     * The path is resolved into a local BEFORE the static call, deliberately.
-     * Written as one expression, PHP resolves `OC_App` first and raises its
-     * Error before `getAppPath()` is ever evaluated — so in any environment
-     * without the legacy class (a unit test, for one) the prelude would never
-     * even ask which path it wanted, and a test asserting that it does would
-     * fail for a reason unrelated to what it meant to check.
-     *
-     * @param IAppManager|null $appManager Injected for tests; resolved from the
-     *                                     server container when omitted.
-     *
-     * @return bool True when the prefix was registered, false when OpenRegister
-     *              is absent, disabled, or otherwise unreachable.
-     *
-     * @spec openspec/specs/federated-config-sharing/spec.md
-     */
-    public function ensure(?IAppManager $appManager=null): bool
-    {
-        try {
-            $manager = ($appManager ?? Server::get(IAppManager::class));
-            $path    = $manager->getAppPath(self::OPENREGISTER_APP_ID);
-            \OC_App::registerAutoloading(self::OPENREGISTER_APP_ID, $path);
-            return true;
-        } catch (Throwable) {
-            // OpenRegister absent, disabled, or the server container is not
-            // available (unit tests). The caller degrades as designed.
-            return false;
-        }
-    }//end ensure()
+	/**
+	 * Register OpenRegister's PSR-4 prefix with the running process.
+	 *
+	 * `registerAutoloading()` touches only the autoloader and is idempotent,
+	 * so calling it is safe regardless of which apps registered before this
+	 * one. Every failure is swallowed on purpose: OpenRegister is a SOFT
+	 * dependency, and "absent or disabled" is a supported state in which the
+	 * caller's `class_exists()` guard then answers FALSE truthfully.
+	 *
+	 * The path is resolved into a local BEFORE the static call, deliberately.
+	 * Written as one expression, PHP resolves `OC_App` first and raises its
+	 * Error before `getAppPath()` is ever evaluated — so in any environment
+	 * without the legacy class (a unit test, for one) the prelude would never
+	 * even ask which path it wanted, and a test asserting that it does would
+	 * fail for a reason unrelated to what it meant to check.
+	 *
+	 * @param IAppManager|null $appManager Injected for tests; resolved from the
+	 *                                     server container when omitted.
+	 *
+	 * @return bool True when the prefix was registered, false when OpenRegister
+	 *              is absent, disabled, or otherwise unreachable.
+	 *
+	 * @spec openspec/specs/federated-config-sharing/spec.md
+	 */
+	public function ensure(?IAppManager $appManager = null): bool {
+		try {
+			$manager = ($appManager ?? Server::get(IAppManager::class));
+			$path = $manager->getAppPath(self::OPENREGISTER_APP_ID);
+			\OC_App::registerAutoloading(self::OPENREGISTER_APP_ID, $path);
+			return true;
+		} catch (Throwable) {
+			// OpenRegister absent, disabled, or the server container is not
+			// available (unit tests). The caller degrades as designed.
+			return false;
+		}
+	}//end ensure()
 }//end class

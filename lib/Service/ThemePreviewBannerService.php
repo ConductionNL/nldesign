@@ -35,102 +35,99 @@ use OCP\IUserSession;
  *
  * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
  */
-class ThemePreviewBannerService
-{
+class ThemePreviewBannerService {
 
-    /**
-     * Resolves whether the requesting user has an active theme preview.
-     *
-     * @var ThemePreviewService
-     */
-    private ThemePreviewService $previewService;
+	/**
+	 * Resolves whether the requesting user has an active theme preview.
+	 *
+	 * @var ThemePreviewService
+	 */
+	private ThemePreviewService $previewService;
 
-    /**
-     * The user session, to resolve the previewing user.
-     *
-     * @var IUserSession
-     */
-    private IUserSession $userSession;
+	/**
+	 * The user session, to resolve the previewing user.
+	 *
+	 * @var IUserSession
+	 */
+	private IUserSession $userSession;
 
-    /**
-     * Provides the preview banner's initial state to the frontend.
-     *
-     * @var IInitialState
-     */
-    private IInitialState $initialState;
+	/**
+	 * Provides the preview banner's initial state to the frontend.
+	 *
+	 * @var IInitialState
+	 */
+	private IInitialState $initialState;
 
-    /**
-     * Constructor.
-     *
-     * @param ThemePreviewService $previewService The admin theme-preview resolver.
-     * @param IUserSession        $userSession    The user session.
-     * @param IInitialState       $initialState   Provides the banner's initial state.
-     */
-    public function __construct(
-        ThemePreviewService $previewService,
-        IUserSession $userSession,
-        IInitialState $initialState
-    ) {
-        $this->previewService = $previewService;
-        $this->userSession    = $userSession;
-        $this->initialState   = $initialState;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param ThemePreviewService $previewService The admin theme-preview resolver.
+	 * @param IUserSession $userSession The user session.
+	 * @param IInitialState $initialState Provides the banner's initial state.
+	 */
+	public function __construct(
+		ThemePreviewService $previewService,
+		IUserSession $userSession,
+		IInitialState $initialState,
+	) {
+		$this->previewService = $previewService;
+		$this->userSession = $userSession;
+		$this->initialState = $initialState;
+	}//end __construct()
 
-    /**
-     * Load the preview banner assets and provide its initial state when the
-     * requesting user has an active theme preview.
-     *
-     * Fails open (renders nothing) on any error — a broken banner must never
-     * break the page it annotates.
-     *
-     * @param string               $tokenSet     The previewed token set id.
-     * @param array<string, mixed> $tokenSetMeta The token set metadata (for its display name).
-     *
-     * @return void
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
-     */
-    public function inject(string $tokenSet, array $tokenSetMeta): void
-    {
-        try {
-            $effective = $this->previewService->resolveEffectiveTokenSet(
-                userSession: $this->userSession,
-                activeTokenSet: $tokenSet
-            );
+	/**
+	 * Load the preview banner assets and provide its initial state when the
+	 * requesting user has an active theme preview.
+	 *
+	 * Fails open (renders nothing) on any error — a broken banner must never
+	 * break the page it annotates.
+	 *
+	 * @param string $tokenSet The previewed token set id.
+	 * @param array<string, mixed> $tokenSetMeta The token set metadata (for its display name).
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
+	 */
+	public function inject(string $tokenSet, array $tokenSetMeta): void {
+		try {
+			$effective = $this->previewService->resolveEffectiveTokenSet(
+				userSession: $this->userSession,
+				activeTokenSet: $tokenSet
+			);
 
-            if ($effective['previewActive'] !== true) {
-                return;
-            }
+			if ($effective['previewActive'] !== true) {
+				return;
+			}
 
-            $this->emitPreviewAssets();
-            $this->initialState->provideInitialState(
-                'preview',
-                [
-                    'tokenSet'  => $tokenSet,
-                    'name'      => ($tokenSetMeta['name'] ?? $tokenSet),
-                    'expiresAt' => ($effective['expiresAt'] ?? null),
-                ]
-            );
-        } catch (\Throwable $e) {
-            return;
-        }//end try
-    }//end inject()
+			$this->emitPreviewAssets();
+			$this->initialState->provideInitialState(
+				'preview',
+				[
+					'tokenSet' => $tokenSet,
+					'name' => ($tokenSetMeta['name'] ?? $tokenSet),
+					'expiresAt' => ($effective['expiresAt'] ?? null),
+				]
+			);
+		} catch (\Throwable $e) {
+			return;
+		}//end try
+	}//end inject()
 
-    /**
-     * Emit the preview banner's script and stylesheet.
-     *
-     * Isolated as a seam so unit tests can assert banner injection without a
-     * Nextcloud bootstrap (see the CssInjectionService emitStyle() rationale).
-     *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util is the Nextcloud API for asset injection.
-     *
-     * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
-     */
-    protected function emitPreviewAssets(): void
-    {
-        \OCP\Util::addScript(application: Application::APP_ID, file: 'preview-banner');
-        \OCP\Util::addStyle(application: Application::APP_ID, file: 'preview-banner');
-    }//end emitPreviewAssets()
+	/**
+	 * Emit the preview banner's script and stylesheet.
+	 *
+	 * Isolated as a seam so unit tests can assert banner injection without a
+	 * Nextcloud bootstrap (see the CssInjectionService emitStyle() rationale).
+	 *
+	 * @return void
+	 *
+	 * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util is the Nextcloud API for asset injection.
+	 *
+	 * @spec openspec/specs/theme-preview/spec.md#requirement-preview-banner
+	 */
+	protected function emitPreviewAssets(): void {
+		\OCP\Util::addScript(application: Application::APP_ID, file: 'preview-banner');
+		\OCP\Util::addStyle(application: Application::APP_ID, file: 'preview-banner');
+	}//end emitPreviewAssets()
 }//end class

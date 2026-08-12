@@ -40,152 +40,143 @@ use ReflectionMethod;
  *    `audit_entries_total` app value (cast to int, default '0'), additive to
  *    the pre-existing metric families.
  */
-class MetricsControllerTest extends TestCase
-{
+class MetricsControllerTest extends TestCase {
 
-    /**
-     * In-memory appconfig store: key => value.
-     *
-     * @var array<string, string>
-     */
-    private array $appConfig = [];
+	/**
+	 * In-memory appconfig store: key => value.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $appConfig = [];
 
-    /**
-     * The controller under test.
-     *
-     * @var MetricsController
-     */
-    private MetricsController $controller;
+	/**
+	 * The controller under test.
+	 *
+	 * @var MetricsController
+	 */
+	private MetricsController $controller;
 
-    /**
-     * Set up the controller with mocked dependencies.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
+	/**
+	 * Set up the controller with mocked dependencies.
+	 */
+	protected function setUp(): void {
+		parent::setUp();
 
-        $config = $this->createMock(IConfig::class);
-        $config->method('getAppValue')->willReturnCallback(
-            fn (string $app, string $key, $default='') => ($this->appConfig[$key] ?? $default)
-        );
-        $config->method('getSystemValueString')->willReturn('34.0.0');
+		$config = $this->createMock(IConfig::class);
+		$config->method('getAppValue')->willReturnCallback(
+			fn (string $app, string $key, $default = '') => ($this->appConfig[$key] ?? $default)
+		);
+		$config->method('getSystemValueString')->willReturn('34.0.0');
 
-        $tokenSetService = $this->createMock(TokenSetService::class);
-        $tokenSetService->method('getAvailableTokenSets')->willReturn([]);
+		$tokenSetService = $this->createMock(TokenSetService::class);
+		$tokenSetService->method('getAvailableTokenSets')->willReturn([]);
 
-        $overridesService = $this->createMock(CustomOverridesService::class);
-        $overridesService->method('read')->willReturn([]);
+		$overridesService = $this->createMock(CustomOverridesService::class);
+		$overridesService->method('read')->willReturn([]);
 
-        $this->controller = new MetricsController(
-            'nldesign',
-            $this->createMock(IRequest::class),
-            $config,
-            $tokenSetService,
-            $overridesService,
-            $this->createMock(LoggerInterface::class)
-        );
-    }//end setUp()
+		$this->controller = new MetricsController(
+			'nldesign',
+			$this->createMock(IRequest::class),
+			$config,
+			$tokenSetService,
+			$overridesService,
+			$this->createMock(LoggerInterface::class)
+		);
+	}//end setUp()
 
-    /**
-     * `index()` MUST NOT carry `#[PublicPage]` — its presence would make the
-     * endpoint reachable by any unauthenticated caller, defeating the
-     * admin-auth requirement (ADR-006).
-     */
-    public function testIndexHasNoPublicPageAttribute(): void
-    {
-        $method = new ReflectionMethod(MetricsController::class, 'index');
+	/**
+	 * `index()` MUST NOT carry `#[PublicPage]` — its presence would make the
+	 * endpoint reachable by any unauthenticated caller, defeating the
+	 * admin-auth requirement (ADR-006).
+	 */
+	public function testIndexHasNoPublicPageAttribute(): void {
+		$method = new ReflectionMethod(MetricsController::class, 'index');
 
-        $this->assertCount(
-            0,
-            $method->getAttributes(PublicPage::class),
-            '#[PublicPage] must be absent so the SecurityMiddleware admin-only default applies.'
-        );
-    }//end testIndexHasNoPublicPageAttribute()
+		$this->assertCount(
+			0,
+			$method->getAttributes(PublicPage::class),
+			'#[PublicPage] must be absent so the SecurityMiddleware admin-only default applies.'
+		);
+	}//end testIndexHasNoPublicPageAttribute()
 
-    /**
-     * `index()` MUST NOT carry `#[NoAdminRequired]` — its presence would
-     * allow any authenticated (non-admin) user through, still short of the
-     * admin-only requirement (ADR-006).
-     */
-    public function testIndexHasNoNoAdminRequiredAttribute(): void
-    {
-        $method = new ReflectionMethod(MetricsController::class, 'index');
+	/**
+	 * `index()` MUST NOT carry `#[NoAdminRequired]` — its presence would
+	 * allow any authenticated (non-admin) user through, still short of the
+	 * admin-only requirement (ADR-006).
+	 */
+	public function testIndexHasNoNoAdminRequiredAttribute(): void {
+		$method = new ReflectionMethod(MetricsController::class, 'index');
 
-        $this->assertCount(
-            0,
-            $method->getAttributes(NoAdminRequired::class),
-            '#[NoAdminRequired] must be absent so the SecurityMiddleware admin-only default applies.'
-        );
-    }//end testIndexHasNoNoAdminRequiredAttribute()
+		$this->assertCount(
+			0,
+			$method->getAttributes(NoAdminRequired::class),
+			'#[NoAdminRequired] must be absent so the SecurityMiddleware admin-only default applies.'
+		);
+	}//end testIndexHasNoNoAdminRequiredAttribute()
 
-    /**
-     * The CSRF exemption is orthogonal to the admin-auth requirement and
-     * MUST remain — a Prometheus scraper authenticates via HTTP Basic/an
-     * app-password and cannot present a CSRF token.
-     */
-    public function testIndexDeclaresNoCsrfRequired(): void
-    {
-        $method = new ReflectionMethod(MetricsController::class, 'index');
+	/**
+	 * The CSRF exemption is orthogonal to the admin-auth requirement and
+	 * MUST remain — a Prometheus scraper authenticates via HTTP Basic/an
+	 * app-password and cannot present a CSRF token.
+	 */
+	public function testIndexDeclaresNoCsrfRequired(): void {
+		$method = new ReflectionMethod(MetricsController::class, 'index');
 
-        $this->assertStringContainsString(
-            '@NoCSRFRequired',
-            (string) $method->getDocComment(),
-            'index() must remain CSRF-exempt even though it now requires an admin session.'
-        );
-    }//end testIndexDeclaresNoCsrfRequired()
+		$this->assertStringContainsString(
+			'@NoCSRFRequired',
+			(string)$method->getDocComment(),
+			'index() must remain CSRF-exempt even though it now requires an admin session.'
+		);
+	}//end testIndexDeclaresNoCsrfRequired()
 
-    /**
-     * Sanity/regression check: the auth posture is enforced by middleware,
-     * never invoked when calling the method directly — the metrics body
-     * itself must still be produced unchanged.
-     */
-    public function testIndexStillReturnsMetricsBody(): void
-    {
-        $response = $this->controller->index();
+	/**
+	 * Sanity/regression check: the auth posture is enforced by middleware,
+	 * never invoked when calling the method directly — the metrics body
+	 * itself must still be produced unchanged.
+	 */
+	public function testIndexStillReturnsMetricsBody(): void {
+		$response = $this->controller->index();
 
-        $this->assertInstanceOf(TextPlainResponse::class, $response);
-        $this->assertStringContainsString('nldesign_up 1', $response->render());
-    }//end testIndexStillReturnsMetricsBody()
+		$this->assertInstanceOf(TextPlainResponse::class, $response);
+		$this->assertStringContainsString('nldesign_up 1', $response->render());
+	}//end testIndexStillReturnsMetricsBody()
 
-    /**
-     * The audit counter defaults to zero when no entry has ever been
-     * written (fresh install / unset app value).
-     */
-    public function testAuditCounterDefaultsToZero(): void
-    {
-        $body = $this->controller->index()->render();
+	/**
+	 * The audit counter defaults to zero when no entry has ever been
+	 * written (fresh install / unset app value).
+	 */
+	public function testAuditCounterDefaultsToZero(): void {
+		$body = $this->controller->index()->render();
 
-        $this->assertStringContainsString(
-            '# HELP nldesign_audit_entries_total Total theming audit entries written',
-            $body
-        );
-        $this->assertStringContainsString('# TYPE nldesign_audit_entries_total counter', $body);
-        $this->assertStringContainsString('nldesign_audit_entries_total 0', $body);
-    }//end testAuditCounterDefaultsToZero()
+		$this->assertStringContainsString(
+			'# HELP nldesign_audit_entries_total Total theming audit entries written',
+			$body
+		);
+		$this->assertStringContainsString('# TYPE nldesign_audit_entries_total counter', $body);
+		$this->assertStringContainsString('nldesign_audit_entries_total 0', $body);
+	}//end testAuditCounterDefaultsToZero()
 
-    /**
-     * The audit counter reflects the current `audit_entries_total` app
-     * value (cast to int).
-     */
-    public function testAuditCounterReflectsAppValue(): void
-    {
-        $this->appConfig['audit_entries_total'] = '12';
+	/**
+	 * The audit counter reflects the current `audit_entries_total` app
+	 * value (cast to int).
+	 */
+	public function testAuditCounterReflectsAppValue(): void {
+		$this->appConfig['audit_entries_total'] = '12';
 
-        $body = $this->controller->index()->render();
+		$body = $this->controller->index()->render();
 
-        $this->assertStringContainsString('nldesign_audit_entries_total 12', $body);
-    }//end testAuditCounterReflectsAppValue()
+		$this->assertStringContainsString('nldesign_audit_entries_total 12', $body);
+	}//end testAuditCounterReflectsAppValue()
 
-    /**
-     * The new counter is additive — pre-existing metric families still
-     * appear in the same response.
-     */
-    public function testAuditCounterIsAdditiveToExistingFamilies(): void
-    {
-        $body = $this->controller->index()->render();
+	/**
+	 * The new counter is additive — pre-existing metric families still
+	 * appear in the same response.
+	 */
+	public function testAuditCounterIsAdditiveToExistingFamilies(): void {
+		$body = $this->controller->index()->render();
 
-        $this->assertStringContainsString('nldesign_info{', $body);
-        $this->assertStringContainsString('nldesign_up 1', $body);
-        $this->assertStringContainsString('# TYPE nldesign_theming_syncs_total counter', $body);
-    }//end testAuditCounterIsAdditiveToExistingFamilies()
+		$this->assertStringContainsString('nldesign_info{', $body);
+		$this->assertStringContainsString('nldesign_up 1', $body);
+		$this->assertStringContainsString('# TYPE nldesign_theming_syncs_total counter', $body);
+	}//end testAuditCounterIsAdditiveToExistingFamilies()
 }//end class

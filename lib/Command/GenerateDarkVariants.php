@@ -37,135 +37,129 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @spec openspec/specs/dark-mode/spec.md
  */
-class GenerateDarkVariants extends Command
-{
+class GenerateDarkVariants extends Command {
 
-    /**
-     * The dark palette derivation/generation service.
-     *
-     * @var DarkPaletteService
-     */
-    private DarkPaletteService $darkPalette;
+	/**
+	 * The dark palette derivation/generation service.
+	 *
+	 * @var DarkPaletteService
+	 */
+	private DarkPaletteService $darkPalette;
 
-    /**
-     * Constructor.
-     *
-     * @param DarkPaletteService $darkPalette The dark palette service.
-     */
-    public function __construct(DarkPaletteService $darkPalette)
-    {
-        parent::__construct();
-        $this->darkPalette = $darkPalette;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param DarkPaletteService $darkPalette The dark palette service.
+	 */
+	public function __construct(DarkPaletteService $darkPalette) {
+		parent::__construct();
+		$this->darkPalette = $darkPalette;
+	}//end __construct()
 
-    /**
-     * Configure the command name, description and options.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/dark-mode/spec.md
-     */
-    protected function configure(): void
-    {
-        $this->setName(name: 'nldesign:generate-dark-variants')
-            ->setDescription('Generate static dark-mode CSS variants (css/tokens/dark/{id}.css) for eligible NL Design token sets.')
-            ->addOption(
-                name: 'set',
-                shortcut: null,
-                mode: InputOption::VALUE_REQUIRED,
-                description: 'Generate only this token set id (default: every discovered set)'
-            )
-            ->addOption(
-                name: 'force',
-                shortcut: null,
-                mode: InputOption::VALUE_NONE,
-                description: 'Regenerate even when the existing file is already fresh'
-            );
-    }//end configure()
+	/**
+	 * Configure the command name, description and options.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	protected function configure(): void {
+		$this->setName(name: 'nldesign:generate-dark-variants')
+			->setDescription('Generate static dark-mode CSS variants (css/tokens/dark/{id}.css) for eligible NL Design token sets.')
+			->addOption(
+				name: 'set',
+				shortcut: null,
+				mode: InputOption::VALUE_REQUIRED,
+				description: 'Generate only this token set id (default: every discovered set)'
+			)
+			->addOption(
+				name: 'force',
+				shortcut: null,
+				mode: InputOption::VALUE_NONE,
+				description: 'Regenerate even when the existing file is already fresh'
+			);
+	}//end configure()
 
-    /**
-     * Execute the command.
-     *
-     * @param InputInterface  $input  The console input.
-     * @param OutputInterface $output The console output.
-     *
-     * @return int The exit code — non-zero only on a write failure.
-     *
-     * @spec openspec/specs/dark-mode/spec.md
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $force   = ($input->getOption('force') !== false);
-        $onlySet = $input->getOption('set');
+	/**
+	 * Execute the command.
+	 *
+	 * @param InputInterface $input The console input.
+	 * @param OutputInterface $output The console output.
+	 *
+	 * @return int The exit code — non-zero only on a write failure.
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	protected function execute(InputInterface $input, OutputInterface $output): int {
+		$force = ($input->getOption('force') !== false);
+		$onlySet = $input->getOption('set');
 
-        $ids = $this->darkPalette->discoverAllSetIds();
-        if (is_string($onlySet) === true && $onlySet !== '') {
-            $ids = [$onlySet];
-        }
+		$ids = $this->darkPalette->discoverAllSetIds();
+		if (is_string($onlySet) === true && $onlySet !== '') {
+			$ids = [$onlySet];
+		}
 
-        $failed = false;
-        foreach ($ids as $id) {
-            $result = $this->darkPalette->generateAndWrite(setId: $id, force: $force);
-            $this->reportResult(output: $output, setId: $id, result: $result);
+		$failed = false;
+		foreach ($ids as $id) {
+			$result = $this->darkPalette->generateAndWrite(setId: $id, force: $force);
+			$this->reportResult(output: $output, setId: $id, result: $result);
 
-            if ($result['reason'] === 'write-failed') {
-                $failed = true;
-            }
-        }
+			if ($result['reason'] === 'write-failed') {
+				$failed = true;
+			}
+		}
 
-        if ($failed === true) {
-            return Command::FAILURE;
-        }
+		if ($failed === true) {
+			return Command::FAILURE;
+		}
 
-        return Command::SUCCESS;
-    }//end execute()
+		return Command::SUCCESS;
+	}//end execute()
 
-    /**
-     * Report one set's generation result to the console.
-     *
-     * @param OutputInterface                                                                                 $output The console output.
-     * @param string                                                                                          $setId  The token set id.
-     * @param array{written: bool, skipped: bool, reason: string, warnings: array<int, array<string, mixed>>} $result The generation result.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/dark-mode/spec.md
-     */
-    private function reportResult(OutputInterface $output, string $setId, array $result): void
-    {
-        $this->reportOutcomeLine(output: $output, setId: $setId, result: $result);
+	/**
+	 * Report one set's generation result to the console.
+	 *
+	 * @param OutputInterface $output The console output.
+	 * @param string $setId The token set id.
+	 * @param array{written: bool, skipped: bool, reason: string, warnings: array<int, array<string, mixed>>} $result The generation result.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	private function reportResult(OutputInterface $output, string $setId, array $result): void {
+		$this->reportOutcomeLine(output: $output, setId: $setId, result: $result);
 
-        foreach ($result['warnings'] as $warning) {
-            $ratio = ($warning['ratio'] ?? 'unevaluated');
-            $output->writeln('  <comment>contrast warning</comment>: '.$warning['pair'].' = '.$ratio.' (needs '.$warning['threshold'].':1)');
-        }
-    }//end reportResult()
+		foreach ($result['warnings'] as $warning) {
+			$ratio = ($warning['ratio'] ?? 'unevaluated');
+			$output->writeln('  <comment>contrast warning</comment>: ' . $warning['pair'] . ' = ' . $ratio . ' (needs ' . $warning['threshold'] . ':1)');
+		}
+	}//end reportResult()
 
-    /**
-     * Write the single written/skipped/failed outcome line for one set.
-     *
-     * @param OutputInterface                                                                                 $output The console output.
-     * @param string                                                                                          $setId  The token set id.
-     * @param array{written: bool, skipped: bool, reason: string, warnings: array<int, array<string, mixed>>} $result The generation result.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/dark-mode/spec.md
-     */
-    private function reportOutcomeLine(OutputInterface $output, string $setId, array $result): void
-    {
-        if ($result['written'] === true) {
-            $output->writeln('<info>'.$setId.'</info>: written');
+	/**
+	 * Write the single written/skipped/failed outcome line for one set.
+	 *
+	 * @param OutputInterface $output The console output.
+	 * @param string $setId The token set id.
+	 * @param array{written: bool, skipped: bool, reason: string, warnings: array<int, array<string, mixed>>} $result The generation result.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	private function reportOutcomeLine(OutputInterface $output, string $setId, array $result): void {
+		if ($result['written'] === true) {
+			$output->writeln('<info>' . $setId . '</info>: written');
 
-            return;
-        }
+			return;
+		}
 
-        if ($result['reason'] === 'write-failed') {
-            $output->writeln('<error>'.$setId.'</error>: write failed');
+		if ($result['reason'] === 'write-failed') {
+			$output->writeln('<error>' . $setId . '</error>: write failed');
 
-            return;
-        }
+			return;
+		}
 
-        $output->writeln($setId.': skipped ('.$result['reason'].')');
-    }//end reportOutcomeLine()
+		$output->writeln($setId . ': skipped (' . $result['reason'] . ')');
+	}//end reportOutcomeLine()
 }//end class

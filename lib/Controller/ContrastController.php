@@ -45,94 +45,92 @@ use OCP\IRequest;
  *
  * @spec openspec/specs/app-token-set-selection/spec.md
  */
-class ContrastController extends Controller
-{
+class ContrastController extends Controller {
 
-    /**
-     * The WCAG contrast math service.
-     *
-     * @var ContrastService
-     */
-    private ContrastService $contrastService;
+	/**
+	 * The WCAG contrast math service.
+	 *
+	 * @var ContrastService
+	 */
+	private ContrastService $contrastService;
 
-    /**
-     * Constructor.
-     *
-     * @param string          $appName         The app name.
-     * @param IRequest        $request         The request object.
-     * @param ContrastService $contrastService The WCAG contrast math service.
-     */
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        ContrastService $contrastService
-    ) {
-        parent::__construct(appName: $appName, request: $request);
-        $this->contrastService = $contrastService;
-    }//end __construct()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $appName The app name.
+	 * @param IRequest $request The request object.
+	 * @param ContrastService $contrastService The WCAG contrast math service.
+	 */
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		ContrastService $contrastService,
+	) {
+		parent::__construct(appName: $appName, request: $request);
+		$this->contrastService = $contrastService;
+	}//end __construct()
 
-    /**
-     * POST /api/contrast/evaluate — evaluate arbitrary candidate colors
-     * against a caller-supplied background.
-     *
-     * Accepts `{ candidates: [{ name, value, role: "text"|"ui" }],
-     * background: string }` and returns `{ results: [{ name, ratio,
-     * threshold, level, pass, unevaluated? }] }`. A malformed request
-     * (missing/invalid `candidates` or `background`) returns 400, never a
-     * silent 200 with fabricated results.
-     *
-     * @return JSONResponse `{ results: [...] }`, or 400 on a malformed request.
-     *
-     * @spec openspec/specs/app-token-set-selection/spec.md
-     *
-     * @no-admin-idor-exempt Pure function over caller-supplied VALUES — there is
-     * no direct object reference to substitute, so IDOR is not structurally
-     * possible. The method takes zero parameters; the only request input is a
-     * `background` colour string and a `candidates` list of {name, value, role}
-     * triples, all of which the caller already possesses. It reads no id, no
-     * path and no session identity, and `ContrastService` has no constructor
-     * and no dependencies at all — no mapper, no ObjectService, no config, no
-     * filesystem — so the response is WCAG contrast arithmetic over the request
-     * body and nothing else. There is no stored object this endpoint can be
-     * pointed at, hence nothing an authorization guard could scope: adding one
-     * would assert a boundary that does not exist. `#[NoAdminRequired]` (not
-     * `#[PublicPage]`) is deliberate and remains the access control — the
-     * endpoint still requires an authenticated session.
-     */
-    #[NoAdminRequired]
-    public function evaluate(): JSONResponse
-    {
-        $params     = $this->request->getParams();
-        $background = ($params['background'] ?? null);
-        $candidates = ($params['candidates'] ?? null);
+	/**
+	 * POST /api/contrast/evaluate — evaluate arbitrary candidate colors
+	 * against a caller-supplied background.
+	 *
+	 * Accepts `{ candidates: [{ name, value, role: "text"|"ui" }],
+	 * background: string }` and returns `{ results: [{ name, ratio,
+	 * threshold, level, pass, unevaluated? }] }`. A malformed request
+	 * (missing/invalid `candidates` or `background`) returns 400, never a
+	 * silent 200 with fabricated results.
+	 *
+	 * @return JSONResponse `{ results: [...] }`, or 400 on a malformed request.
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 *
+	 * @no-admin-idor-exempt Pure function over caller-supplied VALUES — there is
+	 * no direct object reference to substitute, so IDOR is not structurally
+	 * possible. The method takes zero parameters; the only request input is a
+	 * `background` colour string and a `candidates` list of {name, value, role}
+	 * triples, all of which the caller already possesses. It reads no id, no
+	 * path and no session identity, and `ContrastService` has no constructor
+	 * and no dependencies at all — no mapper, no ObjectService, no config, no
+	 * filesystem — so the response is WCAG contrast arithmetic over the request
+	 * body and nothing else. There is no stored object this endpoint can be
+	 * pointed at, hence nothing an authorization guard could scope: adding one
+	 * would assert a boundary that does not exist. `#[NoAdminRequired]` (not
+	 * `#[PublicPage]`) is deliberate and remains the access control — the
+	 * endpoint still requires an authenticated session.
+	 */
+	#[NoAdminRequired]
+	public function evaluate(): JSONResponse {
+		$params = $this->request->getParams();
+		$background = ($params['background'] ?? null);
+		$candidates = ($params['candidates'] ?? null);
 
-        if (is_string($background) === false || $background === '') {
-            return new JSONResponse(['error' => 'background must be a non-empty string'], 400);
-        }
+		if (is_string($background) === false || $background === '') {
+			return new JSONResponse(['error' => 'background must be a non-empty string'], 400);
+		}
 
-        if (is_array($candidates) === false) {
-            return new JSONResponse(['error' => 'candidates must be an array'], 400);
-        }
+		if (is_array($candidates) === false) {
+			return new JSONResponse(['error' => 'candidates must be an array'], 400);
+		}
 
-        $normalised = [];
-        foreach ($candidates as $candidate) {
-            if (is_array($candidate) === false
-                || is_string($candidate['name'] ?? null) === false
-                || is_string($candidate['value'] ?? null) === false
-                || in_array($candidate['role'] ?? null, ['text', 'ui'], true) === false
-            ) {
-                return new JSONResponse(['error' => 'each candidate must have name, value, and role ("text"|"ui")'], 400);
-            }
+		$normalised = [];
+		foreach ($candidates as $candidate) {
+			if (is_array($candidate) === false
+				|| is_string($candidate['name'] ?? null) === false
+				|| is_string($candidate['value'] ?? null) === false
+				|| in_array($candidate['role'] ?? null, ['text', 'ui'], true) === false
+			) {
+				return new JSONResponse(['error' => 'each candidate must have name, value, and role ("text"|"ui")'], 400);
+			}
 
-            $normalised[] = [
-                'name'  => $candidate['name'],
-                'value' => $candidate['value'],
-                'role'  => $candidate['role'],
-            ];
-        }//end foreach
+			$normalised[] = [
+				'name' => $candidate['name'],
+				'value' => $candidate['value'],
+				'role' => $candidate['role'],
+			];
+		}//end foreach
 
-        $results = $this->contrastService->evaluate(candidates: $normalised, background: $background);
+		$results = $this->contrastService->evaluate(candidates: $normalised, background: $background);
 
-        return new JSONResponse(['results' => $results]);
-    }//end evaluate()
+		return new JSONResponse(['results' => $results]);
+	}//end evaluate()
 }//end class

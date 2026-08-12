@@ -39,183 +39,171 @@ use RuntimeException;
  *
  * @spec openspec/specs/custom-css-freeform/spec.md
  */
-class CustomCssService
-{
+class CustomCssService {
 
-    /**
-     * Appconfig key holding the enable flag.
-     *
-     * @var string
-     */
-    public const ENABLED_KEY = 'custom_css_enabled';
+	/**
+	 * Appconfig key holding the enable flag.
+	 *
+	 * @var string
+	 */
+	public const ENABLED_KEY = 'custom_css_enabled';
 
-    /**
-     * The app manager, used to resolve the app's css/ directory.
-     *
-     * @var IAppManager
-     */
-    private IAppManager $appManager;
+	/**
+	 * The app manager, used to resolve the app's css/ directory.
+	 *
+	 * @var IAppManager
+	 */
+	private IAppManager $appManager;
 
-    /**
-     * App configuration, backing the enable flag.
-     *
-     * @var IAppConfig
-     */
-    private IAppConfig $appConfig;
+	/**
+	 * App configuration, backing the enable flag.
+	 *
+	 * @var IAppConfig
+	 */
+	private IAppConfig $appConfig;
 
-    /**
-     * The sanitiser applied before any write.
-     *
-     * @var CustomCssValidator
-     */
-    private CustomCssValidator $validator;
+	/**
+	 * The sanitiser applied before any write.
+	 *
+	 * @var CustomCssValidator
+	 */
+	private CustomCssValidator $validator;
 
-    /**
-     * Constructor.
-     *
-     * @param IAppManager        $appManager The app manager.
-     * @param IAppConfig         $appConfig  App configuration.
-     * @param CustomCssValidator $validator  The freeform CSS sanitiser.
-     */
-    public function __construct(
-        IAppManager $appManager,
-        IAppConfig $appConfig,
-        CustomCssValidator $validator
-    ) {
-        $this->appManager = $appManager;
-        $this->appConfig  = $appConfig;
-        $this->validator  = $validator;
+	/**
+	 * Constructor.
+	 *
+	 * @param IAppManager $appManager The app manager.
+	 * @param IAppConfig $appConfig App configuration.
+	 * @param CustomCssValidator $validator The freeform CSS sanitiser.
+	 */
+	public function __construct(
+		IAppManager $appManager,
+		IAppConfig $appConfig,
+		CustomCssValidator $validator,
+	) {
+		$this->appManager = $appManager;
+		$this->appConfig = $appConfig;
+		$this->validator = $validator;
 
-    }//end __construct()
+	}//end __construct()
 
-    /**
-     * Absolute path to the freeform stylesheet.
-     *
-     * @return string The CSS file path.
-     */
-    private function getFilePath(): string
-    {
-        return $this->appManager->getAppPath(Application::APP_ID).'/css/custom-css.css';
+	/**
+	 * Absolute path to the freeform stylesheet.
+	 *
+	 * @return string The CSS file path.
+	 */
+	private function getFilePath(): string {
+		return $this->appManager->getAppPath(Application::APP_ID) . '/css/custom-css.css';
+	}//end getFilePath()
 
-    }//end getFilePath()
+	/**
+	 * Whether the freeform layer is switched on.
+	 *
+	 * Defaults to OFF: an instance that never opts in must never load the
+	 * layer, even if a file happens to exist on disk.
+	 *
+	 * @return boolean True when enabled.
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	public function isEnabled(): bool {
+		return $this->appConfig->getValueString(Application::APP_ID, self::ENABLED_KEY, '0') === '1';
+	}//end isEnabled()
 
-    /**
-     * Whether the freeform layer is switched on.
-     *
-     * Defaults to OFF: an instance that never opts in must never load the
-     * layer, even if a file happens to exist on disk.
-     *
-     * @return boolean True when enabled.
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    public function isEnabled(): bool
-    {
-        return $this->appConfig->getValueString(Application::APP_ID, self::ENABLED_KEY, '0') === '1';
+	/**
+	 * Switch the freeform layer on or off.
+	 *
+	 * @param bool $enabled Desired state.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	public function setEnabled(bool $enabled): void {
+		$value = '0';
+		if ($enabled === true) {
+			$value = '1';
+		}
 
-    }//end isEnabled()
+		$this->appConfig->setValueString(Application::APP_ID, self::ENABLED_KEY, $value);
 
-    /**
-     * Switch the freeform layer on or off.
-     *
-     * @param bool $enabled Desired state.
-     *
-     * @return void
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    public function setEnabled(bool $enabled): void
-    {
-        $value = '0';
-        if ($enabled === true) {
-            $value = '1';
-        }
+	}//end setEnabled()
 
-        $this->appConfig->setValueString(Application::APP_ID, self::ENABLED_KEY, $value);
+	/**
+	 * Read the stored freeform CSS.
+	 *
+	 * A missing file is not an error — it is the fresh-install state — and
+	 * yields an empty string.
+	 *
+	 * @return string The stored CSS, or '' when nothing is stored.
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	public function read(): string {
+		$path = $this->getFilePath();
+		if (file_exists($path) === false) {
+			return '';
+		}
 
-    }//end setEnabled()
+		$contents = file_get_contents($path);
+		if ($contents === false) {
+			return '';
+		}
 
-    /**
-     * Read the stored freeform CSS.
-     *
-     * A missing file is not an error — it is the fresh-install state — and
-     * yields an empty string.
-     *
-     * @return string The stored CSS, or '' when nothing is stored.
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    public function read(): string
-    {
-        $path = $this->getFilePath();
-        if (file_exists($path) === false) {
-            return '';
-        }
+		return $contents;
+	}//end read()
 
-        $contents = file_get_contents($path);
-        if ($contents === false) {
-            return '';
-        }
+	/**
+	 * Validate and persist freeform CSS.
+	 *
+	 * @param string $css The admin-submitted CSS.
+	 *
+	 * @return string[] Validation errors. EMPTY means the CSS was written;
+	 *                  a non-empty array means NOTHING was written.
+	 *
+	 * @throws RuntimeException When the file cannot be written.
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	public function write(string $css): array {
+		$errors = $this->validator->validate(css: $css);
+		if (empty($errors) === false) {
+			return $errors;
+		}
 
-        return $contents;
+		$path = $this->getFilePath();
+		$tmpPath = $path . '.tmp';
 
-    }//end read()
+		$document = "/* NL Design — freeform custom CSS. Authored by an administrator. */\n" . $css . "\n";
 
-    /**
-     * Validate and persist freeform CSS.
-     *
-     * @param string $css The admin-submitted CSS.
-     *
-     * @return string[] Validation errors. EMPTY means the CSS was written;
-     *                  a non-empty array means NOTHING was written.
-     *
-     * @throws RuntimeException When the file cannot be written.
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    public function write(string $css): array
-    {
-        $errors = $this->validator->validate(css: $css);
-        if (empty($errors) === false) {
-            return $errors;
-        }
+		if (file_put_contents(filename: $tmpPath, data: $document) === false) {
+			throw new RuntimeException(
+				message: 'Could not write ' . $tmpPath . '. Ensure the web server has write access to the css/ directory.'
+			);
+		}
 
-        $path    = $this->getFilePath();
-        $tmpPath = $path.'.tmp';
+		if (rename(from: $tmpPath, to: $path) === false) {
+			if (file_exists(filename: $tmpPath) === true) {
+				unlink(filename: $tmpPath);
+			}
 
-        $document = "/* NL Design — freeform custom CSS. Authored by an administrator. */\n".$css."\n";
+			throw new RuntimeException(message: 'Temp file could not be renamed to ' . $path . '.');
+		}
 
-        if (file_put_contents(filename: $tmpPath, data: $document) === false) {
-            throw new RuntimeException(
-                message: 'Could not write '.$tmpPath.'. Ensure the web server has write access to the css/ directory.'
-            );
-        }
+		return [];
+	}//end write()
 
-        if (rename(from: $tmpPath, to: $path) === false) {
-            if (file_exists(filename: $tmpPath) === true) {
-                unlink(filename: $tmpPath);
-            }
-
-            throw new RuntimeException(message: 'Temp file could not be renamed to '.$path.'.');
-        }
-
-        return [];
-
-    }//end write()
-
-    /**
-     * Whether a non-empty freeform stylesheet is present on disk.
-     *
-     * Used by the injection layer so an enabled-but-empty configuration does
-     * not emit a pointless <link>.
-     *
-     * @return boolean True when there is something to serve.
-     *
-     * @spec openspec/specs/custom-css-freeform/spec.md
-     */
-    public function hasContent(): bool
-    {
-        return trim($this->read()) !== '';
-
-    }//end hasContent()
+	/**
+	 * Whether a non-empty freeform stylesheet is present on disk.
+	 *
+	 * Used by the injection layer so an enabled-but-empty configuration does
+	 * not emit a pointless <link>.
+	 *
+	 * @return boolean True when there is something to serve.
+	 *
+	 * @spec openspec/specs/custom-css-freeform/spec.md
+	 */
+	public function hasContent(): bool {
+		return trim($this->read()) !== '';
+	}//end hasContent()
 }//end class
