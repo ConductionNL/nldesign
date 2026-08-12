@@ -69,12 +69,6 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		<job>OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob</job>
 	</background-jobs>
 
-	<commands>
-		<command>OCA\NLDesign\Command\ComplianceReport</command>
-		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
-		<command>OCA\NLDesign\Command\ConfigExport</command>
-		<command>OCA\NLDesign\Command\ConfigImport</command>
-	</commands>
 	<repair-steps>
 		<post-migration>
 			<!-- Dark-mode token variants (openspec/specs/dark-mode/spec.md):
@@ -84,6 +78,12 @@ Gratis en open source onder de EUPL-1.2 licentie.
 			<step>OCA\NLDesign\Migration\GenerateDarkVariantsRepairStep</step>
 		</post-migration>
 	</repair-steps>
+	<commands>
+		<command>OCA\NLDesign\Command\ComplianceReport</command>
+		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
+		<command>OCA\NLDesign\Command\ConfigExport</command>
+		<command>OCA\NLDesign\Command\ConfigImport</command>
+	</commands>
 	<settings>
 		<admin>OCA\NLDesign\Settings\Admin</admin>
 		<admin-section>theming</admin-section>
