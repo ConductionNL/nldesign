@@ -224,6 +224,84 @@ header#header {
 	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
 }
 
+/* ─── THE SAME CONTROL ON NEXTCLOUD 32 ────────────────────────────────────────
+ *
+ * Everything above targets `.unified-search-input`, which NC 32 does not have.
+ * NC 32 renders unified search as an icon-only 50x50 button instead:
+ *
+ *     <div class="unified-search-menu">
+ *       <div id="unified-search" class="header-menu">
+ *         <button class="header-menu__trigger button-vue button-vue--icon-only"
+ *                 aria-label="Unified search">
+ *
+ * so on the oldest server this theme supports, the one control carrying La
+ * Suite's most recognisable header affordance had NO treatment at all: a bare
+ * transparent square where NC 34 shows a bordered field. Counted at rest on
+ * /apps/files/ with `lasuite` active, on two disposable instances built for the
+ * comparison:
+ *
+ *                                              NC 32.0.12   NC 34.0.2
+ *     #header .unified-search-input                 0            1
+ *     #header .unified-search-menu                  1            1
+ *     #header .unified-search-menu
+ *             .header-menu__trigger                 1            0
+ *
+ * THE SELECTOR IS VERSION-DISCRIMINATING ON ITS OWN. `.header-menu__trigger`
+ * inside `.unified-search-menu` exists only on 32 (on 34 the three
+ * `.header-menu__trigger`s in the bar are Notifications, Contacts and the
+ * settings menu — none of them is search), so this block needs no `:has()`
+ * guard, no version sniff and no `@supports`: on NC 34 it matches nothing and
+ * changes nothing. Both directions were asserted — NC 34's pill was measured
+ * byte-identical on all six properties before and after, and a planted
+ * `background-color: rgb(9,9,9)` proved that reading could still move.
+ *
+ * The values are the ones measured on NC 34's own pill in the same session —
+ * background rgb(248,248,249), 1px rgb(226,226,234), 34px, radius 4px — so the
+ * two servers land on the same control rather than on two interpretations of it.
+ *
+ * THE LABEL IS `attr(aria-label)`, NOT A STRING. NC 32's trigger has no visible
+ * text, and hard-coding an English prompt here would ship an untranslated word
+ * to every locale. `aria-label` is already translated by Nextcloud, so the
+ * generated text follows the user's language for free. It reads "Unified
+ * search" where NC 34 reads "Search apps, files, tags, messages …"; the two
+ * servers word it differently and that is Nextcloud's wording, not ours.
+ * Generated content cannot alter the accessible name here — `aria-label` wins
+ * over contents in the name computation — so this is decorative only, and the
+ * control keeps a 34px hit box (above the 24x24 WCAG 2.5.8 minimum, and the
+ * same height NC 34's pill already uses). */
+#header .unified-search-menu .header-menu__trigger {
+	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+	border: 1px solid var(--lasuite--contextuals--border--surface--primary, var(--lasuite-color-gray-100)) !important;
+	border-radius: var(--lasuite-border-radius) !important;
+	block-size: 34px !important;
+	min-block-size: 0 !important;
+	min-inline-size: 0 !important;
+	inline-size: auto !important;
+	padding: 0 10px !important;
+	justify-content: flex-start !important;
+}
+
+#header .unified-search-menu .header-menu__trigger .button-vue__wrapper {
+	gap: 8px !important;
+}
+
+#header .unified-search-menu .header-menu__trigger::after {
+	content: attr(aria-label);
+	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+	white-space: nowrap;
+}
+
+/* Same reasoning as the NC 34 magnifier above: neutral affordance, not a
+   brand-tinted action. This has to out-specify the `.header-end svg` brand tint
+   earlier in the file, and it does — (1 id, 2 classes, 1 type) against
+   (1 id, 1 class, 1 type) — so the ordering here is not load-bearing. */
+#header .unified-search-menu .header-menu__trigger .icon-vue,
+#header .unified-search-menu .header-menu__trigger svg {
+	color: var(--lasuite-content-muted, var(--lasuite-color-gray-500)) !important;
+}
+
 /* App menu — dark on white, brand-650 active indicator (Cunningham accent).
 
    The CURRENT app's name is deliberately NOT in this list. NC34 renders it
