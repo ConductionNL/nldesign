@@ -217,7 +217,22 @@ jobs:
       # all), `test:l10n` on source strings missing from l10n/en.json. Real
       # pre-existing defects; the gate is what makes them visible.
       # `test` / `test:unit` are NOT listed: "Frontend Tests (unit)" runs them.
-      frontend-checks: '["check:manifest", "test:l10n"]'
+      #
+      # `format` (prettier --check) is listed because the shared workflow has NO
+      # prettier job of its own — `quality.yml` runs eslint and stylelint and
+      # mentions prettier ZERO times. This repo already carries
+      # `@nextcloud/prettier-config` and a `format` script, so without this leg
+      # `npm run format` never runs outside a developer's editor and the tree
+      # drifts straight back out of format between merges — the same inert-
+      # formatter failure mode that made the old `.prettierrc` worth deleting.
+      # Centralising the config never stopped drift; the gate does.
+      # Measured on this tree before enabling: FAILED on css/fonts.css, the only
+      # drifted file in the repo (4-space indent + a single-line multi-value
+      # `src:`). Reformatted in the preceding commit, so this leg is green as it
+      # lands. 90 of 189 tracked frontend files are in scope — the gap is
+      # css/tokens/ (87 GENERATED design-token files, excluded deliberately: a
+      # formatter there would fight the token generator on every sync).
+      frontend-checks: '["check:manifest", "test:l10n", "format"]'
 
       # ── Coverage ratchet ─────────────────────────────────────────────────
       # `enable-coverage-guard` defaults to FALSE, which is why both
