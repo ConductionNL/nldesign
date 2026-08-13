@@ -194,10 +194,14 @@ class NoteCardFillContrastTest extends TestCase {
 		$css = file_get_contents(__DIR__ . '/../../css/error-contrast.css');
 		$this->assertNotFalse($css, 'css/error-contrast.css is missing.');
 
+		// `\s*` sits after every `(` on purpose. The assertion is about the
+		// DECLARATION, not its layout: prettier wraps a long `color-mix()` with
+		// one argument per line, and this test must not be the reason a
+		// stylesheet cannot be formatted.
 		foreach (self::STATUSES as $status) {
 			$this->assertMatchesRegularExpression(
 				sprintf(
-					'/\.notecard--%s\s*\{[^}]*--note-background:\s*color-mix\(in srgb,\s*var\(--color-%s\)\s*%d%%/',
+					'/\.notecard--%s\s*\{[^}]*--note-background:\s*color-mix\(\s*in srgb,\s*var\(\s*--color-%s\s*\)\s*%d%%/',
 					$status,
 					$status,
 					(int)(self::TINT_RATIO * 100)

@@ -758,19 +758,24 @@ class LasuiteDesignStackTest extends TestCase {
 		// block, so asserting the literal here would lock out dark support.
 		// The fallback is asserted too, so the grey/white intent still holds if
 		// a contextual is ever missing.
+		//
+		// `\s*` sits after every `(` and before every `)` on purpose. The
+		// assertion is about the DECLARATION, not its layout: prettier wraps a
+		// long `var(a, var(b))` onto its own lines, and this test must not be
+		// the reason a stylesheet cannot be formatted.
 		$this->assertMatchesRegularExpression(
-			'/#content-vue\.content[^{]*\{[^}]*background-color:\s*var\('
+			'/#content-vue\.content[^{]*\{[^}]*background-color:\s*var\(\s*'
 			. '--lasuite--contextuals--background--surface--tertiary,\s*'
-			. 'var\(--lasuite-color-gray-025\)\)/ms',
+			. 'var\(\s*--lasuite-color-gray-025\s*\)\s*\)/ms',
 			$overrides,
 			'The shell (#content-vue.content) must carry the grey canvas via the '
 			. 'contextual surface token, falling back to gray-025.'
 		);
 
 		$this->assertMatchesRegularExpression(
-			'/#app-content-vue\s*\{[^}]*background:\s*var\('
+			'/#app-content-vue\s*\{[^}]*background:\s*var\(\s*'
 			. '--lasuite--contextuals--background--surface--primary,\s*'
-			. 'var\(--lasuite-color-gray-000\)\)/ms',
+			. 'var\(\s*--lasuite-color-gray-000\s*\)\s*\)/ms',
 			$overrides,
 			'The app content must be the card surface, falling back to gray-000.'
 		);
