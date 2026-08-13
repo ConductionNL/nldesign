@@ -39,20 +39,32 @@ async function nldesignStyles(page: Page): Promise<string[]> {
 }
 
 test.describe('dark-mode token variants', () => {
-	test('the dark stylesheet is injected directly after the light token layer', async ({ page }) => {
+	test('the dark stylesheet is injected directly after the light token layer', async ({
+		page,
+	}) => {
 		await page.goto(PROBE_URL)
 		const styles = await nldesignStyles(page)
 
-		const lightIndex = styles.findIndex((h) => /\/css\/tokens\/[^/]+\.css/.test(h))
+		const lightIndex = styles.findIndex((h) =>
+			/\/css\/tokens\/[^/]+\.css/.test(h),
+		)
 		const darkIndex = styles.findIndex((h) => h.includes('/css/tokens/dark/'))
 
-		expect(lightIndex, 'light token stylesheet must be present').toBeGreaterThanOrEqual(0)
-		expect(darkIndex, 'dark variant stylesheet must be present').toBeGreaterThanOrEqual(0)
+		expect(
+			lightIndex,
+			'light token stylesheet must be present',
+		).toBeGreaterThanOrEqual(0)
+		expect(
+			darkIndex,
+			'dark variant stylesheet must be present',
+		).toBeGreaterThanOrEqual(0)
 		// The dark layer must come AFTER the light one so its scoped rules win.
 		expect(darkIndex).toBeGreaterThan(lightIndex)
 	})
 
-	test('the dark stylesheet is dual-scoped and never darkens an explicit light choice', async ({ page }) => {
+	test('the dark stylesheet is dual-scoped and never darkens an explicit light choice', async ({
+		page,
+	}) => {
 		await page.goto(PROBE_URL)
 		const styles = await nldesignStyles(page)
 		const darkHref = styles.find((h) => h.includes('/css/tokens/dark/'))
@@ -69,7 +81,9 @@ test.describe('dark-mode token variants', () => {
 		expect(css).toContain(':not([data-theme-light])')
 	})
 
-	test('the admin toggle renders, is checked by default, and matches persisted state', async ({ page }) => {
+	test('the admin toggle renders, is checked by default, and matches persisted state', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
 		const toggle = page.locator('#nldesign-dark-variants')
 		await toggle.waitFor({ state: 'attached', timeout: 15_000 })

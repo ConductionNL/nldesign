@@ -10,7 +10,13 @@
 import { describe, it, expect } from 'vitest'
 import tokenTransforms from '../../js/lib/tokenTransforms.js'
 
-const { darkenHex, getPreviewColors, normaliseColorForPicker, designSystemLabel, groupDiagnosticsByReason } = tokenTransforms
+const {
+	darkenHex,
+	getPreviewColors,
+	normaliseColorForPicker,
+	designSystemLabel,
+	groupDiagnosticsByReason,
+} = tokenTransforms
 
 describe('darkenHex', () => {
 	it('darkens a #RRGGBB colour by the given fraction', () => {
@@ -93,19 +99,30 @@ describe('groupDiagnosticsByReason', () => {
 	it('groups entries by reason, alphabetically ordered', () => {
 		const entries = [
 			{ path: 'shadow.elevation-1', reason: 'unmapped-path' },
-			{ path: 'color.accent', reason: 'unsupported-color-space', detail: 'display-p3' },
+			{
+				path: 'color.accent',
+				reason: 'unsupported-color-space',
+				detail: 'display-p3',
+			},
 			{ path: 'color.other', reason: 'unmapped-path' },
 			{ path: 'a.x', reason: 'alias-cycle', detail: 'a.x -> b.y -> a.x' },
 		]
 
 		const groups = groupDiagnosticsByReason(entries)
 
-		expect(groups.map((g) => g.reason)).toEqual(['alias-cycle', 'unmapped-path', 'unsupported-color-space'])
-		expect(groups.find((g) => g.reason === 'unmapped-path').items).toHaveLength(2)
-		expect(groups.find((g) => g.reason === 'unmapped-path').items.map((i) => i.path)).toEqual([
-			'shadow.elevation-1',
-			'color.other',
+		expect(groups.map((g) => g.reason)).toEqual([
+			'alias-cycle',
+			'unmapped-path',
+			'unsupported-color-space',
 		])
+		expect(groups.find((g) => g.reason === 'unmapped-path').items).toHaveLength(
+			2,
+		)
+		expect(
+			groups
+				.find((g) => g.reason === 'unmapped-path')
+				.items.map((i) => i.path),
+		).toEqual(['shadow.elevation-1', 'color.other'])
 	})
 
 	it('returns an empty array for an empty or missing list (no rendering when arrays are absent)', () => {

@@ -18,7 +18,7 @@
  * appstore icon wrapper — its CSS-modules class is hashed
  * (e.g. _appIcon_mcsmb_2) so we match on the stable stem.
  */
-[class*="_appIcon_"] svg,
-[class*="_appIcon_"] svg * {
+[class*='_appIcon_'] svg,
+[class*='_appIcon_'] svg * {
 	fill: currentColor !important;
 }

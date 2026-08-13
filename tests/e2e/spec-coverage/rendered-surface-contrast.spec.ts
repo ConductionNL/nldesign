@@ -31,7 +31,12 @@
  * cheaper than a runtime that has its own failure modes (.github#351).
  */
 import { test, expect, Page } from '@playwright/test'
-import { requestToken, getTokenSet, setTokenSet, THEMING_URL } from '../workflows/_helpers'
+import {
+	requestToken,
+	getTokenSet,
+	setTokenSet,
+	THEMING_URL,
+} from '../workflows/_helpers'
 
 /** WCAG 2.2 AA floors. */
 const AA_NORMAL = 4.5
@@ -44,11 +49,36 @@ const AA_LARGE = 3.0
  * large bold text, so 3.0 is the correct floor for it, not 4.5. Using 4.5
  * everywhere would be a stricter test that fails on compliant markup.
  */
-const SURFACES: Array<{ route: string, selector: string, min: number, why: string }> = [
-	{ route: '/settings/user', selector: '.preview-card__header', min: AA_NORMAL, why: 'theme preview card header on --color-primary' },
-	{ route: '/apps/dashboard/', selector: '#app-dashboard > h2', min: AA_LARGE, why: 'dashboard greeting on the plain background' },
-	{ route: '/settings/admin', selector: '.notecard--success', min: AA_NORMAL, why: 'NcNoteCard success fill' },
-	{ route: '/settings/admin', selector: '.notecard--info', min: AA_NORMAL, why: 'NcNoteCard info fill' },
+const SURFACES: Array<{
+	route: string
+	selector: string
+	min: number
+	why: string
+}> = [
+	{
+		route: '/settings/user',
+		selector: '.preview-card__header',
+		min: AA_NORMAL,
+		why: 'theme preview card header on --color-primary',
+	},
+	{
+		route: '/apps/dashboard/',
+		selector: '#app-dashboard > h2',
+		min: AA_LARGE,
+		why: 'dashboard greeting on the plain background',
+	},
+	{
+		route: '/settings/admin',
+		selector: '.notecard--success',
+		min: AA_NORMAL,
+		why: 'NcNoteCard success fill',
+	},
+	{
+		route: '/settings/admin',
+		selector: '.notecard--info',
+		min: AA_NORMAL,
+		why: 'NcNoteCard info fill',
+	},
 ]
 
 /**
@@ -70,7 +100,8 @@ const SURFACES: Array<{ route: string, selector: string, min: number, why: strin
  *                   the measurement's own blind spot.
  *   - a ratio       the real thing.
  */
-type ContrastResult = { ratio: number, fg: string, bg: string } | { undetermined: string } | null
+type ContrastResult =
+	{ ratio: number; fg: string; bg: string } | { undetermined: string } | null
 
 async function contrastOf(page: Page, selector: string): Promise<ContrastResult> {
 	return await page.evaluate((sel) => {
@@ -84,23 +115,46 @@ async function contrastOf(page: Page, selector: string): Promise<ContrastResult>
 		// #000000 fill — a "1:1 failure" on an element that renders no text,
 		// while the child span it delegates to is white and perfectly legible.
 		const hasOwnText = (e: Element) =>
-			[...e.childNodes].some(n => n.nodeType === Node.TEXT_NODE && (n.textContent || '').trim().length > 0)
-		const el = (hasOwnText(container)
-			? container
-			: [...container.querySelectorAll('*')].find(hasOwnText) as HTMLElement | undefined) ?? container
+			[...e.childNodes].some(
+				(n) =>
+					n.nodeType === Node.TEXT_NODE
+					&& (n.textContent || '').trim().length > 0,
+			)
+		const el =
+			(hasOwnText(container)
+				? container
+				: ([...container.querySelectorAll('*')].find(hasOwnText) as
+						HTMLElement | undefined)) ?? container
 
-		for (let probe: HTMLElement | null = el; probe; probe = probe.parentElement) {
+		for (
+			let probe: HTMLElement | null = el;
+			probe;
+			probe = probe.parentElement
+		) {
 			const cs = getComputedStyle(probe)
 			if (cs.backgroundImage && cs.backgroundImage !== 'none') {
-				return { undetermined: `background-image on ${probe.tagName.toLowerCase()}${probe.id ? '#' + probe.id : ''}` }
+				return {
+					undetermined: `background-image on ${probe.tagName.toLowerCase()}${probe.id ? '#' + probe.id : ''}`,
+				}
 			}
-			if (cs.backgroundColor && !/rgba\(\d+, \d+, \d+, 0\)/.test(cs.backgroundColor)) break
+			if (
+				cs.backgroundColor
+				&& !/rgba\(\d+, \d+, \d+, 0\)/.test(cs.backgroundColor)
+			)
+				break
 		}
 
 		const parse = (c: string): [number, number, number, number] => {
-			const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/)
+			const m = c.match(
+				/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/,
+			)
 			if (!m) return [255, 255, 255, 1]
-			return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])]
+			return [
+				Number(m[1]),
+				Number(m[2]),
+				Number(m[3]),
+				m[4] === undefined ? 1 : Number(m[4]),
+			]
 		}
 		const lum = ([r, g, b]: number[]): number => {
 			const f = (v: number) => {
@@ -117,12 +171,19 @@ async function contrastOf(page: Page, selector: string): Promise<ContrastResult>
 		while (node) {
 			const c = parse(getComputedStyle(node).backgroundColor)
 			if (c[3] > 0) stack.push(c)
-			if (c[3] === 1) { bg = [c[0], c[1], c[2]]; break }
+			if (c[3] === 1) {
+				bg = [c[0], c[1], c[2]]
+				break
+			}
 			node = node.parentElement
 		}
 		for (let i = stack.length - 2; i >= 0; i--) {
 			const [r, g, b, a] = stack[i]
-			bg = [r * a + bg[0] * (1 - a), g * a + bg[1] * (1 - a), b * a + bg[2] * (1 - a)]
+			bg = [
+				r * a + bg[0] * (1 - a),
+				g * a + bg[1] * (1 - a),
+				b * a + bg[2] * (1 - a),
+			]
 		}
 
 		const fg = parse(getComputedStyle(el).color)
@@ -135,8 +196,13 @@ async function contrastOf(page: Page, selector: string): Promise<ContrastResult>
 		const l1 = lum(composedFg)
 		const l2 = lum(bg)
 		const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
-		const hex = (c: number[]) => '#' + c.map(v => Math.round(v).toString(16).padStart(2, '0')).join('')
-		return { ratio: Math.round(ratio * 100) / 100, fg: hex(composedFg), bg: hex(bg) }
+		const hex = (c: number[]) =>
+			'#' + c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
+		return {
+			ratio: Math.round(ratio * 100) / 100,
+			fg: hex(composedFg),
+			bg: hex(bg),
+		}
 	}, selector)
 }
 
@@ -144,14 +210,15 @@ async function contrastOf(page: Page, selector: string): Promise<ContrastResult>
 const TOKEN_SETS = ['rijkshuisstijl', 'hoog-contrast']
 
 test.describe('rendered-surface contrast', () => {
-
 	let baselineTokenSet = ''
 
 	test.beforeAll(async ({ browser }) => {
 		// `browser.newContext()` does NOT inherit the project's storageState —
 		// without this the context is anonymous and the POST below is rejected
 		// in a way that only surfaces as a later, unrelated failure.
-		const ctx = await browser.newContext({ storageState: 'tests/e2e/.auth/admin.json' })
+		const ctx = await browser.newContext({
+			storageState: 'tests/e2e/.auth/admin.json',
+		})
 		const page = await ctx.newPage()
 		await page.goto(THEMING_URL)
 		baselineTokenSet = await getTokenSet(page, await requestToken(page))
@@ -160,7 +227,9 @@ test.describe('rendered-surface contrast', () => {
 
 	test.afterAll(async ({ browser }) => {
 		if (!baselineTokenSet) return
-		const ctx = await browser.newContext({ storageState: 'tests/e2e/.auth/admin.json' })
+		const ctx = await browser.newContext({
+			storageState: 'tests/e2e/.auth/admin.json',
+		})
 		const page = await ctx.newPage()
 		await page.goto(THEMING_URL)
 		await setTokenSet(page, await requestToken(page), baselineTokenSet)
@@ -168,165 +237,202 @@ test.describe('rendered-surface contrast', () => {
 	})
 
 	for (const tokenSet of TOKEN_SETS) {
-		test(
-			`no painted surface falls below WCAG AA on the ${tokenSet} token set`,
-			async ({ page }) => {
-				await page.goto(THEMING_URL)
-				await setTokenSet(page, await requestToken(page), tokenSet)
+		test(`no painted surface falls below WCAG AA on the ${tokenSet} token set`, async ({
+			page,
+		}) => {
+			await page.goto(THEMING_URL)
+			await setTokenSet(page, await requestToken(page), tokenSet)
 
-				const failures: string[] = []
-				const measured: string[] = []
-				const undetermined: string[] = []
-				const absent: string[] = []
+			const failures: string[] = []
+			const measured: string[] = []
+			const undetermined: string[] = []
+			const absent: string[] = []
 
-				for (const surface of SURFACES) {
-					await page.goto(surface.route)
-					await page.waitForLoadState('domcontentloaded')
-					await page.waitForTimeout(1500)
+			for (const surface of SURFACES) {
+				await page.goto(surface.route)
+				await page.waitForLoadState('domcontentloaded')
+				await page.waitForTimeout(1500)
 
-					const result = await contrastOf(page, surface.selector)
-					if (result === null) {
-						// Absent is NOT a pass, but it is also not this app's
-						// defect — which of these components renders depends on
-						// the instance. CI's seed shows no info note card and
-						// this list was written against a rig that had one, so
-						// failing here failed on the FIXTURE. Recorded, and the
-						// coverage floor below is what stops that being silent.
-						absent.push(`${surface.route} ${surface.selector} (${surface.why})`)
-						continue
-					}
-					if ('undetermined' in result) {
-						undetermined.push(`${surface.selector} (${result.undetermined})`)
-						continue
-					}
-
-					measured.push(`${surface.selector} ${result.ratio}:1 (${result.fg} on ${result.bg})`)
-					if (result.ratio < surface.min) {
-						failures.push(
-							`${surface.route} ${surface.selector} — ${result.ratio}:1 `
-							+ `(${result.fg} on ${result.bg}), needs ${surface.min}:1 — ${surface.why}`,
-						)
-					}
+				const result = await contrastOf(page, surface.selector)
+				if (result === null) {
+					// Absent is NOT a pass, but it is also not this app's
+					// defect — which of these components renders depends on
+					// the instance. CI's seed shows no info note card and
+					// this list was written against a rig that had one, so
+					// failing here failed on the FIXTURE. Recorded, and the
+					// coverage floor below is what stops that being silent.
+					absent.push(
+						`${surface.route} ${surface.selector} (${surface.why})`,
+					)
+					continue
+				}
+				if ('undetermined' in result) {
+					undetermined.push(`${surface.selector} (${result.undetermined})`)
+					continue
 				}
 
-				// A COVERAGE FLOOR, because absent and undetermined surfaces are
-				// tolerated above and a run that skipped everything would
-				// otherwise print green over nothing. Half the list, rounded up:
-				// enough headroom for an instance that renders a different set of
-				// note cards, not enough for the selectors going stale wholesale.
-				const floor = Math.ceil(SURFACES.length / 2)
-				expect(
-					measured.length,
-					`only ${measured.length} of ${SURFACES.length} surfaces were measurable on ${tokenSet}, `
+				measured.push(
+					`${surface.selector} ${result.ratio}:1 (${result.fg} on ${result.bg})`,
+				)
+				if (result.ratio < surface.min) {
+					failures.push(
+						`${surface.route} ${surface.selector} — ${result.ratio}:1 `
+							+ `(${result.fg} on ${result.bg}), needs ${surface.min}:1 — ${surface.why}`,
+					)
+				}
+			}
+
+			// A COVERAGE FLOOR, because absent and undetermined surfaces are
+			// tolerated above and a run that skipped everything would
+			// otherwise print green over nothing. Half the list, rounded up:
+			// enough headroom for an instance that renders a different set of
+			// note cards, not enough for the selectors going stale wholesale.
+			const floor = Math.ceil(SURFACES.length / 2)
+			expect(
+				measured.length,
+				`only ${measured.length} of ${SURFACES.length} surfaces were measurable on ${tokenSet}, `
 					+ `below the floor of ${floor} — the selectors have probably gone stale.\n`
 					+ `  absent: ${absent.join(', ') || 'none'}\n`
 					+ `  undetermined: ${undetermined.join(', ') || 'none'}\n`
 					+ `  measured: ${measured.join(' | ') || 'none'}`,
-				).toBeGreaterThanOrEqual(floor)
-				expect(
-					failures,
-					`nldesign paints text below WCAG AA on the ${tokenSet} token set:\n  ${failures.join('\n  ')}\n\n`
+			).toBeGreaterThanOrEqual(floor)
+			expect(
+				failures,
+				`nldesign paints text below WCAG AA on the ${tokenSet} token set:\n  ${failures.join('\n  ')}\n\n`
 					+ `Measured: ${measured.join(' | ')}`,
-				).toEqual([])
-			},
-		)
+			).toEqual([])
+		})
 	}
 
-	test(
-		'the on-surface opt-out does not repaint links in body text',
-		async ({ page }) => {
-			// `--nldesign-color-on-surface` is read by two rules that want
-			// DIFFERENT foregrounds: body text and link text. Resetting it to a
-			// colour inside the dashboard's white widgets — rather than to
-			// `initial`, which restores each rule's own fallback — silently
-			// repaints every link there in body text. That regression was
-			// introduced by the contrast fix itself and is INVISIBLE to every
-			// assertion above, because body text on white passes AA comfortably.
-			//
-			// The token set is set explicitly, and to one using the nldesign
-			// design system: the rules under test do not exist in the others, so
-			// inheriting whatever set the previous test left behind makes this
-			// pass alone and fail in suite order. It did exactly that.
-			await page.goto(THEMING_URL)
-			await setTokenSet(page, await requestToken(page), 'rijkshuisstijl')
+	test('the on-surface opt-out does not repaint links in body text', async ({
+		page,
+	}) => {
+		// `--nldesign-color-on-surface` is read by two rules that want
+		// DIFFERENT foregrounds: body text and link text. Resetting it to a
+		// colour inside the dashboard's white widgets — rather than to
+		// `initial`, which restores each rule's own fallback — silently
+		// repaints every link there in body text. That regression was
+		// introduced by the contrast fix itself and is INVISIBLE to every
+		// assertion above, because body text on white passes AA comfortably.
+		//
+		// The token set is set explicitly, and to one using the nldesign
+		// design system: the rules under test do not exist in the others, so
+		// inheriting whatever set the previous test left behind makes this
+		// pass alone and fail in suite order. It did exactly that.
+		await page.goto(THEMING_URL)
+		await setTokenSet(page, await requestToken(page), 'rijkshuisstijl')
 
-			await page.goto('/apps/dashboard/')
-			await page.waitForLoadState('domcontentloaded')
-			await page.waitForTimeout(2000)
+		await page.goto('/apps/dashboard/')
+		await page.waitForLoadState('domcontentloaded')
+		await page.waitForTimeout(2000)
 
-			// Two arms, because whether the dashboard shows a widget CONTAINING a
-			// link depends on the instance's seed: the rig this was written on
-			// had Recommended Files, CI does not. The rendered arm is the better
-			// evidence, so it is preferred; the property arm is exact, always
-			// available, and fails on the same regression — the reset resolves to
-			// a colour instead of to nothing.
-			const seen = await page.evaluate(() => {
-				const root = getComputedStyle(document.documentElement)
-				const hex = (v: string) => {
-					const m = v.match(/rgba?\((\d+), (\d+), (\d+)/)
-					return m ? '#' + [m[1], m[2], m[3]].map(n => Number(n).toString(16).padStart(2, '0')).join('') : v
-				}
-				const panel = document.querySelector('#app-dashboard [class*="panel"], #app-dashboard [class*="widget"]')
-				const link = panel ? panel.querySelector('a') : null
-				return {
-					panelFound: panel !== null,
-					// `initial` computes to the empty string; a colour-named
-					// reset computes to that colour. That is the whole test.
-					onSurface: panel ? getComputedStyle(panel).getPropertyValue('--nldesign-color-on-surface').trim() : null,
-					linkColor: link ? hex(getComputedStyle(link).color) : null,
-					linkToken: root.getPropertyValue('--nldesign-color-link').trim().toLowerCase(),
-					textToken: root.getPropertyValue('--nldesign-color-text').trim().toLowerCase(),
-				}
-			})
+		// Two arms, because whether the dashboard shows a widget CONTAINING a
+		// link depends on the instance's seed: the rig this was written on
+		// had Recommended Files, CI does not. The rendered arm is the better
+		// evidence, so it is preferred; the property arm is exact, always
+		// available, and fails on the same regression — the reset resolves to
+		// a colour instead of to nothing.
+		const seen = await page.evaluate(() => {
+			const root = getComputedStyle(document.documentElement)
+			const hex = (v: string) => {
+				const m = v.match(/rgba?\((\d+), (\d+), (\d+)/)
+				return m
+					? '#'
+							+ [m[1], m[2], m[3]]
+								.map((n) => Number(n).toString(16).padStart(2, '0'))
+								.join('')
+					: v
+			}
+			const panel = document.querySelector(
+				'#app-dashboard [class*="panel"], #app-dashboard [class*="widget"]',
+			)
+			const link = panel ? panel.querySelector('a') : null
+			return {
+				panelFound: panel !== null,
+				// `initial` computes to the empty string; a colour-named
+				// reset computes to that colour. That is the whole test.
+				onSurface: panel
+					? getComputedStyle(panel)
+							.getPropertyValue('--nldesign-color-on-surface')
+							.trim()
+					: null,
+				linkColor: link ? hex(getComputedStyle(link).color) : null,
+				linkToken: root
+					.getPropertyValue('--nldesign-color-link')
+					.trim()
+					.toLowerCase(),
+				textToken: root
+					.getPropertyValue('--nldesign-color-text')
+					.trim()
+					.toLowerCase(),
+			}
+		})
 
-			// No panel at all means the guard is inert — that is not a pass.
-			expect(seen.panelFound, 'no panel or widget inside #app-dashboard — this guard measured nothing').toBe(true)
+		// No panel at all means the guard is inert — that is not a pass.
+		expect(
+			seen.panelFound,
+			'no panel or widget inside #app-dashboard — this guard measured nothing',
+		).toBe(true)
 
-			expect(
-				seen.onSurface,
-				`the dashboard panel reset --nldesign-color-on-surface to "${seen.onSurface}" instead of `
+		expect(
+			seen.onSurface,
+			`the dashboard panel reset --nldesign-color-on-surface to "${seen.onSurface}" instead of `
 				+ '`initial`. A colour there is read by BOTH the text rule and the link rule, so it repaints '
 				+ `every link in the widget as body text (${seen.textToken}).`,
-			).toBe('')
+		).toBe('')
 
-			if (seen.linkColor !== null) {
-				expect(
-					seen.linkColor,
-					`a link inside a dashboard widget renders ${seen.linkColor}, not the link token `
+		if (seen.linkColor !== null) {
+			expect(
+				seen.linkColor,
+				`a link inside a dashboard widget renders ${seen.linkColor}, not the link token `
 					+ `${seen.linkToken}. If it equals the body-text token ${seen.textToken}, an on-surface `
 					+ 'opt-out named a colour where it should have used `initial`.',
-				).toBe(seen.linkToken)
+			).toBe(seen.linkToken)
+		}
+	})
+
+	test('every status note card carries its body text at AA, whatever variants ship', async ({
+		page,
+	}) => {
+		await page.goto('/settings/admin')
+		await page.waitForLoadState('domcontentloaded')
+		await page.waitForTimeout(1500)
+
+		const variants = await page.evaluate(() => [
+			...new Set(
+				[...document.querySelectorAll('[class*="notecard--"]')].flatMap(
+					(e) =>
+						[...e.classList].filter((c) => c.startsWith('notecard--')),
+				),
+			),
+		])
+
+		expect(
+			variants.length,
+			'no note cards on /settings/admin — the sweep measured nothing',
+		).toBeGreaterThan(0)
+
+		const failures: string[] = []
+		let measured = 0
+		for (const variant of variants) {
+			const result = await contrastOf(page, `.${variant}`)
+			if (result === null || 'undetermined' in result) continue
+			measured++
+			if (result.ratio < AA_NORMAL) {
+				failures.push(
+					`.${variant} — ${result.ratio}:1 (${result.fg} on ${result.bg})`,
+				)
 			}
-		},
-	)
+		}
 
-	test(
-		'every status note card carries its body text at AA, whatever variants ship',
-		async ({ page }) => {
-			await page.goto('/settings/admin')
-			await page.waitForLoadState('domcontentloaded')
-			await page.waitForTimeout(1500)
+		expect(
+			measured,
+			'note card variants were found but none was measurable',
+		).toBeGreaterThan(0)
 
-			const variants = await page.evaluate(() =>
-				[...new Set([...document.querySelectorAll('[class*="notecard--"]')]
-					.flatMap(e => [...e.classList].filter(c => c.startsWith('notecard--'))))])
-
-			expect(variants.length, 'no note cards on /settings/admin — the sweep measured nothing').toBeGreaterThan(0)
-
-			const failures: string[] = []
-			let measured = 0
-			for (const variant of variants) {
-				const result = await contrastOf(page, `.${variant}`)
-				if (result === null || 'undetermined' in result) continue
-				measured++
-				if (result.ratio < AA_NORMAL) {
-					failures.push(`.${variant} — ${result.ratio}:1 (${result.fg} on ${result.bg})`)
-				}
-			}
-
-			expect(measured, 'note card variants were found but none was measurable').toBeGreaterThan(0)
-
-			expect(failures, `note card fills below WCAG AA:\n  ${failures.join('\n  ')}`).toEqual([])
-		},
-	)
+		expect(
+			failures,
+			`note card fills below WCAG AA:\n  ${failures.join('\n  ')}`,
+		).toEqual([])
+	})
 })

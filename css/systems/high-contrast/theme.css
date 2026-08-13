@@ -32,7 +32,9 @@ body {
 	--color-primary-element-hover: var(--nldesign-color-primary-hover) !important;
 	--color-primary-element-light: var(--nldesign-color-primary-light) !important;
 	--color-primary-element-light-text: var(--nldesign-color-primary) !important;
-	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover) !important;
+	--color-primary-element-light-hover: var(
+		--nldesign-color-primary-light-hover
+	) !important;
 
 	/* Surfaces. */
 	--color-main-background: var(--nldesign-color-background) !important;

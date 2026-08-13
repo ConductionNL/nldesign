@@ -1,0 +1,48 @@
+# NOTE: prettier 3 reads `.gitignore` as an ignore path too, so anything already
+# gitignored (build/, dist/, coverage/, phpmetrics/) is excluded even without an
+# entry here. The entries below are kept explicit anyway — an ignore that
+# depends on another file's contents is one refactor away from switching off.
+#
+# ⚠️ `js/` is deliberately NOT listed. In most fleet apps `js/` is webpack
+# output; in nldesign there is no bundler and `js/admin.js`, `js/lib/` and
+# `js/preview-banner.js` are hand-authored SOURCE served directly as <script>.
+# Ignoring `js/` here would exclude the app's actual JavaScript.
+
+dist/
+build/
+node_modules/
+vendor/
+coverage/
+coverage-frontend/
+coverage-vitest/
+docs/
+*.min.*
+
+# Written by the translation workflow.
+l10n/
+
+# GENERATED DESIGN TOKENS — every file here carries a "do not edit / will be
+# overwritten" banner and is produced by the nl-design-system/themes sync
+# workflow or by nldesign's own DarkPaletteService (whose banner embeds a
+# sha256 of its source). Measured: prettier would rewrite 79 of them. Letting
+# it own their formatting means the formatter and the generator rewrite the
+# same files in opposite directions on every sync.
+css/tokens/
+
+# GENERATED, AND DRIFT-CHECKED IN CI. Both are emitted by
+# scripts/generate-lasuite-tokens.mjs and byte-compared against the committed
+# copy by `npm run test:lasuite-tokens` / `test:lasuite-override`. Reformatting
+# them fails those checks immediately.
+css/systems/lasuite/defaults.css
+css/systems/lasuite/brand-override.css
+
+# VENDORED UPSTREAM, AND GENERATOR INPUT. This is the deployed Cunningham token
+# dump that generate-lasuite-tokens.mjs READS to produce brand-override.css.
+# Reformatting the input changes the output, so the drift check would fail on a
+# file nobody edited.
+scripts/sources/
+
+# Fixtures that are deliberately malformed — a bad selector and a broken tokens
+# file — so the validation tests have something to reject. Formatting them
+# would remove the very defect under test.
+tests/integration/fixtures/

@@ -33,16 +33,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 function installInitialState(state) {
 	global.OCP = Object.assign(global.OCP || {}, {
 		InitialState: {
-			loadState: (app, key, fallback) => (
-				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
-			),
+			loadState: (app, key, fallback) =>
+				Object.prototype.hasOwnProperty.call(state, key)
+					? state[key]
+					: fallback,
 		},
 	})
 }
 
 /** Build the minimal settings-page DOM the script expects, per token-set config. */
 function buildDom(tokenSets, currentTokenSet) {
-	installInitialState({ tokenSets, currentTokenSet, activePreview: null, iconPackSource: '' })
+	installInitialState({
+		tokenSets,
+		currentTokenSet,
+		activePreview: null,
+		iconPackSource: '',
+	})
 	document.body.innerHTML = `
 		<div id="nldesign-settings" class="section">
 			<select id="nldesign-token-set-select" name="nldesign-token-set">
@@ -68,7 +74,10 @@ function installGlobals() {
 		if (params === undefined) {
 			return text
 		}
-		return Object.keys(params).reduce((acc, key) => acc.replace('{' + key + '}', params[key]), text)
+		return Object.keys(params).reduce(
+			(acc, key) => acc.replace('{' + key + '}', params[key]),
+			text,
+		)
 	}
 	global.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 	global.OC = {
@@ -88,7 +97,10 @@ function installFetchRouter(routes, postLog) {
 		}
 		for (const [match, body] of routes) {
 			if (url.indexOf(match) !== -1) {
-				return Promise.resolve({ status: 200, json: () => Promise.resolve(body) })
+				return Promise.resolve({
+					status: 200,
+					json: () => Promise.resolve(body),
+				})
 			}
 		}
 		return Promise.resolve({ status: 200, json: () => Promise.resolve({}) })
@@ -146,14 +158,17 @@ describe('admin.js dark mode', () => {
 				[
 					['tokenset-preview', { error: 'not applicable' }],
 					['/settings/tokenset', { status: 'ok' }],
-					['/settings/theming', {
-						primary_color: '#aaaaaa',
-						background_color: '#bbbbbb',
-						has_custom_logo: false,
-						has_custom_background: false,
-					}],
+					[
+						'/settings/theming',
+						{
+							primary_color: '#aaaaaa',
+							background_color: '#bbbbbb',
+							has_custom_logo: false,
+							has_custom_background: false,
+						},
+					],
 				],
-				postLog
+				postLog,
 			)
 
 			await loadAdminScript()
@@ -182,17 +197,26 @@ describe('admin.js dark mode', () => {
 			const overlay = await openThemingDialog(TOKEN_SET_WITHOUT_DARK_LOGO)
 			expect(overlay).not.toBeNull()
 
-			expect(overlay.querySelector('.nldesign-dialog-dark-logo-row')).toBeNull()
+			expect(
+				overlay.querySelector('.nldesign-dialog-dark-logo-row'),
+			).toBeNull()
 		})
 
 		it('never includes logo_dark in the POST /settings/theming payload on confirm', async () => {
 			const postLog = []
-			const overlay = await openThemingDialog(TOKEN_SET_WITH_DARK_LOGO, postLog)
+			const overlay = await openThemingDialog(
+				TOKEN_SET_WITH_DARK_LOGO,
+				postLog,
+			)
 
-			overlay.querySelector('.nldesign-dialog-confirm').dispatchEvent(new window.Event('click', { bubbles: true }))
+			overlay
+				.querySelector('.nldesign-dialog-confirm')
+				.dispatchEvent(new window.Event('click', { bubbles: true }))
 			await flush()
 
-			const themingPost = postLog.find((entry) => entry.url.indexOf('/settings/theming') !== -1)
+			const themingPost = postLog.find(
+				(entry) => entry.url.indexOf('/settings/theming') !== -1,
+			)
 			expect(themingPost).toBeTruthy()
 			expect(themingPost.body).not.toContain('logo_dark')
 		})
@@ -212,7 +236,9 @@ describe('admin.js dark mode', () => {
 
 			await flush()
 
-			const post = postLog.find((entry) => entry.url.indexOf('/settings/dark-variants') !== -1)
+			const post = postLog.find(
+				(entry) => entry.url.indexOf('/settings/dark-variants') !== -1,
+			)
 			expect(post).toBeTruthy()
 			expect(JSON.parse(post.body)).toEqual({ enabled: false })
 		})

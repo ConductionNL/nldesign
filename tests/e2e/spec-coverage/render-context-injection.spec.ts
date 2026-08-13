@@ -35,24 +35,34 @@ test.describe('render-context CSS injection', () => {
 
 	test('the login page (guest render) is themed too', async ({ browser }) => {
 		// A fresh context with no stored session lands on the real login page.
-		const ctx = await browser.newContext({ storageState: { cookies: [], origins: [] } })
+		const ctx = await browser.newContext({
+			storageState: { cookies: [], origins: [] },
+		})
 		const page = await ctx.newPage()
 		await page.goto('/index.php/login')
-		await page.locator('input[name="user"]').waitFor({ state: 'visible', timeout: 30_000 })
+		await page
+			.locator('input[name="user"]')
+			.waitFor({ state: 'visible', timeout: 30_000 })
 
 		expect((await nldesignStyles(page)).length).toBeGreaterThan(0)
 		await ctx.close()
 	})
 
-	test('an error page keeps the huisstijl (previously unthemed)', async ({ page }) => {
-		await page.goto('/index.php/apps/definitely-not-an-app/', { waitUntil: 'domcontentloaded' })
+	test('an error page keeps the huisstijl (previously unthemed)', async ({
+		page,
+	}) => {
+		await page.goto('/index.php/apps/definitely-not-an-app/', {
+			waitUntil: 'domcontentloaded',
+		})
 		expect(
 			(await nldesignStyles(page)).length,
 			'error/404 renders must stay branded',
 		).toBeGreaterThan(0)
 	})
 
-	test('the active huisstijl is published pre-login via the OCS capability', async ({ request }) => {
+	test('the active huisstijl is published pre-login via the OCS capability', async ({
+		request,
+	}) => {
 		const res = await request.get('/ocs/v2.php/cloud/capabilities?format=json', {
 			headers: { 'OCS-APIRequest': 'true' },
 		})

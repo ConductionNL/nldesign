@@ -16,7 +16,7 @@
  * so it can be served as a plain <script> alongside admin.js without a bundler.
  */
 
-(function (root, factory) {
+;(function (root, factory) {
 	var api = factory()
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = api
@@ -24,7 +24,7 @@
 	if (root) {
 		root.NldesignTokenTransforms = api
 	}
-}(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function () {
 	'use strict'
 
 	/**
@@ -37,7 +37,9 @@
 	 */
 	function darkenHex(hex, fraction) {
 		var m = /^#([0-9a-fA-F]{6})$/.exec(hex)
-		if (m === null) { return hex }
+		if (m === null) {
+			return hex
+		}
 		var f = Math.min(1, Math.max(0, Number(fraction) || 0))
 		var r = Math.max(0, Math.round(parseInt(m[1].substring(0, 2), 16) * (1 - f)))
 		var g = Math.max(0, Math.round(parseInt(m[1].substring(2, 4), 16) * (1 - f)))
@@ -67,9 +69,10 @@
 	 * @return {{primary: string, primaryHover: string, primaryText: string}} The palette.
 	 */
 	function getPreviewColors(tokenSet) {
-		var primary = (tokenSet && tokenSet.theming && tokenSet.theming.primary_color)
-			? tokenSet.theming.primary_color
-			: '#333333'
+		var primary =
+			tokenSet && tokenSet.theming && tokenSet.theming.primary_color
+				? tokenSet.theming.primary_color
+				: '#333333'
 		return {
 			primary: primary,
 			primaryHover: darkenHex(primary, 0.1),
@@ -132,7 +135,7 @@
 		}
 
 		var byReason = {}
-		entries.forEach(function(entry) {
+		entries.forEach(function (entry) {
 			var reason = (entry && entry.reason) || 'unknown'
 			if (byReason[reason] === undefined) {
 				byReason[reason] = []
@@ -140,9 +143,11 @@
 			byReason[reason].push(entry)
 		})
 
-		return Object.keys(byReason).sort().map(function(reason) {
-			return { reason: reason, items: byReason[reason] }
-		})
+		return Object.keys(byReason)
+			.sort()
+			.map(function (reason) {
+				return { reason: reason, items: byReason[reason] }
+			})
 	}
 
 	return {
@@ -152,4 +157,4 @@
 		designSystemLabel: designSystemLabel,
 		groupDiagnosticsByReason: groupDiagnosticsByReason,
 	}
-}))
+})

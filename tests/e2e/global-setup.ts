@@ -14,9 +14,13 @@ const STORAGE_STATE = path.join(AUTH_DIR, 'admin.json')
 async function ensureNextcloudReachable(baseURL: string): Promise<void> {
 	const ctx = await request.newContext()
 	try {
-		const res = await ctx.get(`${baseURL}/status.php`, { failOnStatusCode: false })
+		const res = await ctx.get(`${baseURL}/status.php`, {
+			failOnStatusCode: false,
+		})
 		if (!res.ok()) {
-			throw new Error(`Nextcloud status.php returned ${res.status()} at ${baseURL}.`)
+			throw new Error(
+				`Nextcloud status.php returned ${res.status()} at ${baseURL}.`,
+			)
 		}
 		const body = await res.json().catch(() => ({}))
 		if (!body || body.installed !== true) {
@@ -28,7 +32,8 @@ async function ensureNextcloudReachable(baseURL: string): Promise<void> {
 }
 
 export default async function globalSetup(config: FullConfig): Promise<void> {
-	const baseURL = (config.projects[0]?.use?.baseURL as string | undefined)
+	const baseURL =
+		(config.projects[0]?.use?.baseURL as string | undefined)
 		?? process.env.NEXTCLOUD_URL
 		?? 'http://localhost:8080'
 	const username = process.env.NC_ADMIN_USER ?? 'admin'
@@ -91,9 +96,14 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
 	// and failing here would abort every suite over a slow render rather than a
 	// real problem. Warn and continue.
 	try {
-		await page.locator('#header, header.header').first().waitFor({ state: 'attached', timeout: 30_000 })
+		await page
+			.locator('#header, header.header')
+			.first()
+			.waitFor({ state: 'attached', timeout: 30_000 })
 	} catch {
-		console.warn('[global-setup] logged in, but the app shell had not rendered yet — continuing')
+		console.warn(
+			'[global-setup] logged in, but the app shell had not rendered yet — continuing',
+		)
 	}
 
 	await context.storageState({ path: STORAGE_STATE })

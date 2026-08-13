@@ -28,7 +28,9 @@ async function dismissThemingSyncDialog(page: Page): Promise<void> {
 		if (await cancelBtn.isVisible().catch(() => false)) {
 			await cancelBtn.click()
 		}
-		await expect(syncDialog).not.toBeVisible({ timeout: 5_000 }).catch(() => {})
+		await expect(syncDialog)
+			.not.toBeVisible({ timeout: 5_000 })
+			.catch(() => {})
 	}
 }
 
@@ -38,23 +40,56 @@ async function dismissThemingSyncDialog(page: Page): Promise<void> {
  * Returns the first option value that would produce the apply dialog,
  * or empty string if none found.
  */
-async function findOptionWithChanges(page: Page, select: ReturnType<Page['locator']>, originalValue: string): Promise<string> {
+async function findOptionWithChanges(
+	page: Page,
+	select: ReturnType<Page['locator']>,
+	originalValue: string,
+): Promise<string> {
 	const allOptions = await select.locator('option').all()
 	for (const opt of allOptions) {
-		const v = await opt.getAttribute('value') ?? ''
+		const v = (await opt.getAttribute('value')) ?? ''
 		if (v === originalValue) continue
 
 		// Ask the page JS to simulate the same check the apply dialog does
 		const hasDiffs = await page.evaluate(async (tokenSetId: string) => {
-			const url = (window as Window & typeof globalThis & { OC: { generateUrl: (p: string) => string; requestToken: string } }).OC.generateUrl('/apps/nldesign/settings/tokenset-preview/' + encodeURIComponent(tokenSetId))
+			const url = (
+				window as Window
+					& typeof globalThis & {
+						OC: {
+							generateUrl: (p: string) => string
+							requestToken: string
+						}
+					}
+			).OC.generateUrl(
+				'/apps/nldesign/settings/tokenset-preview/'
+					+ encodeURIComponent(tokenSetId),
+			)
 			try {
-				const r = await fetch(url, { headers: { requesttoken: (window as Window & typeof globalThis & { OC: { generateUrl: (p: string) => string; requestToken: string } }).OC.requestToken } })
-				const data = await r.json() as { resolved?: Record<string, string> }
+				const r = await fetch(url, {
+					headers: {
+						requesttoken: (
+							window as Window
+								& typeof globalThis & {
+									OC: {
+										generateUrl: (p: string) => string
+										requestToken: string
+									}
+								}
+						).OC.requestToken,
+					},
+				})
+				const data = (await r.json()) as {
+					resolved?: Record<string, string>
+				}
 				const resolved = data.resolved || {}
 				const keys = Object.keys(resolved)
 				if (keys.length === 0) return false
 				const rootStyle = getComputedStyle(document.documentElement)
-				return keys.some(k => rootStyle.getPropertyValue(k).trim() !== (resolved[k] || '').trim())
+				return keys.some(
+					(k) =>
+						rootStyle.getPropertyValue(k).trim()
+						!== (resolved[k] || '').trim(),
+				)
 			} catch (e) {
 				return false
 			}
@@ -66,37 +101,45 @@ async function findOptionWithChanges(page: Page, select: ReturnType<Page['locato
 }
 
 test.describe('token-set-apply-dialog', () => {
-
 	// -----------------------------------------------------------------------
 	// Requirement: Dialog Trigger
 	// -----------------------------------------------------------------------
 
-	test(
-		// @e2e openspec/specs/token-set-apply-dialog/spec.md#admin-selects-a-new-token-set
-		'Selecting a different token set triggers the apply dialog',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
-			await dismissThemingSyncDialog(page)
+	test(// @e2e openspec/specs/token-set-apply-dialog/spec.md#admin-selects-a-new-token-set
+	'Selecting a different token set triggers the apply dialog', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
+		await dismissThemingSyncDialog(page)
 
-			const select = page.locator('#nldesign-token-set-select')
-			const originalValue = await select.inputValue()
+		const select = page.locator('#nldesign-token-set-select')
+		const originalValue = await select.inputValue()
 
-			// Find a token set whose CSS values actually differ (will produce the dialog)
-			const targetValue = await findOptionWithChanges(page, select, originalValue)
-			expect(targetValue, 'Expected at least one token set to differ from the current').toBeTruthy()
+		// Find a token set whose CSS values actually differ (will produce the dialog)
+		const targetValue = await findOptionWithChanges(page, select, originalValue)
+		expect(
+			targetValue,
+			'Expected at least one token set to differ from the current',
+		).toBeTruthy()
 
-			// Change the dropdown
-			await select.selectOption(targetValue)
+		// Change the dropdown
+		await select.selectOption(targetValue)
 
-			// The apply dialog overlay must appear (JS fires openTokenSetApplyDialog)
-			await expect(page.locator('#nldesign-apply-dialog-overlay')).toBeVisible({ timeout: 10_000 })
+		// The apply dialog overlay must appear (JS fires openTokenSetApplyDialog)
+		await expect(page.locator('#nldesign-apply-dialog-overlay')).toBeVisible({
+			timeout: 10_000,
+		})
 
-			// Cancel to restore state (does NOT update IConfig)
-			await page.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel').first().click()
-			await expect(page.locator('#nldesign-apply-dialog-overlay')).not.toBeVisible()
-		},
-	)
+		// Cancel to restore state (does NOT update IConfig)
+		await page
+			.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel')
+			.first()
+			.click()
+		await expect(
+			page.locator('#nldesign-apply-dialog-overlay'),
+		).not.toBeVisible()
+	})
 
 	// Scenario: Admin selects the same token set that is already active
 	// @e2e exclude openspec/specs/token-set-apply-dialog/spec.md#admin-selects-the-same-token-set-that-is-already-active
@@ -107,28 +150,30 @@ test.describe('token-set-apply-dialog', () => {
 	// Requirement: Resolved Value Comparison
 	// -----------------------------------------------------------------------
 
-	test(
-		// @e2e openspec/specs/token-set-apply-dialog/spec.md#dialog-shows-only-changed-tokens
-		'Apply dialog shows token rows when token set differs',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
-			await dismissThemingSyncDialog(page)
+	test(// @e2e openspec/specs/token-set-apply-dialog/spec.md#dialog-shows-only-changed-tokens
+	'Apply dialog shows token rows when token set differs', async ({ page }) => {
+		await page.goto(THEMING_URL)
+		await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
+		await dismissThemingSyncDialog(page)
 
-			const select = page.locator('#nldesign-token-set-select')
-			const originalValue = await select.inputValue()
-			const targetValue = await findOptionWithChanges(page, select, originalValue)
-			expect(targetValue).toBeTruthy()
+		const select = page.locator('#nldesign-token-set-select')
+		const originalValue = await select.inputValue()
+		const targetValue = await findOptionWithChanges(page, select, originalValue)
+		expect(targetValue).toBeTruthy()
 
-			await select.selectOption(targetValue)
-			await expect(page.locator('#nldesign-apply-dialog-overlay')).toBeVisible({ timeout: 10_000 })
+		await select.selectOption(targetValue)
+		await expect(page.locator('#nldesign-apply-dialog-overlay')).toBeVisible({
+			timeout: 10_000,
+		})
 
-			// The dialog must contain at least a header
-			await expect(page.locator('#nldesign-apply-dialog-overlay h3')).toBeVisible()
+		// The dialog must contain at least a header
+		await expect(page.locator('#nldesign-apply-dialog-overlay h3')).toBeVisible()
 
-			await page.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel').first().click()
-		},
-	)
+		await page
+			.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel')
+			.first()
+			.click()
+	})
 
 	// Scenario: Current value is from custom-overrides.css
 	// @e2e exclude openspec/specs/token-set-apply-dialog/spec.md#current-value-is-from-custom-overrides.css
@@ -142,59 +187,61 @@ test.describe('token-set-apply-dialog', () => {
 	// Requirement: Checkbox Selection
 	// -----------------------------------------------------------------------
 
-	test(
-		// @e2e openspec/specs/token-set-apply-dialog/spec.md#all-changes-selected-by-default
-		'Apply dialog checkboxes are all checked by default',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
-			await dismissThemingSyncDialog(page)
+	test(// @e2e openspec/specs/token-set-apply-dialog/spec.md#all-changes-selected-by-default
+	'Apply dialog checkboxes are all checked by default', async ({ page }) => {
+		await page.goto(THEMING_URL)
+		await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
+		await dismissThemingSyncDialog(page)
 
-			const select = page.locator('#nldesign-token-set-select')
-			const originalValue = await select.inputValue()
-			const targetValue = await findOptionWithChanges(page, select, originalValue)
-			expect(targetValue).toBeTruthy()
+		const select = page.locator('#nldesign-token-set-select')
+		const originalValue = await select.inputValue()
+		const targetValue = await findOptionWithChanges(page, select, originalValue)
+		expect(targetValue).toBeTruthy()
 
-			await select.selectOption(targetValue)
-			const overlay = page.locator('#nldesign-apply-dialog-overlay')
-			await expect(overlay).toBeVisible({ timeout: 10_000 })
+		await select.selectOption(targetValue)
+		const overlay = page.locator('#nldesign-apply-dialog-overlay')
+		await expect(overlay).toBeVisible({ timeout: 10_000 })
 
-			// All checkboxes in the dialog must be checked
-			const checkboxes = overlay.locator('.nldesign-apply-check')
-			const count = await checkboxes.count()
-			if (count > 0) {
-				for (let i = 0; i < count; i++) {
-					await expect(checkboxes.nth(i)).toBeChecked()
-				}
+		// All checkboxes in the dialog must be checked
+		const checkboxes = overlay.locator('.nldesign-apply-check')
+		const count = await checkboxes.count()
+		if (count > 0) {
+			for (let i = 0; i < count; i++) {
+				await expect(checkboxes.nth(i)).toBeChecked()
 			}
+		}
 
-			await page.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel').first().click()
-		},
-	)
+		await page
+			.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel')
+			.first()
+			.click()
+	})
 
-	test(
-		// @e2e openspec/specs/token-set-apply-dialog/spec.md#select-all-deselect-all
-		'Select all / Deselect all buttons are present in apply dialog',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
-			await dismissThemingSyncDialog(page)
+	test(// @e2e openspec/specs/token-set-apply-dialog/spec.md#select-all-deselect-all
+	'Select all / Deselect all buttons are present in apply dialog', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
+		await dismissThemingSyncDialog(page)
 
-			const select = page.locator('#nldesign-token-set-select')
-			const originalValue = await select.inputValue()
-			const targetValue = await findOptionWithChanges(page, select, originalValue)
-			expect(targetValue).toBeTruthy()
+		const select = page.locator('#nldesign-token-set-select')
+		const originalValue = await select.inputValue()
+		const targetValue = await findOptionWithChanges(page, select, originalValue)
+		expect(targetValue).toBeTruthy()
 
-			await select.selectOption(targetValue)
-			const overlay = page.locator('#nldesign-apply-dialog-overlay')
-			await expect(overlay).toBeVisible({ timeout: 10_000 })
+		await select.selectOption(targetValue)
+		const overlay = page.locator('#nldesign-apply-dialog-overlay')
+		await expect(overlay).toBeVisible({ timeout: 10_000 })
 
-			await expect(overlay.locator('#nldesign-apply-select-all')).toBeVisible()
-			await expect(overlay.locator('#nldesign-apply-deselect-all')).toBeVisible()
+		await expect(overlay.locator('#nldesign-apply-select-all')).toBeVisible()
+		await expect(overlay.locator('#nldesign-apply-deselect-all')).toBeVisible()
 
-			await page.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel').first().click()
-		},
-	)
+		await page
+			.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel')
+			.first()
+			.click()
+	})
 
 	// Scenario: Admin unchecks a row
 	// @e2e exclude openspec/specs/token-set-apply-dialog/spec.md#admin-unchecks-a-row
@@ -208,26 +255,32 @@ test.describe('token-set-apply-dialog', () => {
 	// @e2e exclude openspec/specs/token-set-apply-dialog/spec.md#admin-unchecks-a-row-1
 	// Live preview via inline style injection — requires specific token values to assert.
 
-	test(
-		// @e2e openspec/specs/token-set-apply-dialog/spec.md#dialog-closed-with-cancel
-		'Cancelling apply dialog closes it without applying changes',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
-			await dismissThemingSyncDialog(page)
+	test(// @e2e openspec/specs/token-set-apply-dialog/spec.md#dialog-closed-with-cancel
+	'Cancelling apply dialog closes it without applying changes', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForSelector('#nldesign-token-set-select', { timeout: 15_000 })
+		await dismissThemingSyncDialog(page)
 
-			const select = page.locator('#nldesign-token-set-select')
-			const originalValue = await select.inputValue()
-			const targetValue = await findOptionWithChanges(page, select, originalValue)
-			expect(targetValue).toBeTruthy()
+		const select = page.locator('#nldesign-token-set-select')
+		const originalValue = await select.inputValue()
+		const targetValue = await findOptionWithChanges(page, select, originalValue)
+		expect(targetValue).toBeTruthy()
 
-			await select.selectOption(targetValue)
-			await expect(page.locator('#nldesign-apply-dialog-overlay')).toBeVisible({ timeout: 10_000 })
+		await select.selectOption(targetValue)
+		await expect(page.locator('#nldesign-apply-dialog-overlay')).toBeVisible({
+			timeout: 10_000,
+		})
 
-			await page.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel').first().click()
-			await expect(page.locator('#nldesign-apply-dialog-overlay')).not.toBeVisible()
-		},
-	)
+		await page
+			.locator('#nldesign-apply-dialog-overlay .nldesign-dialog-cancel')
+			.first()
+			.click()
+		await expect(
+			page.locator('#nldesign-apply-dialog-overlay'),
+		).not.toBeVisible()
+	})
 
 	// -----------------------------------------------------------------------
 	// Requirement: Apply Action
@@ -252,5 +305,4 @@ test.describe('token-set-apply-dialog', () => {
 	// Scenario: Active token set in config after apply
 	// @e2e exclude openspec/specs/token-set-apply-dialog/spec.md#active-token-set-in-config-after-apply
 	// Requires Apply click and IConfig verification — mutates env.
-
 })

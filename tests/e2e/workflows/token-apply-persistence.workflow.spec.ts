@@ -62,47 +62,69 @@ test.describe('workflow: token-apply persistence', () => {
 		await page.close()
 	})
 
-	test('editing a token + Save overrides PERSISTS to the backend (file + GET)', async ({ page }) => {
+	test('editing a token + Save overrides PERSISTS to the backend (file + GET)', async ({
+		page,
+	}) => {
 		await openTheming(page)
 		const token = await requestToken(page)
 
 		// Drive the real editor UI: type the value into the --color-primary text field.
-		const textField = page.locator(`.nldesign-color-text[data-token="${TEST_TOKEN}"]`)
+		const textField = page.locator(
+			`.nldesign-color-text[data-token="${TEST_TOKEN}"]`,
+		)
 		await expect(textField).toBeVisible()
 		await textField.fill(TEST_VALUE)
 
 		// The editor marks the row dirty (custom badge appears) — UI feedback.
 		await expect(
-			page.locator(`[data-token-row="${TEST_TOKEN}"] .nldesign-token-custom-badge`),
+			page.locator(
+				`[data-token-row="${TEST_TOKEN}"] .nldesign-token-custom-badge`,
+			),
 		).toHaveCount(1)
-		await expect(page.locator('#nldesign-save-status')).toHaveText(/Unsaved changes/i)
+		await expect(page.locator('#nldesign-save-status')).toHaveText(
+			/Unsaved changes/i,
+		)
 
 		// Click the real Save overrides button.
 		await page.locator('#nldesign-save-btn').click()
 		// Dirty status clears on success.
-		await expect(page.locator('#nldesign-save-status')).toHaveText('', { timeout: 10_000 })
+		await expect(page.locator('#nldesign-save-status')).toHaveText('', {
+			timeout: 10_000,
+		})
 
 		// (a) Backend write: GET /settings/overrides now returns the value.
 		const persisted = await getOverrides(page, token)
-		expect(persisted[TEST_TOKEN], 'override should be persisted in backend GET').toBe(TEST_VALUE)
+		expect(
+			persisted[TEST_TOKEN],
+			'override should be persisted in backend GET',
+		).toBe(TEST_VALUE)
 
 		// (a') The generated custom-overrides.css file on disk contains the declaration.
 		// It is emitted with !important so the user override wins the cascade over the
 		// nldesign design-system stylesheets and Nextcloud core theming.
 		const css = await getServedOverrideCss(page)
-		expect(css, 'custom-overrides.css should contain the saved declaration').toContain(`${TEST_TOKEN}: ${TEST_VALUE} !important;`)
+		expect(
+			css,
+			'custom-overrides.css should contain the saved declaration',
+		).toContain(`${TEST_TOKEN}: ${TEST_VALUE} !important;`)
 	})
 
-	test('after a FRESH RELOAD the editor shows the persisted override', async ({ page }) => {
+	test('after a FRESH RELOAD the editor shows the persisted override', async ({
+		page,
+	}) => {
 		// Fresh navigation — proves the value survives a round trip, not just in-memory state.
 		await openTheming(page)
 
-		const textField = page.locator(`.nldesign-color-text[data-token="${TEST_TOKEN}"]`)
+		const textField = page.locator(
+			`.nldesign-color-text[data-token="${TEST_TOKEN}"]`,
+		)
 		await expect(textField).toHaveValue(TEST_VALUE)
 
 		// The custom badge is rendered for a persisted (non-default) value.
 		await expect(
-			page.locator(`[data-token-row="${TEST_TOKEN}"] .nldesign-token-custom-badge`),
+			page.locator(
+				`[data-token-row="${TEST_TOKEN}"] .nldesign-token-custom-badge`,
+			),
 		).toHaveCount(1)
 	})
 
@@ -119,13 +141,17 @@ test.describe('workflow: token-apply persistence', () => {
 	 * scoped to user-set overrides only; it does not blanket-!important the full
 	 * token registry.
 	 */
-	test('saved override is reflected in the LIVE CSS variable after reload', async ({ page }) => {
+	test('saved override is reflected in the LIVE CSS variable after reload', async ({
+		page,
+	}) => {
 		await openTheming(page)
 		const live = await liveCssVar(page, TEST_TOKEN)
 		expect(live.toLowerCase()).toBe(TEST_VALUE.toLowerCase())
 	})
 
-	test('clearing the override REMOVES it from the backend (reset path)', async ({ page }) => {
+	test('clearing the override REMOVES it from the backend (reset path)', async ({
+		page,
+	}) => {
 		await openTheming(page)
 		const token = await requestToken(page)
 
@@ -136,11 +162,16 @@ test.describe('workflow: token-apply persistence', () => {
 		// Click the row's reset button (↺) to clear the custom value, then Save.
 		await page.locator(`.nldesign-reset-btn[data-token="${TEST_TOKEN}"]`).click()
 		await page.locator('#nldesign-save-btn').click()
-		await expect(page.locator('#nldesign-save-status')).toHaveText('', { timeout: 10_000 })
+		await expect(page.locator('#nldesign-save-status')).toHaveText('', {
+			timeout: 10_000,
+		})
 
 		// Backend no longer carries the override.
 		const after = await getOverrides(page, token)
-		expect(after[TEST_TOKEN], 'override should be removed after reset+save').toBeUndefined()
+		expect(
+			after[TEST_TOKEN],
+			'override should be removed after reset+save',
+		).toBeUndefined()
 
 		// The served file no longer contains the declaration.
 		const css = await getServedOverrideCss(page)

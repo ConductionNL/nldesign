@@ -29,7 +29,9 @@ body {
 	--color-primary-element-hover: var(--summer-color-primary-hover) !important;
 	--color-primary-element-light: var(--summer-color-primary-light) !important;
 	--color-primary-element-light-text: var(--summer-color-primary) !important;
-	--color-primary-element-light-hover: var(--summer-color-primary-light-hover) !important;
+	--color-primary-element-light-hover: var(
+		--summer-color-primary-light-hover
+	) !important;
 
 	/* Surfaces. */
 	--color-main-background: var(--summer-color-surface) !important;
@@ -62,7 +64,7 @@ body {
 	--color-border-maxcontrast: var(--summer-color-border-dark) !important;
 
 	/* Soft shadow colour for components that expose --color-box-shadow. */
-	--color-box-shadow: rgba(20, 60, 110, 0.10) !important;
+	--color-box-shadow: rgba(20, 60, 110, 0.1) !important;
 
 	/* Header contrast. Summer Breeze paints the top bar white, but Nextcloud
 	   derives these two variables from the (dark) theming background colour
@@ -95,7 +97,12 @@ body,
 	font-weight: var(--summer-font-weight-body);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	font-family: var(--summer-font-family);
 	font-weight: var(--summer-font-weight-heading);
 	color: var(--summer-color-text);

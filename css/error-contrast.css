@@ -62,17 +62,33 @@
  * invert. Measured after: 0 color-contrast violations on all four sets.
  */
 .notecard--error {
-	--note-background: color-mix(in srgb, var(--color-error) 15%, var(--color-main-background, #ffffff)) !important;
+	--note-background: color-mix(
+		in srgb,
+		var(--color-error) 15%,
+		var(--color-main-background, #ffffff)
+	) !important;
 }
 
 .notecard--warning {
-	--note-background: color-mix(in srgb, var(--color-warning) 15%, var(--color-main-background, #ffffff)) !important;
+	--note-background: color-mix(
+		in srgb,
+		var(--color-warning) 15%,
+		var(--color-main-background, #ffffff)
+	) !important;
 }
 
 .notecard--success {
-	--note-background: color-mix(in srgb, var(--color-success) 15%, var(--color-main-background, #ffffff)) !important;
+	--note-background: color-mix(
+		in srgb,
+		var(--color-success) 15%,
+		var(--color-main-background, #ffffff)
+	) !important;
 }
 
 .notecard--info {
-	--note-background: color-mix(in srgb, var(--color-info) 15%, var(--color-main-background, #ffffff)) !important;
+	--note-background: color-mix(
+		in srgb,
+		var(--color-info) 15%,
+		var(--color-main-background, #ffffff)
+	) !important;
 }

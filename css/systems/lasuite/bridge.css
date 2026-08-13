@@ -93,10 +93,16 @@
 	 * lasuite bundle currently reads these (element-overrides.css targets
 	 * --lasuite-* directly); they exist so any future shared consumer of the
 	 * --nldesign-component-* namespace resolves sensibly under lasuite too. */
-	--nldesign-component-button-primary-action-background-color: var(--lasuite-color-brand-650);
+	--nldesign-component-button-primary-action-background-color: var(
+		--lasuite-color-brand-650
+	);
 	--nldesign-component-button-primary-action-color: var(--lasuite-color-gray-000);
-	--nldesign-component-button-primary-action-border-color: var(--lasuite-color-brand-650);
-	--nldesign-component-button-primary-action-hover-background-color: var(--lasuite-color-brand-750);
+	--nldesign-component-button-primary-action-border-color: var(
+		--lasuite-color-brand-650
+	);
+	--nldesign-component-button-primary-action-hover-background-color: var(
+		--lasuite-color-brand-750
+	);
 	--nldesign-component-button-border-radius: var(--lasuite-border-radius);
 	--nldesign-component-button-font-family: var(--lasuite-font-family);
 
@@ -119,7 +125,6 @@
 
 body[data-themes],
 body {
-
 	/* ===================================================================
 	 * PRIMARY COLORS
 	 * =================================================================== */
@@ -347,7 +352,9 @@ body,
  * =================================================================== */
 
 @media (prefers-color-scheme: dark) {
-	body:not([data-theme-light]):not([data-theme-dark]):not([data-theme-light-highcontrast]):not([data-theme-dark-highcontrast]) {
+	body:not([data-theme-light]):not([data-theme-dark]):not(
+			[data-theme-light-highcontrast]
+		):not([data-theme-dark-highcontrast]) {
 		--color-main-text: var(--lasuite-color-gray-050) !important;
 		--color-text-maxcontrast: var(--lasuite-color-gray-200) !important;
 		/* Inverted pair: on a dark ground the "light" text token is the dark one
@@ -358,7 +365,7 @@ body,
 }
 
 body[data-theme-dark],
-body[data-themes*="dark"] {
+body[data-themes*='dark'] {
 	--color-main-text: var(--lasuite-color-gray-050) !important;
 	--color-text-maxcontrast: var(--lasuite-color-gray-200) !important;
 	--color-text-light: var(--lasuite-color-gray-050) !important;

@@ -69,7 +69,9 @@ body,
    so the fold toggle appeared to do nothing. Re-apply the slide here. */
 #app-navigation.app-navigation--close,
 .app-navigation.app-navigation--close {
-	margin-inline-start: calc(-1 * min(300px, var(--app-navigation-max-width, 300px))) !important;
+	margin-inline-start: calc(
+		-1 * min(300px, var(--app-navigation-max-width, 300px))
+	) !important;
 	margin-right: 0 !important;
 }
 
@@ -117,8 +119,9 @@ body,
 	border: 1px solid var(--summer-color-border) !important;
 	border-radius: var(--summer-radius-large) !important;
 	box-shadow: var(--summer-shadow-panel) !important;
-	transition: box-shadow var(--summer-animation-quick) ease,
-	            transform var(--summer-animation-quick) ease !important;
+	transition:
+		box-shadow var(--summer-animation-quick) ease,
+		transform var(--summer-animation-quick) ease !important;
 }
 
 .cn-card:hover,
@@ -131,11 +134,11 @@ body,
    INPUTS & SEARCH — pill-shaped, gentle
    ============================================ */
 
-input[type="text"],
-input[type="search"],
-input[type="email"],
-input[type="url"],
-input[type="tel"],
+input[type='text'],
+input[type='search'],
+input[type='email'],
+input[type='url'],
+input[type='tel'],
 .input-field__input {
 	border-radius: var(--summer-radius-pill) !important;
 	border: 1px solid var(--summer-color-border) !important;
@@ -143,13 +146,14 @@ input[type="tel"],
 	/* Form controls don't inherit font-family by default (the UA picks a
 	   system font) — force Inter so inputs match the rest of the page. */
 	font-family: var(--summer-font-family) !important;
-	transition: border-color var(--summer-animation-quick) ease,
-	            box-shadow var(--summer-animation-quick) ease !important;
+	transition:
+		border-color var(--summer-animation-quick) ease,
+		box-shadow var(--summer-animation-quick) ease !important;
 }
 
-input[type="text"]:focus,
-input[type="search"]:focus,
-input[type="email"]:focus {
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus {
 	border-color: var(--summer-color-primary) !important;
 	box-shadow: 0 0 0 2px var(--summer-color-focus) !important;
 }
@@ -162,8 +166,9 @@ input[type="email"]:focus {
 button,
 .button {
 	border-radius: var(--summer-radius) !important;
-	transition: background-color var(--summer-animation-quick) ease,
-	            box-shadow var(--summer-animation-quick) ease !important;
+	transition:
+		background-color var(--summer-animation-quick) ease,
+		box-shadow var(--summer-animation-quick) ease !important;
 }
 
 /* ============================================
@@ -476,11 +481,11 @@ body .app-item.active .app-item__circle {
 	.dashboard-widget,
 	.dashboard-panel,
 	.app-content-list-item,
-	input[type="text"],
-	input[type="search"],
-	input[type="email"],
-	input[type="url"],
-	input[type="tel"],
+	input[type='text'],
+	input[type='search'],
+	input[type='email'],
+	input[type='url'],
+	input[type='tel'],
 	.input-field__input,
 	.button-vue,
 	button,

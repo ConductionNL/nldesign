@@ -17,7 +17,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('token-sets', () => {
-
 	// @e2e exclude openspec/specs/token-sets/spec.md#token-sets-discovered-from-filesystem
 	// PHP TokenSetService logic — not DOM-testable.
 
@@ -88,20 +87,18 @@ test.describe('token-sets', () => {
 	// appinfo/routes.php — not DOM-testable.
 
 	// Smoke: token sets are loaded and the current selection is a valid token set ID
-	test(
-		// @e2e openspec/specs/token-sets/spec.md#token-set-persisted-via-api
-		'Active token set is set and reflected in the dropdown selection',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('domcontentloaded')
-			const select = page.locator('#nldesign-token-set-select')
-			await expect(select).toBeVisible()
-			const currentValue = await select.inputValue()
-			expect(currentValue.trim().length).toBeGreaterThan(0)
-			// The selected option must exist as a valid option in the select
-			const selectedOption = select.locator(`option[value="${currentValue}"]`)
-			await expect(selectedOption).toBeAttached()
-		},
-	)
-
+	test(// @e2e openspec/specs/token-sets/spec.md#token-set-persisted-via-api
+	'Active token set is set and reflected in the dropdown selection', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		const select = page.locator('#nldesign-token-set-select')
+		await expect(select).toBeVisible()
+		const currentValue = await select.inputValue()
+		expect(currentValue.trim().length).toBeGreaterThan(0)
+		// The selected option must exist as a valid option in the select
+		const selectedOption = select.locator(`option[value="${currentValue}"]`)
+		await expect(selectedOption).toBeAttached()
+	})
 })

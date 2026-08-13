@@ -32,11 +32,27 @@
  * is available.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const DEST_DIR = path.join(__dirname, '..', 'css', 'systems', 'lasuite', 'fonts', 'marianne');
-const DSFR_FONTS_DIR = path.join(__dirname, '..', 'node_modules', '@gouvfr', 'dsfr', 'dist', 'fonts');
+const DEST_DIR = path.join(
+	__dirname,
+	'..',
+	'css',
+	'systems',
+	'lasuite',
+	'fonts',
+	'marianne',
+)
+const DSFR_FONTS_DIR = path.join(
+	__dirname,
+	'..',
+	'node_modules',
+	'@gouvfr',
+	'dsfr',
+	'dist',
+	'fonts',
+)
 
 // The authoritative set is whatever DSFR 1.15.1 ships under this exact name
 // pattern — this list is what the app currently bundles, not a hardcoded
@@ -50,29 +66,39 @@ const MARIANNE_WOFF2_FILES = [
 	'Marianne-Medium_Italic.woff2',
 	'Marianne-Bold.woff2',
 	'Marianne-Bold_Italic.woff2',
-];
+]
 
 if (!fs.existsSync(DEST_DIR)) {
-	fs.mkdirSync(DEST_DIR, { recursive: true });
-	console.log('✓ Created css/systems/lasuite/fonts/marianne directory');
+	fs.mkdirSync(DEST_DIR, { recursive: true })
+	console.log('✓ Created css/systems/lasuite/fonts/marianne directory')
 }
 
-let copiedCount = 0;
+let copiedCount = 0
 if (fs.existsSync(DSFR_FONTS_DIR)) {
 	MARIANNE_WOFF2_FILES.forEach((file) => {
-		const sourcePath = path.join(DSFR_FONTS_DIR, file);
-		const destPath = path.join(DEST_DIR, file);
+		const sourcePath = path.join(DSFR_FONTS_DIR, file)
+		const destPath = path.join(DEST_DIR, file)
 		if (fs.existsSync(sourcePath)) {
-			fs.copyFileSync(sourcePath, destPath);
-			copiedCount++;
+			fs.copyFileSync(sourcePath, destPath)
+			copiedCount++
 		}
-	});
-	console.log(`✓ Copied ${copiedCount} Marianne font files to css/systems/lasuite/fonts/marianne/`);
+	})
+	console.log(
+		`✓ Copied ${copiedCount} Marianne font files to css/systems/lasuite/fonts/marianne/`,
+	)
 } else {
-	console.log('⚠ Warning: @gouvfr/dsfr not found in node_modules — skipping Marianne font refresh.');
-	console.log('  The already-committed files under css/systems/lasuite/fonts/marianne/ are unaffected.');
-	console.log('  To refresh from a fresh DSFR release: npm install --no-save @gouvfr/dsfr@1.15.1 && npm run build:fonts:marianne');
+	console.log(
+		'⚠ Warning: @gouvfr/dsfr not found in node_modules — skipping Marianne font refresh.',
+	)
+	console.log(
+		'  The already-committed files under css/systems/lasuite/fonts/marianne/ are unaffected.',
+	)
+	console.log(
+		'  To refresh from a fresh DSFR release: npm install --no-save @gouvfr/dsfr@1.15.1 && npm run build:fonts:marianne',
+	)
 }
 
-console.log('\n✅ Marianne font build step complete.');
-console.log(`   ${copiedCount} font files copied (0 is expected/harmless when @gouvfr/dsfr is not installed).`);
+console.log('\n✅ Marianne font build step complete.')
+console.log(
+	`   ${copiedCount} font files copied (0 is expected/harmless when @gouvfr/dsfr is not installed).`,
+)

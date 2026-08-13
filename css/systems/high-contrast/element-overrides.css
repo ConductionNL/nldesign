@@ -60,8 +60,8 @@ tr {
 }
 
 /* Checkboxes / radios use the primary (black) fill. */
-input[type="checkbox"]:checked,
-input[type="radio"]:checked {
+input[type='checkbox']:checked,
+input[type='radio']:checked {
 	background-color: var(--nldesign-color-primary) !important;
 	border-color: var(--nldesign-color-primary) !important;
 }

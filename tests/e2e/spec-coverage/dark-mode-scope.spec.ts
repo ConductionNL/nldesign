@@ -60,7 +60,7 @@ async function darkMediaDeclarations(page: Page): Promise<Record<string, string>
 	expect(
 		darkHref,
 		'precondition: a tokens/dark/* stylesheet must be loaded, otherwise these '
-		+ 'assertions cannot distinguish "scoped correctly" from "never loaded"',
+			+ 'assertions cannot distinguish "scoped correctly" from "never loaded"',
 	).toBeTruthy()
 
 	const css = await (await page.request.get(darkHref as string)).text()
@@ -70,7 +70,9 @@ async function darkMediaDeclarations(page: Page): Promise<Record<string, string>
 	)
 
 	const out: Record<string, string> = {}
-	for (const m of mediaBlock.matchAll(/(--nldesign-[a-z0-9-]+)\s*:\s*(#[0-9a-f]{3,8})\s*;/gi)) {
+	for (const m of mediaBlock.matchAll(
+		/(--nldesign-[a-z0-9-]+)\s*:\s*(#[0-9a-f]{3,8})\s*;/gi,
+	)) {
 		out[m[1]] = m[2].toLowerCase()
 	}
 	expect(
@@ -81,7 +83,10 @@ async function darkMediaDeclarations(page: Page): Promise<Record<string, string>
 }
 
 /** Resolve custom properties on <body> through the real cascade. */
-async function resolveTokens(page: Page, tokens: string[]): Promise<Record<string, string>> {
+async function resolveTokens(
+	page: Page,
+	tokens: string[],
+): Promise<Record<string, string>> {
 	return page.evaluate((list) => {
 		const cs = getComputedStyle(document.body)
 		const out: Record<string, string> = {}
@@ -111,10 +116,10 @@ async function resolveTokens(page: Page, tokens: string[]): Promise<Record<strin
  */
 async function settleTo(page: Page, token: string, expected: string): Promise<void> {
 	await expect
-		.poll(
-			async () => (await resolveTokens(page, [token]))[token],
-			{ message: `waiting for ${token} to settle to ${expected}`, timeout: 10_000 },
-		)
+		.poll(async () => (await resolveTokens(page, [token]))[token], {
+			message: `waiting for ${token} to settle to ${expected}`,
+			timeout: 10_000,
+		})
 		.toBe(expected)
 }
 
@@ -126,7 +131,10 @@ async function settleTo(page: Page, token: string, expected: string): Promise<vo
  */
 async function settle(page: Page): Promise<void> {
 	await page.evaluate(
-		() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))),
+		() =>
+			new Promise<void>((r) =>
+				requestAnimationFrame(() => requestAnimationFrame(() => r())),
+			),
 	)
 }
 
@@ -147,13 +155,16 @@ async function setBodyTheme(page: Page, attr: string): Promise<void> {
 /** Assert the body is on the auto ("System default") theme, not an explicit one. */
 async function expectAutoTheme(page: Page): Promise<void> {
 	const explicit = await page.evaluate(() =>
-		document.body.getAttributeNames()
-			.filter((n) => n.startsWith('data-theme-') && n !== 'data-theme-default'),
+		document.body
+			.getAttributeNames()
+			.filter(
+				(n) => n.startsWith('data-theme-') && n !== 'data-theme-default',
+			),
 	)
 	expect(
 		explicit,
 		'these scenarios are about the auto theme — an explicit choice on the '
-		+ 'probe page would make the media-query assertions vacuous',
+			+ 'probe page would make the media-query assertions vacuous',
 	).toEqual([])
 }
 
@@ -163,7 +174,9 @@ async function expectAutoTheme(page: Page): Promise<void> {
  * because "empty becomes set" is a weaker signal than "light colour becomes
  * dark colour" and would let a half-broken cascade through.
  */
-async function buildProbeSet(page: Page): Promise<{ dark: Record<string, string>; light: Record<string, string> }> {
+async function buildProbeSet(
+	page: Page,
+): Promise<{ dark: Record<string, string>; light: Record<string, string> }> {
 	const dark = await darkMediaDeclarations(page)
 	await settle(page)
 	const resolved = await resolveTokens(page, Object.keys(dark))
@@ -181,7 +194,7 @@ async function buildProbeSet(page: Page): Promise<{ dark: Record<string, string>
 	expect(
 		Object.keys(light).length,
 		'precondition: at least a handful of tokens must differ between the light '
-		+ 'layer and the dark variant, otherwise there is nothing to observe',
+			+ 'layer and the dark variant, otherwise there is nothing to observe',
 	).toBeGreaterThan(5)
 
 	return { dark: darkNarrowed, light }
@@ -191,7 +204,9 @@ test.describe('dark-mode scope selectors — light OS', () => {
 	test.use({ colorScheme: 'light' })
 
 	// @e2e dark-mode::explicit-dark-choice-on-a-light-os-renders-dark
-	test('an explicit dark choice on a LIGHT OS renders the dark palette', async ({ page }) => {
+	test('an explicit dark choice on a LIGHT OS renders the dark palette', async ({
+		page,
+	}) => {
 		await page.goto(PROBE_URL)
 		await expectAutoTheme(page)
 
@@ -211,7 +226,7 @@ test.describe('dark-mode scope selectors — light OS', () => {
 		expect(
 			after,
 			'an explicit dark choice must resolve every token to its generated '
-			+ 'dark value regardless of the OS preference',
+				+ 'dark value regardless of the OS preference',
 		).toEqual(dark)
 	})
 })
@@ -221,7 +236,9 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 
 	// @e2e dark-mode::auto-theme-follows-a-dark-os
 	// @e2e dark-mode::os-switch-flips-theme-live-without-app-involvement
-	test('the auto theme follows a dark OS, via the media query alone', async ({ page }) => {
+	test('the auto theme follows a dark OS, via the media query alone', async ({
+		page,
+	}) => {
 		await page.goto(PROBE_URL)
 		await expectAutoTheme(page)
 
@@ -235,7 +252,10 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 		const probes = Object.keys(dark).filter(
 			(t) => lightResolved[t] !== '' && lightResolved[t] !== dark[t],
 		)
-		expect(probes.length, 'precondition: tokens must differ light vs dark').toBeGreaterThan(5)
+		expect(
+			probes.length,
+			'precondition: tokens must differ light vs dark',
+		).toBeGreaterThan(5)
 		const sentinel = probes[0]
 
 		// "…via the CSS media query alone — no nldesign PHP or JS runs to effect
@@ -260,7 +280,9 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 		await settleTo(page, sentinel, lightResolved[sentinel])
 		const backToLight = await resolveTokens(page, probes)
 		for (const t of probes) {
-			expect(backToLight[t], `${t} back under a light OS`).toBe(lightResolved[t])
+			expect(backToLight[t], `${t} back under a light OS`).toBe(
+				lightResolved[t],
+			)
 		}
 
 		expect(
@@ -288,7 +310,10 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 		const probes = Object.keys(dark).filter(
 			(t) => lightResolved[t] !== '' && lightResolved[t] !== dark[t],
 		)
-		expect(probes.length, 'precondition: tokens must differ light vs dark').toBeGreaterThan(5)
+		expect(
+			probes.length,
+			'precondition: tokens must differ light vs dark',
+		).toBeGreaterThan(5)
 		const sentinel = probes[0]
 
 		// Prove the page IS in the darkening condition before excluding it,
@@ -300,7 +325,7 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 			expect(
 				auto[t],
 				`precondition: ${t} must be dark under a dark OS with no explicit `
-				+ 'choice, or this test cannot show the :not() exclusions do anything',
+					+ 'choice, or this test cannot show the :not() exclusions do anything',
 			).toBe(dark[t])
 		}
 
@@ -318,7 +343,9 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 	})
 
 	// @e2e dark-mode::dark-stylesheet-loads-in-order
-	test('the dark variant loads after its light layer and before custom overrides', async ({ page }) => {
+	test('the dark variant loads after its light layer and before custom overrides', async ({
+		page,
+	}) => {
 		await page.goto(PROBE_URL)
 		const order = await nldesignStyleHrefs(page)
 
@@ -328,8 +355,14 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 
 		expect(light, 'a light token layer must load').toBeGreaterThanOrEqual(0)
 		expect(dark, 'a dark variant must load').toBeGreaterThanOrEqual(0)
-		expect(dark, 'the dark variant must load AFTER its light layer').toBeGreaterThan(light)
-		expect(overrides, 'the custom-overrides layer must load').toBeGreaterThanOrEqual(0)
+		expect(
+			dark,
+			'the dark variant must load AFTER its light layer',
+		).toBeGreaterThan(light)
+		expect(
+			overrides,
+			'the custom-overrides layer must load',
+		).toBeGreaterThanOrEqual(0)
 		expect(
 			dark,
 			'the dark variant must load BEFORE custom-overrides so a site override still wins',
@@ -360,7 +393,7 @@ test.describe('dark-mode scope selectors — anonymous', () => {
 		expect(
 			applied.length,
 			'the anonymous login page must follow the dark OS — the media-scoped '
-			+ 'block applies because every :not() exclusion matches',
+				+ 'block applies because every :not() exclusion matches',
 		).toBeGreaterThan(5)
 	})
 })

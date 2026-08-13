@@ -39,8 +39,14 @@ const BRIDGE = path.resolve(here, '../../css/systems/lasuite/bridge.css')
 function mapsToLasuiteRadius(css, token) {
 	return css
 		.split('\n')
-		.filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('/*'))
-		.some((line) => new RegExp(`^\\s*--${token}:\\s*var\\(--lasuite-border-radius\\)`).test(line))
+		.filter(
+			(line) => !line.trim().startsWith('*') && !line.trim().startsWith('/*'),
+		)
+		.some((line) =>
+			new RegExp(`^\\s*--${token}:\\s*var\\(--lasuite-border-radius\\)`).test(
+				line,
+			),
+		)
 }
 
 describe('La Suite bridge — border-radius scale', () => {
