@@ -30,15 +30,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 function installInitialState(state) {
 	global.OCP = Object.assign(global.OCP || {}, {
 		InitialState: {
-			loadState: (app, key, fallback) => (
-				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
-			),
+			loadState: (app, key, fallback) =>
+				Object.prototype.hasOwnProperty.call(state, key)
+					? state[key]
+					: fallback,
 		},
 	})
 }
 
 function buildDom() {
-	installInitialState({ tokenSets: [], currentTokenSet: '', activePreview: null, iconPackSource: '' })
+	installInitialState({
+		tokenSets: [],
+		currentTokenSet: '',
+		activePreview: null,
+		iconPackSource: '',
+	})
 	document.body.innerHTML = `
 		<div id="nldesign-settings" class="section">
 		</div>
@@ -58,7 +64,10 @@ function installGlobals() {
 		if (params === undefined) {
 			return text
 		}
-		return Object.keys(params).reduce((acc, key) => acc.replace('{' + key + '}', params[key]), text)
+		return Object.keys(params).reduce(
+			(acc, key) => acc.replace('{' + key + '}', params[key]),
+			text,
+		)
 	}
 	global.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 	global.OC = {
@@ -75,8 +84,14 @@ function installFetchRouter(routes) {
 	global.fetch = vi.fn((url, options) => {
 		const method = (options && options.method) || 'GET'
 		for (const [match, matchMethod, body, status] of routes) {
-			if (url.indexOf(match) !== -1 && (matchMethod === undefined || matchMethod === method)) {
-				return Promise.resolve({ status: status || 200, json: () => Promise.resolve(body) })
+			if (
+				url.indexOf(match) !== -1
+				&& (matchMethod === undefined || matchMethod === method)
+			) {
+				return Promise.resolve({
+					status: status || 200,
+					json: () => Promise.resolve(body),
+				})
 			}
 		}
 		return Promise.resolve({ status: 200, json: () => Promise.resolve({}) })
@@ -119,61 +134,90 @@ describe('admin.js DTCG import diagnostics', () => {
 	it('renders diagnostics grouped by reason and the deprecation warning after a DTCG upload', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/tokensets/upload', 'POST', {
-				id: 'custom-eigen-huisstijl',
-				imported: 1,
-				skipped: [
-					{ path: 'shadow.elevation-1', reason: 'unmapped-path' },
-					{ path: 'color.other', reason: 'unmapped-path' },
-				],
-				errors: [
-					{ path: 'color.accent', reason: 'unsupported-color-space', detail: 'display-p3' },
-				],
-				importWarnings: [
-					{ path: 'color.primary', message: 'Use color.brand.primary instead' },
-				],
-				warnings: [],
-				version: '2.3.1',
-			}],
+			[
+				'/settings/tokensets/upload',
+				'POST',
+				{
+					id: 'custom-eigen-huisstijl',
+					imported: 1,
+					skipped: [
+						{ path: 'shadow.elevation-1', reason: 'unmapped-path' },
+						{ path: 'color.other', reason: 'unmapped-path' },
+					],
+					errors: [
+						{
+							path: 'color.accent',
+							reason: 'unsupported-color-space',
+							detail: 'display-p3',
+						},
+					],
+					importWarnings: [
+						{
+							path: 'color.primary',
+							message: 'Use color.brand.primary instead',
+						},
+					],
+					warnings: [],
+					version: '2.3.1',
+				},
+			],
 		])
 
 		await loadAdminScript()
 		document.getElementById('nldesign-upload-name').value = 'Eigen huisstijl'
 
-		await selectUploadFile('theme.tokens.json', '{"color":{"primary":{"$type":"color","$value":"#154273"}}}')
+		await selectUploadFile(
+			'theme.tokens.json',
+			'{"color":{"primary":{"$type":"color","$value":"#154273"}}}',
+		)
 
 		const resultEl = document.getElementById('nldesign-upload-result')
 		expect(resultEl.style.display).toBe('block')
 		expect(resultEl.textContent).toContain('2.3.1')
 
-		const diagnosticsItems = resultEl.querySelectorAll('.nldesign-diagnostics-list li')
+		const diagnosticsItems = resultEl.querySelectorAll(
+			'.nldesign-diagnostics-list li',
+		)
 		expect(diagnosticsItems.length).toBe(2)
-		const diagnosticsText = Array.from(diagnosticsItems).map((li) => li.textContent).join(' | ')
+		const diagnosticsText = Array.from(diagnosticsItems)
+			.map((li) => li.textContent)
+			.join(' | ')
 		expect(diagnosticsText).toContain('shadow.elevation-1')
 		expect(diagnosticsText).toContain('color.other')
 		expect(diagnosticsText).toContain('color.accent')
 
-		const warningItems = resultEl.querySelectorAll('.nldesign-deprecation-list li')
+		const warningItems = resultEl.querySelectorAll(
+			'.nldesign-deprecation-list li',
+		)
 		expect(warningItems.length).toBe(1)
 		expect(warningItems[0].textContent).toContain('color.primary')
-		expect(warningItems[0].textContent).toContain('Use color.brand.primary instead')
+		expect(warningItems[0].textContent).toContain(
+			'Use color.brand.primary instead',
+		)
 	})
 
 	it('renders no diagnostics markup when skipped/errors/importWarnings are absent (CSS upload, backward compat)', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/tokensets/upload', 'POST', {
-				id: 'custom-css-set',
-				imported: 1,
-				skipped: [],
-				warnings: [],
-			}],
+			[
+				'/settings/tokensets/upload',
+				'POST',
+				{
+					id: 'custom-css-set',
+					imported: 1,
+					skipped: [],
+					warnings: [],
+				},
+			],
 		])
 
 		await loadAdminScript()
 		document.getElementById('nldesign-upload-name').value = 'Css Set'
 
-		await selectUploadFile('theme.css', ':root { --nldesign-color-primary: #007bc7; }')
+		await selectUploadFile(
+			'theme.css',
+			':root { --nldesign-color-primary: #007bc7; }',
+		)
 
 		const resultEl = document.getElementById('nldesign-upload-result')
 		expect(resultEl.querySelector('.nldesign-diagnostics-list')).toBeNull()
@@ -183,12 +227,25 @@ describe('admin.js DTCG import diagnostics', () => {
 	it('renders the recorded package version in the custom-set list', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/tokensets/custom', 'GET', {
-				sets: [
-					{ id: 'custom-eigen-huisstijl', name: 'Eigen huisstijl', version: '2.3.1', warnings: [] },
-					{ id: 'custom-no-version', name: 'No Version', warnings: [] },
-				],
-			}],
+			[
+				'/settings/tokensets/custom',
+				'GET',
+				{
+					sets: [
+						{
+							id: 'custom-eigen-huisstijl',
+							name: 'Eigen huisstijl',
+							version: '2.3.1',
+							warnings: [],
+						},
+						{
+							id: 'custom-no-version',
+							name: 'No Version',
+							warnings: [],
+						},
+					],
+				},
+			],
 		])
 
 		await loadAdminScript()
@@ -196,10 +253,16 @@ describe('admin.js DTCG import diagnostics', () => {
 		const rows = document.querySelectorAll('.nldesign-custom-set-row')
 		expect(rows.length).toBe(2)
 
-		const versioned = Array.from(rows).find((row) => row.textContent.includes('Eigen huisstijl'))
-		expect(versioned.querySelector('.nldesign-custom-set-version').textContent).toContain('2.3.1')
+		const versioned = Array.from(rows).find((row) =>
+			row.textContent.includes('Eigen huisstijl'),
+		)
+		expect(
+			versioned.querySelector('.nldesign-custom-set-version').textContent,
+		).toContain('2.3.1')
 
-		const versionless = Array.from(rows).find((row) => row.textContent.includes('No Version'))
+		const versionless = Array.from(rows).find((row) =>
+			row.textContent.includes('No Version'),
+		)
 		expect(versionless.querySelector('.nldesign-custom-set-version')).toBeNull()
 	})
 })

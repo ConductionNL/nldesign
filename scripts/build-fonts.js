@@ -2,50 +2,57 @@
 
 /**
  * Build Fonts Script
- * 
+ *
  * Copies Fira Sans fonts from node_modules to css/fonts directory
  * and generates the fonts.css file with @font-face declarations.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const FONTS_DIR = path.join(__dirname, '..', 'css', 'fonts');
-const FONTS_CSS = path.join(__dirname, '..', 'css', 'fonts.css');
-const FONTSOURCE_DIR = path.join(__dirname, '..', 'node_modules', '@fontsource', 'fira-sans', 'files');
+const FONTS_DIR = path.join(__dirname, '..', 'css', 'fonts')
+const FONTS_CSS = path.join(__dirname, '..', 'css', 'fonts.css')
+const FONTSOURCE_DIR = path.join(
+	__dirname,
+	'..',
+	'node_modules',
+	'@fontsource',
+	'fira-sans',
+	'files',
+)
 
 // Create fonts directory if it doesn't exist.
 if (!fs.existsSync(FONTS_DIR)) {
-    fs.mkdirSync(FONTS_DIR, { recursive: true });
-    console.log('✓ Created css/fonts directory');
+	fs.mkdirSync(FONTS_DIR, { recursive: true })
+	console.log('✓ Created css/fonts directory')
 }
 
 // Copy font files from node_modules.
 const fontFiles = [
-    'fira-sans-latin-400-normal.woff2',
-    'fira-sans-latin-400-normal.woff',
-    'fira-sans-latin-400-italic.woff2',
-    'fira-sans-latin-400-italic.woff',
-    'fira-sans-latin-700-normal.woff2',
-    'fira-sans-latin-700-normal.woff',
-    'fira-sans-latin-700-italic.woff2',
-    'fira-sans-latin-700-italic.woff',
-];
+	'fira-sans-latin-400-normal.woff2',
+	'fira-sans-latin-400-normal.woff',
+	'fira-sans-latin-400-italic.woff2',
+	'fira-sans-latin-400-italic.woff',
+	'fira-sans-latin-700-normal.woff2',
+	'fira-sans-latin-700-normal.woff',
+	'fira-sans-latin-700-italic.woff2',
+	'fira-sans-latin-700-italic.woff',
+]
 
-let copiedCount = 0;
+let copiedCount = 0
 if (fs.existsSync(FONTSOURCE_DIR)) {
-    fontFiles.forEach(file => {
-        const sourcePath = path.join(FONTSOURCE_DIR, file);
-        const destPath = path.join(FONTS_DIR, file);
-        if (fs.existsSync(sourcePath)) {
-            fs.copyFileSync(sourcePath, destPath);
-            copiedCount++;
-        }
-    });
-    console.log(`✓ Copied ${copiedCount} font files to css/fonts/`);
+	fontFiles.forEach((file) => {
+		const sourcePath = path.join(FONTSOURCE_DIR, file)
+		const destPath = path.join(FONTS_DIR, file)
+		if (fs.existsSync(sourcePath)) {
+			fs.copyFileSync(sourcePath, destPath)
+			copiedCount++
+		}
+	})
+	console.log(`✓ Copied ${copiedCount} font files to css/fonts/`)
 } else {
-    console.log('⚠ Warning: @fontsource/fira-sans not found in node_modules');
-    console.log('  Run: npm install');
+	console.log('⚠ Warning: @fontsource/fira-sans not found in node_modules')
+	console.log('  Run: npm install')
 }
 
 // Generate fonts.css with correct paths.
@@ -95,11 +102,10 @@ const fontsCss = `/**
     font-style: italic;
     font-display: swap;
 }
-`;
+`
 
-fs.writeFileSync(FONTS_CSS, fontsCss);
-console.log('✓ Generated css/fonts.css');
+fs.writeFileSync(FONTS_CSS, fontsCss)
+console.log('✓ Generated css/fonts.css')
 
-console.log('\n✅ Font build complete!');
-console.log(`   ${copiedCount} font files copied to css/fonts/`);
-
+console.log('\n✅ Font build complete!')
+console.log(`   ${copiedCount} font files copied to css/fonts/`)

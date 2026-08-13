@@ -79,13 +79,13 @@ test.describe('La Suite radius scale', () => {
 		await mountBridge(page)
 	})
 
-	test('a CONTAINER keeps Nextcloud\'s 8px radius', async ({ page }) => {
+	test("a CONTAINER keeps Nextcloud's 8px radius", async ({ page }) => {
 		// The regression this guards: 4px here means the container token was
 		// force-mapped onto the control radius again, and card corners vanish.
 		expect(await radiusOf(page, '#card')).toBe('8px')
 	})
 
-	test('CONTROLS still carry La Suite\'s 4px radius', async ({ page }) => {
+	test("CONTROLS still carry La Suite's 4px radius", async ({ page }) => {
 		// The other half. If unmapping the container token had also loosened the
 		// control radius, the app would stop looking like La Suite — so this is
 		// the assertion that keeps the fix honest rather than merely green.
@@ -94,7 +94,9 @@ test.describe('La Suite radius scale', () => {
 		expect(await radiusOf(page, '#modal')).toBe('4px')
 	})
 
-	test('the container and control radii are genuinely DIFFERENT', async ({ page }) => {
+	test('the container and control radii are genuinely DIFFERENT', async ({
+		page,
+	}) => {
 		// States the property directly, so a future change that collapses the
 		// scale onto one value fails here even if both numbers happen to move
 		// together. The whole defect was a flattened hierarchy, not a wrong
@@ -104,15 +106,19 @@ test.describe('La Suite radius scale', () => {
 		expect(card).not.toBe(button)
 	})
 
-	test('the bridge still governs the theme (guard against a dead fixture)', async ({ page }) => {
+	test('the bridge still governs the theme (guard against a dead fixture)', async ({
+		page,
+	}) => {
 		// If bridge.css failed to load, or `body[data-themes]` stopped matching,
 		// every assertion above would pass for the wrong reason — the NC
 		// defaults in :root alone would give 8px containers and the controls
 		// would simply be unstyled. Prove the bridge is actually in force by
 		// reading a token only it sets.
-		const borderColour = await page.locator('body').evaluate((el) =>
-			getComputedStyle(el).getPropertyValue('--color-border').trim(),
-		)
+		const borderColour = await page
+			.locator('body')
+			.evaluate((el) =>
+				getComputedStyle(el).getPropertyValue('--color-border').trim(),
+			)
 		expect(borderColour).not.toBe('#ededed')
 		expect(borderColour).not.toBe('')
 	})

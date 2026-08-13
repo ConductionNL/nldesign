@@ -31,15 +31,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 function installInitialState(state) {
 	global.OCP = Object.assign(global.OCP || {}, {
 		InitialState: {
-			loadState: (app, key, fallback) => (
-				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
-			),
+			loadState: (app, key, fallback) =>
+				Object.prototype.hasOwnProperty.call(state, key)
+					? state[key]
+					: fallback,
 		},
 	})
 }
 
 function buildDom(tokenSets, currentTokenSet, marianneChecked) {
-	installInitialState({ tokenSets, currentTokenSet, activePreview: null, iconPackSource: '' })
+	installInitialState({
+		tokenSets,
+		currentTokenSet,
+		activePreview: null,
+		iconPackSource: '',
+	})
 	document.body.innerHTML = `
 		<div id="nldesign-settings" class="section">
 			<select id="nldesign-token-set-select" name="nldesign-token-set">
@@ -68,7 +74,10 @@ function installGlobals() {
 		if (params === undefined) {
 			return text
 		}
-		return Object.keys(params).reduce((acc, key) => acc.replace('{' + key + '}', params[key]), text)
+		return Object.keys(params).reduce(
+			(acc, key) => acc.replace('{' + key + '}', params[key]),
+			text,
+		)
 	}
 	global.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 	global.OC = {
@@ -88,7 +97,10 @@ function installFetchRouter(routes, postLog) {
 		}
 		for (const [match, body] of routes) {
 			if (url.indexOf(match) !== -1) {
-				return Promise.resolve({ status: 200, json: () => Promise.resolve(body) })
+				return Promise.resolve({
+					status: 200,
+					json: () => Promise.resolve(body),
+				})
 			}
 		}
 		return Promise.resolve({ status: 200, json: () => Promise.resolve({}) })
@@ -109,8 +121,18 @@ async function loadAdminScript() {
 	await flush()
 }
 
-const LASUITE_SET = { id: 'lasuite', name: 'La Suite numérique', designSystem: 'lasuite', theming: { primary_color: '#4844AD', background_color: '#ffffff' } }
-const NLDESIGN_SET = { id: 'rijkshuisstijl', name: 'Rijkshuisstijl', designSystem: 'nldesign', theming: { primary_color: '#154273', background_color: '#ffffff' } }
+const LASUITE_SET = {
+	id: 'lasuite',
+	name: 'La Suite numérique',
+	designSystem: 'lasuite',
+	theming: { primary_color: '#4844AD', background_color: '#ffffff' },
+}
+const NLDESIGN_SET = {
+	id: 'rijkshuisstijl',
+	name: 'Rijkshuisstijl',
+	designSystem: 'nldesign',
+	theming: { primary_color: '#154273', background_color: '#ffffff' },
+}
 
 describe('admin.js Marianne gate', () => {
 	beforeEach(() => {
@@ -135,7 +157,9 @@ describe('admin.js Marianne gate', () => {
 
 		await flush()
 
-		const post = postLog.find((entry) => entry.url.indexOf('/settings/marianne') !== -1)
+		const post = postLog.find(
+			(entry) => entry.url.indexOf('/settings/marianne') !== -1,
+		)
 		expect(post).toBeTruthy()
 		expect(JSON.parse(post.body)).toEqual({ enabled: true })
 	})
@@ -153,7 +177,9 @@ describe('admin.js Marianne gate', () => {
 
 		await flush()
 
-		const post = postLog.find((entry) => entry.url.indexOf('/settings/marianne') !== -1)
+		const post = postLog.find(
+			(entry) => entry.url.indexOf('/settings/marianne') !== -1,
+		)
 		expect(post).toBeTruthy()
 		expect(JSON.parse(post.body)).toEqual({ enabled: false })
 	})

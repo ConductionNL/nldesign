@@ -82,15 +82,17 @@ export default defineConfig({
 		// declared and runs exactly as before. What changed is that the default
 		// invocation no longer silently includes it.
 		...(process.env.PW_VISUAL === '1'
-			? [{
-				name: 'visual',
-				testMatch: /visual\/.*\.visual\.spec\.ts$/,
-				use: {
-					viewport: { width: 1280, height: 800 },
-					storageState: 'tests/e2e/.auth/admin.json',
-				},
-				timeout: 90_000,
-			}]
+			? [
+					{
+						name: 'visual',
+						testMatch: /visual\/.*\.visual\.spec\.ts$/,
+						use: {
+							viewport: { width: 1280, height: 800 },
+							storageState: 'tests/e2e/.auth/admin.json',
+						},
+						timeout: 90_000,
+					},
+				]
 			: []),
 	],
 })

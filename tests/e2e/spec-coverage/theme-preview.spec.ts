@@ -26,7 +26,14 @@
  */
 import { test, expect, type Page } from '@playwright/test'
 
-import { ensureNonAdminUser, loginAs, api, adminContext, NONADMIN_USER, NONADMIN_PASS } from './_fixtures'
+import {
+	ensureNonAdminUser,
+	loginAs,
+	api,
+	adminContext,
+	NONADMIN_USER,
+	NONADMIN_PASS,
+} from './_fixtures'
 
 const APP = '/index.php/apps/nldesign'
 const THEMING_URL = '/settings/admin/theming'
@@ -71,7 +78,7 @@ test.describe('theme preview', () => {
 	// test past the suite's 30s budget. Hoisting it removes work rather than
 	// buying time with a longer timeout; the session is read-only in the one
 	// test that uses it, so sharing it cannot leak state between tests.
-	let nonAdmin: { page: Page, close: () => Promise<void> } | undefined
+	let nonAdmin: { page: Page; close: () => Promise<void> } | undefined
 
 	/**
 	 * The instance-wide active token set these tests run against.
@@ -105,17 +112,28 @@ test.describe('theme preview', () => {
 		await adminPage.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
 		await ensureNonAdminUser(adminPage)
 
-		originalActiveSet = (await api(adminPage, 'GET', `${APP}/settings/tokenset`)).json?.tokenSet
-		expect(originalActiveSet, 'the instance-wide active token set must be readable').toBeTruthy()
+		originalActiveSet = (await api(adminPage, 'GET', `${APP}/settings/tokenset`))
+			.json?.tokenSet
+		expect(
+			originalActiveSet,
+			'the instance-wide active token set must be readable',
+		).toBeTruthy()
 
-		const set = await api(adminPage, 'POST', `${APP}/settings/tokenset`, { tokenSet: ACTIVE_SET })
-		expect(set.status, `the fixture must be able to activate ${ACTIVE_SET}`).toBe(200)
+		const set = await api(adminPage, 'POST', `${APP}/settings/tokenset`, {
+			tokenSet: ACTIVE_SET,
+		})
+		expect(
+			set.status,
+			`the fixture must be able to activate ${ACTIVE_SET}`,
+		).toBe(200)
 		activeSet = ACTIVE_SET
 
 		// The previewed set must DIFFER from the active one, or "the previewed
 		// set replaced the active one" is unfalsifiable.
-		expect(activeSet, `the active set must not be the previewed set (${PREVIEW_SET})`)
-			.not.toBe(PREVIEW_SET)
+		expect(
+			activeSet,
+			`the active set must not be the previewed set (${PREVIEW_SET})`,
+		).not.toBe(PREVIEW_SET)
 
 		await adminCtx.close()
 
@@ -131,7 +149,9 @@ test.describe('theme preview', () => {
 			const ctx = await adminContext(browser)
 			const p = await ctx.newPage()
 			await p.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
-			await api(p, 'POST', `${APP}/settings/tokenset`, { tokenSet: originalActiveSet })
+			await api(p, 'POST', `${APP}/settings/tokenset`, {
+				tokenSet: originalActiveSet,
+			})
 			await ctx.close()
 		}
 	})
@@ -149,12 +169,19 @@ test.describe('theme preview', () => {
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#starting-a-preview-writes-only-user-values
-	test('starting a preview writes user values and leaves the instance-wide set alone', async ({ page }) => {
+	test('starting a preview writes user values and leaves the instance-wide set alone', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
-		const activeBefore = (await api(page, 'GET', `${APP}/settings/tokenset`)).json
+		const activeBefore = (await api(page, 'GET', `${APP}/settings/tokenset`))
+			.json
 
-		const start = await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })
-		expect(start.status, 'starting a preview must succeed for an admin').toBe(200)
+		const start = await api(page, 'POST', `${APP}/settings/preview`, {
+			tokenSet: PREVIEW_SET,
+		})
+		expect(start.status, 'starting a preview must succeed for an admin').toBe(
+			200,
+		)
 		expect(start.json.tokenSet).toBe(PREVIEW_SET)
 
 		// expiresAt ≈ now + 86400 (the spec's 24-hour window). Allow a generous
@@ -166,14 +193,20 @@ test.describe('theme preview', () => {
 
 		// The instance-wide value must be untouched — this is the whole claim.
 		const activeAfter = (await api(page, 'GET', `${APP}/settings/tokenset`)).json
-		expect(activeAfter, 'a preview must not change the instance-wide active set')
-			.toEqual(activeBefore)
+		expect(
+			activeAfter,
+			'a preview must not change the instance-wide active set',
+		).toEqual(activeBefore)
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#invalid-token-set-id-is-rejected
-	test('an invalid token set id is rejected and starts no preview', async ({ page }) => {
+	test('an invalid token set id is rejected and starts no preview', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
-		const res = await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: 'does-not-exist' })
+		const res = await api(page, 'POST', `${APP}/settings/preview`, {
+			tokenSet: 'does-not-exist',
+		})
 		expect(res.status, 'an unknown token set id must be a 400').toBe(400)
 
 		// "and no user values MUST be written" — reload and confirm no banner,
@@ -183,23 +216,37 @@ test.describe('theme preview', () => {
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#previewing-admin-sees-the-previewed-set-on-real-pages
-	test('the previewing admin gets the previewed token set on a real page', async ({ page }) => {
+	test('the previewing admin gets the previewed token set on a real page', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
 
 		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const before = await nldesignStyles(page)
-		expect(before.some((h) => tokenStylesheetFor(h, activeSet)),
-			`the active set ${activeSet} must be loaded before previewing`).toBe(true)
+		expect(
+			before.some((h) => tokenStylesheetFor(h, activeSet)),
+			`the active set ${activeSet} must be loaded before previewing`,
+		).toBe(true)
 
 		await page.goto(THEMING_URL)
-		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
+		expect(
+			(
+				await api(page, 'POST', `${APP}/settings/preview`, {
+					tokenSet: PREVIEW_SET,
+				})
+			).status,
+		).toBe(200)
 
 		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const during = await nldesignStyles(page)
-		expect(during.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
-			`the previewed set ${PREVIEW_SET} must be loaded on a normal page`).toBe(true)
-		expect(during.some((h) => tokenStylesheetFor(h, activeSet)),
-			'the previewed set must SUBSTITUTE the active one, not stack on top of it').toBe(false)
+		expect(
+			during.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
+			`the previewed set ${PREVIEW_SET} must be loaded on a normal page`,
+		).toBe(true)
+		expect(
+			during.some((h) => tokenStylesheetFor(h, activeSet)),
+			'the previewed set must SUBSTITUTE the active one, not stack on top of it',
+		).toBe(false)
 
 		// "custom overrides MUST still load last, unchanged".
 		//
@@ -215,16 +262,24 @@ test.describe('theme preview', () => {
 		// is that an admin's overrides win over the token set they override.
 		// A naive `includes('override')` would also match the design system's
 		// own element-overrides.css, so match the custom file by name.
-		const customOverride = during.findIndex((h) => /custom-overrides\.css/.test(h))
+		const customOverride = during.findIndex((h) =>
+			/custom-overrides\.css/.test(h),
+		)
 		if (customOverride >= 0) {
-			const tokenLayer = during.findIndex((h) => tokenStylesheetFor(h, PREVIEW_SET))
-			expect(customOverride,
-				'custom overrides must load AFTER the token set they override').toBeGreaterThan(tokenLayer)
+			const tokenLayer = during.findIndex((h) =>
+				tokenStylesheetFor(h, PREVIEW_SET),
+			)
+			expect(
+				customOverride,
+				'custom overrides must load AFTER the token set they override',
+			).toBeGreaterThan(tokenLayer)
 		}
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#banner-appears-on-all-themed-pages-for-the-previewer
-	test('the banner appears on every themed page with keyboard-operable controls', async ({ page }) => {
+	test('the banner appears on every themed page with keyboard-operable controls', async ({
+		page,
+	}) => {
 		// This one test navigates THREE full app pages (Files, Dashboard,
 		// Settings), because "on all themed pages" is the claim and a banner
 		// wired to a single page would satisfy anything less. Three cold
@@ -239,7 +294,13 @@ test.describe('theme preview', () => {
 		test.setTimeout(120_000)
 
 		await page.goto(THEMING_URL)
-		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
+		expect(
+			(
+				await api(page, 'POST', `${APP}/settings/preview`, {
+					tokenSet: PREVIEW_SET,
+				})
+			).status,
+		).toBe(200)
 
 		// "on all themed pages" — assert on more than one, or a banner wired to
 		// the settings page alone would pass.
@@ -255,16 +316,24 @@ test.describe('theme preview', () => {
 			const banner = page.locator('#nldesign-preview-banner')
 			await banner.waitFor({ state: 'visible', timeout: 15_000 })
 
-			await expect(banner, `banner must name the previewed set on ${url}`)
-				.toContainText(PREVIEW_NAME)
-			await expect(banner, `banner must say the preview is private on ${url}`)
-				.toContainText(/only visible to you/i)
+			await expect(
+				banner,
+				`banner must name the previewed set on ${url}`,
+			).toContainText(PREVIEW_NAME)
+			await expect(
+				banner,
+				`banner must say the preview is private on ${url}`,
+			).toContainText(/only visible to you/i)
 			// role="status" so a screen reader announces it (WCAG 4.1.3).
 			await expect(banner).toHaveAttribute('role', 'status')
 
 			// Publish and Discard must be present on every page.
-			await expect(banner.locator('.nldesign-preview-banner-publish')).toBeVisible()
-			await expect(banner.locator('.nldesign-preview-banner-discard')).toBeVisible()
+			await expect(
+				banner.locator('.nldesign-preview-banner-publish'),
+			).toBeVisible()
+			await expect(
+				banner.locator('.nldesign-preview-banner-discard'),
+			).toBeVisible()
 		}
 
 		// Keyboard operability is asserted ONCE, on the page that has just been
@@ -281,7 +350,10 @@ test.describe('theme preview', () => {
 		// Discard's keyboard operability is additionally proven end-to-end by
 		// the discard test below, which drives it with a real Enter keypress.
 		const banner = page.locator('#nldesign-preview-banner')
-		for (const cls of ['.nldesign-preview-banner-publish', '.nldesign-preview-banner-discard']) {
+		for (const cls of [
+			'.nldesign-preview-banner-publish',
+			'.nldesign-preview-banner-discard',
+		]) {
 			const control = banner.locator(cls)
 			// RE-FOCUS on each poll rather than `focus()` once then
 			// `expect(...).toBeFocused()`. The host app mounts after the banner
@@ -294,18 +366,27 @@ test.describe('theme preview', () => {
 			// Still fails for a control that genuinely cannot take focus — a
 			// tabindex="-1" plant exhausts the poll and reddens the test — so
 			// this measures focusability, not patience.
-			await expect.poll(async () => {
-				await control.focus()
-				return await control.evaluate((el) => el === document.activeElement)
-			}, {
-				message: `${cls} must be keyboard-focusable`,
-				timeout: 5_000,
-			}).toBe(true)
+			await expect
+				.poll(
+					async () => {
+						await control.focus()
+						return await control.evaluate(
+							(el) => el === document.activeElement,
+						)
+					},
+					{
+						message: `${cls} must be keyboard-focusable`,
+						timeout: 5_000,
+					},
+				)
+				.toBe(true)
 		}
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#no-banner-payload-without-a-preview
-	test('no banner asset or payload is delivered without an active preview', async ({ page }) => {
+	test('no banner asset or payload is delivered without an active preview', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
 		await api(page, 'DELETE', `${APP}/settings/preview`)
 
@@ -313,44 +394,77 @@ test.describe('theme preview', () => {
 		const scripts = await nldesignScripts(page)
 		const styles = await nldesignStyles(page)
 
-		expect(scripts.some((s) => s.includes('preview-banner')),
-			'preview-banner.js must not be served without a preview').toBe(false)
-		expect(styles.some((s) => s.includes('preview-banner')),
-			'preview-banner.css must not be served without a preview').toBe(false)
+		expect(
+			scripts.some((s) => s.includes('preview-banner')),
+			'preview-banner.js must not be served without a preview',
+		).toBe(false)
+		expect(
+			styles.some((s) => s.includes('preview-banner')),
+			'preview-banner.css must not be served without a preview',
+		).toBe(false)
 
 		// ...nor the initial-state payload the banner reads.
 		const payload = await page.evaluate(() => {
 			const el = document.querySelector('#initial-state-nldesign-preview')
 			return el ? el.textContent : null
 		})
-		expect(payload, 'the preview initial-state payload must be absent').toBeNull()
+		expect(
+			payload,
+			'the preview initial-state payload must be absent',
+		).toBeNull()
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#non-admin-users-are-never-affected
-	test('a non-admin sees the instance-wide set and no banner while an admin previews', async ({ page }) => {
+	test('a non-admin sees the instance-wide set and no banner while an admin previews', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
-		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
+		expect(
+			(
+				await api(page, 'POST', `${APP}/settings/preview`, {
+					tokenSet: PREVIEW_SET,
+				})
+			).status,
+		).toBe(200)
 
 		// Confirm the preview really is live for the admin, so a "non-admin is
 		// unaffected" pass cannot come from the preview never having started.
 		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
-		expect((await nldesignStyles(page)).some((h) => tokenStylesheetFor(h, PREVIEW_SET))).toBe(true)
+		expect(
+			(await nldesignStyles(page)).some((h) =>
+				tokenStylesheetFor(h, PREVIEW_SET),
+			),
+		).toBe(true)
 
 		const other = nonAdmin!.page
 		await other.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const styles = await nldesignStyles(other)
-		expect(styles.some((h) => tokenStylesheetFor(h, activeSet)),
-			'the non-admin must still get the instance-wide set').toBe(true)
-		expect(styles.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
-			"the non-admin must NOT receive the admin's previewed set").toBe(false)
-		await expect(other.locator('#nldesign-preview-banner'),
-			'the non-admin must see no preview banner').toHaveCount(0)
+		expect(
+			styles.some((h) => tokenStylesheetFor(h, activeSet)),
+			'the non-admin must still get the instance-wide set',
+		).toBe(true)
+		expect(
+			styles.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
+			"the non-admin must NOT receive the admin's previewed set",
+		).toBe(false)
+		await expect(
+			other.locator('#nldesign-preview-banner'),
+			'the non-admin must see no preview banner',
+		).toHaveCount(0)
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#discard-from-the-banner
-	test('discarding from the banner restores the active set and removes the banner', async ({ page }) => {
+	test('discarding from the banner restores the active set and removes the banner', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
-		expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
+		expect(
+			(
+				await api(page, 'POST', `${APP}/settings/preview`, {
+					tokenSet: PREVIEW_SET,
+				})
+			).status,
+		).toBe(200)
 
 		await page.goto('/settings/user')
 		const banner = page.locator('#nldesign-preview-banner')
@@ -363,18 +477,27 @@ test.describe('theme preview', () => {
 		await page.keyboard.press('Enter')
 
 		// The handler calls DELETE and reloads; wait for the banner to go.
-		await expect(banner, 'the banner must disappear after Discard').toHaveCount(0, { timeout: 20_000 })
+		await expect(banner, 'the banner must disappear after Discard').toHaveCount(
+			0,
+			{ timeout: 20_000 },
+		)
 
 		await page.goto('/settings/user', { waitUntil: 'domcontentloaded' })
 		const styles = await nldesignStyles(page)
-		expect(styles.some((h) => tokenStylesheetFor(h, activeSet)),
-			'the instance-wide set must render again after Discard').toBe(true)
-		expect(styles.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
-			'the previewed set must be gone after Discard').toBe(false)
+		expect(
+			styles.some((h) => tokenStylesheetFor(h, activeSet)),
+			'the instance-wide set must render again after Discard',
+		).toBe(true)
+		expect(
+			styles.some((h) => tokenStylesheetFor(h, PREVIEW_SET)),
+			'the previewed set must be gone after Discard',
+		).toBe(false)
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#publish-without-an-active-preview
-	test('publishing with no active preview is refused and changes nothing', async ({ page }) => {
+	test('publishing with no active preview is refused and changes nothing', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
 		await api(page, 'DELETE', `${APP}/settings/preview`)
 
@@ -383,11 +506,15 @@ test.describe('theme preview', () => {
 		expect(res.status, 'publish without a preview must be a 400').toBe(400)
 
 		const after = (await api(page, 'GET', `${APP}/settings/tokenset`)).json
-		expect(after, 'a refused publish must not change the active set').toEqual(before)
+		expect(after, 'a refused publish must not change the active set').toEqual(
+			before,
+		)
 	})
 
 	// @e2e openspec/specs/theme-preview/spec.md#publish-promotes-preview-to-instance-wide-active
-	test('publishing promotes the preview to the instance-wide active set', async ({ page }) => {
+	test('publishing promotes the preview to the instance-wide active set', async ({
+		page,
+	}) => {
 		await page.goto(THEMING_URL)
 		// SettingsController::getTokenSet() returns {tokenSet}, and setTokenSet()
 		// takes {tokenSet} — verified against lib/Controller/SettingsController.php
@@ -395,14 +522,25 @@ test.describe('theme preview', () => {
 		// restores. Asserting it is present means a shape change breaks this
 		// test loudly instead of silently restoring `undefined`.
 		const before = (await api(page, 'GET', `${APP}/settings/tokenset`)).json
-		expect(before?.tokenSet, 'the active token set must be readable before publishing').toBeTruthy()
+		expect(
+			before?.tokenSet,
+			'the active token set must be readable before publishing',
+		).toBeTruthy()
 		const originalSet: string = before.tokenSet
 
 		try {
-			expect((await api(page, 'POST', `${APP}/settings/preview`, { tokenSet: PREVIEW_SET })).status).toBe(200)
+			expect(
+				(
+					await api(page, 'POST', `${APP}/settings/preview`, {
+						tokenSet: PREVIEW_SET,
+					})
+				).status,
+			).toBe(200)
 
 			const pub = await api(page, 'POST', `${APP}/settings/preview/publish`)
-			expect(pub.status, 'publish must succeed with an active preview').toBe(200)
+			expect(pub.status, 'publish must succeed with an active preview').toBe(
+				200,
+			)
 			expect(pub.json.tokenSet).toBe(PREVIEW_SET)
 
 			// Instance-wide now, not just for this session.
@@ -411,13 +549,17 @@ test.describe('theme preview', () => {
 
 			// ...and the caller's preview values are cleared, so no banner.
 			await page.goto('/settings/user')
-			await expect(page.locator('#nldesign-preview-banner'),
-				'publishing must clear the preview, removing the banner').toHaveCount(0)
+			await expect(
+				page.locator('#nldesign-preview-banner'),
+				'publishing must clear the preview, removing the banner',
+			).toHaveCount(0)
 		} finally {
 			// Restore the instance-wide set — this is the one test here that
 			// mutates state every other test depends on.
 			await page.goto(THEMING_URL)
-			await api(page, 'POST', `${APP}/settings/tokenset`, { tokenSet: originalSet })
+			await api(page, 'POST', `${APP}/settings/tokenset`, {
+				tokenSet: originalSet,
+			})
 		}
 	})
 })

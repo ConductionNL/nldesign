@@ -50,14 +50,19 @@ const NC_SENTINELS = {
  * bundle — the same files minus the violet layer — which is what the
  * blue-base scenarios are about.
  */
-async function mountCascade(page: Page, opts: { withOverride: boolean }): Promise<void> {
+async function mountCascade(
+	page: Page,
+	opts: { withOverride: boolean },
+): Promise<void> {
 	const layers = [
 		// fonts.css is first in the declared bundle order and is the ONLY file
 		// that defines `--lasuite-font-family`. Omitting it left the fixture on
 		// Times New Roman and made the font scenario fail for a fixture reason.
 		read('css/systems/lasuite/fonts.css'),
 		read('css/systems/lasuite/defaults.css'),
-		...(opts.withOverride ? [read('css/systems/lasuite/brand-override.css')] : []),
+		...(opts.withOverride
+			? [read('css/systems/lasuite/brand-override.css')]
+			: []),
 		read('css/systems/lasuite/bridge.css'),
 		read('css/systems/lasuite/element-overrides.css'),
 	]
@@ -105,7 +110,10 @@ async function tokens(page: Page, names: string[]): Promise<Record<string, strin
  * would still satisfy "the dark-compatibility sentinels survived".
  */
 async function expectBundleInForce(page: Page): Promise<void> {
-	const probe = await tokens(page, ['--nldesign-color-primary', '--lasuite-color-brand-650'])
+	const probe = await tokens(page, [
+		'--nldesign-color-primary',
+		'--lasuite-color-brand-650',
+	])
 	expect(
 		probe['--nldesign-color-primary'],
 		'dead-fixture guard: the bridge layer must be in force',
@@ -128,7 +136,9 @@ function luminance(value: string): number {
 		g = parseInt(hex[1].slice(2, 4), 16)
 		b = parseInt(hex[1].slice(4, 6), 16)
 	} else if (rgb !== null) {
-		r = Number(rgb[1]); g = Number(rgb[2]); b = Number(rgb[3])
+		r = Number(rgb[1])
+		g = Number(rgb[2])
+		b = Number(rgb[3])
 	} else {
 		throw new Error(`unparseable colour: "${value}"`)
 	}
@@ -155,7 +165,9 @@ test.describe('lasuite cascade — the deployed violet bundle', () => {
 	// @e2e lasuite-stack::primary-maps-to-la-suite-brand
 	// @e2e lasuite-stack::violet-override-wins-the-cascade-for-lasuite
 	// @e2e lasuite-parity::deployed-cascade-resolves-to-violet
-	test('--color-primary resolves to the violet brand-650, and brand-600 to the violet ramp', async ({ page }) => {
+	test('--color-primary resolves to the violet brand-650, and brand-600 to the violet ramp', async ({
+		page,
+	}) => {
 		const t = await tokens(page, [
 			'--color-primary',
 			'--nldesign-color-primary',
@@ -163,7 +175,10 @@ test.describe('lasuite cascade — the deployed violet bundle', () => {
 		])
 
 		// The override beats the blue base for the RENDERED primary…
-		expect(t['--color-primary'], '--color-primary must be the violet brand-650').toBe('#4844ad')
+		expect(
+			t['--color-primary'],
+			'--color-primary must be the violet brand-650',
+		).toBe('#4844ad')
 		// …through the documented chain --color-primary <- --nldesign-color-primary
 		// <- --lasuite-color-brand-650, so assert the intermediate too. If only
 		// the endpoint were checked, a hardcoded literal in the bridge would pass.
@@ -176,18 +191,22 @@ test.describe('lasuite cascade — the deployed violet bundle', () => {
 	})
 
 	// @e2e lasuite-stack::primary-maps-to-la-suite-brand
-	test('--color-primary-text keeps AA contrast against the brand', async ({ page }) => {
+	test('--color-primary-text keeps AA contrast against the brand', async ({
+		page,
+	}) => {
 		const t = await tokens(page, ['--color-primary', '--color-primary-text'])
 		const ratio = contrast(t['--color-primary'], t['--color-primary-text'])
 		expect(
 			ratio,
 			`--color-primary-text (${t['--color-primary-text']}) on --color-primary `
-			+ `(${t['--color-primary']}) must clear WCAG AA 4.5:1, got ${ratio.toFixed(2)}`,
+				+ `(${t['--color-primary']}) must clear WCAG AA 4.5:1, got ${ratio.toFixed(2)}`,
 		).toBeGreaterThanOrEqual(4.5)
 	})
 
 	// @e2e lasuite-stack::dark-compatibility-variables-untouched
-	test('the bridge declares none of the dark-compatibility variables', async ({ page }) => {
+	test('the bridge declares none of the dark-compatibility variables', async ({
+		page,
+	}) => {
 		const t = await tokens(page, Object.keys(NC_SENTINELS))
 
 		// Each sentinel is a value Nextcloud itself would set. If the bridge
@@ -196,25 +215,35 @@ test.describe('lasuite cascade — the deployed violet bundle', () => {
 		// only way to show a NON-declaration; grepping for an absent line proves
 		// nothing about what the cascade does.
 		for (const [name, expected] of Object.entries(NC_SENTINELS)) {
-			expect(t[name], `${name} must carry Nextcloud's own value, untouched`)
-				.toBe(expected.toLowerCase())
+			expect(
+				t[name],
+				`${name} must carry Nextcloud's own value, untouched`,
+			).toBe(expected.toLowerCase())
 		}
 	})
 
 	// @e2e lasuite-stack::icon-fonts-survive
-	test('icon and monospace fonts survive the body-inherited font stack', async ({ page }) => {
+	test('icon and monospace fonts survive the body-inherited font stack', async ({
+		page,
+	}) => {
 		const fonts = await page.evaluate(() => ({
 			body: getComputedStyle(document.body).fontFamily,
-			mdi: getComputedStyle(document.getElementById('mdi') as Element).fontFamily,
-			code: getComputedStyle(document.getElementById('code') as Element).fontFamily,
+			mdi: getComputedStyle(document.getElementById('mdi') as Element)
+				.fontFamily,
+			code: getComputedStyle(document.getElementById('code') as Element)
+				.fontFamily,
 		}))
 
 		// The body carries La Suite's stack by inheritance (ADR-CSS-001)…
 		expect(fonts.body.toLowerCase()).toContain('inter')
 		// …but a universal `!important` font rule would have overwritten these
 		// two, which is the regression the ADR forbids.
-		expect(fonts.mdi, 'the MDI glyph font must be preserved').toContain('Material Design Icons')
-		expect(fonts.code, 'the monospace stack must be preserved').toContain('monospace')
+		expect(fonts.mdi, 'the MDI glyph font must be preserved').toContain(
+			'Material Design Icons',
+		)
+		expect(fonts.code, 'the monospace stack must be preserved').toContain(
+			'monospace',
+		)
 	})
 
 	// NOT ANCHORED, deliberately — see `lasuite-stack::controls-carry-la-suite-radii`.
@@ -241,7 +270,9 @@ test.describe('lasuite cascade — the shared BLUE base, without the violet laye
 
 	// @e2e lasuite-parity::base-is-the-blue-cunningham-base-not-the-deployed-violet
 	// @e2e lasuite-parity::blue-base-resolves-without-the-violet-override
-	test('without the override the base is blue, and --color-primary is its brand-650', async ({ page }) => {
+	test('without the override the base is blue, and --color-primary is its brand-650', async ({
+		page,
+	}) => {
 		const t = await tokens(page, [
 			'--lasuite--globals--colors--brand-600',
 			'--color-primary',
@@ -270,9 +301,12 @@ test.describe('lasuite cascade — the shared BLUE base, without the violet laye
 		// precisely to document what it is not — so a raw substring search
 		// reports the generated base hard-codes violet when it does no such
 		// thing. Assert on DECLARATIONS.
-		const stripComments = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, '')
+		const stripComments = (css: string): string =>
+			css.replace(/\/\*[\s\S]*?\*\//g, '')
 		const declares = (css: string, token: string, value: string): boolean =>
-			new RegExp(`${token}\\s*:\\s*${value}\\s*;`, 'i').test(stripComments(css))
+			new RegExp(`${token}\\s*:\\s*${value}\\s*;`, 'i').test(
+				stripComments(css),
+			)
 
 		const defaults = read('css/systems/lasuite/defaults.css')
 		const override = read('css/systems/lasuite/brand-override.css')

@@ -30,10 +30,11 @@ const TARGET_APP = 'dashboard'
 
 /** Count nldesign stylesheets present in the page head. */
 async function nldesignStyleCount(page: Page): Promise<number> {
-	return page.evaluate(() =>
-		[...document.querySelectorAll('link[rel=stylesheet]')]
-			.filter((l) => (l as HTMLLinkElement).href.includes('/nldesign/'))
-			.length,
+	return page.evaluate(
+		() =>
+			[...document.querySelectorAll('link[rel=stylesheet]')].filter((l) =>
+				(l as HTMLLinkElement).href.includes('/nldesign/'),
+			).length,
 	)
 }
 
@@ -46,15 +47,23 @@ async function nldesignStyleCount(page: Page): Promise<number> {
  * the search field filters the list down to a single matching row.
  */
 async function openAppThemingDropdown(page: Page, appName = TARGET_APP) {
-	const trigger = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-trigger')
-	if (await trigger.count() === 0) {
+	const trigger = page.locator(
+		'#nldesign-app-theming-list .nldesign-app-dropdown-trigger',
+	)
+	if ((await trigger.count()) === 0) {
 		// No dropdown variant (flat list) — nothing to expand.
 		return
 	}
-	if (!(await page.locator('#nldesign-app-theming-list .nldesign-app-dropdown.open').count())) {
+	if (
+		!(await page
+			.locator('#nldesign-app-theming-list .nldesign-app-dropdown.open')
+			.count())
+	) {
 		await trigger.click()
 	}
-	const search = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-search input')
+	const search = page.locator(
+		'#nldesign-app-theming-list .nldesign-app-dropdown-search input',
+	)
 	await search.waitFor({ state: 'visible' })
 	await search.fill(appName)
 }
@@ -64,7 +73,9 @@ async function setThemed(page: Page, themed: boolean) {
 	await page.goto(THEMING_URL)
 	await page.waitForLoadState('domcontentloaded')
 	await openAppThemingDropdown(page)
-	const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
+	const box = page.locator(
+		`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`,
+	)
 	// The raw <input> is visually hidden off-canvas (position:absolute, left:-9999px),
 	// so Playwright cannot click it directly. The actual control is the associated
 	// <label>; clicking it toggles the checkbox. Read state from the input.
@@ -76,10 +87,14 @@ async function setThemed(page: Page, themed: boolean) {
 	}
 	// Collapse the dropdown so its open panel/search field no longer overlaps
 	// (and intercepts pointer events for) the Save button below it.
-	const trigger = page.locator('#nldesign-app-theming-list .nldesign-app-dropdown-trigger')
-	if (await trigger.count() > 0) {
+	const trigger = page.locator(
+		'#nldesign-app-theming-list .nldesign-app-dropdown-trigger',
+	)
+	if ((await trigger.count()) > 0) {
 		await trigger.click()
-		await expect(page.locator('#nldesign-app-theming-list .nldesign-app-dropdown.open')).toHaveCount(0)
+		await expect(
+			page.locator('#nldesign-app-theming-list .nldesign-app-dropdown.open'),
+		).toHaveCount(0)
 	}
 	await page.locator('#nldesign-app-theming-save').click()
 	// Allow the POST to round-trip.
@@ -104,61 +119,57 @@ test.describe('per-app-theming', () => {
 		await page.close()
 	})
 
-	test(
-		// @e2e openspec/specs/per-app-theming/spec.md#admin-excludes-an-app-via-the-panel
-		// @e2e openspec/specs/per-app-theming/spec.md#excluded-app-renders-without-any-nldesign-css
-		// @e2e openspec/specs/per-app-theming/spec.md#non-excluded-app-stays-fully-themed
-		'Excluding an app via the panel strips nldesign CSS from its pages only',
-		async ({ page }) => {
-			await setThemed(page, false)
+	test(// @e2e openspec/specs/per-app-theming/spec.md#admin-excludes-an-app-via-the-panel
+	// @e2e openspec/specs/per-app-theming/spec.md#excluded-app-renders-without-any-nldesign-css
+	// @e2e openspec/specs/per-app-theming/spec.md#non-excluded-app-stays-fully-themed
+	'Excluding an app via the panel strips nldesign CSS from its pages only', async ({
+		page,
+	}) => {
+		await setThemed(page, false)
 
-			await page.goto(`/apps/${TARGET_APP}/`)
-			await page.waitForLoadState('domcontentloaded')
-			expect(await nldesignStyleCount(page)).toBe(0)
+		await page.goto(`/apps/${TARGET_APP}/`)
+		await page.waitForLoadState('domcontentloaded')
+		expect(await nldesignStyleCount(page)).toBe(0)
 
-			await page.goto('/apps/files/')
-			await page.waitForLoadState('domcontentloaded')
-			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
-		},
-	)
+		await page.goto('/apps/files/')
+		await page.waitForLoadState('domcontentloaded')
+		expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
+	})
 
-	test(
-		// @e2e openspec/specs/per-app-theming/spec.md#admin-re-enables-theming-for-an-app
-		'Re-enabling an app restores theming on its pages',
-		async ({ page }) => {
-			await setThemed(page, false)
-			await setThemed(page, true)
+	test(// @e2e openspec/specs/per-app-theming/spec.md#admin-re-enables-theming-for-an-app
+	'Re-enabling an app restores theming on its pages', async ({ page }) => {
+		await setThemed(page, false)
+		await setThemed(page, true)
 
-			await page.goto(`/apps/${TARGET_APP}/`)
-			await page.waitForLoadState('domcontentloaded')
-			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
-		},
-	)
+		await page.goto(`/apps/${TARGET_APP}/`)
+		await page.waitForLoadState('domcontentloaded')
+		expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
+	})
 
-	test(
-		// @e2e openspec/specs/per-app-theming/spec.md#login-and-settings-pages-are-always-themed
-		'Settings pages stay themed even with an active exclusion list',
-		async ({ page }) => {
-			await setThemed(page, false)
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('domcontentloaded')
-			expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
-		},
-	)
+	test(// @e2e openspec/specs/per-app-theming/spec.md#login-and-settings-pages-are-always-themed
+	'Settings pages stay themed even with an active exclusion list', async ({
+		page,
+	}) => {
+		await setThemed(page, false)
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		expect(await nldesignStyleCount(page)).toBeGreaterThan(0)
+	})
 
-	test(
-		// @e2e openspec/specs/per-app-theming/spec.md#checkboxes-are-accessible
-		'Every app row exposes a checkbox associated with a visible label',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('domcontentloaded')
-			await openAppThemingDropdown(page)
-			const box = page.locator(`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`)
-			await box.waitFor({ state: 'visible' })
-			const id = await box.getAttribute('id')
-			const label = page.locator(`label[for="${id}"]`)
-			await expect(label).toBeVisible()
-			await expect(label).not.toBeEmpty()
-		},
-	)
+	test(// @e2e openspec/specs/per-app-theming/spec.md#checkboxes-are-accessible
+	'Every app row exposes a checkbox associated with a visible label', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		await openAppThemingDropdown(page)
+		const box = page.locator(
+			`#nldesign-app-theming-list input[data-app-id="${TARGET_APP}"]`,
+		)
+		await box.waitFor({ state: 'visible' })
+		const id = await box.getAttribute('id')
+		const label = page.locator(`label[for="${id}"]`)
+		await expect(label).toBeVisible()
+		await expect(label).not.toBeEmpty()
+	})
 })

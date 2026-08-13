@@ -39,11 +39,20 @@ test.describe('icon assets sourced from nc-vue', () => {
 		const page = await browser.newPage()
 		await page.goto('/settings/user')
 		const bases = await page.evaluate(() => {
-			const oc = (window as unknown as { OC?: { filePath?: (a: string, t: string, f: string) => string } }).OC
+			const oc = (
+				window as unknown as {
+					OC?: { filePath?: (a: string, t: string, f: string) => string }
+				}
+			).OC
 			if (oc === undefined || typeof oc.filePath !== 'function') {
-				throw new Error('OC.filePath() is unavailable — cannot resolve the app web root.')
+				throw new Error(
+					'OC.filePath() is unavailable — cannot resolve the app web root.',
+				)
 			}
-			return { icons: oc.filePath('nldesign', 'img', 'icons'), logos: oc.filePath('nldesign', 'img', 'logos') }
+			return {
+				icons: oc.filePath('nldesign', 'img', 'icons'),
+				logos: oc.filePath('nldesign', 'img', 'logos'),
+			}
 		})
 		ICON_BASE = bases.icons
 		LOGO_BASE = bases.logos
@@ -63,13 +72,17 @@ test.describe('icon assets sourced from nc-vue', () => {
 		})
 	}
 
-	test('a mapped legacy PascalCase name still resolves during the deprecation release', async ({ request }) => {
+	test('a mapped legacy PascalCase name still resolves during the deprecation release', async ({
+		request,
+	}) => {
 		const res = await request.get(`${ICON_BASE}/ArrowBackward.svg`)
 		expect(res.status(), `${ICON_BASE}/ArrowBackward.svg`).toBe(200)
 		expect(await res.text()).toContain('<svg')
 	})
 
-	test('an unmapped Amsterdam-only icon name is gone (404), not silently served', async ({ request }) => {
+	test('an unmapped Amsterdam-only icon name is gone (404), not silently served', async ({
+		request,
+	}) => {
 		// `Airplane` existed only in the proprietary Amsterdam set and has no
 		// alias mapping — it must 404 rather than resolve to unrelated artwork.
 		//
@@ -77,12 +90,18 @@ test.describe('icon assets sourced from nc-vue', () => {
 		// PASS, for the wrong reason: everything 404s under a prefix that does
 		// not exist. It only means anything now that the assertions above prove
 		// the same base does serve.
-		const res = await request.get(`${ICON_BASE}/Airplane.svg`, { failOnStatusCode: false })
+		const res = await request.get(`${ICON_BASE}/Airplane.svg`, {
+			failOnStatusCode: false,
+		})
 		expect(res.status()).toBe(404)
 	})
 
-	test('organisation logos remain served (they are huisstijl assets, not icons)', async ({ request }) => {
-		const res = await request.get(`${LOGO_BASE}/rijkshuisstijl.svg`, { failOnStatusCode: false })
+	test('organisation logos remain served (they are huisstijl assets, not icons)', async ({
+		request,
+	}) => {
+		const res = await request.get(`${LOGO_BASE}/rijkshuisstijl.svg`, {
+			failOnStatusCode: false,
+		})
 		expect(res.status(), `${LOGO_BASE}/rijkshuisstijl.svg`).toBe(200)
 		expect(await res.text()).toContain('<svg')
 	})

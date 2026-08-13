@@ -31,7 +31,8 @@ export async function adminContext(browser: Browser) {
 /** Credentials for the dedicated non-admin fixture user. */
 export const NONADMIN_USER = process.env.NC_NONADMIN_USER ?? 'e2enonadmin'
 /** Nextcloud silently rejects passwords under 10 characters — keep this long. */
-export const NONADMIN_PASS = process.env.NC_NONADMIN_PASS ?? 'nldesign-e2e-nonadmin-pw'
+export const NONADMIN_PASS =
+	process.env.NC_NONADMIN_PASS ?? 'nldesign-e2e-nonadmin-pw'
 
 /**
  * Create the non-admin fixture user, idempotently, via the provisioning API.
@@ -51,26 +52,30 @@ export const NONADMIN_PASS = process.env.NC_NONADMIN_PASS ?? 'nldesign-e2e-nonad
  *                  somewhere that carries `OC.requestToken`
  */
 export async function ensureNonAdminUser(adminPage: Page): Promise<void> {
-	const result = await adminPage.evaluate(async ({ user, pass }) => {
-		const body = new URLSearchParams({ userid: user, password: pass })
-		const res = await fetch('/ocs/v2.php/cloud/users?format=json', {
-			method: 'POST',
-			headers: {
-				requesttoken: (window as any).OC.requestToken,
-				'OCS-APIRequest': 'true',
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: body.toString(),
-		})
-		return { http: res.status, text: await res.text() }
-	}, { user: NONADMIN_USER, pass: NONADMIN_PASS })
+	const result = await adminPage.evaluate(
+		async ({ user, pass }) => {
+			const body = new URLSearchParams({ userid: user, password: pass })
+			const res = await fetch('/ocs/v2.php/cloud/users?format=json', {
+				method: 'POST',
+				headers: {
+					requesttoken: (window as any).OC.requestToken,
+					'OCS-APIRequest': 'true',
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: body.toString(),
+			})
+			return { http: res.status, text: await res.text() }
+		},
+		{ user: NONADMIN_USER, pass: NONADMIN_PASS },
+	)
 
-	const alreadyExists = result.text.includes('"statuscode":102')
+	const alreadyExists =
+		result.text.includes('"statuscode":102')
 		|| result.text.toLowerCase().includes('already exists')
 	if (result.http !== 200 && alreadyExists === false) {
 		throw new Error(
 			`Could not provision the non-admin fixture user '${NONADMIN_USER}': `
-			+ `HTTP ${result.http} — ${result.text.slice(0, 300)}`,
+				+ `HTTP ${result.http} — ${result.text.slice(0, 300)}`,
 		)
 	}
 }
@@ -88,7 +93,7 @@ export async function loginAs(
 	browser: Browser,
 	user: string,
 	pass: string,
-): Promise<{ page: Page, close: () => Promise<void> }> {
+): Promise<{ page: Page; close: () => Promise<void> }> {
 	const context = await browser.newContext({ storageState: undefined })
 	const page = await context.newPage()
 
@@ -107,11 +112,16 @@ export async function loginAs(
 	if (/\/login(\?|$|\/)/.test(page.url())) {
 		throw new Error(
 			`Login failed for ${user} — still on ${page.url()}. `
-			+ 'The fixture user is created by ensureNonAdminUser(); if that ran, check the password policy.',
+				+ 'The fixture user is created by ensureNonAdminUser(); if that ran, check the password policy.',
 		)
 	}
 
-	return { page, close: async () => { await context.close() } }
+	return {
+		page,
+		close: async () => {
+			await context.close()
+		},
+	}
 }
 
 /**
@@ -127,19 +137,28 @@ export async function api(
 	method: string,
 	path: string,
 	body?: unknown,
-): Promise<{ status: number, json: any }> {
-	return page.evaluate(async ({ method, path, body }) => {
-		const headers: Record<string, string> = { requesttoken: (window as any).OC.requestToken }
-		if (body !== undefined) headers['Content-Type'] = 'application/json'
-		const res = await fetch(path, {
-			method,
-			headers,
-			body: body === undefined ? undefined : JSON.stringify(body),
-		})
-		let json: any = null
-		try { json = await res.json() } catch { json = null }
-		return { status: res.status, json }
-	}, { method, path, body })
+): Promise<{ status: number; json: any }> {
+	return page.evaluate(
+		async ({ method, path, body }) => {
+			const headers: Record<string, string> = {
+				requesttoken: (window as any).OC.requestToken,
+			}
+			if (body !== undefined) headers['Content-Type'] = 'application/json'
+			const res = await fetch(path, {
+				method,
+				headers,
+				body: body === undefined ? undefined : JSON.stringify(body),
+			})
+			let json: any = null
+			try {
+				json = await res.json()
+			} catch {
+				json = null
+			}
+			return { status: res.status, json }
+		},
+		{ method, path, body },
+	)
 }
 
 /** Assert a fixture precondition loudly rather than letting it fail obscurely later. */

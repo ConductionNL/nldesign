@@ -30,9 +30,15 @@
 
 #header,
 header#header {
-	background-color: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
+	background-color: var(
+		--lasuite--contextuals--background--surface--primary,
+		var(--lasuite-color-gray-000)
+	) !important;
 	background-image: none !important;
-	background: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
+	background: var(
+		--lasuite--contextuals--background--surface--primary,
+		var(--lasuite-color-gray-000)
+	) !important;
 	border-bottom: 1px solid transparent !important;
 	box-shadow: none !important;
 	padding-inline: 18px !important;
@@ -92,7 +98,10 @@ header#header {
 #header .header-start svg,
 #header .app-menu__waffle,
 #header .app-menu__waffle svg {
-	color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
+	color: var(
+		--lasuite-content-brand-icon,
+		var(--lasuite-color-brand-550)
+	) !important;
 	filter: none !important;
 	-webkit-filter: none !important;
 }
@@ -104,8 +113,8 @@ header#header {
    generated background. */
 #header .avatardiv,
 #header .avatardiv *,
-#header [class*="avatar" i],
-#header [class*="avatar" i] * {
+#header [class*='avatar' i],
+#header [class*='avatar' i] * {
 	filter: none !important;
 	-webkit-filter: none !important;
 	color: var(--lasuite-color-gray-000) !important;
@@ -134,11 +143,15 @@ header#header {
    `/core/…` would break. */
 #header .logo,
 #header .logo-icon {
-	background-color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
+	background-color: var(
+		--lasuite-content-brand-icon,
+		var(--lasuite-color-brand-550)
+	) !important;
 	background-image: none !important;
 	filter: none !important;
 	-webkit-filter: none !important;
-	-webkit-mask: url('../../../../../core/img/logo/logo.svg') no-repeat center / contain !important;
+	-webkit-mask: url('../../../../../core/img/logo/logo.svg') no-repeat center /
+		contain !important;
 	mask: url('../../../../../core/img/logo/logo.svg') no-repeat center / contain !important;
 }
 
@@ -186,8 +199,15 @@ header#header {
 #header .unified-search-input,
 #header .unified-search-input__button,
 #header .unified-search__input {
-	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
-	border: 1px solid var(--lasuite--contextuals--border--surface--primary, var(--lasuite-color-gray-100)) !important;
+	background-color: var(
+		--lasuite--contextuals--background--surface--tertiary,
+		var(--lasuite-color-gray-025)
+	) !important;
+	border: 1px solid
+		var(
+			--lasuite--contextuals--border--surface--primary,
+			var(--lasuite-color-gray-100)
+		) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 	color: var(--lasuite-content-primary, var(--lasuite-color-gray-850)) !important;
 	box-shadow: none !important;
@@ -270,8 +290,15 @@ header#header {
  * control keeps a 34px hit box (above the 24x24 WCAG 2.5.8 minimum, and the
  * same height NC 34's pill already uses). */
 #header .unified-search-menu .header-menu__trigger {
-	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
-	border: 1px solid var(--lasuite--contextuals--border--surface--primary, var(--lasuite-color-gray-100)) !important;
+	background-color: var(
+		--lasuite--contextuals--background--surface--tertiary,
+		var(--lasuite-color-gray-025)
+	) !important;
+	border: 1px solid
+		var(
+			--lasuite--contextuals--border--surface--primary,
+			var(--lasuite-color-gray-100)
+		) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 	block-size: 34px !important;
 	min-block-size: 0 !important;
@@ -358,7 +385,10 @@ header#header {
 #app-navigation,
 .app-navigation,
 #app-navigation-vue {
-	background: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
+	background: var(
+		--lasuite--contextuals--background--surface--primary,
+		var(--lasuite-color-gray-000)
+	) !important;
 	/* gray-100 — matches the sidebar border-right measured on the live La Suite
 	   app (2026-07-27); every structural hairline uses this step. */
 	border-right: 1px solid var(--lasuite-color-gray-100) !important;
@@ -427,7 +457,10 @@ header#header {
 .app-navigation-entry.app-navigation-entry.active.active.active,
 .app-navigation-entry.app-navigation-entry--active.app-navigation-entry--active {
 	background: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
-	background-color: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
+	background-color: var(
+		--lasuite-active-row-wash,
+		rgba(27, 27, 35, 0.05)
+	) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
@@ -456,7 +489,8 @@ header#header {
 #app-navigation .app-navigation-entry.active .app-navigation-entry__name,
 .app-navigation-entry.app-navigation-entry.active.active a,
 .app-navigation-entry.app-navigation-entry.active.active .app-navigation-entry-link,
-.app-navigation-entry.app-navigation-entry.active.active .app-navigation-entry__name {
+.app-navigation-entry.app-navigation-entry.active.active
+	.app-navigation-entry__name {
 	color: var(--lasuite-content-primary, var(--lasuite-color-gray-850)) !important;
 	font-weight: 400 !important;
 }
@@ -489,7 +523,10 @@ header#header {
 .list-item__wrapper.active .list-item,
 .list-item__wrapper--active .list-item:hover,
 .list-item__wrapper--active .list-item:focus-within {
-	background-color: var(--lasuite-active-row-wash, rgba(27, 27, 35, 0.05)) !important;
+	background-color: var(
+		--lasuite-active-row-wash,
+		rgba(27, 27, 35, 0.05)
+	) !important;
 }
 
 .list-item__wrapper--active .list-item::before,
@@ -564,7 +601,10 @@ header#header {
 
 #content-vue,
 #content-vue.content {
-	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+	background-color: var(
+		--lasuite--contextuals--background--surface--tertiary,
+		var(--lasuite-color-gray-025)
+	) !important;
 	border-radius: 0 !important;
 	/* Fill the outer shell exactly. Nextcloud sizes this 8px short (it expects
 	   the outer shell's 8px bottom inset), which left a strip of body colour
@@ -605,7 +645,6 @@ body > #content-vue,
 	margin-block-start: var(--header-height, 50px) !important;
 }
 
-
 /* The single white card: the app's content area, inset from the grey.
    22px on every side — measured on the live La Suite app, whose <main> starts
    at x=300 and whose card starts at x=322, with the same 22px on the right.
@@ -615,7 +654,10 @@ body > #content-vue,
 #app-content,
 .app-content,
 #app-content-vue {
-	background: var(--lasuite--contextuals--background--surface--primary, var(--lasuite-color-gray-000)) !important;
+	background: var(
+		--lasuite--contextuals--background--surface--primary,
+		var(--lasuite-color-gray-000)
+	) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 	margin: 22px !important;
 }
@@ -632,7 +674,7 @@ body > #content-vue,
    misrepresent it as a heading. The rule and the spacing are the transferable
    part of La Suite's treatment — the type scale is not. */
 #app-content-vue .breadcrumb,
-#app-content-vue [class*="__breadcrumbs"],
+#app-content-vue [class*='__breadcrumbs'],
 .app-content .breadcrumb {
 	border-bottom: 1px solid var(--lasuite-color-gray-100) !important;
 	padding: 12px 24px !important;
@@ -650,9 +692,15 @@ body > #content-vue,
 button.primary,
 input.primary,
 .button-vue.button-vue--vue-primary,
-button[class*="primary"] {
-	background-color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
-	border-color: var(--lasuite-content-brand-icon, var(--lasuite-color-brand-550)) !important;
+button[class*='primary'] {
+	background-color: var(
+		--lasuite-content-brand-icon,
+		var(--lasuite-color-brand-550)
+	) !important;
+	border-color: var(
+		--lasuite-content-brand-icon,
+		var(--lasuite-color-brand-550)
+	) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
@@ -662,7 +710,7 @@ button[class*="primary"] {
 button.primary,
 button.primary *,
 input.primary,
-button[class*="primary"] {
+button[class*='primary'] {
 	/* La Suite's on-brand button text is brand-050 (#eef1fa), a pale violet-white,
 	   not pure white — matched to the shipped Cunningham CSS (2026-07-26).
 	   Selector kept symmetric with the fill rule above so any primary-classed
@@ -673,8 +721,14 @@ button[class*="primary"] {
 .button-vue--vue-primary:hover,
 button.primary:hover,
 .button-vue.button-vue--vue-primary:hover {
-	background-color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
-	border-color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
+	background-color: var(
+		--lasuite-content-brand,
+		var(--lasuite-color-brand-650)
+	) !important;
+	border-color: var(
+		--lasuite-content-brand,
+		var(--lasuite-color-brand-650)
+	) !important;
 }
 
 /* ============================================
@@ -689,8 +743,10 @@ button.primary:hover,
 .button-vue--vue-secondary,
 button.secondary,
 .button-vue.button-vue--vue-secondary,
-button[class*="secondary"] {
-	background-color: var(--lasuite--contextuals--background--semantic--brand--secondary) !important;
+button[class*='secondary'] {
+	background-color: var(
+		--lasuite--contextuals--background--semantic--brand--secondary
+	) !important;
 	border-color: transparent !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
@@ -700,8 +756,10 @@ button[class*="secondary"] {
 .button-vue--vue-secondary span,
 button.secondary,
 button.secondary *,
-button[class*="secondary"] {
-	color: var(--lasuite--contextuals--content--semantic--brand--secondary) !important;
+button[class*='secondary'] {
+	color: var(
+		--lasuite--contextuals--content--semantic--brand--secondary
+	) !important;
 }
 
 /* ============================================
@@ -767,7 +825,9 @@ button.secondary {
 .button-vue--tertiary.button-vue--icon-and-text:not(#header *),
 .button-vue--vue-tertiary.button-vue--text-only:not(#header *),
 .button-vue--vue-tertiary.button-vue--icon-and-text:not(#header *) {
-	color: var(--lasuite--contextuals--content--semantic--brand--tertiary) !important;
+	color: var(
+		--lasuite--contextuals--content--semantic--brand--tertiary
+	) !important;
 	background-color: transparent !important;
 }
 
@@ -795,21 +855,24 @@ select,
    INPUTS — 1px gray-300 border, 4px radius
    ============================================ */
 
-input[type="text"],
-input[type="search"],
-input[type="email"],
-input[type="url"],
-input[type="tel"],
-input[type="password"],
+input[type='text'],
+input[type='search'],
+input[type='email'],
+input[type='url'],
+input[type='tel'],
+input[type='password'],
 .input-field__input {
 	border: 1px solid var(--lasuite-color-gray-300) !important;
 	border-radius: var(--lasuite-border-radius) !important;
 }
 
-input[type="text"]:focus,
-input[type="search"]:focus,
-input[type="email"]:focus {
-	border-color: var(--lasuite-content-brand, var(--lasuite-color-brand-650)) !important;
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='email']:focus {
+	border-color: var(
+		--lasuite-content-brand,
+		var(--lasuite-color-brand-650)
+	) !important;
 	box-shadow: 0 0 0 2px var(--nldesign-color-focus) !important;
 }
 
@@ -827,7 +890,12 @@ label {
 	font-family: var(--lasuite-font-family);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	font-family: var(--lasuite-font-family);
 	color: var(--lasuite-color-gray-900);
 }
@@ -868,10 +936,18 @@ h1, h2, h3, h4, h5, h6 {
    ============================================ */
 
 @media (prefers-color-scheme: dark) {
-	body:not([data-theme-light]):not([data-theme-dark]):not([data-theme-light-highcontrast]):not([data-theme-dark-highcontrast]) {
-		--lasuite--contextuals--background--surface--primary: var(--lasuite-color-gray-850);
-		--lasuite--contextuals--background--surface--secondary: var(--lasuite-color-gray-900);
-		--lasuite--contextuals--background--surface--tertiary: var(--lasuite-color-gray-900);
+	body:not([data-theme-light]):not([data-theme-dark]):not(
+			[data-theme-light-highcontrast]
+		):not([data-theme-dark-highcontrast]) {
+		--lasuite--contextuals--background--surface--primary: var(
+			--lasuite-color-gray-850
+		);
+		--lasuite--contextuals--background--surface--secondary: var(
+			--lasuite-color-gray-900
+		);
+		--lasuite--contextuals--background--surface--tertiary: var(
+			--lasuite-color-gray-900
+		);
 		/* No gray-750/800 is emitted, so the hairline is a translucent white:
 		   it stays visible against both surface steps without inventing a ramp
 		   value that upstream would disagree with. */
@@ -885,10 +961,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 body[data-theme-dark],
-body[data-themes*="dark"] {
-	--lasuite--contextuals--background--surface--primary: var(--lasuite-color-gray-850);
-	--lasuite--contextuals--background--surface--secondary: var(--lasuite-color-gray-900);
-	--lasuite--contextuals--background--surface--tertiary: var(--lasuite-color-gray-900);
+body[data-themes*='dark'] {
+	--lasuite--contextuals--background--surface--primary: var(
+		--lasuite-color-gray-850
+	);
+	--lasuite--contextuals--background--surface--secondary: var(
+		--lasuite-color-gray-900
+	);
+	--lasuite--contextuals--background--surface--tertiary: var(
+		--lasuite-color-gray-900
+	);
 	--lasuite--contextuals--border--surface--primary: rgba(255, 255, 255, 0.12);
 	--lasuite-active-row-wash: rgba(255, 255, 255, 0.08);
 	--lasuite-content-primary: var(--lasuite-color-gray-050);
@@ -959,8 +1041,8 @@ body[data-themes*="dark"] {
 #header .app-menu-icon img {
 	filter: brightness(0) saturate(100%) invert(38%) sepia(69%) saturate(1907%)
 		hue-rotate(228deg) brightness(88%) contrast(88%) !important;
-	-webkit-filter: brightness(0) saturate(100%) invert(38%) sepia(69%) saturate(1907%)
-		hue-rotate(228deg) brightness(88%) contrast(88%) !important;
+	-webkit-filter: brightness(0) saturate(100%) invert(38%) sepia(69%)
+		saturate(1907%) hue-rotate(228deg) brightness(88%) contrast(88%) !important;
 	opacity: 1 !important;
 }
 
@@ -1043,7 +1125,10 @@ body,
 body#body-user,
 body#body-login,
 body#body-public {
-	background-color: var(--lasuite--contextuals--background--surface--tertiary, var(--lasuite-color-gray-025)) !important;
+	background-color: var(
+		--lasuite--contextuals--background--surface--tertiary,
+		var(--lasuite-color-gray-025)
+	) !important;
 	background-image: none !important;
 }
 

@@ -17,7 +17,6 @@
  * ============================================================================ */
 
 :root {
-
 	/* ===================================================================
 	 * PRIMARY COLORS
 	 * =================================================================== */
@@ -30,11 +29,15 @@
 	--color-primary-element-text: var(--nldesign-color-primary-text) !important;
 	/* --color-primary-element-text-dark: intentionally not overridden — dark variant auto-calculated by Nextcloud */
 	--color-primary-light: var(--nldesign-color-primary-light) !important;
-	--color-primary-light-hover: var(--nldesign-color-primary-light-hover) !important;
+	--color-primary-light-hover: var(
+		--nldesign-color-primary-light-hover
+	) !important;
 	--color-primary-light-text: var(--nldesign-color-primary) !important;
 	--color-primary-element-light: var(--nldesign-color-primary-light) !important;
 	--color-primary-element-light-text: var(--nldesign-color-primary) !important;
-	--color-primary-element-light-hover: var(--nldesign-color-primary-light-hover) !important;
+	--color-primary-element-light-hover: var(
+		--nldesign-color-primary-light-hover
+	) !important;
 
 	/* ===================================================================
 	 * MAIN BACKGROUND

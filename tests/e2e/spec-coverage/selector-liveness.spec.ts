@@ -66,7 +66,12 @@
  */
 
 import { expect, test, type Page } from '@playwright/test'
-import { THEMING_URL, getTokenSet, requestToken, setTokenSet } from '../workflows/_helpers'
+import {
+	THEMING_URL,
+	getTokenSet,
+	requestToken,
+	setTokenSet,
+} from '../workflows/_helpers'
 
 /**
  * A node that only exists once Nextcloud's Vue chrome has mounted.
@@ -182,7 +187,12 @@ const SURFACES: Array<Surface> = [
 	{ name: 'settings', path: '/settings/user' },
 	{ name: 'dashboard', path: '/apps/dashboard/' },
 	{ name: 'login', path: '/login', anonymous: true },
-	{ name: 'public-share', path: '', anonymous: true, resolvePath: () => publicShareUrl },
+	{
+		name: 'public-share',
+		path: '',
+		anonymous: true,
+		resolvePath: () => publicShareUrl,
+	},
 	{ name: 'files-dark', path: '/apps/files/', dark: true },
 ]
 
@@ -204,7 +214,8 @@ const ALLOWED: Array<{ pattern: RegExp; reason: string }> = [
 		reason: 'NC34 renders the app menu through a different structure; kept for older servers.',
 	},
 	{
-		pattern: /\.header-appname|\.header-left|\.header-right|\.menutoggle|\.unified-search__button|\.header-start \.icon-vue/,
+		pattern:
+			/\.header-appname|\.header-left|\.header-right|\.menutoggle|\.unified-search__button|\.header-start \.icon-vue/,
 		reason: 'Pre-Vue header classes retained as fallbacks for older Nextcloud releases.',
 	},
 	{
@@ -229,7 +240,8 @@ const ALLOWED: Array<{ pattern: RegExp; reason: string }> = [
 	},
 	{
 		pattern: /^(textarea|select|\.button)$|^input\[type=|^h[4-6]$/,
-		reason: 'Base-layer rules for plain form controls and minor headings. The surveyed surfaces are '
+		reason:
+			'Base-layer rules for plain form controls and minor headings. The surveyed surfaces are '
 			+ 'Vue apps that render their own components instead, but these still apply on form-bearing '
 			+ 'admin pages and inside dialogs.',
 	},
@@ -239,7 +251,8 @@ const ALLOWED: Array<{ pattern: RegExp; reason: string }> = [
 	},
 	{
 		pattern: /\.app-menu-entry__|\.app-menu-icon\b|\.unified-search-menu\b/,
-		reason: 'NC 32/33 header markup — the mirror image of the SINCE list below, and dead here for '
+		reason:
+			'NC 32/33 header markup — the mirror image of the SINCE list below, and dead here for '
 			+ 'exactly the reason its entries were dead before the pin moved. The survey now runs on '
 			+ 'stable34 (nextcloud-test-refs[0]), where the header is built from app-menu__waffle and '
 			+ 'unified-search-input; NC 32 builds it from app-menu-entry*, app-menu-icon and '
@@ -323,7 +336,8 @@ const MAX_SUPPORTED_NC = 34
  */
 const SINCE: Array<{ pattern: RegExp; since: number; reason: string }> = [
 	{
-		pattern: /^#header \.(app-menu__waffle|app-menu__current-app|unified-search-input|header-start (\.button-vue__icon|svg))/,
+		pattern:
+			/^#header \.(app-menu__waffle|app-menu__current-app|unified-search-input|header-start (\.button-vue__icon|svg))/,
 		since: 33,
 		reason:
 			'NC33+ header markup (waffle / current-app / inline unified-search). NC32 renders '
@@ -369,7 +383,9 @@ const REQUIRES_APP: Array<{ pattern: RegExp; appId: string; reason: string }> = 
 	},
 ]
 
-function deferredUntilApp(selector: string): { appId: string; reason: string } | null {
+function deferredUntilApp(
+	selector: string,
+): { appId: string; reason: string } | null {
 	for (const { pattern, appId, reason } of REQUIRES_APP) {
 		if (pattern.test(selector)) return { appId, reason }
 	}
@@ -397,17 +413,21 @@ function deferredUntilApp(selector: string): { appId: string; reason: string } |
  * navigation renders nothing at all, `chromeless` and the live-count floor
  * below still fail the run — this defers a missing STATE, never a missing page.
  */
-const REQUIRES_RENDERED: Array<{ pattern: RegExp; anchor: string; reason: string }> = [
-	{
-		pattern: /app-navigation-entry[\w.-]*\.active|\.active[\w.-]*\s+\.app-navigation-entry/,
-		anchor: NAV_READY,
-		reason:
-			'The active-row selectors need the router to mark one navigation entry active. This '
-			+ 'fixture renders the entries but never the active state.',
-	},
-]
+const REQUIRES_RENDERED: Array<{ pattern: RegExp; anchor: string; reason: string }> =
+	[
+		{
+			pattern:
+				/app-navigation-entry[\w.-]*\.active|\.active[\w.-]*\s+\.app-navigation-entry/,
+			anchor: NAV_READY,
+			reason:
+				'The active-row selectors need the router to mark one navigation entry active. This '
+				+ 'fixture renders the entries but never the active state.',
+		},
+	]
 
-function deferredUntilRendered(selector: string): { anchor: string; reason: string } | null {
+function deferredUntilRendered(
+	selector: string,
+): { anchor: string; reason: string } | null {
 	for (const { pattern, anchor, reason } of REQUIRES_RENDERED) {
 		if (pattern.test(selector)) return { anchor, reason }
 	}
@@ -432,7 +452,8 @@ function deferredUntilRendered(selector: string): { anchor: string; reason: stri
  */
 async function setDarkTheme(page: Page, enabled: boolean): Promise<void> {
 	const status = await page.evaluate(async (on) => {
-		const token = (window as unknown as { OC: { requestToken: string } }).OC.requestToken
+		const token = (window as unknown as { OC: { requestToken: string } }).OC
+			.requestToken
 		const res = await fetch(
 			on
 				? '/ocs/v2.php/apps/theming/api/v1/theme/dark/enable'
@@ -444,7 +465,10 @@ async function setDarkTheme(page: Page, enabled: boolean): Promise<void> {
 		)
 		return res.status
 	}, enabled)
-	expect(status, `switching Nextcloud's dark theme ${enabled ? 'on' : 'off'} failed`).toBe(200)
+	expect(
+		status,
+		`switching Nextcloud's dark theme ${enabled ? 'on' : 'off'} failed`,
+	).toBe(200)
 }
 
 let baselineTokenSet: string | null = null
@@ -504,9 +528,14 @@ test.describe('lasuite selector liveness', () => {
 		// a 412 body parsed for a token yields undefined, which is exactly how a
 		// failed read gets mistaken for a value.
 		const share = await page.evaluate(async () => {
-			const oc = (window as unknown as {
-				OC: { requestToken: string; getCurrentUser: () => { uid: string } }
-			}).OC
+			const oc = (
+				window as unknown as {
+					OC: {
+						requestToken: string
+						getCurrentUser: () => { uid: string }
+					}
+				}
+			).OC
 			// A dedicated folder, not `/`: Nextcloud answers 403 to a link share
 			// on the root, and not a skeleton folder either — `skeletondirectory`
 			// can be empty on a fresh instance, so /Documents is not guaranteed
@@ -524,9 +553,18 @@ test.describe('lasuite selector liveness', () => {
 					'Content-Type': 'application/json',
 					Accept: 'application/json',
 				},
-				body: JSON.stringify({ path: `/${dir}`, shareType: 3, permissions: 1 }),
+				body: JSON.stringify({
+					path: `/${dir}`,
+					shareType: 3,
+					permissions: 1,
+				}),
 			})
-			if (!res.ok) return { status: res.status, token: null as string | null, id: null as string | null }
+			if (!res.ok)
+				return {
+					status: res.status,
+					token: null as string | null,
+					id: null as string | null,
+				}
 			const json = await res.json()
 			return {
 				status: res.status,
@@ -557,7 +595,9 @@ test.describe('lasuite selector liveness', () => {
 				await fetch(`/ocs/v2.php/apps/files_sharing/api/v1/shares/${id}`, {
 					method: 'DELETE',
 					headers: {
-						requesttoken: (window as unknown as { OC: { requestToken: string } }).OC.requestToken,
+						requesttoken: (
+							window as unknown as { OC: { requestToken: string } }
+						).OC.requestToken,
 						'OCS-APIRequest': 'true',
 					},
 				})
@@ -566,9 +606,14 @@ test.describe('lasuite selector liveness', () => {
 		// And the folder the share hung off, so the spec leaves the instance as
 		// it found it rather than accreting one directory per run.
 		await page.evaluate(async () => {
-			const oc = (window as unknown as {
-				OC: { requestToken: string; getCurrentUser: () => { uid: string } }
-			}).OC
+			const oc = (
+				window as unknown as {
+					OC: {
+						requestToken: string
+						getCurrentUser: () => { uid: string }
+					}
+				}
+			).OC
 			await fetch(
 				`/remote.php/dav/files/${oc.getCurrentUser().uid}/nldesign-selector-liveness`,
 				{ method: 'DELETE', headers: { requesttoken: oc.requestToken } },
@@ -577,7 +622,10 @@ test.describe('lasuite selector liveness', () => {
 		await page.close()
 	})
 
-	test('every element-overrides selector matches something on at least one surface', async ({ browser, page }) => {
+	test('every element-overrides selector matches something on at least one surface', async ({
+		browser,
+		page,
+	}) => {
 		// Nine surfaces, most of them a full Vue app boot. test.slow() alone is
 		// not enough on a loaded dev instance, so the budget is set explicitly.
 		test.setTimeout(420_000)
@@ -603,19 +651,24 @@ test.describe('lasuite selector liveness', () => {
 		// signature failure (thirteen a11y gates once passed planted true
 		// positives because every one of them globbed `src/**/*.vue`, and
 		// nldesign ships zero .vue files).
-		const perSurface: Array<{ name: string; selectors: number; live: number }> = []
+		const perSurface: Array<{ name: string; selectors: number; live: number }> =
+			[]
 
 		for (const surface of SURFACES) {
-			const path = surface.resolvePath === undefined ? surface.path : surface.resolvePath()
+			const path =
+				surface.resolvePath === undefined
+					? surface.path
+					: surface.resolvePath()
 
 			// An anonymous surface gets its OWN context with the session
 			// explicitly cleared. Inheriting `use.storageState` would send admin's
 			// cookies to /login, Nextcloud would redirect to the dashboard, and
 			// the survey would measure a logged-in app while reporting that it had
 			// measured the login screen — green, and about the wrong page.
-			const context = surface.anonymous === true
-				? await browser.newContext({ storageState: EMPTY_SESSION })
-				: null
+			const context =
+				surface.anonymous === true
+					? await browser.newContext({ storageState: EMPTY_SESSION })
+					: null
 			const probePage = context === null ? page : await context.newPage()
 
 			// Dark is instance-visible state, so it goes on immediately before
@@ -631,7 +684,10 @@ test.describe('lasuite selector liveness', () => {
 				// not fatal — a guard that breaks when the instance is slow gets
 				// switched off, and then it protects nothing.
 				try {
-					await probePage.goto(path, { waitUntil: 'domcontentloaded', timeout: 45_000 })
+					await probePage.goto(path, {
+						waitUntil: 'domcontentloaded',
+						timeout: 45_000,
+					})
 				} catch {
 					unreachable.push(surface.name)
 					continue
@@ -664,7 +720,10 @@ test.describe('lasuite selector liveness', () => {
 				// as a failure.
 				if (surface.anonymous !== true) {
 					try {
-						await probePage.waitForSelector(CHROME_READY, { state: 'attached', timeout: 60_000 })
+						await probePage.waitForSelector(CHROME_READY, {
+							state: 'attached',
+							timeout: 60_000,
+						})
 					} catch {
 						chromeless.push(surface.name)
 					}
@@ -675,20 +734,32 @@ test.describe('lasuite selector liveness', () => {
 				// anchor waited for on an instance that cannot produce it would
 				// burn its whole timeout and then fail for the wrong reason.
 				if (surface.anonymous !== true) {
-					const apps = await probePage.evaluate(
-						() => Object.keys((window as unknown as {
-							OC?: { appswebroots?: Record<string, string> }
-						}).OC?.appswebroots ?? {}),
+					const apps = await probePage.evaluate(() =>
+						Object.keys(
+							(
+								window as unknown as {
+									OC?: { appswebroots?: Record<string, string> }
+								}
+							).OC?.appswebroots ?? {},
+						),
 					)
 					apps.forEach((app) => installedApps.add(app))
 				}
 				for (const anchor of surface.awaitAlso ?? []) {
-					if (anchor.requiresApp !== undefined && !installedApps.has(anchor.requiresApp)) {
-						skippedAnchors.push(`${surface.name}: ${anchor.selector} (app '${anchor.requiresApp}' not enabled)`)
+					if (
+						anchor.requiresApp !== undefined
+						&& !installedApps.has(anchor.requiresApp)
+					) {
+						skippedAnchors.push(
+							`${surface.name}: ${anchor.selector} (app '${anchor.requiresApp}' not enabled)`,
+						)
 						continue
 					}
 					try {
-						await probePage.waitForSelector(anchor.selector, { state: 'attached', timeout: 60_000 })
+						await probePage.waitForSelector(anchor.selector, {
+							state: 'attached',
+							timeout: 60_000,
+						})
 						renderedAnchors.add(anchor.selector)
 					} catch {
 						unrendered.push(`${surface.name}: ${anchor.selector}`)
@@ -710,7 +781,11 @@ test.describe('lasuite selector liveness', () => {
 
 				const result = await probePage.evaluate(() => {
 					const sheet = [...document.styleSheets].find(
-						(s) => s.href && /systems\/lasuite\/element-overrides\.css/.test(s.href),
+						(s) =>
+							s.href
+							&& /systems\/lasuite\/element-overrides\.css/.test(
+								s.href,
+							),
 					)
 					if (!sheet) return null
 
@@ -742,7 +817,8 @@ test.describe('lasuite selector liveness', () => {
 								.trim()
 							if (!probe) continue
 							try {
-								if (document.querySelectorAll(probe).length > 0) live.push(sel)
+								if (document.querySelectorAll(probe).length > 0)
+									live.push(sel)
 							} catch {
 								/* invalid probe after stripping — reported as dead */
 							}
@@ -751,9 +827,17 @@ test.describe('lasuite selector liveness', () => {
 					// The running server's major version. Which half of a
 					// cross-version stylesheet CAN match here depends on it, so it
 					// is read from the page rather than assumed.
-					const version = (window as unknown as { OC?: { config?: { version?: string } } })
-						.OC?.config?.version ?? ''
-					return { selectors, live, major: Number.parseInt(version.split('.')[0], 10) || 0 }
+					const version =
+						(
+							window as unknown as {
+								OC?: { config?: { version?: string } }
+							}
+						).OC?.config?.version ?? ''
+					return {
+						selectors,
+						live,
+						major: Number.parseInt(version.split('.')[0], 10) || 0,
+					}
 				})
 
 				if (result === null) continue
@@ -793,13 +877,19 @@ test.describe('lasuite selector liveness', () => {
 		if (unreachable.length > 0) {
 			// Surfaced rather than swallowed: a run that silently surveyed half the
 			// surfaces looks identical to a clean one otherwise.
-			console.warn(`[selector-liveness] surfaces that did not load: ${unreachable.join(', ')}`)
+			console.warn(
+				`[selector-liveness] surfaces that did not load: ${unreachable.join(', ')}`,
+			)
 		}
 		if (chromeless.length > 0) {
-			console.warn(`[selector-liveness] surfaces whose Vue chrome never mounted: ${chromeless.join(', ')}`)
+			console.warn(
+				`[selector-liveness] surfaces whose Vue chrome never mounted: ${chromeless.join(', ')}`,
+			)
 		}
 		if (unrendered.length > 0) {
-			console.warn(`[selector-liveness] late-mounting nodes that never arrived: ${unrendered.join('; ')}`)
+			console.warn(
+				`[selector-liveness] late-mounting nodes that never arrived: ${unrendered.join('; ')}`,
+			)
 		}
 
 		// The survey has to have SEEN something. Zero selectors parsed, or almost
@@ -848,9 +938,11 @@ test.describe('lasuite selector liveness', () => {
 			.filter((sel) => allowedReason(sel) === null)
 			.filter((sel) => {
 				const versionGate = deferredUntil(sel)
-				if (versionGate !== null && serverMajor < versionGate.since) return true
+				if (versionGate !== null && serverMajor < versionGate.since)
+					return true
 				const appGate = deferredUntilApp(sel)
-				if (appGate !== null && !installedApps.has(appGate.appId)) return true
+				if (appGate !== null && !installedApps.has(appGate.appId))
+					return true
 				const renderGate = deferredUntilRendered(sel)
 				return renderGate !== null && !renderedAnchors.has(renderGate.anchor)
 			})
@@ -863,7 +955,9 @@ test.describe('lasuite selector liveness', () => {
 			)
 		}
 		if (skippedAnchors.length > 0) {
-			console.warn(`[selector-liveness] readiness anchors not awaited: ${skippedAnchors.join('; ')}`)
+			console.warn(
+				`[selector-liveness] readiness anchors not awaited: ${skippedAnchors.join('; ')}`,
+			)
 		}
 
 		// BOTH DEFERRALS EXPIRE BY THEMSELVES, WHICH IS WHAT SEPARATES THEM FROM
@@ -900,7 +994,9 @@ test.describe('lasuite selector liveness', () => {
 		).toEqual([])
 	})
 
-	test('the two shells the theme resizes are actually present and full-bleed', async ({ page }) => {
+	test('the two shells the theme resizes are actually present and full-bleed', async ({
+		page,
+	}) => {
 		// Regression lock for the band-and-frame defect specifically: it is not
 		// enough that the selectors match — the boxes have to reach the edges,
 		// or the body colour shows through again.
@@ -908,15 +1004,27 @@ test.describe('lasuite selector liveness', () => {
 		await page.waitForTimeout(2500)
 
 		const geometry = await page.evaluate(() => {
-			const shell = document.querySelector('#content-vue') as HTMLElement | null
+			const shell = document.querySelector(
+				'#content-vue',
+			) as HTMLElement | null
 			if (!shell) return null
 			const r = shell.getBoundingClientRect()
-			return { x: Math.round(r.x), width: Math.round(r.width), viewport: window.innerWidth }
+			return {
+				x: Math.round(r.x),
+				width: Math.round(r.width),
+				viewport: window.innerWidth,
+			}
 		})
 
-		test.skip(geometry === null, '#content-vue not present on this Nextcloud version')
+		test.skip(
+			geometry === null,
+			'#content-vue not present on this Nextcloud version',
+		)
 
-		expect(geometry!.x, 'the content shell must start at the window edge, not inset').toBe(0)
+		expect(
+			geometry!.x,
+			'the content shell must start at the window edge, not inset',
+		).toBe(0)
 		expect(
 			geometry!.width,
 			'the content shell must span the full viewport, or body colour shows down the side',

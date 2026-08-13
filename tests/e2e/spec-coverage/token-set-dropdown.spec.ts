@@ -16,7 +16,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('token-set-dropdown', () => {
-
 	// @e2e exclude openspec/specs/token-set-dropdown/spec.md#dropdown-renders-with-all-token-sets
 	// Covered by admin-settings dropdown-populated-with-token-sets test.
 
@@ -36,21 +35,19 @@ test.describe('token-set-dropdown', () => {
 	// Preview update on selection — covered by admin-settings preview-box test.
 
 	// Smoke: dropdown is a <select> with options (validates this spec's core UI requirement)
-	test(
-		// @e2e openspec/specs/token-set-dropdown/spec.md#dropdown-renders-with-all-token-sets
-		'Token set selector is a searchable <select> with multiple options',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('domcontentloaded')
-			const select = page.locator('#nldesign-token-set-select')
-			await expect(select).toBeVisible()
-			// Must be a native <select> element (not radio buttons)
-			const tagName = await select.evaluate(el => el.tagName.toLowerCase())
-			expect(tagName).toBe('select')
-			// Must have options
-			const count = await select.locator('option').count()
-			expect(count).toBeGreaterThan(1)
-		},
-	)
-
+	test(// @e2e openspec/specs/token-set-dropdown/spec.md#dropdown-renders-with-all-token-sets
+	'Token set selector is a searchable <select> with multiple options', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		const select = page.locator('#nldesign-token-set-select')
+		await expect(select).toBeVisible()
+		// Must be a native <select> element (not radio buttons)
+		const tagName = await select.evaluate((el) => el.tagName.toLowerCase())
+		expect(tagName).toBe('select')
+		// Must have options
+		const count = await select.locator('option').count()
+		expect(count).toBeGreaterThan(1)
+	})
 })

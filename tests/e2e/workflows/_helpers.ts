@@ -20,7 +20,10 @@ export const THEMING_URL = '/settings/admin/theming'
 
 /** Read the CSRF request token from the loaded admin page. */
 export async function requestToken(page: Page): Promise<string> {
-	const token = await page.evaluate(() => (window as unknown as { OC: { requestToken: string } }).OC.requestToken)
+	const token = await page.evaluate(
+		() =>
+			(window as unknown as { OC: { requestToken: string } }).OC.requestToken,
+	)
 	if (!token) {
 		throw new Error('Could not read OC.requestToken — page not authenticated?')
 	}
@@ -38,36 +41,59 @@ export async function requestToken(page: Page): Promise<string> {
 export async function openTheming(page: Page): Promise<void> {
 	await page.goto(THEMING_URL)
 	await page.waitForLoadState('domcontentloaded')
-	await page.waitForFunction(() => typeof (window as unknown as { OC?: unknown }).OC !== 'undefined', null, { timeout: 30_000 })
+	await page.waitForFunction(
+		() => typeof (window as unknown as { OC?: unknown }).OC !== 'undefined',
+		null,
+		{ timeout: 30_000 },
+	)
 	try {
-		await page.waitForSelector('#nldesign-token-editor .nldesign-token-editor', { timeout: 30_000 })
+		await page.waitForSelector('#nldesign-token-editor .nldesign-token-editor', {
+			timeout: 30_000,
+		})
 	} catch {
 		// Absorb a transient recompile/mount delay with one reload + longer wait.
 		await page.reload()
 		await page.waitForLoadState('domcontentloaded')
-		await page.waitForSelector('#nldesign-token-editor .nldesign-token-editor', { timeout: 30_000 })
+		await page.waitForSelector('#nldesign-token-editor .nldesign-token-editor', {
+			timeout: 30_000,
+		})
 	}
 }
 
 /** Fetch the persisted custom token overrides from the backend (GET /settings/overrides). */
-export async function getOverrides(page: Page, token: string): Promise<Record<string, string>> {
+export async function getOverrides(
+	page: Page,
+	token: string,
+): Promise<Record<string, string>> {
 	return await page.evaluate(async (t) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), { headers: { requesttoken: t } })
+		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), {
+			headers: { requesttoken: t },
+		})
 		const j = await r.json()
 		return j.overrides || {}
 	}, token)
 }
 
 /** Persist a full override map (POST /settings/overrides). Fully replaces the file. */
-export async function setOverrides(page: Page, token: string, overrides: Record<string, string>): Promise<void> {
-	const res = await page.evaluate(async ({ t, ov }) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', requesttoken: t },
-			body: JSON.stringify({ overrides: ov }),
-		})
-		return { status: r.status, body: await r.json() }
-	}, { t: token, ov: overrides })
+export async function setOverrides(
+	page: Page,
+	token: string,
+	overrides: Record<string, string>,
+): Promise<void> {
+	const res = await page.evaluate(
+		async ({ t, ov }) => {
+			const r = await fetch(
+				OC.generateUrl('/apps/nldesign/settings/overrides'),
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', requesttoken: t },
+					body: JSON.stringify({ overrides: ov }),
+				},
+			)
+			return { status: r.status, body: await r.json() }
+		},
+		{ t: token, ov: overrides },
+	)
 	expect(res.status, `setOverrides should 200, got ${res.status}`).toBe(200)
 	expect(res.body.status).toBe('ok')
 }
@@ -85,10 +111,18 @@ export async function setOverrides(page: Page, token: string, overrides: Record<
  * wrong URL. `OC.filePath()` is the platform's own resolver and is right in
  * both layouts.
  */
-export async function appAssetUrl(page: Page, type: string, file: string): Promise<string> {
+export async function appAssetUrl(
+	page: Page,
+	type: string,
+	file: string,
+): Promise<string> {
 	return page.evaluate(
-		({ t, f }) => (window as unknown as { OC: { filePath: (a: string, t: string, f: string) => string } })
-			.OC.filePath('nldesign', t, f),
+		({ t, f }) =>
+			(
+				window as unknown as {
+					OC: { filePath: (a: string, t: string, f: string) => string }
+				}
+			).OC.filePath('nldesign', t, f),
 		{ t: type, f: file },
 	)
 }
@@ -97,62 +131,97 @@ export async function appAssetUrl(page: Page, type: string, file: string): Promi
 export async function getServedOverrideCss(page: Page): Promise<string> {
 	const url = await appAssetUrl(page, 'css', 'custom-overrides.css')
 	const res = await page.request.get(url)
-	expect(res.ok(), `custom-overrides.css should be served (${url}, HTTP ${res.status()})`).toBeTruthy()
+	expect(
+		res.ok(),
+		`custom-overrides.css should be served (${url}, HTTP ${res.status()})`,
+	).toBeTruthy()
 	return await res.text()
 }
 
 /** Read the active token set (GET /settings/tokenset). */
 export async function getTokenSet(page: Page, token: string): Promise<string> {
 	return await page.evaluate(async (t) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/tokenset'), { headers: { requesttoken: t } })
+		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/tokenset'), {
+			headers: { requesttoken: t },
+		})
 		const j = await r.json()
 		return j.tokenSet
 	}, token)
 }
 
 /** Set the active token set (POST /settings/tokenset). */
-export async function setTokenSet(page: Page, token: string, tokenSet: string): Promise<void> {
-	const res = await page.evaluate(async ({ t, ts }) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/tokenset'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', requesttoken: t },
-			body: JSON.stringify({ tokenSet: ts }),
-		})
-		return { status: r.status, body: await r.json() }
-	}, { t: token, ts: tokenSet })
+export async function setTokenSet(
+	page: Page,
+	token: string,
+	tokenSet: string,
+): Promise<void> {
+	const res = await page.evaluate(
+		async ({ t, ts }) => {
+			const r = await fetch(
+				OC.generateUrl('/apps/nldesign/settings/tokenset'),
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', requesttoken: t },
+					body: JSON.stringify({ tokenSet: ts }),
+				},
+			)
+			return { status: r.status, body: await r.json() }
+		},
+		{ t: token, ts: tokenSet },
+	)
 	expect(res.status).toBe(200)
 	expect(res.body.status).toBe('ok')
 }
 
 /** Set the hide-slogan boolean app setting (POST /settings/slogan). */
-export async function setSlogan(page: Page, token: string, hideSlogan: boolean): Promise<void> {
-	const res = await page.evaluate(async ({ t, v }) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/slogan'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', requesttoken: t },
-			body: JSON.stringify({ hideSlogan: v }),
-		})
-		return { status: r.status, body: await r.json() }
-	}, { t: token, v: hideSlogan })
+export async function setSlogan(
+	page: Page,
+	token: string,
+	hideSlogan: boolean,
+): Promise<void> {
+	const res = await page.evaluate(
+		async ({ t, v }) => {
+			const r = await fetch(OC.generateUrl('/apps/nldesign/settings/slogan'), {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', requesttoken: t },
+				body: JSON.stringify({ hideSlogan: v }),
+			})
+			return { status: r.status, body: await r.json() }
+		},
+		{ t: token, v: hideSlogan },
+	)
 	expect(res.status).toBe(200)
 	expect(res.body.status).toBe('ok')
 }
 
 /** Set the show-menu-labels boolean app setting (POST /settings/menulabels). */
-export async function setMenuLabels(page: Page, token: string, show: boolean): Promise<void> {
-	const res = await page.evaluate(async ({ t, v }) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/menulabels'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', requesttoken: t },
-			body: JSON.stringify({ showMenuLabels: v }),
-		})
-		return { status: r.status, body: await r.json() }
-	}, { t: token, v: show })
+export async function setMenuLabels(
+	page: Page,
+	token: string,
+	show: boolean,
+): Promise<void> {
+	const res = await page.evaluate(
+		async ({ t, v }) => {
+			const r = await fetch(
+				OC.generateUrl('/apps/nldesign/settings/menulabels'),
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', requesttoken: t },
+					body: JSON.stringify({ showMenuLabels: v }),
+				},
+			)
+			return { status: r.status, body: await r.json() }
+		},
+		{ t: token, v: show },
+	)
 	expect(res.status).toBe(200)
 	expect(res.body.status).toBe('ok')
 }
 
 /** Read the live computed value of a CSS custom property on the document root. */
 export async function liveCssVar(page: Page, name: string): Promise<string> {
-	return await page.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name)
+	return await page.evaluate(
+		(n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+		name,
+	)
 }

@@ -256,7 +256,12 @@ function hexToRgb(hex: string): string {
 
 /** Normalise a computed font-family list for comparison: split, trim, lower-case, strip quotes. */
 function normaliseFontFamily(computed: string): string[] {
-	return computed.split(',').map((f) => f.trim().replace(/^['"]|['"]$/g, '').toLowerCase())
+	return computed.split(',').map((f) =>
+		f
+			.trim()
+			.replace(/^['"]|['"]$/g, '')
+			.toLowerCase(),
+	)
 }
 
 interface ComputedSubset {
@@ -271,7 +276,10 @@ interface ComputedSubset {
 }
 
 /** Read the subset of computed styles this spec ever compares, for one element. */
-async function readComputedStyle(page: Page, selector: string): Promise<ComputedSubset> {
+async function readComputedStyle(
+	page: Page,
+	selector: string,
+): Promise<ComputedSubset> {
 	return page.evaluate((sel) => {
 		const el = document.querySelector(sel)
 		if (!el) throw new Error(`Element not found: ${sel}`)
@@ -300,39 +308,59 @@ async function readComputedStyle(page: Page, selector: string): Promise<Computed
  * properties present on `ref`. On mismatch, throws naming the exact
  * property and the expected-vs-actual delta.
  */
-function assertMatchesReference(elementName: string, computed: ComputedSubset, ref: StyleRef): void {
+function assertMatchesReference(
+	elementName: string,
+	computed: ComputedSubset,
+	ref: StyleRef,
+): void {
 	if (ref.backgroundColor !== undefined) {
-		expect(computed.backgroundColor, `${elementName}: background-color — expected ${ref.backgroundColor} (${hexToRgb(ref.backgroundColor)}), got ${computed.backgroundColor}`)
-			.toBe(hexToRgb(ref.backgroundColor))
+		expect(
+			computed.backgroundColor,
+			`${elementName}: background-color — expected ${ref.backgroundColor} (${hexToRgb(ref.backgroundColor)}), got ${computed.backgroundColor}`,
+		).toBe(hexToRgb(ref.backgroundColor))
 	}
 	if (ref.color !== undefined) {
-		expect(computed.color, `${elementName}: color — expected ${ref.color} (${hexToRgb(ref.color)}), got ${computed.color}`)
-			.toBe(hexToRgb(ref.color))
+		expect(
+			computed.color,
+			`${elementName}: color — expected ${ref.color} (${hexToRgb(ref.color)}), got ${computed.color}`,
+		).toBe(hexToRgb(ref.color))
 	}
 	if (ref.borderColor !== undefined) {
-		expect(computed.borderColor, `${elementName}: border-color — expected ${ref.borderColor} (${hexToRgb(ref.borderColor)}), got ${computed.borderColor}`)
-			.toBe(hexToRgb(ref.borderColor))
+		expect(
+			computed.borderColor,
+			`${elementName}: border-color — expected ${ref.borderColor} (${hexToRgb(ref.borderColor)}), got ${computed.borderColor}`,
+		).toBe(hexToRgb(ref.borderColor))
 	}
 	if (ref.borderWidth !== undefined) {
-		expect(computed.borderWidth, `${elementName}: border-width — expected ${ref.borderWidth}, got ${computed.borderWidth}`)
-			.toBe(ref.borderWidth)
+		expect(
+			computed.borderWidth,
+			`${elementName}: border-width — expected ${ref.borderWidth}, got ${computed.borderWidth}`,
+		).toBe(ref.borderWidth)
 	}
 	if (ref.borderStyle !== undefined) {
-		expect(computed.borderStyle, `${elementName}: border-style — expected ${ref.borderStyle}, got ${computed.borderStyle}`)
-			.toBe(ref.borderStyle)
+		expect(
+			computed.borderStyle,
+			`${elementName}: border-style — expected ${ref.borderStyle}, got ${computed.borderStyle}`,
+		).toBe(ref.borderStyle)
 	}
 	if (ref.borderRadius !== undefined) {
-		expect(computed.borderRadius, `${elementName}: border-radius — expected ${ref.borderRadius}, got ${computed.borderRadius}`)
-			.toBe(ref.borderRadius)
+		expect(
+			computed.borderRadius,
+			`${elementName}: border-radius — expected ${ref.borderRadius}, got ${computed.borderRadius}`,
+		).toBe(ref.borderRadius)
 	}
 	if (ref.fontFamily !== undefined) {
 		const actual = normaliseFontFamily(computed.fontFamily)
-		expect(actual, `${elementName}: font-family — expected [${ref.fontFamily.join(', ')}], got [${actual.join(', ')}]`)
-			.toEqual(ref.fontFamily)
+		expect(
+			actual,
+			`${elementName}: font-family — expected [${ref.fontFamily.join(', ')}], got [${actual.join(', ')}]`,
+		).toEqual(ref.fontFamily)
 	}
 	if (ref.fontWeight !== undefined) {
-		expect(computed.fontWeight, `${elementName}: font-weight — expected ${ref.fontWeight}, got ${computed.fontWeight}`)
-			.toBe(ref.fontWeight)
+		expect(
+			computed.fontWeight,
+			`${elementName}: font-weight — expected ${ref.fontWeight}, got ${computed.fontWeight}`,
+		).toBe(ref.fontWeight)
 	}
 }
 
@@ -352,8 +380,11 @@ let baselineTokenSet: string | null = null
  */
 async function createPublicShare(page: Page, token: string): Promise<string> {
 	const res = await page.evaluate(async (t) => {
-		const base = (window as unknown as { OC: { linkToOCS: (s: string, v: number) => string } })
-			.OC.linkToOCS('apps/files_sharing/api/v1', 2)
+		const base = (
+			window as unknown as {
+				OC: { linkToOCS: (s: string, v: number) => string }
+			}
+		).OC.linkToOCS('apps/files_sharing/api/v1', 2)
 		const r = await fetch(`${base}shares?format=json`, {
 			method: 'POST',
 			headers: {
@@ -364,12 +395,19 @@ async function createPublicShare(page: Page, token: string): Promise<string> {
 			// welcome.txt is seeded into every fresh Nextcloud's admin home by
 			// core's first-login hook; shareType 3 = public link, permission 1 =
 			// read.
-			body: JSON.stringify({ path: '/welcome.txt', shareType: 3, permissions: 1 }),
+			body: JSON.stringify({
+				path: '/welcome.txt',
+				shareType: 3,
+				permissions: 1,
+			}),
 		})
 		return { status: r.status, body: await r.text() }
 	}, token)
 
-	expect(res.status, `public share creation: HTTP ${res.status} — ${res.body.slice(0, 400)}`).toBe(200)
+	expect(
+		res.status,
+		`public share creation: HTTP ${res.status} — ${res.body.slice(0, 400)}`,
+	).toBe(200)
 	const parsed = JSON.parse(res.body)
 	expect(
 		parsed?.ocs?.meta?.statuscode,
@@ -448,11 +486,13 @@ test.describe('lasuite-parity', () => {
 
 	for (const set of ['lasuite', 'cunningham'] as const) {
 		for (const element of referenceTable(set)) {
-			test(`${set}: ${element.name} matches the Cunningham reference`, async ({ page }) => {
+			test(`${set}: ${element.name} matches the Cunningham reference`, async ({
+				page,
+			}) => {
 				await page.goto(THEMING_URL, { waitUntil: 'domcontentloaded' })
 				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
-		// the network never goes idle and this wait burns the whole test budget.
-		await page.waitForLoadState('domcontentloaded')
+				// the network never goes idle and this wait burns the whole test budget.
+				await page.waitForLoadState('domcontentloaded')
 				const token = await requestToken(page)
 				await setTokenSet(page, token, set)
 
@@ -461,22 +501,30 @@ test.describe('lasuite-parity', () => {
 				// expose. Only the surface the element is then MEASURED on
 				// differs.
 				if (element.surface === 'public') {
-					await page.goto(await createPublicShare(page, token), { waitUntil: 'domcontentloaded' })
+					await page.goto(await createPublicShare(page, token), {
+						waitUntil: 'domcontentloaded',
+					})
 				} else {
 					await page.reload({ waitUntil: 'domcontentloaded' })
 				}
 				// `domcontentloaded`, not `networkidle`: Nextcloud polls in the background, so
-		// the network never goes idle and this wait burns the whole test budget.
-		await page.waitForLoadState('domcontentloaded')
+				// the network never goes idle and this wait burns the whole test budget.
+				await page.waitForLoadState('domcontentloaded')
 
 				await page.waitForSelector(element.selector, { timeout: 15_000 })
 				const computed = await readComputedStyle(page, element.selector)
-				assertMatchesReference(`${set} ${element.name}`, computed, element.ref)
+				assertMatchesReference(
+					`${set} ${element.name}`,
+					computed,
+					element.ref,
+				)
 			})
 		}
 	}
 
-	test('unified-search modal, when present, matches the shared radius token', async ({ page }) => {
+	test('unified-search modal, when present, matches the shared radius token', async ({
+		page,
+	}) => {
 		// .modal-container is styled defensively by element-overrides.css
 		// (theming NC-core's OWN native modal component) but nldesign's own
 		// vanilla-JS admin panel never renders one itself — so this check
@@ -539,8 +587,11 @@ test.describe('lasuite-parity', () => {
 		const searchButton = page.locator(
 			'#header .unified-search-menu .header-menu__trigger, #header #unified-search, #header .unified-search__button',
 		)
-		if (await searchButton.count() === 0) {
-			test.skip(true, 'unified-search trigger not present in header on this NC version')
+		if ((await searchButton.count()) === 0) {
+			test.skip(
+				true,
+				'unified-search trigger not present in header on this NC version',
+			)
 			return
 		}
 		await searchButton.first().click()
@@ -549,12 +600,20 @@ test.describe('lasuite-parity', () => {
 		try {
 			await modal.first().waitFor({ state: 'visible', timeout: 5_000 })
 		} catch {
-			test.skip(true, '.modal-container did not appear for unified search on this NC version')
+			test.skip(
+				true,
+				'.modal-container did not appear for unified search on this NC version',
+			)
 			return
 		}
 
-		const borderRadius = await modal.first().evaluate((el) => getComputedStyle(el).borderRadius)
-		expect(borderRadius, `modal: border-radius — expected ${BORDER_RADIUS}, got ${borderRadius}`).toBe(BORDER_RADIUS)
+		const borderRadius = await modal
+			.first()
+			.evaluate((el) => getComputedStyle(el).borderRadius)
+		expect(
+			borderRadius,
+			`modal: border-radius — expected ${BORDER_RADIUS}, got ${borderRadius}`,
+		).toBe(BORDER_RADIUS)
 
 		// Best-effort cleanup — close the dialog so it doesn't linger for the
 		// next test in this serial run.

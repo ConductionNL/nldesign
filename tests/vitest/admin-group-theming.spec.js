@@ -30,15 +30,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 function installInitialState(state) {
 	global.OCP = Object.assign(global.OCP || {}, {
 		InitialState: {
-			loadState: (app, key, fallback) => (
-				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
-			),
+			loadState: (app, key, fallback) =>
+				Object.prototype.hasOwnProperty.call(state, key)
+					? state[key]
+					: fallback,
 		},
 	})
 }
 
 function buildDom() {
-	installInitialState({ tokenSets: [], currentTokenSet: 'nextcloud', activePreview: null, iconPackSource: '' })
+	installInitialState({
+		tokenSets: [],
+		currentTokenSet: 'nextcloud',
+		activePreview: null,
+		iconPackSource: '',
+	})
 	document.body.innerHTML = `
 		<div id="nldesign-settings" class="section">
 			<select id="nldesign-token-set-select" name="nldesign-token-set"></select>
@@ -62,7 +68,10 @@ function installGlobals() {
 		if (params === undefined) {
 			return text
 		}
-		return Object.keys(params).reduce((acc, key) => acc.replace('{' + key + '}', params[key]), text)
+		return Object.keys(params).reduce(
+			(acc, key) => acc.replace('{' + key + '}', params[key]),
+			text,
+		)
 	}
 	global.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 	global.OC = {
@@ -80,10 +89,18 @@ function installFetchRouter(routes) {
 		const method = (options && options.method) || 'GET'
 		for (const [matchUrl, matchMethod, body] of routes) {
 			if (url.indexOf(matchUrl) !== -1 && method === matchMethod) {
-				return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) })
+				return Promise.resolve({
+					ok: true,
+					status: 200,
+					json: () => Promise.resolve(body),
+				})
 			}
 		}
-		return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) })
+		return Promise.resolve({
+			ok: true,
+			status: 200,
+			json: () => Promise.resolve({}),
+		})
 	})
 }
 
@@ -121,43 +138,65 @@ describe('admin.js group theming section', () => {
 	it('renders mapping rows in the stored priority order', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', {
-				mapping: [
-					{ group: 'gemeente-a', tokenSet: 'amsterdam' },
-					{ group: 'gemeente-b', tokenSet: 'utrecht' },
-				],
-				groups: GROUPS,
-				tokenSets: TOKEN_SETS,
-			}],
+			[
+				'/settings/group-theming',
+				'GET',
+				{
+					mapping: [
+						{ group: 'gemeente-a', tokenSet: 'amsterdam' },
+						{ group: 'gemeente-b', tokenSet: 'utrecht' },
+					],
+					groups: GROUPS,
+					tokenSets: TOKEN_SETS,
+				},
+			],
 		])
 
 		await loadAdminScript()
 
 		const rows = document.querySelectorAll('.nldesign-group-theming-row')
 		expect(rows.length).toBe(2)
-		expect(rows[0].querySelector('[data-field="group"]').value).toBe('gemeente-a')
-		expect(rows[0].querySelector('[data-field="tokenSet"]').value).toBe('amsterdam')
-		expect(rows[1].querySelector('[data-field="group"]').value).toBe('gemeente-b')
-		expect(rows[1].querySelector('[data-field="tokenSet"]').value).toBe('utrecht')
+		expect(rows[0].querySelector('[data-field="group"]').value).toBe(
+			'gemeente-a',
+		)
+		expect(rows[0].querySelector('[data-field="tokenSet"]').value).toBe(
+			'amsterdam',
+		)
+		expect(rows[1].querySelector('[data-field="group"]').value).toBe(
+			'gemeente-b',
+		)
+		expect(rows[1].querySelector('[data-field="tokenSet"]').value).toBe(
+			'utrecht',
+		)
 	})
 
 	it('shows the empty state when no mappings are configured', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', { mapping: [], groups: GROUPS, tokenSets: TOKEN_SETS }],
+			[
+				'/settings/group-theming',
+				'GET',
+				{ mapping: [], groups: GROUPS, tokenSets: TOKEN_SETS },
+			],
 		])
 
 		await loadAdminScript()
 
 		const listEl = document.getElementById('nldesign-group-theming-list')
 		expect(listEl.textContent).toContain('No group mappings configured.')
-		expect(document.querySelectorAll('.nldesign-group-theming-row').length).toBe(0)
+		expect(document.querySelectorAll('.nldesign-group-theming-row').length).toBe(
+			0,
+		)
 	})
 
 	it('adds a row via the Add mapping button', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', { mapping: [], groups: GROUPS, tokenSets: TOKEN_SETS }],
+			[
+				'/settings/group-theming',
+				'GET',
+				{ mapping: [], groups: GROUPS, tokenSets: TOKEN_SETS },
+			],
 		])
 
 		await loadAdminScript()
@@ -166,49 +205,66 @@ describe('admin.js group theming section', () => {
 
 		const rows = document.querySelectorAll('.nldesign-group-theming-row')
 		expect(rows.length).toBe(1)
-		expect(rows[0].querySelector('[data-field="group"]').value).toBe('gemeente-a')
-		expect(rows[0].querySelector('[data-field="tokenSet"]').value).toBe('amsterdam')
+		expect(rows[0].querySelector('[data-field="group"]').value).toBe(
+			'gemeente-a',
+		)
+		expect(rows[0].querySelector('[data-field="tokenSet"]').value).toBe(
+			'amsterdam',
+		)
 	})
 
 	it('removes a row via its remove button', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', {
-				mapping: [
-					{ group: 'gemeente-a', tokenSet: 'amsterdam' },
-					{ group: 'gemeente-b', tokenSet: 'utrecht' },
-				],
-				groups: GROUPS,
-				tokenSets: TOKEN_SETS,
-			}],
+			[
+				'/settings/group-theming',
+				'GET',
+				{
+					mapping: [
+						{ group: 'gemeente-a', tokenSet: 'amsterdam' },
+						{ group: 'gemeente-b', tokenSet: 'utrecht' },
+					],
+					groups: GROUPS,
+					tokenSets: TOKEN_SETS,
+				},
+			],
 		])
 
 		await loadAdminScript()
 
-		document.querySelectorAll('.nldesign-group-theming-row')[0]
-			.querySelector('.nldesign-group-theming-remove').click()
+		document
+			.querySelectorAll('.nldesign-group-theming-row')[0]
+			.querySelector('.nldesign-group-theming-remove')
+			.click()
 
 		const rows = document.querySelectorAll('.nldesign-group-theming-row')
 		expect(rows.length).toBe(1)
-		expect(rows[0].querySelector('[data-field="group"]').value).toBe('gemeente-b')
+		expect(rows[0].querySelector('[data-field="group"]').value).toBe(
+			'gemeente-b',
+		)
 	})
 
-	it('reorders with the keyboard alone and keeps focus on the moved row\'s move-up button', async () => {
+	it("reorders with the keyboard alone and keeps focus on the moved row's move-up button", async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', {
-				mapping: [
-					{ group: 'gemeente-a', tokenSet: 'amsterdam' },
-					{ group: 'gemeente-b', tokenSet: 'utrecht' },
-				],
-				groups: GROUPS,
-				tokenSets: TOKEN_SETS,
-			}],
+			[
+				'/settings/group-theming',
+				'GET',
+				{
+					mapping: [
+						{ group: 'gemeente-a', tokenSet: 'amsterdam' },
+						{ group: 'gemeente-b', tokenSet: 'utrecht' },
+					],
+					groups: GROUPS,
+					tokenSets: TOKEN_SETS,
+				},
+			],
 		])
 
 		await loadAdminScript()
 
-		const secondRowMoveUp = document.querySelectorAll('.nldesign-group-theming-row')[1]
+		const secondRowMoveUp = document
+			.querySelectorAll('.nldesign-group-theming-row')[1]
 			.querySelector('.nldesign-group-theming-move-up')
 		secondRowMoveUp.focus()
 		// A native <button> fires 'click' on Enter/Space activation — dispatch
@@ -216,36 +272,54 @@ describe('admin.js group theming section', () => {
 		secondRowMoveUp.click()
 
 		const rows = document.querySelectorAll('.nldesign-group-theming-row')
-		expect(rows[0].querySelector('[data-field="group"]').value).toBe('gemeente-b')
-		expect(rows[1].querySelector('[data-field="group"]').value).toBe('gemeente-a')
+		expect(rows[0].querySelector('[data-field="group"]').value).toBe(
+			'gemeente-b',
+		)
+		expect(rows[1].querySelector('[data-field="group"]').value).toBe(
+			'gemeente-a',
+		)
 		// Focus MUST stay on the row the user just moved (WCAG 2.1.1 Keyboard /
 		// 2.4.3 Focus Order — focus must never fall back to <body>). The row is
 		// now first, so its move-up button is disabled and cannot hold focus;
 		// the nearest operable control on the same row takes it instead.
 		expect(rows[0].contains(document.activeElement)).toBe(true)
-		expect(document.activeElement).toBe(rows[0].querySelector('.nldesign-group-theming-move-down'))
+		expect(document.activeElement).toBe(
+			rows[0].querySelector('.nldesign-group-theming-move-down'),
+		)
 	})
 
 	it('disables move-up on the first row and move-down on the last row', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', {
-				mapping: [
-					{ group: 'gemeente-a', tokenSet: 'amsterdam' },
-					{ group: 'gemeente-b', tokenSet: 'utrecht' },
-				],
-				groups: GROUPS,
-				tokenSets: TOKEN_SETS,
-			}],
+			[
+				'/settings/group-theming',
+				'GET',
+				{
+					mapping: [
+						{ group: 'gemeente-a', tokenSet: 'amsterdam' },
+						{ group: 'gemeente-b', tokenSet: 'utrecht' },
+					],
+					groups: GROUPS,
+					tokenSets: TOKEN_SETS,
+				},
+			],
 		])
 
 		await loadAdminScript()
 
 		const rows = document.querySelectorAll('.nldesign-group-theming-row')
-		expect(rows[0].querySelector('.nldesign-group-theming-move-up').disabled).toBe(true)
-		expect(rows[1].querySelector('.nldesign-group-theming-move-down').disabled).toBe(true)
-		expect(rows[0].querySelector('.nldesign-group-theming-move-down').disabled).toBe(false)
-		expect(rows[1].querySelector('.nldesign-group-theming-move-up').disabled).toBe(false)
+		expect(
+			rows[0].querySelector('.nldesign-group-theming-move-up').disabled,
+		).toBe(true)
+		expect(
+			rows[1].querySelector('.nldesign-group-theming-move-down').disabled,
+		).toBe(true)
+		expect(
+			rows[0].querySelector('.nldesign-group-theming-move-down').disabled,
+		).toBe(false)
+		expect(
+			rows[1].querySelector('.nldesign-group-theming-move-up').disabled,
+		).toBe(false)
 	})
 
 	it('POSTs the mapping in the displayed order and announces success', async () => {
@@ -257,14 +331,15 @@ describe('admin.js group theming section', () => {
 				return Promise.resolve({
 					ok: true,
 					status: 200,
-					json: () => Promise.resolve({
-						mapping: [
-							{ group: 'gemeente-a', tokenSet: 'amsterdam' },
-							{ group: 'gemeente-b', tokenSet: 'utrecht' },
-						],
-						groups: GROUPS,
-						tokenSets: TOKEN_SETS,
-					}),
+					json: () =>
+						Promise.resolve({
+							mapping: [
+								{ group: 'gemeente-a', tokenSet: 'amsterdam' },
+								{ group: 'gemeente-b', tokenSet: 'utrecht' },
+							],
+							groups: GROUPS,
+							tokenSets: TOKEN_SETS,
+						}),
 				})
 			}
 			if (url.indexOf('/settings/group-theming') !== -1 && method === 'POST') {
@@ -272,17 +347,27 @@ describe('admin.js group theming section', () => {
 				return Promise.resolve({
 					ok: true,
 					status: 200,
-					json: () => Promise.resolve({ status: 'ok', mapping: postedBody.mapping }),
+					json: () =>
+						Promise.resolve({
+							status: 'ok',
+							mapping: postedBody.mapping,
+						}),
 				})
 			}
-			return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) })
+			return Promise.resolve({
+				ok: true,
+				status: 200,
+				json: () => Promise.resolve({}),
+			})
 		})
 
 		await loadAdminScript()
 
 		// Move the second row above the first, then save.
-		document.querySelectorAll('.nldesign-group-theming-row')[1]
-			.querySelector('.nldesign-group-theming-move-up').click()
+		document
+			.querySelectorAll('.nldesign-group-theming-row')[1]
+			.querySelector('.nldesign-group-theming-move-up')
+			.click()
 		document.getElementById('nldesign-group-theming-save').click()
 		await flush()
 
@@ -292,17 +377,23 @@ describe('admin.js group theming section', () => {
 				{ group: 'gemeente-a', tokenSet: 'amsterdam' },
 			],
 		})
-		expect(document.getElementById('nldesign-group-theming-feedback').textContent).toContain('saved')
+		expect(
+			document.getElementById('nldesign-group-theming-feedback').textContent,
+		).toContain('saved')
 	})
 
 	it('surfaces a 422 validation error per entry without resetting the rows', async () => {
 		buildDom()
 		installFetchRouter([
-			['/settings/group-theming', 'GET', {
-				mapping: [{ group: 'gemeente-a', tokenSet: 'amsterdam' }],
-				groups: GROUPS,
-				tokenSets: TOKEN_SETS,
-			}],
+			[
+				'/settings/group-theming',
+				'GET',
+				{
+					mapping: [{ group: 'gemeente-a', tokenSet: 'amsterdam' }],
+					groups: GROUPS,
+					tokenSets: TOKEN_SETS,
+				},
+			],
 		])
 
 		await loadAdminScript()
@@ -313,14 +404,19 @@ describe('admin.js group theming section', () => {
 				return Promise.resolve({
 					ok: false,
 					status: 422,
-					json: () => Promise.resolve({
-						error: 'invalid_mapping',
-						entry: { group: 'gemeente-a', tokenSet: 'amsterdam' },
-						reason: 'Group "gemeente-a" does not exist.',
-					}),
+					json: () =>
+						Promise.resolve({
+							error: 'invalid_mapping',
+							entry: { group: 'gemeente-a', tokenSet: 'amsterdam' },
+							reason: 'Group "gemeente-a" does not exist.',
+						}),
 				})
 			}
-			return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) })
+			return Promise.resolve({
+				ok: true,
+				status: 200,
+				json: () => Promise.resolve({}),
+			})
 		})
 
 		document.getElementById('nldesign-group-theming-save').click()
@@ -330,6 +426,8 @@ describe('admin.js group theming section', () => {
 		expect(feedback.textContent).toContain('gemeente-a')
 		expect(feedback.textContent).toContain('does not exist')
 		// Rows remain editable — no silent state reset.
-		expect(document.querySelectorAll('.nldesign-group-theming-row').length).toBe(1)
+		expect(document.querySelectorAll('.nldesign-group-theming-row').length).toBe(
+			1,
+		)
 	})
 })

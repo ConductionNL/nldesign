@@ -17,7 +17,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('custom-css-overrides', () => {
-
 	// @e2e exclude openspec/specs/custom-css-overrides/spec.md#file-does-not-exist-on-fresh-install
 	// Filesystem/fresh-install state — not DOM-testable.
 
@@ -52,15 +51,13 @@ test.describe('custom-css-overrides', () => {
 	// Filesystem state reset — not DOM-testable.
 
 	// Smoke: token editor Save button is present (the UI entry point for custom-overrides.css writes)
-	test(
-		// @e2e openspec/specs/custom-css-overrides/spec.md#file-is-written-by-the-save-endpoint
-		'Token editor Save overrides button is present (custom-overrides.css write entry point)',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('domcontentloaded')
-			const saveBtn = page.locator('button:has-text("Save overrides")')
-			await expect(saveBtn).toBeVisible()
-		},
-	)
-
+	test(// @e2e openspec/specs/custom-css-overrides/spec.md#file-is-written-by-the-save-endpoint
+	'Token editor Save overrides button is present (custom-overrides.css write entry point)', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		const saveBtn = page.locator('button:has-text("Save overrides")')
+		await expect(saveBtn).toBeVisible()
+	})
 })

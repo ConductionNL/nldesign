@@ -85,7 +85,9 @@ function main() {
 
 	const missing = [...audited.all].filter((name) => !bridge.all.has(name)).sort()
 
-	const activelyOverriddenCompatVars = DARK_MODE_COMPAT_VARS.filter((name) => bridge.mapped.has(name))
+	const activelyOverriddenCompatVars = DARK_MODE_COMPAT_VARS.filter((name) =>
+		bridge.mapped.has(name),
+	)
 
 	let failed = false
 

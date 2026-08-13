@@ -119,14 +119,20 @@ describe('parseDeclarations', () => {
 	.not-a-declaration { color: red; }
 `
 		const decls = parseDeclarations(block)
-		expect(decls).toEqual([{ name: '--c--globals--colors--brand-600', value: '#0659C5' }])
+		expect(decls).toEqual([
+			{ name: '--c--globals--colors--brand-600', value: '#0659C5' },
+		])
 	})
 
 	it('handles a var() reference as the value', () => {
-		const block = '\t--c--contextuals--content--logo1: var(--c--globals--colors--logo-1);\n'
+		const block =
+			'\t--c--contextuals--content--logo1: var(--c--globals--colors--logo-1);\n'
 		const decls = parseDeclarations(block)
 		expect(decls).toEqual([
-			{ name: '--c--contextuals--content--logo1', value: 'var(--c--globals--colors--logo-1)' },
+			{
+				name: '--c--contextuals--content--logo1',
+				value: 'var(--c--globals--colors--logo-1)',
+			},
 		])
 	})
 
@@ -150,13 +156,15 @@ describe('parseDeclarations', () => {
 	})
 
 	it('normalises a wrapped value so it compares equal to the single-line form', () => {
-		const wrapped = parseDeclarations('--c--x--y: var(\n  --c--a--b\n);')[0].value
+		const wrapped = parseDeclarations('--c--x--y: var(\n  --c--a--b\n);')[0]
+			.value
 		const inline = parseDeclarations('--c--x--y: var(--c--a--b);')[0].value
 		expect(wrapped).toBe(inline)
 	})
 
 	it('never parses a declaration that only appears inside a comment', () => {
-		const block = '/* --c--globals--colors--brand-600: #ffffff; */\n\t--c--globals--colors--brand-650: #1A509F;\n'
+		const block =
+			'/* --c--globals--colors--brand-600: #ffffff; */\n\t--c--globals--colors--brand-650: #1A509F;\n'
 		expect(parseDeclarations(block)).toEqual([
 			{ name: '--c--globals--colors--brand-650', value: '#1A509F' },
 		])
@@ -176,7 +184,11 @@ describe('generate', () => {
 `
 
 	function build() {
-		return generate({ sourceCss, packageVersion: '3.0.0', generationDate: '2026-07-24' })
+		return generate({
+			sourceCss,
+			packageVersion: '3.0.0',
+			generationDate: '2026-07-24',
+		})
 	}
 
 	it('emits one --lasuite--* token for every --c--* declaration in both blocks', () => {
@@ -203,7 +215,9 @@ describe('generate', () => {
 		// The one literal alias (no upstream border-radius token exists).
 		expect(out).toContain('--lasuite-border-radius: 4px;')
 		// A var()-derived alias resolves to its canonical token.
-		expect(out).toContain('--lasuite-color-brand-650: var(--lasuite--globals--colors--brand-650);')
+		expect(out).toContain(
+			'--lasuite-color-brand-650: var(--lasuite--globals--colors--brand-650);',
+		)
 	})
 
 	it('is deterministic — regenerating from the same input yields byte-identical output', () => {
@@ -212,13 +226,21 @@ describe('generate', () => {
 
 	it('throws a clear error when the light block is missing from the source', () => {
 		expect(() =>
-			generate({ sourceCss: '.cunningham-theme--dark{ --c--x: 1; }', packageVersion: '3.0.0', generationDate: '2026-07-24' }),
+			generate({
+				sourceCss: '.cunningham-theme--dark{ --c--x: 1; }',
+				packageVersion: '3.0.0',
+				generationDate: '2026-07-24',
+			}),
 		).toThrow(/light "html/)
 	})
 
 	it('throws a clear error when the dark block is missing from the source', () => {
 		expect(() =>
-			generate({ sourceCss: 'html{ --c--x: 1; }', packageVersion: '3.0.0', generationDate: '2026-07-24' }),
+			generate({
+				sourceCss: 'html{ --c--x: 1; }',
+				packageVersion: '3.0.0',
+				generationDate: '2026-07-24',
+			}),
 		).toThrow(/dark ".cunningham-theme--dark/)
 	})
 })
@@ -234,11 +256,15 @@ describe('normaliseForCompare', () => {
 	})
 
 	it('is case-insensitive and whitespace-insensitive', () => {
-		expect(normaliseForCompare('  var( --c--x )')).toBe(normaliseForCompare('VAR( --c--x )'))
+		expect(normaliseForCompare('  var( --c--x )')).toBe(
+			normaliseForCompare('VAR( --c--x )'),
+		)
 	})
 
 	it('keeps genuinely different colours distinct', () => {
-		expect(normaliseForCompare('#a7acb2')).not.toBe(normaliseForCompare('#a9a9bf'))
+		expect(normaliseForCompare('#a7acb2')).not.toBe(
+			normaliseForCompare('#a9a9bf'),
+		)
 	})
 })
 
@@ -274,14 +300,22 @@ describe('computeOverrideDelta', () => {
 	})
 
 	it('includes contextuals whose declaration text differs (a repointed semantic)', () => {
-		const b2 = parseDeclarations('html {\n\t--c--contextuals--content--logo1: var(--c--globals--colors--brand-600);\n}')
-		const d2 = parseDeclarations(':root {\n\t--c--contextuals--content--logo1: var(--c--globals--colors--logo-1-light);\n}')
+		const b2 = parseDeclarations(
+			'html {\n\t--c--contextuals--content--logo1: var(--c--globals--colors--brand-600);\n}',
+		)
+		const d2 = parseDeclarations(
+			':root {\n\t--c--contextuals--content--logo1: var(--c--globals--colors--logo-1-light);\n}',
+		)
 		const delta = computeOverrideDelta(d2, b2)
-		expect(delta.map((d) => d.name)).toEqual(['--lasuite--contextuals--content--logo1'])
+		expect(delta.map((d) => d.name)).toEqual([
+			'--lasuite--contextuals--content--logo1',
+		])
 	})
 
 	it('includes tokens new in the deployed build (absent from the base)', () => {
-		const d3 = parseDeclarations(':root {\n\t--c--globals--colors--logo-1-light: #4844ad;\n}')
+		const d3 = parseDeclarations(
+			':root {\n\t--c--globals--colors--logo-1-light: #4844ad;\n}',
+		)
 		expect(computeOverrideDelta(d3, base).map((d) => d.name)).toContain(
 			'--lasuite--globals--colors--logo-1-light',
 		)
@@ -299,7 +333,12 @@ describe('generateBrandOverride', () => {
 }`
 
 	function build() {
-		return generateBrandOverride({ deployedCss, baseCss, packageVersion: '3.0.0', generationDate: '2026-07-26' })
+		return generateBrandOverride({
+			deployedCss,
+			baseCss,
+			packageVersion: '3.0.0',
+			generationDate: '2026-07-26',
+		})
 	}
 
 	it('emits the violet delta as canonical --lasuite--* overrides in a :root block', () => {
@@ -311,7 +350,9 @@ describe('generateBrandOverride', () => {
 
 	it('re-asserts the consumed short colour aliases pointing at their canonicals', () => {
 		const out = build()
-		expect(out).toContain('--lasuite-color-brand-550: var(--lasuite--globals--colors--brand-550);')
+		expect(out).toContain(
+			'--lasuite-color-brand-550: var(--lasuite--globals--colors--brand-550);',
+		)
 		// The literal border-radius alias is NOT a colour → not re-asserted here.
 		expect(out).not.toContain('--lasuite-border-radius:')
 	})
@@ -323,9 +364,14 @@ describe('generateBrandOverride', () => {
 		expect(out).toContain('Override token count: 2')
 	})
 
-	it('strips the vendored source\'s leading provenance comment before extracting :root', () => {
+	it("strips the vendored source's leading provenance comment before extracting :root", () => {
 		const withHeader = `/**\n * provenance header, no braces\n */\n${deployedCss}`
-		const out = generateBrandOverride({ deployedCss: withHeader, baseCss, packageVersion: '3.0.0', generationDate: '2026-07-26' })
+		const out = generateBrandOverride({
+			deployedCss: withHeader,
+			baseCss,
+			packageVersion: '3.0.0',
+			generationDate: '2026-07-26',
+		})
 		expect(out).toContain('--lasuite--globals--colors--brand-550: #5e5cd0;')
 	})
 

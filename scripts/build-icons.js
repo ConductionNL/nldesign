@@ -39,39 +39,68 @@
  * scripts/icon-aliases.json and img/ICONS.md for the removal deadline.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const iconsDestPath = path.join(__dirname, '..', 'img', 'icons');
-const logosDestPath = path.join(__dirname, '..', 'img', 'logos');
-const iconsMdPath = path.join(__dirname, '..', 'img', 'ICONS.md');
-const aliasesPath = path.join(__dirname, 'icon-aliases.json');
+const iconsDestPath = path.join(__dirname, '..', 'img', 'icons')
+const logosDestPath = path.join(__dirname, '..', 'img', 'logos')
+const iconsMdPath = path.join(__dirname, '..', 'img', 'ICONS.md')
+const aliasesPath = path.join(__dirname, 'icon-aliases.json')
 
 /** Data-URI catalogue packs: nc-vue module -> destination set directory name. */
 const DATA_URI_PACKS = [
-	{ kind: 'dataUri', specifier: '@conduction/nextcloud-vue/src/icons/rvo.js', exportName: 'rvoIcons', set: 'rvo', upstream: 'RVO / ROOS (Rijksdienst voor Ondernemend Nederland)', licence: 'CC0-1.0' },
-	{ kind: 'dataUri', specifier: '@conduction/nextcloud-vue/src/icons/openGemeenten.js', exportName: 'openGemeentenIcons', set: 'open-gemeenten', upstream: 'OpenGemeenten Iconenset ("Line" style)', licence: 'CC0-1.0' },
-	{ kind: 'dataUri', specifier: '@conduction/nextcloud-vue/src/icons/denHaag.js', exportName: 'denHaagIcons', set: 'den-haag', upstream: 'Gemeente Den Haag icon set', licence: 'EUPL-1.2' },
-];
+	{
+		kind: 'dataUri',
+		specifier: '@conduction/nextcloud-vue/src/icons/rvo.js',
+		exportName: 'rvoIcons',
+		set: 'rvo',
+		upstream: 'RVO / ROOS (Rijksdienst voor Ondernemend Nederland)',
+		licence: 'CC0-1.0',
+	},
+	{
+		kind: 'dataUri',
+		specifier: '@conduction/nextcloud-vue/src/icons/openGemeenten.js',
+		exportName: 'openGemeentenIcons',
+		set: 'open-gemeenten',
+		upstream: 'OpenGemeenten Iconenset ("Line" style)',
+		licence: 'CC0-1.0',
+	},
+	{
+		kind: 'dataUri',
+		specifier: '@conduction/nextcloud-vue/src/icons/denHaag.js',
+		exportName: 'denHaagIcons',
+		set: 'den-haag',
+		upstream: 'Gemeente Den Haag icon set',
+		licence: 'EUPL-1.2',
+	},
+]
 
 /** Filesystem-glob packs: real SVG files copied verbatim, keyed by basename. */
 const GLOB_PACKS = [
 	{
 		kind: 'glob',
 		set: 'dsfr',
-		upstream: 'Système de Design de l\'État (DSFR) — @gouvfr/dsfr',
+		upstream: "Système de Design de l'État (DSFR) — @gouvfr/dsfr",
 		licence: 'Etalab-2.0',
 		// First existing directory wins: the real npm package path (per
 		// openspec/specs/icon-assets/spec.md), falling back to the pre-fetched
 		// scratch source — see the file docblock above.
 		sourceDirs: [
-			path.join(__dirname, '..', 'node_modules', '@gouvfr', 'dsfr', 'dist', 'icons'),
+			path.join(
+				__dirname,
+				'..',
+				'node_modules',
+				'@gouvfr',
+				'dsfr',
+				'dist',
+				'icons',
+			),
 			path.join(__dirname, '..', '.dsfr-src', 'icons'),
 		],
 	},
-];
+]
 
-const DATA_URI_PREFIX = 'data:image/svg+xml,';
+const DATA_URI_PREFIX = 'data:image/svg+xml,'
 
 /**
  * Decode a nc-vue pack entry's data:image/svg+xml,... URI back into raw SVG markup.
@@ -81,15 +110,17 @@ const DATA_URI_PREFIX = 'data:image/svg+xml,';
  */
 function decodeDataUri(url) {
 	if (!url.startsWith(DATA_URI_PREFIX)) {
-		throw new Error(`Unexpected icon URL format (missing ${DATA_URI_PREFIX} prefix): ${url.slice(0, 40)}...`);
+		throw new Error(
+			`Unexpected icon URL format (missing ${DATA_URI_PREFIX} prefix): ${url.slice(0, 40)}...`,
+		)
 	}
-	return decodeURIComponent(url.slice(DATA_URI_PREFIX.length));
+	return decodeURIComponent(url.slice(DATA_URI_PREFIX.length))
 }
 
 /** Recreate a directory empty (idempotent regenerate). */
 function resetDir(dir) {
-	fs.rmSync(dir, { recursive: true, force: true });
-	fs.mkdirSync(dir, { recursive: true });
+	fs.rmSync(dir, { recursive: true, force: true })
+	fs.mkdirSync(dir, { recursive: true })
 }
 
 /**
@@ -99,16 +130,16 @@ function resetDir(dir) {
  * fs.globSync, so the script stays dependency-free and Node-version-stable.
  */
 function listSvgFilesRecursive(dir) {
-	const results = [];
+	const results = []
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-		const full = path.join(dir, entry.name);
+		const full = path.join(dir, entry.name)
 		if (entry.isDirectory()) {
-			results.push(...listSvgFilesRecursive(full));
+			results.push(...listSvgFilesRecursive(full))
 		} else if (entry.isFile() && entry.name.toLowerCase().endsWith('.svg')) {
-			results.push(full);
+			results.push(full)
 		}
 	}
-	return results;
+	return results
 }
 
 /**
@@ -122,21 +153,27 @@ function listSvgFilesRecursive(dir) {
  */
 function snapshotPackDir(dir) {
 	/** @type {Map<string, string>} */
-	const snapshot = new Map();
+	const snapshot = new Map()
 	if (fs.existsSync(dir) === false || fs.statSync(dir).isDirectory() === false) {
-		return snapshot;
+		return snapshot
 	}
-	const files = fs.readdirSync(dir)
+	const files = fs
+		.readdirSync(dir)
 		.filter((f) => f.toLowerCase().endsWith('.svg'))
-		.sort();
+		.sort()
 	for (const file of files) {
-		snapshot.set(path.basename(file, '.svg'), fs.readFileSync(path.join(dir, file), 'utf8'));
+		snapshot.set(
+			path.basename(file, '.svg'),
+			fs.readFileSync(path.join(dir, file), 'utf8'),
+		)
 	}
-	return snapshot;
+	return snapshot
 }
 
 async function main() {
-	console.log('Building NL Design System Icons from @conduction/nextcloud-vue and @gouvfr/dsfr...');
+	console.log(
+		'Building NL Design System Icons from @conduction/nextcloud-vue and @gouvfr/dsfr...',
+	)
 
 	// Snapshot every glob pack's already-committed artefacts BEFORE the wipe.
 	//
@@ -151,42 +188,55 @@ async function main() {
 	// script then exited 1. `npm run build` could not succeed anywhere except a
 	// developer box that had manually pre-fetched the source.
 	/** @type {Map<string, Map<string, string>>} */
-	const committedGlobPacks = new Map();
+	const committedGlobPacks = new Map()
 	for (const pack of GLOB_PACKS) {
-		committedGlobPacks.set(pack.set, snapshotPackDir(path.join(iconsDestPath, pack.set)));
+		committedGlobPacks.set(
+			pack.set,
+			snapshotPackDir(path.join(iconsDestPath, pack.set)),
+		)
 	}
 
-	resetDir(iconsDestPath);
+	resetDir(iconsDestPath)
 
 	/** @type {Map<string, { icons: Array<{id: string, label?: string, url?: string}>, upstream: string, licence: string }>} */
-	const packData = new Map();
+	const packData = new Map()
 	/** @type {Map<string, string>} set/key -> decoded SVG content, for alias resolution */
-	const svgByPath = new Map();
+	const svgByPath = new Map()
 
 	for (const pack of DATA_URI_PACKS) {
-		const mod = await import(pack.specifier);
-		const icons = mod[pack.exportName];
+		const mod = await import(pack.specifier)
+		const icons = mod[pack.exportName]
 		if (!Array.isArray(icons) || icons.length === 0) {
-			console.error(`✗ Pack "${pack.set}" (${pack.specifier}) yielded zero icons.`);
-			process.exit(1);
+			console.error(
+				`✗ Pack "${pack.set}" (${pack.specifier}) yielded zero icons.`,
+			)
+			process.exit(1)
 		}
 
-		const setDir = path.join(iconsDestPath, pack.set);
-		fs.mkdirSync(setDir, { recursive: true });
+		const setDir = path.join(iconsDestPath, pack.set)
+		fs.mkdirSync(setDir, { recursive: true })
 
 		for (const entry of icons) {
-			const svg = decodeDataUri(entry.url);
-			const destFile = path.join(setDir, `${entry.id}.svg`);
-			fs.writeFileSync(destFile, svg);
-			svgByPath.set(`${pack.set}/${entry.id}`, svg);
+			const svg = decodeDataUri(entry.url)
+			const destFile = path.join(setDir, `${entry.id}.svg`)
+			fs.writeFileSync(destFile, svg)
+			svgByPath.set(`${pack.set}/${entry.id}`, svg)
 		}
 
-		packData.set(pack.set, { icons, upstream: pack.upstream, licence: pack.licence });
-		console.log(`✓ Materialized ${icons.length} icons for set "${pack.set}" -> ${setDir}`);
+		packData.set(pack.set, {
+			icons,
+			upstream: pack.upstream,
+			licence: pack.licence,
+		})
+		console.log(
+			`✓ Materialized ${icons.length} icons for set "${pack.set}" -> ${setDir}`,
+		)
 	}
 
 	for (const pack of GLOB_PACKS) {
-		const sourceDir = pack.sourceDirs.find((d) => fs.existsSync(d) && fs.statSync(d).isDirectory());
+		const sourceDir = pack.sourceDirs.find(
+			(d) => fs.existsSync(d) && fs.statSync(d).isDirectory(),
+		)
 		if (sourceDir === undefined) {
 			// The upstream source is unavailable. That is an EXPECTED state for
 			// this pack, not a build error: @gouvfr/dsfr sits in
@@ -205,54 +255,68 @@ async function main() {
 			// still resolve `dsfr/*` replacements. Skipping would silently drop
 			// 1038 icons and the Etalab-2.0 attribution row out of a COMMITTED
 			// file, which is a far worse failure than the one being fixed.
-			const committed = committedGlobPacks.get(pack.set) ?? new Map();
+			const committed = committedGlobPacks.get(pack.set) ?? new Map()
 			if (committed.size === 0) {
-				console.error(`✗ Pack "${pack.set}" has no available source directory (tried: ${pack.sourceDirs.join(', ')}) and no committed icons under ${path.join(iconsDestPath, pack.set)} to fall back on.`);
-				process.exit(1);
+				console.error(
+					`✗ Pack "${pack.set}" has no available source directory (tried: ${pack.sourceDirs.join(', ')}) and no committed icons under ${path.join(iconsDestPath, pack.set)} to fall back on.`,
+				)
+				process.exit(1)
 			}
 
-			const setDir = path.join(iconsDestPath, pack.set);
-			fs.mkdirSync(setDir, { recursive: true });
-			const icons = [];
+			const setDir = path.join(iconsDestPath, pack.set)
+			fs.mkdirSync(setDir, { recursive: true })
+			const icons = []
 			for (const [basename, svg] of committed) {
-				fs.writeFileSync(path.join(setDir, `${basename}.svg`), svg);
-				svgByPath.set(`${pack.set}/${basename}`, svg);
-				icons.push({ id: basename });
+				fs.writeFileSync(path.join(setDir, `${basename}.svg`), svg)
+				svgByPath.set(`${pack.set}/${basename}`, svg)
+				icons.push({ id: basename })
 			}
 
-			packData.set(pack.set, { icons, upstream: pack.upstream, licence: pack.licence });
-			console.log(`⚠ Pack "${pack.set}": no source directory available (tried: ${pack.sourceDirs.join(', ')}).`);
-			console.log(`✓ Preserved ${icons.length} already-committed icons for set "${pack.set}" -> ${setDir}`);
-			console.log('  To refresh from upstream: npm install --no-save @gouvfr/dsfr@1.15.1 && npm run build:icons');
-			continue;
+			packData.set(pack.set, {
+				icons,
+				upstream: pack.upstream,
+				licence: pack.licence,
+			})
+			console.log(
+				`⚠ Pack "${pack.set}": no source directory available (tried: ${pack.sourceDirs.join(', ')}).`,
+			)
+			console.log(
+				`✓ Preserved ${icons.length} already-committed icons for set "${pack.set}" -> ${setDir}`,
+			)
+			console.log(
+				'  To refresh from upstream: npm install --no-save @gouvfr/dsfr@1.15.1 && npm run build:icons',
+			)
+			continue
 		}
 
-		const sourceFiles = listSvgFilesRecursive(sourceDir);
+		const sourceFiles = listSvgFilesRecursive(sourceDir)
 		if (sourceFiles.length === 0) {
-			console.error(`✗ Pack "${pack.set}" (${sourceDir}) yielded zero icons.`);
-			process.exit(1);
+			console.error(`✗ Pack "${pack.set}" (${sourceDir}) yielded zero icons.`)
+			process.exit(1)
 		}
 
-		const setDir = path.join(iconsDestPath, pack.set);
-		fs.mkdirSync(setDir, { recursive: true });
+		const setDir = path.join(iconsDestPath, pack.set)
+		fs.mkdirSync(setDir, { recursive: true })
 
 		/** @type {Map<string, string>} basename -> source file path, to detect duplicates */
-		const seenBasenames = new Map();
-		const icons = [];
+		const seenBasenames = new Map()
+		const icons = []
 		for (const file of sourceFiles) {
-			const basename = path.basename(file, path.extname(file));
-			const previous = seenBasenames.get(basename);
+			const basename = path.basename(file, path.extname(file))
+			const previous = seenBasenames.get(basename)
 			if (previous !== undefined) {
-				console.error(`✗ Pack "${pack.set}" has a duplicate icon basename "${basename}": "${previous}" and "${file}".`);
-				process.exit(1);
+				console.error(
+					`✗ Pack "${pack.set}" has a duplicate icon basename "${basename}": "${previous}" and "${file}".`,
+				)
+				process.exit(1)
 			}
-			seenBasenames.set(basename, file);
+			seenBasenames.set(basename, file)
 
-			const svg = fs.readFileSync(file, 'utf8');
-			const destFile = path.join(setDir, `${basename}.svg`);
-			fs.writeFileSync(destFile, svg);
-			svgByPath.set(`${pack.set}/${basename}`, svg);
-			icons.push({ id: basename });
+			const svg = fs.readFileSync(file, 'utf8')
+			const destFile = path.join(setDir, `${basename}.svg`)
+			fs.writeFileSync(destFile, svg)
+			svgByPath.set(`${pack.set}/${basename}`, svg)
+			icons.push({ id: basename })
 		}
 
 		// Sort by id before recording. `listSvgFilesRecursive` returns
@@ -264,40 +328,55 @@ async function main() {
 		// ever produce sorted order. Sorting here too makes ICONS.md identical
 		// whether or not the optional upstream source happens to be installed,
 		// instead of flip-flopping the committed file between the two.
-		icons.sort((a, b) => a.id.localeCompare(b.id));
+		icons.sort((a, b) => a.id.localeCompare(b.id))
 
-		packData.set(pack.set, { icons, upstream: pack.upstream, licence: pack.licence });
-		console.log(`✓ Materialized ${icons.length} icons for set "${pack.set}" -> ${setDir} (source: ${sourceDir})`);
+		packData.set(pack.set, {
+			icons,
+			upstream: pack.upstream,
+			licence: pack.licence,
+		})
+		console.log(
+			`✓ Materialized ${icons.length} icons for set "${pack.set}" -> ${setDir} (source: ${sourceDir})`,
+		)
 	}
 
 	// Legacy Amsterdam filename aliases (one-release deprecation shim).
-	const aliasesRaw = JSON.parse(fs.readFileSync(aliasesPath, 'utf8'));
+	const aliasesRaw = JSON.parse(fs.readFileSync(aliasesPath, 'utf8'))
 	const aliases = Object.fromEntries(
-		Object.entries(aliasesRaw).filter(([key]) => key !== '_comment')
-	);
+		Object.entries(aliasesRaw).filter(([key]) => key !== '_comment'),
+	)
 
-	let aliasCount = 0;
+	let aliasCount = 0
 	for (const [legacyName, replacementPath] of Object.entries(aliases)) {
-		const svg = svgByPath.get(replacementPath);
+		const svg = svgByPath.get(replacementPath)
 		if (svg === undefined) {
-			console.error(`✗ scripts/icon-aliases.json maps "${legacyName}" to unknown replacement "${replacementPath}".`);
-			process.exit(1);
+			console.error(
+				`✗ scripts/icon-aliases.json maps "${legacyName}" to unknown replacement "${replacementPath}".`,
+			)
+			process.exit(1)
 		}
-		fs.writeFileSync(path.join(iconsDestPath, `${legacyName}.svg`), svg);
-		aliasCount++;
+		fs.writeFileSync(path.join(iconsDestPath, `${legacyName}.svg`), svg)
+		aliasCount++
 	}
-	console.log(`✓ Materialized ${aliasCount} legacy-name alias files (one-release deprecation shim)`);
+	console.log(
+		`✓ Materialized ${aliasCount} legacy-name alias files (one-release deprecation shim)`,
+	)
 
 	// img/logos/ is a static, checked-in directory — never created, modified, or written here.
 	const logoCount = fs.existsSync(logosDestPath)
 		? fs.readdirSync(logosDestPath).filter((f) => f.endsWith('.svg')).length
-		: 0;
+		: 0
 
-	writeIconsMd({ packData, aliases, logoCount });
-	console.log(`✓ Regenerated ${iconsMdPath}`);
+	writeIconsMd({ packData, aliases, logoCount })
+	console.log(`✓ Regenerated ${iconsMdPath}`)
 
-	const totalIcons = [...packData.values()].reduce((sum, p) => sum + p.icons.length, 0);
-	console.log(`\n✅ Icon build complete! ${totalIcons} icons across ${packData.size} sets + ${aliasCount} legacy aliases + ${logoCount} logos (untouched).`);
+	const totalIcons = [...packData.values()].reduce(
+		(sum, p) => sum + p.icons.length,
+		0,
+	)
+	console.log(
+		`\n✅ Icon build complete! ${totalIcons} icons across ${packData.size} sets + ${aliasCount} legacy aliases + ${logoCount} logos (untouched).`,
+	)
 }
 
 /**
@@ -306,25 +385,39 @@ async function main() {
  * availability/fallback + naming-stability sections, and a Logos section.
  */
 function writeIconsMd({ packData, aliases, logoCount }) {
-	const setSections = [...packData.entries()].map(([set, data]) => {
-		const sample = data.icons.slice(0, 20).map((i) => `- ${set}/${i.id}`).join('\n');
-		const more = data.icons.length > 20 ? `\n... and ${data.icons.length - 20} more` : '';
-		return `### ${set} (${data.icons.length} icons)
+	const setSections = [...packData.entries()]
+		.map(([set, data]) => {
+			const sample = data.icons
+				.slice(0, 20)
+				.map((i) => `- ${set}/${i.id}`)
+				.join('\n')
+			const more =
+				data.icons.length > 20
+					? `\n... and ${data.icons.length - 20} more`
+					: ''
+			return `### ${set} (${data.icons.length} icons)
 
 Upstream: ${data.upstream}
 Licence: **${data.licence}**
 Available in: \`img/icons/${set}/\`
 
-${sample}${more}`;
-	}).join('\n\n');
+${sample}${more}`
+		})
+		.join('\n\n')
 
 	const aliasRows = Object.entries(aliases)
-		.map(([legacy, replacement]) => `| \`${legacy}.svg\` | \`${replacement}.svg\` |`)
-		.join('\n');
+		.map(
+			([legacy, replacement]) =>
+				`| \`${legacy}.svg\` | \`${replacement}.svg\` |`,
+		)
+		.join('\n')
 
 	const logoFiles = fs.existsSync(logosDestPath)
-		? fs.readdirSync(logosDestPath).filter((f) => f.endsWith('.svg')).map((f) => f.replace('.svg', ''))
-		: [];
+		? fs
+				.readdirSync(logosDestPath)
+				.filter((f) => f.endsWith('.svg'))
+				.map((f) => f.replace('.svg', ''))
+		: []
 
 	const content = `# NL-Government & French-Government Icons, and Logos
 
@@ -433,12 +526,12 @@ explicit, reviewed change whose diff of added/removed keys is listed in the chan
 never a silent regenerate. Removing the legacy Amsterdam aliases at the end of the
 deprecation window is a planned, pre-announced break that references the release that
 announced it.
-`;
+`
 
-	fs.writeFileSync(iconsMdPath, content);
+	fs.writeFileSync(iconsMdPath, content)
 }
 
 main().catch((err) => {
-	console.error(err);
-	process.exit(1);
-});
+	console.error(err)
+	process.exit(1)
+})

@@ -11,9 +11,10 @@
 
 @font-face {
 	font-family: 'Fira Sans';
-	src: local('Fira Sans'),
-	     url('../nldesign/fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
-	     url('../nldesign/fonts/fira-sans-latin-400-normal.woff') format('woff');
+	src:
+		local('Fira Sans'),
+		url('../nldesign/fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
+		url('../nldesign/fonts/fira-sans-latin-400-normal.woff') format('woff');
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
@@ -21,9 +22,10 @@
 
 @font-face {
 	font-family: 'Fira Sans';
-	src: local('Fira Sans Bold'),
-	     url('../nldesign/fonts/fira-sans-latin-700-normal.woff2') format('woff2'),
-	     url('../nldesign/fonts/fira-sans-latin-700-normal.woff') format('woff');
+	src:
+		local('Fira Sans Bold'),
+		url('../nldesign/fonts/fira-sans-latin-700-normal.woff2') format('woff2'),
+		url('../nldesign/fonts/fira-sans-latin-700-normal.woff') format('woff');
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;

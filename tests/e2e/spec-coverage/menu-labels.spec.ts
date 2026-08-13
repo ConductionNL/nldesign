@@ -16,7 +16,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('menu-labels', () => {
-
 	// @e2e exclude openspec/specs/menu-labels/spec.md#setting-stored-as-enabled
 	// IConfig mutation + API response assertion — not DOM-testable.
 
@@ -126,17 +125,17 @@ test.describe('menu-labels', () => {
 	// Requires enabling feature — mutates shared env.
 
 	// Smoke: show-menu-labels checkbox is present in admin settings (the UI entry point)
-	test(
-		// @e2e openspec/specs/menu-labels/spec.md#checkbox-reflects-current-state-on-load
-		'Show menu labels checkbox is present in admin settings panel',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('domcontentloaded')
-			const checkbox = page.locator('#nldesign-show-menu-labels')
-			await expect(checkbox).toBeAttached()
-			const label = page.locator('label[for="nldesign-show-menu-labels"]')
-			await expect(label).toContainText('Show text labels in app menu (hide icons)')
-		},
-	)
-
+	test(// @e2e openspec/specs/menu-labels/spec.md#checkbox-reflects-current-state-on-load
+	'Show menu labels checkbox is present in admin settings panel', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		const checkbox = page.locator('#nldesign-show-menu-labels')
+		await expect(checkbox).toBeAttached()
+		const label = page.locator('label[for="nldesign-show-menu-labels"]')
+		await expect(label).toContainText(
+			'Show text labels in app menu (hide icons)',
+		)
+	})
 })

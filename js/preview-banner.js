@@ -8,75 +8,90 @@
  * renders a persistent, keyboard-operable banner with Publish and Discard
  * controls.
  */
-(function nldesignPreviewBannerInit() {
+;(function nldesignPreviewBannerInit() {
 	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', nldesignPreviewBannerMain);
+		document.addEventListener('DOMContentLoaded', nldesignPreviewBannerMain)
 	} else {
-		nldesignPreviewBannerMain();
+		nldesignPreviewBannerMain()
 	}
 
 	function nldesignPreviewBannerMain() {
-		if (typeof OCP === 'undefined' || !OCP.InitialState || typeof OCP.InitialState.loadState !== 'function') {
-			return;
+		if (
+			typeof OCP === 'undefined'
+			|| !OCP.InitialState
+			|| typeof OCP.InitialState.loadState !== 'function'
+		) {
+			return
 		}
 
-		var state = OCP.InitialState.loadState('nldesign', 'preview', null);
+		var state = OCP.InitialState.loadState('nldesign', 'preview', null)
 		if (!state || !state.tokenSet) {
-			return;
+			return
 		}
 
-		var name = state.name || state.tokenSet;
+		var name = state.name || state.tokenSet
 
-		var banner = document.createElement('div');
-		banner.id = 'nldesign-preview-banner';
-		banner.className = 'nldesign-preview-banner';
-		banner.setAttribute('role', 'status');
+		var banner = document.createElement('div')
+		banner.id = 'nldesign-preview-banner'
+		banner.className = 'nldesign-preview-banner'
+		banner.setAttribute('role', 'status')
 
-		var text = document.createElement('span');
-		text.className = 'nldesign-preview-banner-text';
-		text.textContent = t('nldesign', 'Preview: {name} — this is only visible to you', { name: name });
-		banner.appendChild(text);
+		var text = document.createElement('span')
+		text.className = 'nldesign-preview-banner-text'
+		text.textContent = t(
+			'nldesign',
+			'Preview: {name} — this is only visible to you',
+			{ name: name },
+		)
+		banner.appendChild(text)
 
-		var actions = document.createElement('span');
-		actions.className = 'nldesign-preview-banner-actions';
+		var actions = document.createElement('span')
+		actions.className = 'nldesign-preview-banner-actions'
 
-		var publishLink = document.createElement('a');
-		publishLink.className = 'nldesign-preview-banner-publish button';
-		publishLink.href = OC.generateUrl('/settings/admin/theming') + '#nldesign-settings';
-		publishLink.textContent = t('nldesign', 'Publish');
-		actions.appendChild(publishLink);
+		var publishLink = document.createElement('a')
+		publishLink.className = 'nldesign-preview-banner-publish button'
+		publishLink.href =
+			OC.generateUrl('/settings/admin/theming') + '#nldesign-settings'
+		publishLink.textContent = t('nldesign', 'Publish')
+		actions.appendChild(publishLink)
 
-		var discardBtn = document.createElement('button');
-		discardBtn.type = 'button';
-		discardBtn.className = 'nldesign-preview-banner-discard button';
-		discardBtn.textContent = t('nldesign', 'Discard');
-		discardBtn.addEventListener('click', function() {
-			discardBtn.disabled = true;
+		var discardBtn = document.createElement('button')
+		discardBtn.type = 'button'
+		discardBtn.className = 'nldesign-preview-banner-discard button'
+		discardBtn.textContent = t('nldesign', 'Discard')
+		discardBtn.addEventListener('click', function () {
+			discardBtn.disabled = true
 			fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
 				method: 'DELETE',
-				headers: { 'requesttoken': OC.requestToken }
+				headers: { requesttoken: OC.requestToken },
 			})
-			.then(function() {
-				window.location.reload();
-			})
-			.catch(function(err) {
-				console.error('Error discarding theme preview:', err);
-				discardBtn.disabled = false;
-				// OC.Notification was removed in NC 34; guard so a missing
-				// toast API can never throw on top of the original failure.
-				try {
-					if (window.OCP && OCP.Toast && typeof OCP.Toast.message === 'function') {
-						OCP.Toast.message(t('nldesign', 'Failed to discard theme preview.'));
+				.then(function () {
+					window.location.reload()
+				})
+				.catch(function (err) {
+					console.error('Error discarding theme preview:', err)
+					discardBtn.disabled = false
+					// OC.Notification was removed in NC 34; guard so a missing
+					// toast API can never throw on top of the original failure.
+					try {
+						if (
+							window.OCP
+							&& OCP.Toast
+							&& typeof OCP.Toast.message === 'function'
+						) {
+							OCP.Toast.message(
+								t('nldesign', 'Failed to discard theme preview.'),
+							)
+						}
+					} catch (e) {
+						console.info('[nldesign] Failed to discard theme preview.')
 					}
-				} catch (e) {
-					console.info('[nldesign] Failed to discard theme preview.');
-				}
-			});
-		});
-		actions.appendChild(discardBtn);
+				})
+		})
+		actions.appendChild(discardBtn)
 
-		banner.appendChild(actions);
+		banner.appendChild(actions)
 
-		document.body.appendChild(banner);
+		document.body.appendChild(banner)
 	}
-}());
+})()

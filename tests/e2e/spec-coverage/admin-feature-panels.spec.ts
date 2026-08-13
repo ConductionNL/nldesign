@@ -36,7 +36,7 @@ async function apiGet(page: Page, path: string): Promise<Record<string, unknown>
 }
 
 /** Each wave feature: its settings-panel anchor and a human label. */
-const PANELS: Array<{ id: string, label: string }> = [
+const PANELS: Array<{ id: string; label: string }> = [
 	{ id: '#nldesign-email-theming', label: 'email template theming' },
 	{ id: '#nldesign-custom-fonts', label: 'custom font upload' },
 	{ id: '#nldesign-audit-log', label: 'theming audit log' },
@@ -47,26 +47,38 @@ const PANELS: Array<{ id: string, label: string }> = [
 test.describe('admin panels for the market-gap wave features', () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto(THEMING_URL)
-		await page.locator('#nldesign-settings').waitFor({ state: 'visible', timeout: 20_000 })
+		await page
+			.locator('#nldesign-settings')
+			.waitFor({ state: 'visible', timeout: 20_000 })
 	})
 
 	for (const panel of PANELS) {
 		test(`the ${panel.label} panel is present and visible`, async ({ page }) => {
 			const el = page.locator(panel.id)
-			await expect(el, `${panel.label} must render a reachable panel`).toHaveCount(1)
+			await expect(
+				el,
+				`${panel.label} must render a reachable panel`,
+			).toHaveCount(1)
 			await expect(el).toBeVisible()
 		})
 	}
 
-	test('the dark-variants toggle renders and reflects persisted state', async ({ page }) => {
+	test('the dark-variants toggle renders and reflects persisted state', async ({
+		page,
+	}) => {
 		const toggle = page.locator('#nldesign-dark-variants')
 		await expect(toggle).toHaveCount(1)
 
-		const state = await apiGet(page, '/index.php/apps/nldesign/settings/dark-variants')
+		const state = await apiGet(
+			page,
+			'/index.php/apps/nldesign/settings/dark-variants',
+		)
 		expect(await toggle.isChecked()).toBe(state.enabled)
 	})
 
-	test('the audit log lists entries with the documented columns', async ({ page }) => {
+	test('the audit log lists entries with the documented columns', async ({
+		page,
+	}) => {
 		const table = page.locator('#nldesign-audit-table')
 		await expect(table).toBeVisible()
 		for (const header of ['Timestamp', 'User', 'Action', 'Details']) {
@@ -74,19 +86,30 @@ test.describe('admin panels for the market-gap wave features', () => {
 		}
 	})
 
-	test('upstream freshness is opt-in and discloses the contacted host', async ({ page }) => {
+	test('upstream freshness is opt-in and discloses the contacted host', async ({
+		page,
+	}) => {
 		const toggle = page.locator('#nldesign-upstream-freshness-toggle')
 		await expect(toggle).toHaveCount(1)
 
 		// Default OFF: the app must make no outbound request unless asked.
-		const status = await apiGet(page, '/index.php/apps/nldesign/settings/upstream-freshness')
+		const status = await apiGet(
+			page,
+			'/index.php/apps/nldesign/settings/upstream-freshness',
+		)
 		expect(status.enabled).toBe(false)
 
 		// The egress target must be named in the UI, not hidden in docs.
-		await expect(page.locator('#nldesign-upstream-freshness')).toContainText('api.github.com')
+		await expect(page.locator('#nldesign-upstream-freshness')).toContainText(
+			'api.github.com',
+		)
 	})
 
-	test('the custom-fonts panel states uploader licence responsibility', async ({ page }) => {
-		await expect(page.locator('#nldesign-custom-fonts')).toContainText(/licen[cs]e/i)
+	test('the custom-fonts panel states uploader licence responsibility', async ({
+		page,
+	}) => {
+		await expect(page.locator('#nldesign-custom-fonts')).toContainText(
+			/licen[cs]e/i,
+		)
 	})
 })

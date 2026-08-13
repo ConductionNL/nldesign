@@ -59,12 +59,14 @@ test.describe('workflow: token-set apply persistence', () => {
 		await page.close()
 	})
 
-	test('selecting + applying a token set PERSISTS the active set and updates the badge', async ({ page }) => {
+	test('selecting + applying a token set PERSISTS the active set and updates the badge', async ({
+		page,
+	}) => {
 		await openTheming(page)
 		const token = await requestToken(page)
 
 		// Ensure we start from a set that is NOT the target, so the change is real.
-		if (await getTokenSet(page, token) === TARGET_SET) {
+		if ((await getTokenSet(page, token)) === TARGET_SET) {
 			await setTokenSet(page, token, 'demodam')
 			await openTheming(page)
 		}
@@ -101,7 +103,9 @@ test.describe('workflow: token-set apply persistence', () => {
 		await expect(badge).not.toHaveText('')
 	})
 
-	test('applied token set survives a FRESH RELOAD (dropdown selection + backend)', async ({ page }) => {
+	test('applied token set survives a FRESH RELOAD (dropdown selection + backend)', async ({
+		page,
+	}) => {
 		await openTheming(page)
 		const token = await requestToken(page)
 
@@ -109,7 +113,9 @@ test.describe('workflow: token-set apply persistence', () => {
 		expect(await getTokenSet(page, token)).toBe(TARGET_SET)
 
 		// The server-rendered <select> has the applied set marked selected.
-		const selected = await page.locator('#nldesign-token-set-select').inputValue()
+		const selected = await page
+			.locator('#nldesign-token-set-select')
+			.inputValue()
 		expect(selected).toBe(TARGET_SET)
 	})
 })

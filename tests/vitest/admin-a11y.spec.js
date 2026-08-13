@@ -43,15 +43,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 function installInitialState(state) {
 	global.OCP = Object.assign(global.OCP || {}, {
 		InitialState: {
-			loadState: (app, key, fallback) => (
-				Object.prototype.hasOwnProperty.call(state, key) ? state[key] : fallback
-			),
+			loadState: (app, key, fallback) =>
+				Object.prototype.hasOwnProperty.call(state, key)
+					? state[key]
+					: fallback,
 		},
 	})
 }
 
 function buildDom(tokenSets, currentTokenSet) {
-	installInitialState({ tokenSets, currentTokenSet, activePreview: null, iconPackSource: '' })
+	installInitialState({
+		tokenSets,
+		currentTokenSet,
+		activePreview: null,
+		iconPackSource: '',
+	})
 	document.body.innerHTML = `
 		<div id="nldesign-settings" class="section">
 			<select id="nldesign-token-set-select" name="nldesign-token-set">
@@ -76,7 +82,10 @@ function installGlobals() {
 		if (params === undefined) {
 			return text
 		}
-		return Object.keys(params).reduce((acc, key) => acc.replace('{' + key + '}', params[key]), text)
+		return Object.keys(params).reduce(
+			(acc, key) => acc.replace('{' + key + '}', params[key]),
+			text,
+		)
 	}
 	global.n = (app, singular, plural, count) => (count === 1 ? singular : plural)
 	global.OC = {
@@ -93,7 +102,10 @@ function installFetchRouter(routes) {
 	global.fetch = vi.fn((url) => {
 		for (const [match, body] of routes) {
 			if (url.indexOf(match) !== -1) {
-				return Promise.resolve({ status: 200, json: () => Promise.resolve(body) })
+				return Promise.resolve({
+					status: 200,
+					json: () => Promise.resolve(body),
+				})
 			}
 		}
 		return Promise.resolve({ status: 200, json: () => Promise.resolve({}) })
@@ -158,12 +170,15 @@ describe('admin.js keyboard accessibility', () => {
 				['/settings/tokenset', { status: 'ok' }],
 				// Current NC theming differs from the proposed set's metadata,
 				// so checkAndShowThemingDialog() finds diffs and opens the dialog.
-				['/settings/theming', {
-					primary_color: '#aaaaaa',
-					background_color: '#bbbbbb',
-					has_custom_logo: false,
-					has_custom_background: false,
-				}],
+				[
+					'/settings/theming',
+					{
+						primary_color: '#aaaaaa',
+						background_color: '#bbbbbb',
+						has_custom_logo: false,
+						has_custom_background: false,
+					},
+				],
 			])
 
 			await loadAdminScript()
@@ -202,11 +217,20 @@ describe('admin.js keyboard accessibility', () => {
 				previouslyFocused.focus()
 			})
 			expect(overlay).not.toBeNull()
-			expect(document.getElementById('nldesign-theming-dialog-overlay')).not.toBeNull()
+			expect(
+				document.getElementById('nldesign-theming-dialog-overlay'),
+			).not.toBeNull()
 
-			overlay.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+			overlay.dispatchEvent(
+				new window.KeyboardEvent('keydown', {
+					key: 'Escape',
+					bubbles: true,
+				}),
+			)
 
-			expect(document.getElementById('nldesign-theming-dialog-overlay')).toBeNull()
+			expect(
+				document.getElementById('nldesign-theming-dialog-overlay'),
+			).toBeNull()
 			expect(document.activeElement).toBe(previouslyFocused)
 		})
 
@@ -220,7 +244,13 @@ describe('admin.js keyboard accessibility', () => {
 			last.focus()
 			expect(document.activeElement).toBe(last)
 
-			overlay.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }))
+			overlay.dispatchEvent(
+				new window.KeyboardEvent('keydown', {
+					key: 'Tab',
+					bubbles: true,
+					cancelable: true,
+				}),
+			)
 
 			expect(document.activeElement).toBe(first)
 		})
@@ -230,7 +260,10 @@ describe('admin.js keyboard accessibility', () => {
 		async function openDropdown() {
 			buildDom(TOKEN_SETS, 'rijkshuisstijl')
 			installFetchRouter([
-				['/settings/app-theming', { apps: [{ id: 'files', name: 'Files', themed: true }] }],
+				[
+					'/settings/app-theming',
+					{ apps: [{ id: 'files', name: 'Files', themed: true }] },
+				],
 			])
 
 			await loadAdminScript()
@@ -239,7 +272,10 @@ describe('admin.js keyboard accessibility', () => {
 			expect(trigger).not.toBeNull()
 			trigger.click()
 
-			return { trigger, dropdown: document.querySelector('.nldesign-app-dropdown') }
+			return {
+				trigger,
+				dropdown: document.querySelector('.nldesign-app-dropdown'),
+			}
 		}
 
 		it('opens with aria-expanded=true and moves focus to the search field', async () => {
@@ -247,14 +283,21 @@ describe('admin.js keyboard accessibility', () => {
 
 			expect(trigger.getAttribute('aria-expanded')).toBe('true')
 			expect(dropdown.classList.contains('open')).toBe(true)
-			expect(document.activeElement).toBe(dropdown.querySelector('input[type="search"]'))
+			expect(document.activeElement).toBe(
+				dropdown.querySelector('input[type="search"]'),
+			)
 		})
 
 		it('closes on Escape, sets aria-expanded=false, and returns focus to the trigger', async () => {
 			const { trigger, dropdown } = await openDropdown()
 			expect(dropdown.classList.contains('open')).toBe(true)
 
-			dropdown.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+			dropdown.dispatchEvent(
+				new window.KeyboardEvent('keydown', {
+					key: 'Escape',
+					bubbles: true,
+				}),
+			)
 
 			expect(dropdown.classList.contains('open')).toBe(false)
 			expect(trigger.getAttribute('aria-expanded')).toBe('false')
@@ -265,20 +308,34 @@ describe('admin.js keyboard accessibility', () => {
 	describe('token-editor reset button', () => {
 		it('carries an aria-label naming the token being reset', async () => {
 			buildDom(TOKEN_SETS, 'rijkshuisstijl')
-			document.body.insertAdjacentHTML('beforeend', '<div id="nldesign-token-editor"></div>')
+			document.body.insertAdjacentHTML(
+				'beforeend',
+				'<div id="nldesign-token-editor"></div>',
+			)
 			installFetchRouter([
-				['/settings/overrides', {
-					registry: { '--nldesign-color-primary': { tab: 'login', type: 'color', label: 'Primary colour' } },
-					tabs: { login: 'Login' },
-					overrides: {},
-				}],
+				[
+					'/settings/overrides',
+					{
+						registry: {
+							'--nldesign-color-primary': {
+								tab: 'login',
+								type: 'color',
+								label: 'Primary colour',
+							},
+						},
+						tabs: { login: 'Login' },
+						overrides: {},
+					},
+				],
 			])
 
 			await loadAdminScript()
 
 			const resetBtn = document.querySelector('.nldesign-reset-btn')
 			expect(resetBtn).not.toBeNull()
-			expect(resetBtn.getAttribute('aria-label')).toBe('Reset Primary colour to default')
+			expect(resetBtn.getAttribute('aria-label')).toBe(
+				'Reset Primary colour to default',
+			)
 		})
 	})
 })

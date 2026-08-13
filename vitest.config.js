@@ -25,8 +25,6 @@ module.exports = {
 		exclude: ['tests/e2e/**', 'tests/integration/**', 'node_modules/**'],
 	},
 	resolve: {
-		alias: [
-			{ find: '@', replacement: path.resolve(__dirname, 'js') },
-		],
+		alias: [{ find: '@', replacement: path.resolve(__dirname, 'js') }],
 	},
 }

@@ -121,7 +121,7 @@ header#header .header-menu__trigger {
 /* Remove gradient masks from header-end icons */
 #header .header-end .icon-vue,
 #header .header-end .button-vue__icon,
-#header .header-end [class*="icon"] {
+#header .header-end [class*='icon'] {
 	mask: none !important;
 	-webkit-mask: none !important;
 	mask-image: none !important;
@@ -170,10 +170,15 @@ header#header .header-menu__trigger {
  * a hard-coded near-black onto whatever surface they sit on. The dashboard
  * heading is the measured case (2.91:1 on the plain background).
  */
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .dashboard__greeting,
 #greeting,
-[class*="greeting"],
+[class*='greeting'],
 .panel h2,
 .widget h2 {
 	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
@@ -208,11 +213,11 @@ header#header {
    NAVIGATION ICON GRADIENT REMOVAL
    ============================================ */
 
-#appmenu [class*="icon-"],
+#appmenu [class*='icon-'],
 #appmenu .icon,
-.app-menu [class*="icon-"],
+.app-menu [class*='icon-'],
 .app-menu .icon,
-header nav [class*="icon-"],
+header nav [class*='icon-'],
 header nav .icon {
 	background-image: none !important;
 	background: transparent !important;
@@ -254,8 +259,8 @@ header nav .icon {
 .panel:not(#header *),
 .widget:not(#header *),
 .dashboard-widget:not(#header *),
-[class*="panel"]:not(#header *),
-[class*="widget"]:not(#header *),
+[class*='panel']:not(#header *),
+[class*='widget']:not(#header *),
 #app-content,
 .app-content {
 	background: #ffffff;
@@ -293,8 +298,12 @@ body,
 #content,
 .app-content,
 p,
-span:not(#header span):not(#header * span):not(.tile-widget span):not(.tile-widget * span):not(.button-vue--vue-primary span):not(.button-vue--vue-primary *),
-div:not(#header div):not(#header * div):not(.tile-widget div):not(.tile-widget * div):not(.button-vue--vue-primary div),
+span:not(#header span):not(#header * span):not(.tile-widget span):not(
+		.tile-widget * span
+	):not(.button-vue--vue-primary span):not(.button-vue--vue-primary *),
+div:not(#header div):not(#header * div):not(.tile-widget div):not(
+		.tile-widget * div
+	):not(.button-vue--vue-primary div),
 li:not(#header li):not(#header * li),
 a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
 	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
@@ -351,8 +360,8 @@ a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
  * so every `var(--nldesign-color-on-surface, X)` falls back to its OWN X — text
  * to the text colour, links to the link colour. One reset, both roles correct.
  */
-#app-dashboard [class*="panel"],
-#app-dashboard [class*="widget"] {
+#app-dashboard [class*='panel'],
+#app-dashboard [class*='widget'] {
 	--nldesign-color-on-surface: initial;
 }
 
@@ -385,10 +394,10 @@ a.primary *,
 .button.primary *,
 .button-vue.button-vue--vue-primary,
 .button-vue.button-vue--vue-primary *,
-button[class*="primary"],
-button[class*="primary"] *,
-.button-vue[class*="primary"],
-.button-vue[class*="primary"] * {
+button[class*='primary'],
+button[class*='primary'] *,
+.button-vue[class*='primary'],
+.button-vue[class*='primary'] * {
 	color: var(--nldesign-color-primary-text) !important;
 }
 
@@ -587,7 +596,7 @@ body {
 	opacity: 1 !important;
 }
 
-#header .header-right [class^="icon-"],
+#header .header-right [class^='icon-'],
 #header .header-right svg {
 	filter: none !important;
 	opacity: 0.8 !important;

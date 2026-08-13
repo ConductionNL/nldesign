@@ -33,7 +33,14 @@
  */
 import { test, expect, type Page, type APIResponse } from '@playwright/test'
 
-import { ensureNonAdminUser, loginAs, api, adminContext, NONADMIN_USER, NONADMIN_PASS } from './_fixtures'
+import {
+	ensureNonAdminUser,
+	loginAs,
+	api,
+	adminContext,
+	NONADMIN_USER,
+	NONADMIN_PASS,
+} from './_fixtures'
 
 /**
  * Issue a request and return only its numeric status.
@@ -41,14 +48,19 @@ import { ensureNonAdminUser, loginAs, api, adminContext, NONADMIN_USER, NONADMIN
  * Thin wrapper over the shared `api()` helper: every assertion in this file is
  * about the STATUS CODE, and naming it keeps the assertions readable.
  */
-async function statusOf(page: Page, method: string, path: string, body?: unknown): Promise<number> {
+async function statusOf(
+	page: Page,
+	method: string,
+	path: string,
+	body?: unknown,
+): Promise<number> {
 	return (await api(page, method, path, body)).status
 }
 
 const APP = '/index.php/apps/nldesign'
 
 test.describe('admin-only enforcement', () => {
-	let nonAdmin: { page: Page, close: () => Promise<void> }
+	let nonAdmin: { page: Page; close: () => Promise<void> }
 
 	test.beforeAll(async ({ browser }) => {
 		// SETUP budget, not an assertion budget. This hook provisions an account
@@ -63,7 +75,9 @@ test.describe('admin-only enforcement', () => {
 		// a fresh instance.
 		const adminCtx = await adminContext(browser)
 		const adminPage = await adminCtx.newPage()
-		await adminPage.goto('/settings/admin/theming', { waitUntil: 'domcontentloaded' })
+		await adminPage.goto('/settings/admin/theming', {
+			waitUntil: 'domcontentloaded',
+		})
 		await ensureNonAdminUser(adminPage)
 		await adminCtx.close()
 
@@ -82,25 +96,40 @@ test.describe('admin-only enforcement', () => {
 	 * @param path      app-relative path
 	 * @param body      optional JSON body
 	 */
-	async function expectAdminOnly(adminPage: Page, method: string, path: string, body?: unknown): Promise<void> {
+	async function expectAdminOnly(
+		adminPage: Page,
+		method: string,
+		path: string,
+		body?: unknown,
+	): Promise<void> {
 		const asNonAdmin = await statusOf(nonAdmin.page, method, path, body)
-		expect(asNonAdmin, `${method} ${path} must refuse an authenticated NON-ADMIN with 403`).toBe(403)
+		expect(
+			asNonAdmin,
+			`${method} ${path} must refuse an authenticated NON-ADMIN with 403`,
+		).toBe(403)
 
 		// Control arm: the same call as an admin must not be a 403. It may be
 		// 200, or a 400 for a deliberately empty body — what it must not be is
 		// the same refusal, which would mean the 403 above proved nothing.
 		const asAdmin = await statusOf(adminPage, method, path, body)
-		expect(asAdmin, `${method} ${path} must NOT return 403 for an admin `
-			+ '(otherwise the non-admin 403 does not demonstrate an admin check)').not.toBe(403)
+		expect(
+			asAdmin,
+			`${method} ${path} must NOT return 403 for an admin `
+				+ '(otherwise the non-admin 403 does not demonstrate an admin check)',
+		).not.toBe(403)
 	}
 
 	// @e2e openspec/specs/theme-preview/spec.md#endpoints-are-admin-only
-	test('theme-preview lifecycle endpoints refuse a non-admin and change nothing', async ({ page }) => {
+	test('theme-preview lifecycle endpoints refuse a non-admin and change nothing', async ({
+		page,
+	}) => {
 		await page.goto('/settings/admin/theming')
 
 		// The instance-wide active set before the refused calls.
 		const activeBefore = await statusOf(page, 'GET', `${APP}/settings/tokenset`)
-		expect(activeBefore, 'admin must be able to read the active token set').toBe(200)
+		expect(activeBefore, 'admin must be able to read the active token set').toBe(
+			200,
+		)
 		const before = await page.evaluate(async () => {
 			const res = await fetch('/index.php/apps/nldesign/settings/tokenset', {
 				headers: { requesttoken: (window as any).OC.requestToken },
@@ -108,7 +137,9 @@ test.describe('admin-only enforcement', () => {
 			return JSON.stringify(await res.json())
 		})
 
-		await expectAdminOnly(page, 'POST', `${APP}/settings/preview`, { tokenSet: 'amsterdam' })
+		await expectAdminOnly(page, 'POST', `${APP}/settings/preview`, {
+			tokenSet: 'amsterdam',
+		})
 		await expectAdminOnly(page, 'DELETE', `${APP}/settings/preview`)
 		await expectAdminOnly(page, 'POST', `${APP}/settings/preview/publish`)
 
@@ -120,11 +151,16 @@ test.describe('admin-only enforcement', () => {
 			})
 			return JSON.stringify(await res.json())
 		})
-		expect(after, 'refused preview calls must not change the active token set').toBe(before)
+		expect(
+			after,
+			'refused preview calls must not change the active token set',
+		).toBe(before)
 	})
 
 	// @e2e openspec/specs/theming-audit/spec.md#non-admin-access-is-rejected
-	test('theming-audit endpoints reject a non-admin with no audit content in the response', async ({ page }) => {
+	test('theming-audit endpoints reject a non-admin with no audit content in the response', async ({
+		page,
+	}) => {
 		await page.goto('/settings/admin/theming')
 		await expectAdminOnly(page, 'GET', `${APP}/settings/audit`)
 		await expectAdminOnly(page, 'GET', `${APP}/settings/audit/export`)
@@ -137,7 +173,10 @@ test.describe('admin-only enforcement', () => {
 			})
 			return await res.text()
 		})
-		expect(leaked, 'the refusal body must not carry audit entries').not.toContain('"action"')
+		expect(
+			leaked,
+			'the refusal body must not carry audit entries',
+		).not.toContain('"action"')
 	})
 
 	// @e2e openspec/specs/config-portability/spec.md#endpoints-are-admin-only
@@ -148,38 +187,59 @@ test.describe('admin-only enforcement', () => {
 	})
 
 	// @e2e openspec/specs/upstream-freshness/spec.md#non-admin-access-denied
-	test('upstream-freshness read, write and dismiss refuse a non-admin', async ({ page }) => {
+	test('upstream-freshness read, write and dismiss refuse a non-admin', async ({
+		page,
+	}) => {
 		await page.goto('/settings/admin/theming')
 		await expectAdminOnly(page, 'GET', `${APP}/settings/upstream-freshness`)
-		await expectAdminOnly(page, 'POST', `${APP}/settings/upstream-freshness`, { enabled: false })
-		await expectAdminOnly(page, 'POST', `${APP}/settings/upstream-freshness/dismiss`, {})
+		await expectAdminOnly(page, 'POST', `${APP}/settings/upstream-freshness`, {
+			enabled: false,
+		})
+		await expectAdminOnly(
+			page,
+			'POST',
+			`${APP}/settings/upstream-freshness/dismiss`,
+			{},
+		)
 	})
 
 	// @e2e openspec/specs/email-theming/spec.md#non-admin-access-denied
 	test('email-theming read and write refuse a non-admin', async ({ page }) => {
 		await page.goto('/settings/admin/theming')
 		await expectAdminOnly(page, 'GET', `${APP}/settings/email-theming`)
-		await expectAdminOnly(page, 'POST', `${APP}/settings/email-theming`, { enabled: false })
+		await expectAdminOnly(page, 'POST', `${APP}/settings/email-theming`, {
+			enabled: false,
+		})
 	})
 
 	// @e2e openspec/specs/dark-mode/spec.md#non-admin-access-denied
 	test('dark-variants read and write refuse a non-admin', async ({ page }) => {
 		await page.goto('/settings/admin/theming')
 		await expectAdminOnly(page, 'GET', `${APP}/settings/dark-variants`)
-		await expectAdminOnly(page, 'POST', `${APP}/settings/dark-variants`, { enabled: true })
+		await expectAdminOnly(page, 'POST', `${APP}/settings/dark-variants`, {
+			enabled: true,
+		})
 	})
 
 	// @e2e openspec/specs/theming-audit/spec.md#log-file-is-not-directly-reachable-over-http
-	test('the audit log file is not served over HTTP from appdata', async ({ page }) => {
+	test('the audit log file is not served over HTTP from appdata', async ({
+		page,
+	}) => {
 		// Produce a real audit entry first, so this cannot pass merely because
 		// the log does not exist yet — the scenario is GIVEN the file exists.
 		await page.goto('/settings/admin/theming')
 		const listed = await statusOf(page, 'GET', `${APP}/settings/audit`)
-		expect(listed, 'the admin export path must work, so the file is known to exist').toBe(200)
+		expect(
+			listed,
+			'the admin export path must work, so the file is known to exist',
+		).toBe(200)
 
 		// appdata lives under the data directory, outside every web-served root.
 		// Try the paths an attacker would guess, unauthenticated.
-		const anon = await page.context().browser()!.newContext({ storageState: undefined })
+		const anon = await page
+			.context()
+			.browser()!
+			.newContext({ storageState: undefined })
 		try {
 			const req = anon.request
 			const candidates = [
@@ -189,10 +249,18 @@ test.describe('admin-only enforcement', () => {
 				'/index.php/apps/nldesign/audit/audit.jsonl',
 			]
 			for (const path of candidates) {
-				const res: APIResponse = await req.get(path, { failOnStatusCode: false, maxRedirects: 0 })
-				expect(res.status(), `${path} must not serve the audit log`).not.toBe(200)
+				const res: APIResponse = await req.get(path, {
+					failOnStatusCode: false,
+					maxRedirects: 0,
+				})
+				expect(
+					res.status(),
+					`${path} must not serve the audit log`,
+				).not.toBe(200)
 				const body = await res.text().catch(() => '')
-				expect(body, `${path} must not leak audit JSON lines`).not.toContain('"action"')
+				expect(body, `${path} must not leak audit JSON lines`).not.toContain(
+					'"action"',
+				)
 			}
 		} finally {
 			await anon.close()
