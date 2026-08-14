@@ -25,6 +25,7 @@ use OCA\NLDesign\Service\FontValidator;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\AnonRateLimit;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
@@ -189,6 +190,11 @@ class FontController extends Controller {
 	 */
 	#[PublicPage]
 	#[NoCSRFRequired]
+	// Self-hosted webfonts. Every themed page pulls several of these, and the
+	// whole point of self-hosting them is that they load without a third-party
+	// request — so the ceiling is the loosest in the app. The id names a
+	// published font, not a credential, so no brute-force counter.
+	#[AnonRateLimit(limit: 480, period: 60)]
 	public function serve(string $id): Response {
 		$content = $this->service->readFontBytes(id: $id);
 		if ($content === null) {
@@ -220,6 +226,9 @@ class FontController extends Controller {
 	 */
 	#[PublicPage]
 	#[NoCSRFRequired]
+	// The @font-face stylesheet — one fetch per page load, ahead of the fonts
+	// it declares.
+	#[AnonRateLimit(limit: 480, period: 60)]
 	public function css(): Response {
 		$response = new DataDisplayResponse($this->service->buildCss(), Http::STATUS_OK, ['Content-Type' => 'text/css']);
 		$this->applyImmutableCache(response: $response);
