@@ -2,6 +2,10 @@
 	"name": "nldesign",
 	"version": "0.1.0",
 	"description": "NL Design System Theme for Nextcloud",
+	"engines": {
+		"node": "^22.14 || ^24 || >=26",
+		"npm": "^10.0.0"
+	},
 	"keywords": [
 		"nextcloud",
 		"nl-design-system",
