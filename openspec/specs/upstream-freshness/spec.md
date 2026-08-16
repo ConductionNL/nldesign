@@ -15,6 +15,8 @@ MUST NOT auto-apply, download, or modify any token set: it MUST never write to
 output. Sets without an `upstreamRef` field and all `custom-*` sets MUST be excluded from
 comparison.
 
+@e2e exclude background-job behaviour — a TimedJob's registration, interval, sensitivity and no-op-on-apply are not reachable from a browser; proven by tests/Unit/BackgroundJob/UpstreamFreshnessJobTest.php (testDeclaresDailyIntervalAndTimeInsensitive, testRunDelegatesToService, testServiceThrowDoesNotEscapeRun) and tests/Unit/Service/UpstreamFreshnessServiceTest.php (test200WithNewShaAndSuccessfulCompareProducesPerSetNotice, testSetsWithoutUpstreamRefAndCustomSetsAreExcluded).
+
 #### Scenario: Job is registered and scheduled
 
 - GIVEN the app is installed on a Nextcloud 34 instance
@@ -52,6 +54,8 @@ point at an internal mirror. The outbound request MUST NOT carry any instance-id
 payload (no instance URL, no version report, no telemetry — only standard HTTP request
 headers plus the cached ETag).
 
+@e2e exclude egress and authorisation assertions — "zero network requests while disabled" and "non-admin is denied" are observations about outbound HTTP and route attributes, neither of which a browser DOM can witness; proven by tests/Unit/Service/UpstreamFreshnessServiceTest.php (testDisabledPerformsZeroHttpCalls) and tests/Unit/Controller/SettingsControllerUpstreamFreshnessTest.php (testAllThreeEndpointsCarryAuthorizedAdminSetting, testToggleEnabledPersists). The toggle's presence and disclosure label remain covered by the admin-settings e2e suite.
+
 #### Scenario: Default is off with no egress
 
 - GIVEN a fresh install with no admin action taken
@@ -87,6 +91,8 @@ never exceed two outbound requests, each bounded by a 10-second timeout, issued 
 `OCP\Http\Client\IClientService` (honoring instance proxy configuration), without
 authentication credentials.
 
+@e2e exclude HTTP-layer assertions — conditional GET, If-None-Match/ETag round-tripping and the two-request-per-run cap are counted at the IClientService boundary, which no browser DOM observes; proven by tests/Unit/Service/UpstreamFreshnessServiceTest.php (test304OnlyUpdatesCheckedAtAndProducesNoNotices, test200WithUnchangedHeadShaProducesNoNotices, testNeverMoreThanTwoRequestsPerRun).
+
 #### Scenario: Steady state is one cheap request
 
 - GIVEN the check is enabled and upstream has not changed since the last run
@@ -111,6 +117,8 @@ higher than info level, and MUST leave previously stored notice state untouched.
 failure MUST never throw out of `run()`, never break or delay page theming, the admin
 panel, cron processing, or any other app function. Offline and air-gapped instances that
 enable the toggle anyway MUST experience nothing worse than an info-level log line per run.
+
+@e2e exclude failure-inertness — the assertion is that a network error, timeout or malformed body produces NO visible effect, which a browser test cannot distinguish from the feature simply being off; proven by tests/Unit/Service/UpstreamFreshnessServiceTest.php (testFreshnessRequestThrowLeavesPriorNoticesUntouched, testMalformedHeadShaBodyIsDiscarded, testCompareFailureProducesGenericNoticeWithoutException) and tests/Unit/BackgroundJob/UpstreamFreshnessJobTest.php (testServiceThrowDoesNotEscapeRun).
 
 #### Scenario: Unreachable upstream is a non-event
 
