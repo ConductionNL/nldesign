@@ -14,6 +14,8 @@ EMailTemplate::class, true)` check requires this parent. The class MUST resolve 
 services lazily at render time and MUST fall back to the parent's stock rendering for any part
 it cannot derive — a theming failure MUST never prevent an email from being built or sent.
 
+@e2e exclude email rendering — these scenarios assert the markup and colours of a built email message; an email is never rendered in the browser session Playwright drives; proven by tests/Unit/Mail/NLDesignEMailTemplateTest.php and tests/Unit/Service/EmailThemingServiceTest.php.
+
 #### Scenario: Header and buttons use active token set colors and logo
 
 - GIVEN `mail_template_class` is set to `OCA\NLDesign\Mail\NLDesignEMailTemplate`
@@ -64,6 +66,8 @@ placeholder text. The block MUST appear in BOTH the HTML part and the plain-text
 plain-text part MUST otherwise remain intact relative to stock output. Footer text MUST be
 HTML-escaped and URLs attribute-escaped in the HTML part; stored URLs MUST be validated to
 `http(s)` schemes at write time.
+
+@e2e exclude footer rendering in both mail parts — the assertion spans the HTML and plain-text bodies of a generated message, neither of which exists in a page; proven by tests/Unit/Mail/NLDesignEMailTemplateTest.php and tests/Unit/Service/EmailThemingServiceTest.php.
 
 #### Scenario: Footer renders in both mail parts
 

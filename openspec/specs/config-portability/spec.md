@@ -19,6 +19,8 @@ value MUST be added to the bundle in the same change that introduces the value, 
 `bundleVersion` bump — a configuration value that exists but is not exported is a spec
 violation, not an accepted gap.
 
+@e2e exclude JSON bundle serialisation — the assertions are about envelope fields and which of the six configuration parts a serialised bundle contains, including that telemetry and platform-owned values are absent; that is a document's shape, not a rendered page; proven by tests/Unit/Service/ConfigBundleServiceTest.php.
+
 #### Scenario: Export captures all six configuration parts
 
 - GIVEN an instance with token set `amsterdam`, hide-slogan on, menu-labels off, two excluded
@@ -49,6 +51,8 @@ writes — partial application is forbidden. Unknown-but-well-formed override va
 hard errors: they MUST be skipped and counted, matching the `token-import-export` semantics.
 Phase 2 MUST apply all sections and report per-section results. Import MUST be idempotent:
 applying the same bundle twice MUST yield identical configuration state, files included.
+
+@e2e exclude all-or-nothing import semantics — "one invalid section blocks every section" and idempotent re-application are assertions that NOTHING changed, which a browser cannot distinguish from an import that silently did nothing; proven by tests/Unit/Service/ConfigBundleServiceTest.php.
 
 #### Scenario: One invalid section blocks every section
 
@@ -97,6 +101,8 @@ validation failure (or unreadable/undecodable file) it MUST print the full error
 exit non-zero. Both commands MUST reuse `ConfigBundleService` — no second serialization or
 validation path.
 
+@e2e exclude occ command surface — export to stdout and import from a file are CLI invocations for OTAP pipelines; there is no browser in that path; proven by tests/Unit/Service/ConfigBundleServiceTest.php.
+
 #### Scenario: Export to stdout for pipeline use
 
 - GIVEN an operator runs `occ nldesign:config:export` with no argument
@@ -126,6 +132,8 @@ The app MUST expose the bundle over HTTP for the settings panel via a dedicated 
 `nldesign-config.json` with Content-Type `application/json`; `POST /settings/config/import` MUST
 accept a multipart upload (256 KB cap, HTTP 413 beyond), run the same two-phase import, and
 return the per-section result as JSON — HTTP 400 with the error listing on validation failure.
+
+@e2e exclude endpoint response assertions — Content-Disposition on the download, the multipart upload and the HTTP 400 error listing are network-layer facts requiring request interception, not DOM; proven by tests/Unit/Controller/ConfigBundleControllerTest.php. The panel's own download and upload controls are covered by the admin-settings spec.
 
 #### Scenario: Bundle download
 
