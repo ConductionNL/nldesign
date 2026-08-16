@@ -13,6 +13,8 @@ scale (background-class tokens land dark, text-class tokens land light, using th
 non-color tokens (sizes, radii, fonts, urls) out of the dark output so they inherit from the
 light layer. Values `ContrastService::parseColor()` cannot parse MUST be skipped, not guessed.
 
+@e2e exclude colour-derivation arithmetic — hue preservation, per-class lightness inversion, non-colour pass-through and unparseable-value skipping are assertions about computed values, not about anything a page renders; proven by tests/Unit/Service/DarkPaletteServiceTest.php (testHuePreservedForBackgroundToken, testLightBackgroundDerivesToDarkLightness, testDarkTextDerivesToLightLightness, testNonColorTokensPassThroughUntouched, testUnparseableValuesAreSkipped, testRgbCompanionsMatchDerivedBase).
+
 #### Scenario: Hue is preserved
 
 - GIVEN the `rijkshuisstijl` set with `--nldesign-color-primary: #154273`
@@ -50,6 +52,8 @@ to a guaranteed-passing near-white or near-black value while logging a warning. 
 dark declarations (see the override requirement) MUST NOT be rewritten by the loop — failures
 there MUST produce warnings only.
 
+@e2e exclude contrast-ratio verification — WCAG ratios are computed against token pairs during generation; a browser can photograph the result but cannot assert the loop repaired a pathological pair or warned instead of silently changing a hand-authored one; proven by tests/Unit/Service/DarkPaletteServiceTest.php (testPathologicalPairIsRepairedToPassing, testHandAuthoredFailurePreservedAndWarned, testPassingPairProducesNoWarnings, testBrandPrimaryExceptionKeepsRecognisableBlue, testFailingBrandPrimaryIsNotExempted, testRealShippedSetsPassContrastAfterGeneration).
+
 #### Scenario: Derived output is AA-clean by construction
 
 - GIVEN any shipped token set eligible for derivation
@@ -82,6 +86,8 @@ block, and any `--nldesign-*` declaration found in that block MUST replace the a
 derived value for the same token in the generated dark variant. The parser MUST return an empty
 override set (never error) for sets without such a block or with malformed CSS.
 
+@e2e exclude generation-time precedence — whether a hand-authored override wins over a derived value is decided before any CSS is served, and a malformed override block degrading to "no overrides" is indistinguishable in the browser from having none; proven by tests/Unit/Service/DarkPaletteServiceTest.php (testGenerateForSetHandAuthoredOverrideWins, testHandAuthoredFailurePreservedAndWarned).
+
 #### Scenario: Override replaces derived value
 
 - GIVEN `css/tokens/example.css` contains a dark block declaring `--nldesign-color-primary: #4844AD`
@@ -105,6 +111,8 @@ directory is not writable. Each generated file MUST carry a header comment with 
 version and a hash of the source token set so freshness can be checked. Generation MUST skip
 token sets whose `design_system` is `none` or `high-contrast`. Dark variants for custom uploaded
 sets MUST be generated at upload time and removed when the custom set is deleted.
+
+@e2e exclude occ command and file lifecycle — these scenarios assert what an `occ` invocation writes to css/tokens/, its exit code, its idempotency without --force and its deletion behaviour; none of that is reachable from a browser session; proven by tests/Unit/Command/GenerateDarkVariantsTest.php (testSetOptionWritesOnlyThatFile, testFullRunSkipsIneligibleSetsWithZeroExitCode, testSecondRunWithoutForceSkipsFreshFile, testForceRewritesFreshFile) and tests/Unit/Service/DarkPaletteServiceTest.php (testGenerateAndWriteIsIdempotentWithoutForce, testGenerateAndWriteForceRewrites, testDeleteDarkVariant, testDiscoverAllSetIds).
 
 #### Scenario: occ command generates a variant
 

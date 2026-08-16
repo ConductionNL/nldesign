@@ -24,6 +24,8 @@ Action vocabulary (closed; extending it requires a spec change): `token_set_chan
 (reserved for change `theme-config-portability`), `preview_published` (reserved for change
 `theme-preview-workflow`).
 
+@e2e exclude audit-record content — what an entry records (actor, old and new value, append-only ordering) is state written behind the request; a browser sees the panel table, not whether the underlying entry is append-only; proven by tests/Unit/Service/ThemingAuditServiceTest.php.
+
 #### Scenario: Token set change is recorded with old and new values
 
 - GIVEN the active token set is `rijkshuisstijl` and admin `ruben` changes it to `amsterdam`
@@ -70,6 +72,8 @@ download. When `audit.jsonl` exceeds 1 MB after an append, it MUST be rotated to
 kept, bounding total storage at ~2 MB. Read APIs `getRecent(int $limit)` (newest first) and
 `exportAll()` (rotated generation first, oldest first overall) MUST span both files.
 
+@e2e exclude appdata storage mechanics — JSONL line format, size-capped rotation and cross-generation ordering are properties of files in appdata; no browser can open them; proven by tests/Unit/Service/ThemingAuditServiceTest.php.
+
 #### Scenario: Entries are appended as parseable JSON lines
 
 - GIVEN three theming changes occur
@@ -107,6 +111,8 @@ the config key in context), `SettingsController::updateThemingValues()`
 mutates theming configuration MUST add its call site and, if needed, a vocabulary entry in the
 same change — an unaudited theming write is a spec violation.
 
+@e2e exclude call-site coverage — the assertion is that EVERY theming write path emits an entry and that rejected input emits none; that is enumerated per controller, not walked in a browser; proven by tests/Unit/Controller/SettingsControllerAuditTest.php, OverridesControllerAuditTest.php, CustomTokenSetControllerAuditTest.php and CustomCssControllerAuditTest.php.
+
 #### Scenario: Rejected input produces no entry
 
 - GIVEN `setTokenSet()` is called with an invalid id and returns 400
@@ -134,6 +140,8 @@ The app MUST expose the trail to admins only, via a dedicated controller with
 200, newest first) and `GET /settings/audit/export` MUST stream the FULL log (rotated generation
 included, oldest first) as Content-Type `application/x-ndjson` with Content-Disposition
 `attachment; filename="nldesign-audit.jsonl"`.
+
+@e2e exclude audit endpoint responses — pagination shape and the export's Content-Disposition are network-layer facts; proven by tests/Unit/Controller/AuditControllerTest.php. The panel table and its download button are covered by the admin-settings spec.
 
 #### Scenario: Recent entries for the panel table
 
