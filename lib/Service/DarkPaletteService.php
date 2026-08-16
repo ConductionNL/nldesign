@@ -60,8 +60,13 @@ class DarkPaletteService {
 	/**
 	 * The generated-file format/algorithm version, embedded in the header
 	 * comment so a future algorithm change can force regeneration.
+	 *
+	 * v2 resolves `var()` aliases before deriving (see
+	 * {@see self::resolveAlias()}) and classifies text-class tokens by the
+	 * `-color` / `-background-color` convention the utrecht and municipal
+	 * families use, not only by the word "text".
 	 */
-	public const GENERATOR_VERSION = 1;
+	public const GENERATOR_VERSION = 2;
 
 	/**
 	 * The guaranteed-passing near-white snap value (matches NC's own dark
@@ -102,6 +107,44 @@ class DarkPaletteService {
 	 * The initial lightness step for the binary search, halved each round.
 	 */
 	private const INITIAL_STEP = 0.25;
+
+	/**
+	 * Maximum `var()` hops followed when resolving an alias to a literal.
+	 *
+	 * Bounded rather than cycle-tracked because the bound is also the answer
+	 * to a cycle: a chain that has not reached a literal in this many hops is
+	 * not one worth darkening.
+	 */
+	private const MAX_ALIAS_DEPTH = 8;
+
+	/**
+	 * A token whose value is nothing but a single `var()` reference, with an
+	 * optional fallback: `var(--tilburg-color-black-txt)` or
+	 * `var(--utrecht-x, #333)`.
+	 *
+	 * Deliberately anchored. A value that merely CONTAINS a `var()` among
+	 * other terms (`1px solid var(--x)`, a gradient) is not a colour this
+	 * service can derive, and half-substituting one would corrupt it.
+	 */
+	private const ALIAS_PATTERN = '/^var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,\s*(.+?)\s*)?\)$/';
+
+	/**
+	 * Words that mark a `-color` token as naming a SURFACE rather than the
+	 * glyphs drawn on it (see {@see self::isTextClass()}).
+	 *
+	 * @var string[]
+	 */
+	private const SURFACE_WORDS = [
+		'background',
+		'border',
+		'outline',
+		'fill',
+		'shadow',
+		'accent',
+		'marker',
+		'divider',
+		'separator',
+	];
 
 	/**
 	 * The WCAG contrast service (relative-luminance math + colour parsing).
@@ -252,9 +295,26 @@ class DarkPaletteService {
 				continue;
 			}
 
-			$rgb = $this->contrast->parseColor(value: $value);
+			// An ALIAS must be resolved here, not left to the cascade.
+			//
+			// `--utrecht-document-color: var(--tilburg-color-black-txt)` is
+			// declared on `:root`, so the substitution happens AT `:root`, with
+			// `:root`'s light value. This file's dark block sits on `body` — a
+			// descendant — so darkening the target token there cannot reach an
+			// alias already resolved one level up: body simply inherits the
+			// light literal. Measured on a live portal: 51% of pixels changed
+			// in dark mode while every text token stayed light-mode dark,
+			// leaving a heading at contrast 1.06 against its own band.
+			//
+			// So aliases are flattened to literals at generation time. The cost
+			// is that a runtime override of the TARGET token no longer
+			// propagates through this alias in dark mode; the alternative is a
+			// dark mode that only ever half-applies.
+			$literal = $this->resolveAlias(value: $value, declarations: $lightDeclarations);
+			$rgb = $this->contrast->parseColor(value: $literal);
 			if ($rgb === null) {
-				// Unparseable (gradient, var(), keyword, size, font stack, url()) — skip.
+				// Unparseable (gradient, keyword, size, font stack, url(), an
+				// alias chain with no literal at the end) — skip.
 				continue;
 			}
 
@@ -263,6 +323,49 @@ class DarkPaletteService {
 
 		return $this->regenerateRgbCompanions(lightDeclarations: $lightDeclarations, darkDeclarations: $dark);
 	}//end deriveDarkDeclarations()
+
+	/**
+	 * Follow a `var()` alias chain to the literal it ends at.
+	 *
+	 * Returns the value unchanged when it is already a literal, when it is not
+	 * a bare alias, or when the chain cannot be resolved — every caller then
+	 * asks {@see ContrastService::parseColor()} the same question it would have
+	 * asked anyway, so an unresolvable alias degrades to "not a colour" rather
+	 * than to a wrong colour.
+	 *
+	 * A `var(--x, #fff)` fallback is used only when `--x` is absent from the
+	 * set, which mirrors what the browser does with it.
+	 *
+	 * @param string $value The declaration's raw value.
+	 * @param array<string, string> $declarations The full light declaration map.
+	 * @param int $depth The current hop count (internal).
+	 *
+	 * @return string The resolved literal, or the input when it does not resolve.
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	private function resolveAlias(string $value, array $declarations, int $depth = 0): string {
+		if ($depth >= self::MAX_ALIAS_DEPTH) {
+			return $value;
+		}
+
+		$matches = [];
+		if (preg_match(self::ALIAS_PATTERN, trim($value), $matches) !== 1) {
+			return $value;
+		}
+
+		$target = $matches[1];
+		if (isset($declarations[$target]) === true) {
+			return $this->resolveAlias(value: $declarations[$target], declarations: $declarations, depth: ($depth + 1));
+		}
+
+		$fallback = ($matches[2] ?? '');
+		if ($fallback === '') {
+			return $value;
+		}
+
+		return $this->resolveAlias(value: $fallback, declarations: $declarations, depth: ($depth + 1));
+	}//end resolveAlias()
 
 	/**
 	 * Derive one color token's dark value.
@@ -351,12 +454,23 @@ class DarkPaletteService {
 	 * Whether a token name is text-class (its dark value must land LIGHT)
 	 * as opposed to background-class (its dark value must land DARK).
 	 *
-	 * A binary split driven by the `--nldesign-*` naming convention: any
-	 * token whose name contains "text" (`-text`, `-text-error`, the bare
-	 * `--nldesign-color-text`, …) is text-class; everything else (fills,
-	 * surfaces, borders, the brand primary, status colours) is
-	 * background-class. See the class docblock for why this does not reuse
-	 * {@see TokenRegistry}.
+	 * TWO conventions, because the sets use two.
+	 *
+	 * `--nldesign-*` names the role in the word: anything containing "text"
+	 * (`-text`, `-text-error`, the bare `--nldesign-color-text`) is text-class.
+	 *
+	 * The utrecht and municipal families instead name the SURFACE and leave the
+	 * text case unmarked: `--utrecht-document-background-color` is a surface,
+	 * `--utrecht-document-color` and `--utrecht-heading-1-color` are the text on
+	 * it. Reading only the first convention put every one of those in the
+	 * background class, so the tokens that paint body copy were darkened
+	 * towards black exactly like the surfaces behind them.
+	 *
+	 * So a name ending in `-color` is text-class unless a preceding word says
+	 * otherwise — `background`, `border`, `outline`, `fill`, `shadow`,
+	 * `accent`, `marker` all name something that is not the glyphs.
+	 *
+	 * See the class docblock for why this does not reuse {@see TokenRegistry}.
 	 *
 	 * @param string $token The token name.
 	 *
@@ -365,7 +479,21 @@ class DarkPaletteService {
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	private function isTextClass(string $token): bool {
-		return (str_contains($token, 'text') === true);
+		if (str_contains($token, 'text') === true) {
+			return true;
+		}
+
+		if (str_ends_with($token, '-color') === false) {
+			return false;
+		}
+
+		foreach (self::SURFACE_WORDS as $word) {
+			if (str_contains($token, $word) === true) {
+				return false;
+			}
+		}
+
+		return true;
 	}//end isTextClass()
 
 	/**
@@ -831,8 +959,16 @@ class DarkPaletteService {
 	}//end deleteDarkVariant()
 
 	/**
-	 * Whether an existing dark file's embedded source hash matches the
-	 * current source hash (i.e. the source token file has not changed).
+	 * Whether an existing dark file was generated from the current source BY
+	 * THE CURRENT GENERATOR.
+	 *
+	 * Both halves are required, and the second was missing: the version was
+	 * stamped into every header and read by nothing, so {@see
+	 * self::GENERATOR_VERSION} documented a way to force regeneration that did
+	 * not exist. A generator fix then landed on an installation whose sources
+	 * had not changed, every set reported "skipped (fresh)", and the artefacts
+	 * still on disk were the ones the fix was written to replace — a silent
+	 * no-op that reads exactly like a successful run.
 	 *
 	 * @param string $darkFile The existing dark CSS file path.
 	 * @param string $sourceHash The current `sha256:...` source hash.
@@ -844,6 +980,10 @@ class DarkPaletteService {
 	private function isFresh(string $darkFile, string $sourceHash): bool {
 		$header = file_get_contents($darkFile, false, null, 0, 512);
 		if ($header === false) {
+			return false;
+		}
+
+		if (str_contains($header, 'DarkPaletteService v' . self::GENERATOR_VERSION . ' ') === false) {
 			return false;
 		}
 
