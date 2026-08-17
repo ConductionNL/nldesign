@@ -61,7 +61,7 @@ class DarkPaletteService {
 	 * The generated-file format/algorithm version, embedded in the header
 	 * comment so a future algorithm change can force regeneration.
 	 *
-	 * v2 resolves `var()` aliases before deriving (see
+	 * Version 2 resolves `var()` aliases before deriving (see
 	 * {@see self::resolveAlias()}) and classifies text-class tokens by the
 	 * `-color` / `-background-color` convention the utrecht and municipal
 	 * families use, not only by the word "text".
@@ -542,7 +542,7 @@ class DarkPaletteService {
 	 * @param string[] $protectedTokens Token names that MUST NOT be rewritten (hand-authored overrides).
 	 *
 	 * @return array{declarations: array<string, string>, warnings: array<int, array<string, mixed>>}
-	 *                                                                                                The (possibly repaired) declarations and the final warning list.
+	 *         The (possibly repaired) declarations and the final warning list.
 	 *
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
@@ -741,7 +741,8 @@ class DarkPaletteService {
 	 * @param string $setId The token set id.
 	 *
 	 * @return array{css: string, warnings: array<int, array<string, mixed>>}|null
-	 *                                                                             The rendered CSS + warnings, or null when the set is ineligible or has no source file.
+	 *         The rendered CSS + warnings, or null when the set is ineligible or
+	 *         has no source file.
 	 *
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
@@ -926,7 +927,7 @@ class DarkPaletteService {
 	 * @param bool $force Regenerate even fresh files.
 	 *
 	 * @return array<string, array{written: bool, skipped: bool, reason: string, warnings: array<int, array<string, mixed>>}>
-	 *                                                                                                                        The per-set outcome, keyed by set id.
+	 *         The per-set outcome, keyed by set id.
 	 *
 	 * @SuppressWarnings(PHPMD.BooleanArgumentFlag) - see generateAndWrite()'s rationale; this
 	 * simply fans the same `--force` convention out over every discovered set.

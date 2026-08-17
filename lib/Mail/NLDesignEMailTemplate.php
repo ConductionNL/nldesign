@@ -84,7 +84,8 @@ class NLDesignEMailTemplate extends EMailTemplate {
 	 * Resolve the active token set's email theme, or null if unavailable.
 	 *
 	 * @return array{primaryColor: string, primaryTextColor: string, logoUrl: ?string}|null
-	 *                                                                                      The resolved theme, or null when no service/active theme is available.
+	 *         The resolved theme, or null when no service/active theme is
+	 *         available.
 	 *
 	 * @spec openspec/specs/email-theming/spec.md
 	 */
