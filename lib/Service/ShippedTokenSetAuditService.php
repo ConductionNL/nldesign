@@ -136,7 +136,7 @@ class ShippedTokenSetAuditService {
 	 * @param string $level The WCAG threshold profile: 'AA' (default) or 'AAA' (7:1 / 4.5:1).
 	 *
 	 * @return array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}
-	 *                                                                                                                                  The per-set audit result.
+	 *         The per-set audit result.
 	 *
 	 * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-automated-contrast-audit-over-all-shipped-token-sets
 	 */
@@ -242,7 +242,7 @@ class ShippedTokenSetAuditService {
 	 * @param string $appPath The app root path.
 	 *
 	 * @return array<int, array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}>
-	 *                                                                                                                                              One audit result per audited set, ordered deterministically by id.
+	 *         One audit result per audited set, ordered deterministically by id.
 	 *
 	 * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-reproducible-contrast-report
 	 */
