@@ -263,6 +263,24 @@
 	--utrecht-alert-warning-color: var(--c-gold-500);
 	--utrecht-alert-ok-color: var(--c-mint-500);
 
+	/*
+	 * SHAPE — what actually makes a page read as Conduction rather than as a
+	 * generic government portal.
+	 *
+	 * conduction.nl is built from rounded cobalt panels and softly shadowed
+	 * cards on generous rhythm. Recolouring square, flat, tightly-spaced
+	 * components leaves them square, flat and tight. These are the geometry
+	 * tokens `portaliq/css/site-theme.css` reads; a theme that names none of
+	 * them keeps the flat default.
+	 */
+	--nldesign-hero-radius: var(--radius-xl);
+	--nldesign-hero-title-color: var(--conduction-color-text-inverse);
+	--nldesign-header-link-color: var(--conduction-color-text-inverse);
+	--nldesign-hero-body-color: var(--c-cobalt-100);
+	--nldesign-card-radius: var(--radius-lg);
+	--nldesign-card-shadow: var(--shadow-2);
+	--nldesign-card-shadow-hover: var(--shadow-3);
+
 	/* Nextcloud-facing tokens, so the same set themes the admin UI too */
 	--nldesign-color-primary: var(--conduction-color-brand-primary);
 	--nldesign-color-primary-text: var(--conduction-color-text-inverse);

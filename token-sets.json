@@ -424,5 +424,14 @@
       "primary_color": "#21468B",
       "background_color": "#FFFFFF"
     }
+  },
+  {
+    "id": "lafranken",
+    "name": "Gemeente La Franken",
+    "description": "Municipal identity for the La Franken citizen desk: pine green primary, gold accent, parchment neutrals. Deliberately distinct from the VNG association house style.",
+    "theming": {
+      "primary_color": "#1F6A4C",
+      "background_color": "#FFFFFF"
+    }
   }
 ]
