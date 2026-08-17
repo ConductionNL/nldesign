@@ -409,6 +409,30 @@
 	 */
 	--nldesign-footer-padding-block: 88px;
 	--nldesign-footer-padding-block-end: 28px;
+
+	/*
+	 * THE CANAL SCENE — measured, and it is the footer's whole character.
+	 *
+	 * A 152px roofline of gabled facades in the brand orange over a 30px stone
+	 * quay, then the navy water with three ripples across it at 11% opacity.
+	 * The warm window colour is the one value here that is not from the palette
+	 * above: #FFF7D2 is lamplight, and the reference uses it for exactly that.
+	 *
+	 * The ripples are an inline SVG rather than a repeating gradient because
+	 * they are the reference's own three polylines at its own three
+	 * wavelengths — 140px, 180px and 220px between crests. A gradient would
+	 * have been shorter and would have drawn a different sea.
+	 */
+	--nldesign-footer-skyline-height: 152px;
+	--nldesign-footer-skyline-color: var(--c-orange-knvb);
+	--nldesign-footer-window-lit-color: #fff7d2;
+	--nldesign-footer-window-dark-color: var(--c-cobalt-900);
+	--nldesign-footer-quay-height: 30px;
+	--nldesign-footer-quay-color: #9b9da3;
+	--nldesign-footer-quay-ink-color: var(--c-cobalt-900);
+	--nldesign-footer-quay-accent-color: #c8482f;
+	--nldesign-footer-quay-highlight-color: rgba(255, 255, 255, 0.5);
+	--nldesign-footer-ripple-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 500' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.11' stroke-width='2'%3E%3Cpath d='M 0,96 L 140,82 L 280,96 L 420,82 L 560,96 L 700,82 L 840,96 L 980,82 L 1120,96 L 1260,82 L 1400,96'/%3E%3Cpath d='M 0,206 L 180,182 L 360,206 L 540,182 L 720,206 L 900,182 L 1080,206 L 1260,182 L 1400,200'/%3E%3Cpath d='M 0,362 L 220,332 L 440,362 L 660,332 L 880,362 L 1100,332 L 1320,362 L 1400,348'/%3E%3C/g%3E%3C/svg%3E");
 	--nldesign-footer-grid-columns: 297px repeat(auto-fill, 198px);
 	--nldesign-footer-column-gap: 48px;
 
