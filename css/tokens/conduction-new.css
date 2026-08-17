@@ -292,14 +292,56 @@
 	 * tokens `portaliq/css/site-theme.css` reads; a theme that names none of
 	 * them keeps the flat default.
 	 */
-	--nldesign-hero-radius: var(--radius-xl);
+	/*
+	 * SQUARE, because the reference's band is square.
+	 *
+	 * This was `--radius-xl`, which is the identity set's panel radius and the
+	 * right answer for a floating panel. The hero is not one: it is a full-bleed
+	 * band, and measured on docs.conduction.nl its bottom corners are 0px. A
+	 * rounded band over a white page reads as a card that failed to fit.
+	 */
+	--nldesign-hero-radius: 0px;
 	--nldesign-hero-title-color: var(--conduction-color-text-inverse);
 	/* MEASURED on docs.conduction.nl: 48px between the cobalt band's bottom edge
 	   and the top of the first card below it. */
 	--nldesign-section-gap: 48px;
 	--nldesign-list-gap: 16px;
 	--nldesign-header-link-color: var(--nldesign-color-header-text);
+
+	/*
+	 * THE HERO, MEASURED: a 64px/67.2px headline with 20px under it, a 22px/33px
+	 * lead in cobalt-100 held to an 840px measure, then two buttons 51px tall on
+	 * a 6px radius with 13px/22px padding and 15px/500 type — the primary in the
+	 * brand orange, the secondary white on the band.
+	 */
+	--nldesign-hero-title-gap: 20px;
 	--nldesign-hero-body-color: var(--c-cobalt-100);
+	--nldesign-hero-body-size: 22px;
+	--nldesign-hero-body-line-height: 33px;
+	--nldesign-hero-body-weight: 400;
+	--nldesign-hero-body-measure: 840px;
+	--nldesign-hero-body-gap: 32px;
+	--nldesign-hero-action-gap: 16px;
+	--nldesign-hero-action-padding: 13px 22px;
+	--nldesign-hero-action-radius: 6px;
+	--nldesign-hero-action-font-size: 15px;
+	--nldesign-hero-action-font-weight: 500;
+	--nldesign-hero-action-line-height: 22.5px;
+	--nldesign-hero-action-border-width: 1px;
+	--nldesign-hero-action-decoration: none;
+	--nldesign-hero-action-primary-background: var(--c-orange-knvb);
+	/*
+	 * THE LABEL IS DEEP COBALT, NOT WHITE — a deliberate departure.
+	 *
+	 * The reference sets white on this orange, which measures 3.01:1 and is one
+	 * of the three AA failures on its own page. The brand orange itself is not
+	 * the problem and is kept EXACTLY: only the label changes, to the palette's
+	 * own deepest cobalt, which measures 5.93:1 on it. Darkening the orange
+	 * instead would have cleared AA too and cost the brand its colour.
+	 */
+	--nldesign-hero-action-primary-color: var(--c-cobalt-900);
+	--nldesign-hero-action-secondary-background: var(--c-white);
+	--nldesign-hero-action-secondary-color: var(--c-blue-cobalt);
 	/*
 	 * CHROME GEOMETRY — measured in a browser on docs.conduction.nl, not
 	 * estimated from a screenshot. My own estimates had the content column at
