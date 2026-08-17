@@ -381,6 +381,50 @@
 	 * 1280px and the navigation at 15px: close enough to look right side by
 	 * side, wrong enough that nothing lines up.
 	 */
+	/*
+	 * STICKY, 60px, and a mark before the wordmark — measured on the reference:
+	 * `position: sticky; top: 0; z-index: 100`, a 32px mark 10px from a 22px/700
+	 * wordmark tracked -0.44px, and a 60px bar.
+	 */
+	--nldesign-header-position: sticky;
+	--nldesign-header-z-index: 100;
+	--nldesign-header-height: 60px;
+	--nldesign-header-logo-inset: 0px;
+	--nldesign-header-logo-size: 32px;
+	--nldesign-header-logo-gap: 10px;
+	--nldesign-header-logo-clip: var(--hex-pointy-top);
+	--nldesign-header-logo-background: var(--c-blue-cobalt);
+	--nldesign-header-logo-color: var(--c-white);
+	--nldesign-header-logo-font: var(--conduction-typography-font-family-heading);
+	--nldesign-header-logo-font-size: 18px;
+	--nldesign-header-logo-font-weight: 700;
+	--nldesign-header-wordmark-font: var(
+		--conduction-typography-font-family-heading
+	);
+	--nldesign-header-wordmark-size: 22px;
+	--nldesign-header-wordmark-weight: 700;
+	--nldesign-header-wordmark-spacing: -0.44px;
+	--nldesign-header-wordmark-transform: none;
+
+	/*
+	 * The two header controls take the hero buttons' geometry at a smaller size,
+	 * so a portal reads as one system: register is the outline, signing in is the
+	 * filled cobalt. The primary is cobalt rather than the brand orange — orange
+	 * is the hero's call to action, and two competing primaries on one screen is
+	 * one too many.
+	 */
+	--nldesign-header-action-padding: 8px 16px;
+	--nldesign-header-action-radius: 6px;
+	--nldesign-header-action-font-size: 14px;
+	--nldesign-header-action-font-weight: 500;
+	--nldesign-header-action-line-height: 20px;
+	--nldesign-header-action-decoration: none;
+	--nldesign-header-action-border-width: 1px;
+	--nldesign-header-action-primary-background: var(--c-blue-cobalt);
+	--nldesign-header-action-primary-color: var(--c-white);
+	--nldesign-header-action-secondary-color: var(--c-blue-cobalt);
+	--nldesign-header-action-secondary-border-color: var(--c-cobalt-200);
+
 	--nldesign-header-background: var(--c-white);
 	--nldesign-header-padding-inline: 56px;
 	--nldesign-header-border-width: 1px;
@@ -432,6 +476,16 @@
 	--nldesign-footer-quay-ink-color: var(--c-cobalt-900);
 	--nldesign-footer-quay-accent-color: #c8482f;
 	--nldesign-footer-quay-highlight-color: rgba(255, 255, 255, 0.5);
+	/* The water: seven vessels in the brand accent, the tour boat flying the
+	   Dutch tricolour and the house boat carrying the hexagon mark. */
+	--nldesign-footer-water-height: 76px;
+	--nldesign-footer-water-background: var(--c-cobalt-900);
+	--nldesign-footer-boat-offset: 6px;
+	--nldesign-footer-boat-color: var(--c-orange-knvb);
+	--nldesign-footer-boat-mark-color: var(--c-white);
+	--nldesign-footer-flag-top-color: var(--c-red-vermillion);
+	--nldesign-footer-flag-middle-color: var(--c-white);
+	--nldesign-footer-flag-bottom-color: var(--c-blue-cobalt);
 	--nldesign-footer-ripple-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 500' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.11' stroke-width='2'%3E%3Cpath d='M 0,96 L 140,82 L 280,96 L 420,82 L 560,96 L 700,82 L 840,96 L 980,82 L 1120,96 L 1260,82 L 1400,96'/%3E%3Cpath d='M 0,206 L 180,182 L 360,206 L 540,182 L 720,206 L 900,182 L 1080,206 L 1260,182 L 1400,200'/%3E%3Cpath d='M 0,362 L 220,332 L 440,362 L 660,332 L 880,362 L 1100,332 L 1320,362 L 1400,348'/%3E%3C/g%3E%3C/svg%3E");
 	--nldesign-footer-grid-columns: 297px repeat(auto-fill, 198px);
 	--nldesign-footer-column-gap: 48px;
@@ -517,7 +571,10 @@
 	--nldesign-footer-badge-padding: 5px 9px;
 	--nldesign-footer-badge-gap: 20px;
 	--nldesign-footer-badge-inner-gap: 6px;
-	--nldesign-container-max: 1320px;
+	/* 1280px, remeasured. The reference's content column appears at 1280 three
+	   times over and at 1320 once — I had taken the outlier. It is why the
+	   footer's legal bar was 40px wider than the reference's. */
+	--nldesign-container-max: 1280px;
 	--nldesign-container-padding-inline: 24px;
 
 	--nldesign-card-radius: 12px;

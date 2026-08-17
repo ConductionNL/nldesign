@@ -314,4 +314,19 @@
 	/* The hero band paints itself, so it names its own foreground */
 	--nldesign-hero-title-color: var(--nldesign-color-primary-text, #fff);
 	--nldesign-hero-body-color: var(--nldesign-color-primary-light, #eee);
+
+	/*
+	 * `--navigation-bar-height` IS DELIBERATELY NOT BRIDGED HERE, and the reason
+	 * is worth keeping: it cannot be.
+	 *
+	 * `.ac-header__navigation-main` sizes itself from that variable, and
+	 * `.ac-header` DECLARES it on itself. A custom property is resolved from the
+	 * nearest ancestor that declares it, so a `:root` declaration — however
+	 * specific its selector — loses to one on an element between the root and the
+	 * consumer. Bridging it here looked correct, changed nothing, and would have
+	 * read as a working line forever.
+	 *
+	 * It is bridged in `portaliq/css/site-theme.css` on `.pq-site .ac-header`
+	 * instead, which is the same element and out-specifies the vendored rule.
+	 */
 }
