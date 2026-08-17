@@ -1,0 +1,279 @@
+/**
+ * Conduction 2026 Design Tokens
+ *
+ * Source of truth: https://identity.conduction.nl/ (`theme-conduction-2026`),
+ * the house style conduction.nl itself ships. Every primitive below is copied
+ * from that token file verbatim — cobalt #21468B, KNVB orange #F36C21, Figtree,
+ * the 4px spacing grid, five radii and three cobalt-tinted shadows.
+ *
+ * IT SHARES NOTHING WITH THE OLDER `conduction` THEME, AND THAT IS THE POINT.
+ *
+ * The NL Design System component CSS this fleet vendors already carries a
+ * `.conduction-theme` block built around a different blue, #4376FC. It is
+ * scoped to a class, and the renderer puts that class on the site's root
+ * element — so it out-specifies any `:root` token file no matter which loads
+ * last. Measured on a live portal: the token file resolved
+ * `--tilburg-color-blue-500` to #21468B at `:root` while the header still
+ * painted #4376FC, two different blues in one screenshot.
+ *
+ * Naming this set `conduction-new` is what breaks that tie: the renderer emits
+ * `.conduction-new-theme`, a class the vendored CSS never declares, so nothing
+ * of the old palette can outrank what is written here. No value below is
+ * derived from the old theme or from another municipality's set.
+ *
+ * THE SECOND HALF IS A BRIDGE, NOT A SECOND PALETTE. The portal renderer reads
+ * `--utrecht-*` / `--tilburg-*` / `--nldesign-*` component tokens, so those
+ * KEYS have to exist or the chrome falls back to component defaults. Their
+ * VALUES are `var()` aliases onto the Conduction semantics above — one ramp,
+ * one source of truth, and changing a brand colour here changes every surface
+ * that uses it.
+ *
+ * ONE FLAT `:root` BLOCK, deliberately: a shared applier rewrites this selector
+ * to scope a set to one portal, and a second block or a compound selector
+ * silently escapes that rewrite.
+ */
+
+:root {
+	/* ---------------------------------------------------------------- */
+	/* Colour primitives — identity.conduction.nl, verbatim              */
+	/* ---------------------------------------------------------------- */
+	--c-blue-cobalt: #21468B;
+	--c-orange-knvb: #F36C21;
+	--c-red-vermillion: #AE1C28;
+	--c-white: #FFFFFF;
+	--c-nextcloud-blue: #0082C9;
+	--c-nextcloud-cyan: #1CAFFF;
+	--c-commonground-yellow: #F6AD00;
+
+	--c-cobalt-50: #EEF2F8;
+	--c-cobalt-100: #DCE3F0;
+	--c-cobalt-200: #B6C2DD;
+	--c-cobalt-300: #8095BD;
+	--c-cobalt-400: #4D69A4;
+	--c-cobalt-500: #21468B;
+	--c-cobalt-600: #1B3A75;
+	--c-cobalt-700: #152D5C;
+	--c-cobalt-800: #102246;
+	--c-cobalt-900: #0A172F;
+
+	--c-lavender-300: #B7A7E3;
+	--c-lavender-500: #7E66C9;
+	--c-mint-300: #87CFA8;
+	--c-mint-500: #2E9866;
+	--c-forest-300: #7DAA7C;
+	--c-forest-500: #3D7C3A;
+	--c-terracotta-300: #DA9D8A;
+	--c-terracotta-500: #B25E48;
+	--c-workspaceblue-300: #67BEEA;
+	--c-workspaceblue-500: #0082C9;
+	--c-coral-300: #FAB29C;
+	--c-coral-500: #F36C21;
+	--c-gold-300: #ECC668;
+	--c-gold-500: #C99A1F;
+	--c-gray-300: #B7BDC9;
+	--c-gray-500: #6B7280;
+
+	/* ---------------------------------------------------------------- */
+	/* Semantics — the only layer anything below is allowed to reference */
+	/* ---------------------------------------------------------------- */
+	--conduction-color-brand-primary: var(--c-blue-cobalt);
+	--conduction-color-brand-secondary: var(--c-orange-knvb);
+	--conduction-color-brand-tertiary: var(--c-red-vermillion);
+
+	--conduction-color-background-default: var(--c-white);
+	--conduction-color-background-inverse: var(--c-blue-cobalt);
+	--conduction-color-background-muted: var(--c-cobalt-50);
+
+	--conduction-color-text-default: var(--c-blue-cobalt);
+	--conduction-color-text-inverse: var(--c-white);
+	--conduction-color-text-accent: var(--c-orange-knvb);
+	--conduction-color-text-muted: var(--c-cobalt-400);
+
+	--conduction-color-link-default: var(--c-blue-cobalt);
+	--conduction-color-link-hover: var(--c-orange-knvb);
+	--conduction-color-status-error: var(--c-red-vermillion);
+
+	--conduction-color-border-default: var(--c-cobalt-200);
+	--conduction-color-border-strong: var(--c-blue-cobalt);
+
+	/* Typography, spacing, radii, shadows — identity.conduction.nl */
+	--conduction-typography-font-family-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--conduction-typography-font-family-heading: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--conduction-typography-font-family-code: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+	--fs-xs: 12px;
+	--fs-sm: 14px;
+	--fs-base: 16px;
+	--fs-lg: 18px;
+	--fs-xl: 20px;
+	--fs-2xl: 24px;
+	--fs-3xl: 32px;
+	--fs-4xl: 40px;
+	--fs-5xl: 48px;
+	--lh-tight: 1.2;
+	--lh-normal: 1.5;
+	--lh-relaxed: 1.75;
+
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--space-12: 48px;
+	--space-16: 64px;
+
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 10px;
+	--radius-xl: 16px;
+	--radius-pill: 999px;
+
+	--shadow-1: 0 1px 2px rgba(33, 70, 139, 0.08);
+	--shadow-2: 0 2px 8px rgba(33, 70, 139, 0.10);
+	--shadow-3: 0 8px 24px rgba(33, 70, 139, 0.12);
+
+	/* ================================================================ */
+	/* BRIDGE — component roles the portal renderer reads, aliased onto  */
+	/* the semantics above. No literal colour appears below this line.   */
+	/* ================================================================ */
+
+	/* Document surface and body copy */
+	--utrecht-document-background-color: var(--conduction-color-background-default);
+	--utrecht-document-color: var(--conduction-color-text-default);
+	--utrecht-document-font-family: var(--conduction-typography-font-family-body);
+	--utrecht-document-font-size: var(--fs-base);
+	--utrecht-document-line-height: var(--lh-normal);
+	--utrecht-paragraph-color: var(--conduction-color-text-default);
+	--utrecht-paragraph-font-family: var(--conduction-typography-font-family-body);
+
+	/* Headings — the class carries the styling, so every level is named */
+	--utrecht-heading-font-family: var(--conduction-typography-font-family-heading);
+	--utrecht-heading-color: var(--conduction-color-text-default);
+	--utrecht-heading-1-color: var(--conduction-color-text-default);
+	--utrecht-heading-1-font-family: var(--conduction-typography-font-family-heading);
+	--utrecht-heading-1-font-size: var(--fs-5xl);
+	--utrecht-heading-1-line-height: var(--lh-tight);
+	--utrecht-heading-2-color: var(--conduction-color-text-default);
+	--utrecht-heading-2-font-family: var(--conduction-typography-font-family-heading);
+	--utrecht-heading-2-font-size: var(--fs-3xl);
+	--utrecht-heading-3-color: var(--conduction-color-text-default);
+	--utrecht-heading-3-font-family: var(--conduction-typography-font-family-heading);
+	--utrecht-heading-3-font-size: var(--fs-2xl);
+	--utrecht-heading-4-color: var(--conduction-color-text-default);
+	--utrecht-heading-5-color: var(--conduction-color-text-default);
+	--utrecht-heading-6-color: var(--conduction-color-text-default);
+
+	/* Links */
+	--utrecht-link-color: var(--conduction-color-link-default);
+	--utrecht-link-hover-color: var(--conduction-color-link-hover);
+	--utrecht-link-visited-color: var(--conduction-color-link-default);
+	--utrecht-link-text-decoration: underline;
+
+	/* Page header / navigation */
+	--utrecht-page-header-background-color: var(--conduction-color-background-inverse);
+	--utrecht-page-header-color: var(--conduction-color-text-inverse);
+	--tilburg-header-background-color: var(--conduction-color-background-inverse);
+	--tilburg-navigation-font-family: var(--conduction-typography-font-family-heading);
+	--conduction-primary-top-nav-background-color: var(--conduction-color-background-inverse);
+	--conduction-primary-top-nav-color: var(--conduction-color-text-inverse);
+	--conduction-primary-top-nav-current-background-color: var(--c-cobalt-700);
+	--conduction-primary-top-nav-current-color: var(--conduction-color-text-inverse);
+	--conduction-primary-top-nav-hover-background-color: var(--c-cobalt-700);
+	--conduction-primary-top-nav-hover-color: var(--conduction-color-text-inverse);
+
+	/*
+	 * TEXT ON THE INVERSE BANDS.
+	 *
+	 * These are separate tokens from the document heading colours, and leaving
+	 * them unset is not neutral: the components fall back to black, which on a
+	 * cobalt band measured 2.31:1 — the site title and the hero heading both
+	 * failed AA while the page looked deliberate and on-brand. A band that
+	 * paints itself dark has to name its own foreground.
+	 */
+	--tilburg-header-logo-text-color: var(--conduction-color-text-inverse);
+	--tilburg-logo-color: var(--conduction-color-text-inverse);
+	--utrecht-page-footer-background-color: var(--c-cobalt-900);
+	--tilburg-footer-marker-color: var(--conduction-color-brand-secondary);
+
+	/* Footer — two bands, distinguished by depth rather than by hue */
+	--tilburg-footer-background-color: var(--c-cobalt-900);
+	--tilburg-footer-color: var(--conduction-color-text-inverse);
+	--tilburg-footer-icon-color: var(--conduction-color-text-inverse);
+	--tilburg-footer-link-color: var(--conduction-color-text-inverse);
+	--tilburg-footer-link-hover-color: var(--conduction-color-text-accent);
+	--tilburg-footer-link-text-decoration: none;
+	--tilburg-footer-link-hover-text-decoration: underline;
+
+	/* The brand ramp the vendored components alias for cards, heroes and rules */
+	--tilburg-color-blue-500: var(--c-cobalt-500);
+	--tilburg-color-blue-400: var(--c-cobalt-400);
+	--tilburg-color-blue-300: var(--c-cobalt-300);
+	--tilburg-color-blue-200: var(--c-cobalt-200);
+	--tilburg-color-blue-100: var(--c-cobalt-100);
+	--tilburg-color-gray-950: var(--c-cobalt-900);
+	--tilburg-color-gray-900: var(--c-cobalt-800);
+	--tilburg-color-gray-800: var(--c-cobalt-700);
+	--tilburg-color-gray-700: var(--c-cobalt-600);
+	--tilburg-color-gray-600: var(--c-cobalt-400);
+	--tilburg-color-gray-500: var(--c-cobalt-300);
+	--tilburg-color-gray-400: var(--c-cobalt-200);
+	--tilburg-color-gray-300: var(--c-cobalt-100);
+	--tilburg-color-gray-200: var(--c-cobalt-50);
+	--tilburg-color-gray-100: var(--c-cobalt-50);
+	--tilburg-color-gray-50: var(--conduction-color-background-default);
+	--tilburg-color-black-txt: var(--conduction-color-text-default);
+	--tilburg-color-black: var(--c-cobalt-900);
+	--tilburg-color-white: var(--c-white);
+	--tilburg-document-font-family: var(--conduction-typography-font-family-body);
+	--tilburg-heading-font-family: var(--conduction-typography-font-family-heading);
+	--tilburg-typography-font-family-primary: var(--conduction-typography-font-family-heading);
+	--tilburg-typography-font-family-secondary: var(--conduction-typography-font-family-body);
+
+	/* Cards */
+	--tilburg-search-card-background-color: var(--conduction-color-background-default);
+	--tilburg-search-card-blue-background-color: var(--conduction-color-background-muted);
+	--tilburg-search-card-border-color: var(--conduction-color-border-default);
+	--tilburg-search-card-hover-border-color: var(--conduction-color-border-strong);
+	--utrecht-card-heading-color: var(--conduction-color-text-default);
+
+	/* Buttons */
+	--utrecht-button-primary-action-background-color: var(--conduction-color-brand-primary);
+	--utrecht-button-primary-action-color: var(--conduction-color-text-inverse);
+	--utrecht-button-primary-action-hover-background-color: var(--c-cobalt-600);
+	--utrecht-button-secondary-action-background-color: var(--conduction-color-background-default);
+	--utrecht-button-secondary-action-color: var(--conduction-color-brand-primary);
+	--utrecht-button-border-radius: var(--radius-md);
+	--utrecht-button-font-family: var(--conduction-typography-font-family-body);
+
+	/* Form controls */
+	--utrecht-textbox-border-color: var(--conduction-color-border-default);
+	--utrecht-textbox-color: var(--conduction-color-text-default);
+	--utrecht-textbox-font-family: var(--conduction-typography-font-family-body);
+	--utrecht-textbox-border-radius: var(--radius-md);
+
+	/* Focus — accent, so it never reads as a link or a disabled control */
+	--utrecht-focus-outline-color: var(--conduction-color-brand-secondary);
+	--tilburg-focus-background-color: var(--conduction-color-brand-secondary);
+
+	/* Status colours the components expect to exist */
+	--utrecht-alert-error-color: var(--conduction-color-status-error);
+	--utrecht-alert-warning-color: var(--c-gold-500);
+	--utrecht-alert-ok-color: var(--c-mint-500);
+
+	/* Nextcloud-facing tokens, so the same set themes the admin UI too */
+	--nldesign-color-primary: var(--conduction-color-brand-primary);
+	--nldesign-color-primary-text: var(--conduction-color-text-inverse);
+	--nldesign-color-primary-hover: var(--c-cobalt-600);
+	--nldesign-color-primary-light: var(--c-cobalt-50);
+	--nldesign-color-text: var(--conduction-color-text-default);
+	--nldesign-color-text-muted: var(--conduction-color-text-muted);
+	--nldesign-color-text-light: var(--conduction-color-text-inverse);
+	--nldesign-color-background: var(--conduction-color-background-default);
+	--nldesign-color-background-hover: var(--conduction-color-background-muted);
+	--nldesign-color-background-dark: var(--c-cobalt-100);
+	--nldesign-color-link: var(--conduction-color-link-default);
+	--nldesign-font-family: var(--conduction-typography-font-family-body);
+}
