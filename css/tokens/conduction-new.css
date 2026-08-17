@@ -350,7 +350,15 @@
 	--nldesign-card-border-color: #EBEDF0;
 	--nldesign-card-background: var(--c-white);
 	--nldesign-card-padding: 24px;
-	--nldesign-card-gap: var(--space-3);
+	/*
+	 * ZERO, and the spacing inside a card comes from the elements themselves.
+	 *
+	 * A flex `gap` on the content wrapper adds to every margin below it, so the
+	 * heading's measured 6px became 6px PLUS the gap and the body sat 29px lower
+	 * than the reference's. The heading names its own rhythm; the card does not
+	 * add a second one on top.
+	 */
+	--nldesign-card-gap: 0px;
 	--nldesign-card-heading-color: var(--c-blue-cobalt);
 	--nldesign-card-heading-size: 19.2px;
 	--nldesign-card-heading-font: var(--conduction-typography-font-family-heading);
@@ -367,13 +375,25 @@
 	--nldesign-card-heading-weight: 700;
 	--nldesign-card-body-color: var(--c-blue-cobalt);
 
-	/* The hexagon: the brand's one unmistakable shape, from the identity set. */
+	/*
+	 * The hexagon: the brand's one unmistakable shape, from the identity set.
+	 *
+	 * MEASURED on docs.conduction.nl: a 44x50 tile sitting 25px from the card's
+	 * top edge with the heading below it at 89px — stacked, not inline beside
+	 * the title, and not square. 56px was my estimate before I measured.
+	 */
 	--hex-pointy-top: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-	--nldesign-card-icon-size: 56px;
-	--nldesign-card-icon-padding: 14px;
+	--nldesign-card-icon-size: 44px;
+	--nldesign-card-icon-block-size: 50px;
+	--nldesign-card-icon-padding: 11px;
 	--nldesign-card-icon-background: var(--c-blue-cobalt);
 	--nldesign-card-icon-color: var(--c-white);
 	--nldesign-card-icon-clip: var(--hex-pointy-top);
+	--nldesign-card-heading-direction: column;
+	--nldesign-card-heading-align: flex-start;
+	/* 14px, measured: the tile ends at 75px and the heading starts at 89px. */
+	--nldesign-card-icon-gap: 14px;
+	--nldesign-card-heading-margin-block-end: 6px;
 	--nldesign-card-shadow: none;
 	--nldesign-card-shadow-hover: var(--shadow-2);
 
