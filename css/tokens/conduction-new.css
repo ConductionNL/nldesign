@@ -96,6 +96,25 @@
 	--conduction-color-border-default: var(--c-cobalt-200);
 	--conduction-color-border-strong: var(--c-blue-cobalt);
 
+	/*
+	 * THE HEADER IS WHITE, NOT COBALT — conduction.nl and docs.conduction.nl
+	 * both put a white bar with the logo, navy navigation and a right-hand call
+	 * to action above a cobalt hero band. Painting the header cobalt as well
+	 * merges the two into one slab and loses the brand's most recognisable
+	 * feature.
+	 *
+	 * Stated in the SEMANTIC layer so the shared public bridge picks it up:
+	 * these are the tokens it reads to decide whether a header is light or
+	 * dark, and it takes the foreground from the matching `-text` token rather
+	 * than assuming one.
+	 */
+	--nldesign-color-header-background: var(--c-white);
+	--nldesign-color-header-text: var(--c-blue-cobalt);
+	--nldesign-color-nav-background: var(--c-white);
+	--nldesign-color-nav-text: var(--c-blue-cobalt);
+	--nldesign-color-footer-background: var(--c-cobalt-900);
+	--nldesign-color-footer-text: var(--c-white);
+
 	/* Typography, spacing, radii, shadows — identity.conduction.nl */
 	--conduction-typography-font-family-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	--conduction-typography-font-family-heading: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -173,16 +192,16 @@
 	--utrecht-link-text-decoration: underline;
 
 	/* Page header / navigation */
-	--utrecht-page-header-background-color: var(--conduction-color-background-inverse);
-	--utrecht-page-header-color: var(--conduction-color-text-inverse);
-	--tilburg-header-background-color: var(--conduction-color-background-inverse);
+	--utrecht-page-header-background-color: var(--nldesign-color-header-background);
+	--utrecht-page-header-color: var(--nldesign-color-header-text);
+	--tilburg-header-background-color: var(--nldesign-color-header-background);
 	--tilburg-navigation-font-family: var(--conduction-typography-font-family-heading);
-	--conduction-primary-top-nav-background-color: var(--conduction-color-background-inverse);
-	--conduction-primary-top-nav-color: var(--conduction-color-text-inverse);
-	--conduction-primary-top-nav-current-background-color: var(--c-cobalt-700);
-	--conduction-primary-top-nav-current-color: var(--conduction-color-text-inverse);
-	--conduction-primary-top-nav-hover-background-color: var(--c-cobalt-700);
-	--conduction-primary-top-nav-hover-color: var(--conduction-color-text-inverse);
+	--conduction-primary-top-nav-background-color: var(--nldesign-color-nav-background);
+	--conduction-primary-top-nav-color: var(--nldesign-color-nav-text);
+	--conduction-primary-top-nav-current-background-color: var(--c-cobalt-50);
+	--conduction-primary-top-nav-current-color: var(--c-blue-cobalt);
+	--conduction-primary-top-nav-hover-background-color: var(--c-cobalt-50);
+	--conduction-primary-top-nav-hover-color: var(--c-blue-cobalt);
 
 	/*
 	 * TEXT ON THE INVERSE BANDS.
@@ -193,8 +212,8 @@
 	 * failed AA while the page looked deliberate and on-brand. A band that
 	 * paints itself dark has to name its own foreground.
 	 */
-	--tilburg-header-logo-text-color: var(--conduction-color-text-inverse);
-	--tilburg-logo-color: var(--conduction-color-text-inverse);
+	--tilburg-header-logo-text-color: var(--nldesign-color-header-text);
+	--tilburg-logo-color: var(--nldesign-color-header-text);
 	--utrecht-page-footer-background-color: var(--c-cobalt-900);
 	--tilburg-footer-marker-color: var(--conduction-color-brand-secondary);
 
@@ -275,7 +294,7 @@
 	 */
 	--nldesign-hero-radius: var(--radius-xl);
 	--nldesign-hero-title-color: var(--conduction-color-text-inverse);
-	--nldesign-header-link-color: var(--conduction-color-text-inverse);
+	--nldesign-header-link-color: var(--nldesign-color-header-text);
 	--nldesign-hero-body-color: var(--c-cobalt-100);
 	--nldesign-card-radius: var(--radius-lg);
 	--nldesign-card-shadow: var(--shadow-2);
