@@ -315,6 +315,39 @@
 	 * brand orange, the secondary white on the band.
 	 */
 	--nldesign-hero-title-gap: 20px;
+	/*
+	 * The heading's own hexagon tile: 80x92 in the brand orange with a 38px white
+	 * glyph, 22px from the title text. Measured, including the fact that it is
+	 * taller than it is wide — it is the same pointy-top hexagon as the cards'.
+	 */
+	--nldesign-hero-title-icon-size: 80px;
+	--nldesign-hero-title-icon-block-size: 92px;
+	--nldesign-hero-title-icon-gap: 22px;
+	--nldesign-hero-title-icon-background: var(--c-orange-knvb);
+	--nldesign-hero-title-icon-color: var(--c-white);
+	--nldesign-hero-title-icon-clip: var(--hex-pointy-top);
+	/*
+	 * The honeycomb: 92x106 cells at 8% white, one orange centre, 22px/700 for
+	 * the letter it carries. `--nldesign-hero-column-gap` is what keeps the
+	 * content column off it.
+	 */
+	--nldesign-hero-column-gap: 64px;
+	--nldesign-hero-cell-size: 92px;
+	--nldesign-hero-cell-block-size: 106px;
+	/* 78px, measured. Three quarters of 106 is 79.5, and the reference tiles
+	   1.5px tighter than that. */
+	--nldesign-hero-cell-step-block: 78px;
+	--nldesign-hero-cell-background: rgba(255, 255, 255, 0.08);
+	--nldesign-hero-cell-color: var(--c-white);
+	--nldesign-hero-cell-clip: var(--hex-pointy-top);
+	--nldesign-hero-cell-font-size: 22px;
+	--nldesign-hero-cell-font-weight: 700;
+	--nldesign-hero-cell-accent-background: var(--c-orange-knvb);
+	/* Deep cobalt for the same reason as the primary button's label: white on
+	   this orange is 3.01:1. The cell is decoration and a brand mark could claim
+	   the logotype exemption, but one rule for "text on brand orange" is cheaper
+	   to keep true than an exemption argued case by case. */
+	--nldesign-hero-cell-accent-color: var(--c-cobalt-900);
 	--nldesign-hero-body-color: var(--c-cobalt-100);
 	--nldesign-hero-body-size: 22px;
 	--nldesign-hero-body-line-height: 33px;
@@ -410,9 +443,23 @@
 	/* Hero band and headline — measured on docs.conduction.nl */
 	--nldesign-hero-padding-block-start: 56px;
 	--nldesign-hero-padding-block-end: 64px;
-	--nldesign-hero-title-size: 64px;
+	/*
+	 * FLUID, and it has to be: at 64px fixed, "klantportaal" plus the heading's
+	 * 80px icon tile overflowed a 390px viewport by 90px.
+	 *
+	 * `28px + 2.5vw` resolves to exactly 64px at the 1440px width the reference
+	 * is measured at, and to 37.75px at 390px — the clamp floor of 32px is there
+	 * for anything narrower still. The reference scales too (64/52/40 at
+	 * 1440/768/390) but overflows its OWN layout by 207px at 390px, so this
+	 * deliberately does not reproduce its curve.
+	 *
+	 * The line-height is a RATIO for the same reason: 1.05 computes to the
+	 * reference's 67.2px at 64px and keeps its proportion at every other size,
+	 * where a fixed 67.2px would crush a 38px headline's descenders.
+	 */
+	--nldesign-hero-title-size: clamp(32px, 28px + 2.5vw, 64px);
 	--nldesign-hero-title-weight: 700;
-	--nldesign-hero-title-line-height: 67.2px;
+	--nldesign-hero-title-line-height: 1.05;
 	--nldesign-hero-title-font: var(--conduction-typography-font-family-heading);
 	--nldesign-card-heading-weight: 700;
 	--nldesign-card-body-color: var(--c-blue-cobalt);
