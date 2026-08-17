@@ -391,25 +391,73 @@
 	--nldesign-header-nav-gap: 0px;
 	--nldesign-body-font-family: var(--conduction-typography-font-family-body);
 	--nldesign-nav-link-color: var(--c-blue-cobalt);
-	/* Footer — measured on docs.conduction.nl */
-	--nldesign-footer-padding-block: 88px;
-	--nldesign-footer-heading-font: var(--conduction-typography-font-family-heading);
-	--nldesign-footer-heading-size: 22px;
-	--nldesign-footer-heading-color: var(--c-white);
-	--nldesign-footer-heading-spacing: -0.44px;
-	--nldesign-footer-link-font: var(--conduction-typography-font-family-code);
-	--nldesign-footer-link-size: 11px;
 	/*
-	 * DELIBERATELY NOT THE REFERENCE'S VALUE.
+	 * FOOTER — remeasured, and two of these tokens were describing the wrong
+	 * element.
 	 *
-	 * docs.conduction.nl uses #0082C9 for footer links, which on its own navy
-	 * measures 4.28:1 — it fails AA, and copying it faithfully reproduced the
-	 * failure on ten nodes here. This is the lighter blue from the same
-	 * Conduction palette (`--c-workspaceblue-300`), which reads as the same
-	 * link colour and passes. On a public government portal the standard wins
-	 * over the pixel.
+	 * `--nldesign-footer-heading-*` held Figtree 22px white at -0.44px, which is
+	 * the reference's BRAND WORDMARK, not its column headings; those are 11px
+	 * uppercase mono at 55% white. And `--nldesign-footer-link-*` held mono 11px
+	 * in #0082C9, which is neither: the reference's column links are 14px Figtree
+	 * at 85% white, and #0082C9 belongs to the single accent word "Nextcloud"
+	 * inside the brand paragraph.
+	 *
+	 * That is also why the earlier AA deviation recorded here is gone. The 4.28:1
+	 * failure was real, but it was this app painting every footer link in an
+	 * accent colour taken from one word of running text. The reference's actual
+	 * link colour is 85% white on navy — 13:1, and nothing to work around.
 	 */
-	--nldesign-footer-link-color: var(--c-workspaceblue-300);
+	--nldesign-footer-padding-block: 88px;
+	--nldesign-footer-padding-block-end: 28px;
+	--nldesign-footer-grid-columns: 297px repeat(auto-fill, 198px);
+	--nldesign-footer-column-gap: 48px;
+
+	/* The brand column. */
+	--nldesign-footer-wordmark-font: var(
+		--conduction-typography-font-family-heading
+	);
+	--nldesign-footer-wordmark-size: 22px;
+	--nldesign-footer-wordmark-weight: 700;
+	--nldesign-footer-wordmark-color: var(--c-white);
+	--nldesign-footer-wordmark-spacing: -0.44px;
+	--nldesign-footer-wordmark-line-height: 33px;
+	--nldesign-footer-brand-font: var(--conduction-typography-font-family-body);
+	--nldesign-footer-brand-size: 14px;
+	--nldesign-footer-brand-line-height: 21.7px;
+	--nldesign-footer-brand-color: rgba(255, 255, 255, 0.7);
+	--nldesign-footer-brand-margin-block: 12px 0;
+	--nldesign-footer-brand-measure: 288px;
+	--nldesign-footer-social-size: 34px;
+	--nldesign-footer-social-radius: 8px;
+	--nldesign-footer-social-gap: 10px;
+	--nldesign-footer-social-color: rgba(255, 255, 255, 0.78);
+	--nldesign-footer-social-border-width: 1px;
+	--nldesign-footer-social-border-color: rgba(255, 255, 255, 0.18);
+	--nldesign-footer-social-margin-block: 24px 0;
+
+	/* The column headings: mono, uppercase, tracked out. */
+	--nldesign-footer-heading-font: var(--conduction-typography-font-family-code);
+	--nldesign-footer-heading-size: 11px;
+	--nldesign-footer-heading-weight: 500;
+	--nldesign-footer-heading-color: rgba(255, 255, 255, 0.55);
+	--nldesign-footer-heading-spacing: 1.54px;
+	--nldesign-footer-heading-line-height: 13px;
+	--nldesign-footer-heading-transform: uppercase;
+	--nldesign-footer-heading-margin-block-end: 16px;
+
+	/* The column links. */
+	--nldesign-footer-link-font: var(--conduction-typography-font-family-body);
+	--nldesign-footer-link-size: 14px;
+	--nldesign-footer-link-line-height: 21px;
+	--nldesign-footer-link-color: rgba(255, 255, 255, 0.85);
+	/* 13px, so the ROW STEP lands on the reference's 34px. It was 9px while a
+	   list marker was still adding height to each row; removing the bullet
+	   changed the arithmetic, which is the sort of coupling only a measured
+	   step catches. */
+	--nldesign-footer-item-margin-block-end: 13px;
+	/* No bullets: the reference's footer lists carry no marker at all. */
+	--nldesign-footer-item-marker: none;
+
 	/* One surface for the whole footer, so a link colour only has to satisfy one
 	   background — the vendored CSS otherwise paints the legal strip in the
 	   brand primary. */
@@ -417,6 +465,34 @@
 	--nldesign-footer-legal-font: var(--conduction-typography-font-family-code);
 	--nldesign-footer-legal-size: 12px;
 	--nldesign-footer-legal-color: rgba(255, 255, 255, 0.55);
+	/* 18px, measured. At 12px the browser's `normal` leading gives 15px, and
+	   every box in the legal bar came out exactly 3px short of the reference. */
+	--nldesign-footer-legal-line-height: 18px;
+	--nldesign-footer-legal-link-color: rgba(255, 255, 255, 0.65);
+	--nldesign-footer-legal-link-decoration: none;
+	--nldesign-footer-legal-rule-width: 1px;
+	--nldesign-footer-legal-rule-color: rgba(255, 255, 255, 0.1);
+	--nldesign-footer-legal-padding-block-start: 24px;
+	--nldesign-footer-legal-gap: 16px;
+	--nldesign-footer-legal-link-gap: 8px;
+
+	/* Certification badges. */
+	--nldesign-footer-badge-font: var(--conduction-typography-font-family-code);
+	--nldesign-footer-badge-size: 11px;
+	--nldesign-footer-badge-line-height: 17px;
+	--nldesign-footer-badge-mark-weight: 700;
+	/* The mark is tracked out further than the value — 0.88px against 0.44px,
+	   measured. It is what makes "ISO" read as a mark. */
+	--nldesign-footer-badge-mark-spacing: 0.88px;
+	--nldesign-footer-badge-value-spacing: 0.44px;
+	--nldesign-footer-badge-value-weight: 400;
+	--nldesign-footer-badge-color: rgba(255, 255, 255, 0.85);
+	--nldesign-footer-badge-border-width: 1px;
+	--nldesign-footer-badge-border-color: rgba(255, 255, 255, 0.25);
+	--nldesign-footer-badge-radius: 4px;
+	--nldesign-footer-badge-padding: 5px 9px;
+	--nldesign-footer-badge-gap: 20px;
+	--nldesign-footer-badge-inner-gap: 6px;
 	--nldesign-container-max: 1320px;
 	--nldesign-container-padding-inline: 24px;
 

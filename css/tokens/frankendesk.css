@@ -150,14 +150,64 @@
 	--nldesign-card-body-size: 15px;
 	--nldesign-card-body-line-height: 22px;
 
-	/* Footer: dark ink, restrained link colour, no mono affectation —
-	   that flourish is Conduction's, not La Suite's. */
+	/*
+	 * Footer: dark ink, restrained link colour, no mono affectation — that
+	 * flourish is Conduction's, not La Suite's.
+	 *
+	 * These are La Franken's own values on the 8px grid, NOT Conduction's
+	 * numbers reused. The footer gained a brand column, socials, a colophon and
+	 * a legal bar, and every one of them is inert until a theme names it: with
+	 * these unset the citizen portal rendered its wordmark, its description and
+	 * its legal line as three lines of text touching each other.
+	 */
 	--nldesign-footer-padding-block: 56px;
-	--nldesign-footer-heading-size: 18px;
-	--nldesign-footer-heading-color: #ffffff;
+	--nldesign-footer-padding-block-end: 32px;
+	--nldesign-footer-grid-columns: 320px repeat(auto-fill, 200px);
+	--nldesign-footer-column-gap: 40px;
+
+	/* Brand column. */
+	--nldesign-footer-wordmark-size: 20px;
+	--nldesign-footer-wordmark-weight: 700;
+	--nldesign-footer-wordmark-color: #ffffff;
+	--nldesign-footer-wordmark-line-height: 28px;
+	--nldesign-footer-brand-size: 14px;
+	--nldesign-footer-brand-line-height: 22px;
+	--nldesign-footer-brand-color: rgba(255, 255, 255, 0.75);
+	--nldesign-footer-brand-margin-block: 12px 0;
+	--nldesign-footer-brand-measure: 320px;
+	--nldesign-footer-social-size: 40px;
+	--nldesign-footer-social-radius: 8px;
+	--nldesign-footer-social-gap: 8px;
+	--nldesign-footer-social-color: rgba(255, 255, 255, 0.85);
+	--nldesign-footer-social-border-width: 1px;
+	--nldesign-footer-social-border-color: rgba(255, 255, 255, 0.2);
+	--nldesign-footer-social-margin-block: 24px 0;
+
+	/* Column headings and links. */
+	--nldesign-footer-heading-size: 13px;
+	--nldesign-footer-heading-weight: 600;
+	--nldesign-footer-heading-color: rgba(255, 255, 255, 0.6);
+	--nldesign-footer-heading-spacing: 0.8px;
+	--nldesign-footer-heading-transform: uppercase;
+	--nldesign-footer-heading-line-height: 18px;
+	--nldesign-footer-heading-margin-block-end: 14px;
+	--nldesign-footer-link-size: 15px;
+	--nldesign-footer-link-line-height: 22px;
 	--nldesign-footer-link-color: #c5c6d5;
+	--nldesign-footer-item-margin-block-end: 10px;
+	--nldesign-footer-item-marker: none;
+
+	/* Legal bar. */
 	--nldesign-footer-legal-size: 13px;
+	--nldesign-footer-legal-line-height: 20px;
 	--nldesign-footer-legal-color: rgba(255, 255, 255, 0.55);
+	--nldesign-footer-legal-link-color: rgba(255, 255, 255, 0.75);
+	--nldesign-footer-legal-link-decoration: underline;
+	--nldesign-footer-legal-rule-width: 1px;
+	--nldesign-footer-legal-rule-color: rgba(255, 255, 255, 0.12);
+	--nldesign-footer-legal-padding-block-start: 24px;
+	--nldesign-footer-legal-gap: 16px;
+	--nldesign-footer-legal-link-gap: 8px;
 }
 
 /* The shared lasuite/element-overrides.css masks #header .logo to Nextcloud's
