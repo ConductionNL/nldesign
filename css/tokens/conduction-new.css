@@ -294,11 +294,88 @@
 	 */
 	--nldesign-hero-radius: var(--radius-xl);
 	--nldesign-hero-title-color: var(--conduction-color-text-inverse);
+	/* MEASURED on docs.conduction.nl: 48px between the cobalt band's bottom edge
+	   and the top of the first card below it. */
+	--nldesign-section-gap: 48px;
+	--nldesign-list-gap: 16px;
 	--nldesign-header-link-color: var(--nldesign-color-header-text);
 	--nldesign-hero-body-color: var(--c-cobalt-100);
-	--nldesign-card-radius: var(--radius-lg);
-	--nldesign-card-shadow: var(--shadow-2);
-	--nldesign-card-shadow-hover: var(--shadow-3);
+	/*
+	 * CHROME GEOMETRY — measured in a browser on docs.conduction.nl, not
+	 * estimated from a screenshot. My own estimates had the content column at
+	 * 1280px and the navigation at 15px: close enough to look right side by
+	 * side, wrong enough that nothing lines up.
+	 */
+	--nldesign-header-background: var(--c-white);
+	--nldesign-header-padding-inline: 56px;
+	--nldesign-header-border-width: 1px;
+	--nldesign-header-border-color: var(--c-cobalt-100);
+	--nldesign-nav-font-size: 14px;
+	--nldesign-nav-font-weight: 500;
+	--nldesign-nav-item-padding-inline: 12px;
+	--nldesign-header-nav-gap: 0px;
+	--nldesign-body-font-family: var(--conduction-typography-font-family-body);
+	--nldesign-nav-link-color: var(--c-blue-cobalt);
+	/* Footer — measured on docs.conduction.nl */
+	--nldesign-footer-padding-block: 88px;
+	--nldesign-footer-heading-font: var(--conduction-typography-font-family-heading);
+	--nldesign-footer-heading-size: 22px;
+	--nldesign-footer-heading-color: var(--c-white);
+	--nldesign-footer-heading-spacing: -0.44px;
+	--nldesign-footer-link-font: var(--conduction-typography-font-family-code);
+	--nldesign-footer-link-size: 11px;
+	/*
+	 * DELIBERATELY NOT THE REFERENCE'S VALUE.
+	 *
+	 * docs.conduction.nl uses #0082C9 for footer links, which on its own navy
+	 * measures 4.28:1 — it fails AA, and copying it faithfully reproduced the
+	 * failure on ten nodes here. This is the lighter blue from the same
+	 * Conduction palette (`--c-workspaceblue-300`), which reads as the same
+	 * link colour and passes. On a public government portal the standard wins
+	 * over the pixel.
+	 */
+	--nldesign-footer-link-color: var(--c-workspaceblue-300);
+	/* One surface for the whole footer, so a link colour only has to satisfy one
+	   background — the vendored CSS otherwise paints the legal strip in the
+	   brand primary. */
+	--nldesign-footer-legal-background: var(--c-cobalt-900);
+	--nldesign-footer-legal-font: var(--conduction-typography-font-family-code);
+	--nldesign-footer-legal-size: 12px;
+	--nldesign-footer-legal-color: rgba(255, 255, 255, 0.55);
+	--nldesign-container-max: 1320px;
+	--nldesign-container-padding-inline: 24px;
+
+	--nldesign-card-radius: 12px;
+	--nldesign-card-border-width: 1px;
+	--nldesign-card-border-color: #EBEDF0;
+	--nldesign-card-background: var(--c-white);
+	--nldesign-card-padding: 24px;
+	--nldesign-card-gap: var(--space-3);
+	--nldesign-card-heading-color: var(--c-blue-cobalt);
+	--nldesign-card-heading-size: 19.2px;
+	--nldesign-card-heading-font: var(--conduction-typography-font-family-heading);
+	--nldesign-card-body-size: 15.2px;
+	--nldesign-card-body-line-height: 22.8px;
+	--nldesign-card-body-font: var(--conduction-typography-font-family-body);
+	/* Hero band and headline — measured on docs.conduction.nl */
+	--nldesign-hero-padding-block-start: 56px;
+	--nldesign-hero-padding-block-end: 64px;
+	--nldesign-hero-title-size: 64px;
+	--nldesign-hero-title-weight: 700;
+	--nldesign-hero-title-line-height: 67.2px;
+	--nldesign-hero-title-font: var(--conduction-typography-font-family-heading);
+	--nldesign-card-heading-weight: 700;
+	--nldesign-card-body-color: var(--c-blue-cobalt);
+
+	/* The hexagon: the brand's one unmistakable shape, from the identity set. */
+	--hex-pointy-top: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+	--nldesign-card-icon-size: 56px;
+	--nldesign-card-icon-padding: 14px;
+	--nldesign-card-icon-background: var(--c-blue-cobalt);
+	--nldesign-card-icon-color: var(--c-white);
+	--nldesign-card-icon-clip: var(--hex-pointy-top);
+	--nldesign-card-shadow: none;
+	--nldesign-card-shadow-hover: var(--shadow-2);
 
 	/* Nextcloud-facing tokens, so the same set themes the admin UI too */
 	--nldesign-color-primary: var(--conduction-color-brand-primary);

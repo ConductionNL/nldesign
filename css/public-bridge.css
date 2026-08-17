@@ -40,9 +40,17 @@
 	/* Document surface and body copy */
 	--utrecht-document-background-color: var(--nldesign-color-background, #fff);
 	--utrecht-document-color: var(--nldesign-color-text, #1b1b23);
-	--utrecht-document-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--utrecht-document-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
 	--utrecht-paragraph-color: var(--nldesign-color-text, #1b1b23);
-	--utrecht-paragraph-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--utrecht-paragraph-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
 
 	/*
 	 * Headings, every level named.
@@ -52,7 +60,11 @@
 	 * numbered level unstyled, which is how a page ends up with one styled
 	 * heading and five browser-default ones.
 	 */
-	--utrecht-heading-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--utrecht-heading-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
 	--utrecht-heading-color: var(--nldesign-color-text, #1b1b23);
 	--utrecht-heading-1-color: var(--nldesign-color-text, #1b1b23);
 	--utrecht-heading-2-color: var(--nldesign-color-text, #1b1b23);
@@ -60,14 +72,35 @@
 	--utrecht-heading-4-color: var(--nldesign-color-text, #1b1b23);
 	--utrecht-heading-5-color: var(--nldesign-color-text, #1b1b23);
 	--utrecht-heading-6-color: var(--nldesign-color-text, #1b1b23);
-	--utrecht-heading-1-font-family: var(--nldesign-font-family, system-ui, sans-serif);
-	--utrecht-heading-2-font-family: var(--nldesign-font-family, system-ui, sans-serif);
-	--utrecht-heading-3-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--utrecht-heading-1-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--utrecht-heading-2-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--utrecht-heading-3-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
 
 	/* Links */
-	--utrecht-link-color: var(--nldesign-color-link, var(--nldesign-color-primary, #1b1b23));
-	--utrecht-link-hover-color: var(--nldesign-color-primary-hover, var(--nldesign-color-primary, #1b1b23));
-	--utrecht-link-visited-color: var(--nldesign-color-link, var(--nldesign-color-primary, #1b1b23));
+	--utrecht-link-color: var(
+		--nldesign-color-link,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--utrecht-link-hover-color: var(
+		--nldesign-color-primary-hover,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--utrecht-link-visited-color: var(
+		--nldesign-color-link,
+		var(--nldesign-color-primary, #1b1b23)
+	);
 
 	/*
 	 * HEADER AND NAVIGATION.
@@ -78,28 +111,80 @@
 	 * and gets white text has a header that reads as empty — so the foreground
 	 * comes from `--nldesign-color-header-text`, never assumed.
 	 */
-	--utrecht-page-header-background-color: var(--nldesign-color-header-background, var(--nldesign-color-primary, #fff));
-	--utrecht-page-header-color: var(--nldesign-color-header-text, var(--nldesign-color-primary-text, #1b1b23));
-	--tilburg-header-background-color: var(--nldesign-color-header-background, var(--nldesign-color-primary, #fff));
-	--tilburg-header-logo-text-color: var(--nldesign-color-header-text, var(--nldesign-color-primary-text, #1b1b23));
-	--tilburg-logo-color: var(--nldesign-color-header-text, var(--nldesign-color-primary-text, #1b1b23));
-	--tilburg-navigation-font-family: var(--nldesign-font-family, system-ui, sans-serif);
-	--nldesign-header-link-color: var(--nldesign-color-header-text, var(--nldesign-color-primary-text, #1b1b23));
+	--utrecht-page-header-background-color: var(
+		--nldesign-color-header-background,
+		var(--nldesign-color-primary, #fff)
+	);
+	--utrecht-page-header-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+	--tilburg-header-background-color: var(
+		--nldesign-color-header-background,
+		var(--nldesign-color-primary, #fff)
+	);
+	--tilburg-header-logo-text-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+	--tilburg-logo-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+	--tilburg-navigation-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--nldesign-header-link-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
 
-	--conduction-primary-top-nav-background-color: var(--nldesign-color-nav-background, var(--nldesign-color-primary, #fff));
-	--conduction-primary-top-nav-color: var(--nldesign-color-nav-text, var(--nldesign-color-header-text, #1b1b23));
-	--conduction-primary-top-nav-current-background-color: var(--nldesign-color-primary-light, var(--nldesign-color-background-hover, #eee));
-	--conduction-primary-top-nav-current-color: var(--nldesign-color-primary, #1b1b23);
-	--conduction-primary-top-nav-hover-background-color: var(--nldesign-color-primary-light, var(--nldesign-color-background-hover, #eee));
+	--conduction-primary-top-nav-background-color: var(
+		--nldesign-color-nav-background,
+		var(--nldesign-color-primary, #fff)
+	);
+	--conduction-primary-top-nav-color: var(
+		--nldesign-color-nav-text,
+		var(--nldesign-color-header-text, #1b1b23)
+	);
+	--conduction-primary-top-nav-current-background-color: var(
+		--nldesign-color-primary-light,
+		var(--nldesign-color-background-hover, #eee)
+	);
+	--conduction-primary-top-nav-current-color: var(
+		--nldesign-color-primary,
+		#1b1b23
+	);
+	--conduction-primary-top-nav-hover-background-color: var(
+		--nldesign-color-primary-light,
+		var(--nldesign-color-background-hover, #eee)
+	);
 	--conduction-primary-top-nav-hover-color: var(--nldesign-color-primary, #1b1b23);
 
 	/* Footer — an inverse band, so it names its own foreground */
-	--tilburg-footer-background-color: var(--nldesign-color-footer-background, var(--nldesign-color-primary, #1b1b23));
-	--tilburg-footer-color: var(--nldesign-color-footer-text, var(--nldesign-color-primary-text, #fff));
-	--tilburg-footer-icon-color: var(--nldesign-color-footer-text, var(--nldesign-color-primary-text, #fff));
-	--tilburg-footer-link-color: var(--nldesign-color-footer-text, var(--nldesign-color-primary-text, #fff));
+	--tilburg-footer-background-color: var(
+		--nldesign-color-footer-background,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--tilburg-footer-color: var(
+		--nldesign-color-footer-text,
+		var(--nldesign-color-primary-text, #fff)
+	);
+	--tilburg-footer-icon-color: var(
+		--nldesign-color-footer-text,
+		var(--nldesign-color-primary-text, #fff)
+	);
+	--tilburg-footer-link-color: var(
+		--nldesign-color-footer-text,
+		var(--nldesign-color-primary-text, #fff)
+	);
 	--tilburg-footer-link-hover-color: var(--nldesign-color-primary-light, #eee);
-	--utrecht-page-footer-background-color: var(--nldesign-color-footer-background, var(--nldesign-color-primary, #1b1b23));
+	--utrecht-page-footer-background-color: var(
+		--nldesign-color-footer-background,
+		var(--nldesign-color-primary, #1b1b23)
+	);
 
 	/*
 	 * The brand ramp the vendored components alias for bands, cards and rules.
@@ -109,9 +194,18 @@
 	 * and a violet set fills them with violet.
 	 */
 	--tilburg-color-blue-500: var(--nldesign-color-primary, #1b1b23);
-	--tilburg-color-blue-400: var(--nldesign-color-primary-hover, var(--nldesign-color-primary, #1b1b23));
-	--tilburg-color-blue-300: var(--nldesign-color-primary-light-hover, var(--nldesign-color-primary-light, #ccc));
-	--tilburg-color-blue-200: var(--nldesign-color-primary-light-hover, var(--nldesign-color-primary-light, #ddd));
+	--tilburg-color-blue-400: var(
+		--nldesign-color-primary-hover,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--tilburg-color-blue-300: var(
+		--nldesign-color-primary-light-hover,
+		var(--nldesign-color-primary-light, #ccc)
+	);
+	--tilburg-color-blue-200: var(
+		--nldesign-color-primary-light-hover,
+		var(--nldesign-color-primary-light, #ddd)
+	);
 	--tilburg-color-blue-100: var(--nldesign-color-primary-light, #eee);
 	--tilburg-color-gray-950: var(--nldesign-color-text, #1b1b23);
 	--tilburg-color-gray-900: var(--nldesign-color-text, #1b1b23);
@@ -127,10 +221,26 @@
 	--tilburg-color-black-txt: var(--nldesign-color-text, #1b1b23);
 	--tilburg-color-black: var(--nldesign-color-text, #1b1b23);
 	--tilburg-color-white: var(--nldesign-color-background, #fff);
-	--tilburg-document-font-family: var(--nldesign-font-family, system-ui, sans-serif);
-	--tilburg-heading-font-family: var(--nldesign-font-family, system-ui, sans-serif);
-	--tilburg-typography-font-family-primary: var(--nldesign-font-family, system-ui, sans-serif);
-	--tilburg-typography-font-family-secondary: var(--nldesign-font-family, system-ui, sans-serif);
+	--tilburg-document-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--tilburg-heading-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--tilburg-typography-font-family-primary: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--tilburg-typography-font-family-secondary: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
 
 	/*
 	 * Cards, including the hero's search box.
@@ -145,26 +255,61 @@
 	--tilburg-search-card-padding-md: 1.5rem;
 	--tilburg-search-card-padding-sm: 1rem;
 	--tilburg-search-card-background-color: var(--nldesign-color-background, #fff);
-	--tilburg-search-card-blue-background-color: var(--nldesign-color-primary-light, #eee);
-	--tilburg-search-card-border-color: var(--nldesign-color-background-dark, #e2e2ea);
+	--tilburg-search-card-blue-background-color: var(
+		--nldesign-color-primary-light,
+		#eee
+	);
+	--tilburg-search-card-border-color: var(
+		--nldesign-color-background-dark,
+		#e2e2ea
+	);
 	--tilburg-search-card-hover-border-color: var(--nldesign-color-primary, #1b1b23);
 	--utrecht-card-heading-color: var(--nldesign-color-text, #1b1b23);
 
 	/* Buttons */
-	--utrecht-button-primary-action-background-color: var(--nldesign-color-primary, #1b1b23);
+	--utrecht-button-primary-action-background-color: var(
+		--nldesign-color-primary,
+		#1b1b23
+	);
 	--utrecht-button-primary-action-color: var(--nldesign-color-primary-text, #fff);
-	--utrecht-button-primary-action-hover-background-color: var(--nldesign-color-primary-hover, var(--nldesign-color-primary, #1b1b23));
-	--utrecht-button-secondary-action-background-color: var(--nldesign-color-background, #fff);
+	--utrecht-button-primary-action-hover-background-color: var(
+		--nldesign-color-primary-hover,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--utrecht-button-secondary-action-background-color: var(
+		--nldesign-color-background,
+		#fff
+	);
 	--utrecht-button-secondary-action-color: var(--nldesign-color-primary, #1b1b23);
 	--utrecht-button-font-family: var(--nldesign-font-family, system-ui, sans-serif);
 
 	/* Form controls */
 	--utrecht-textbox-border-color: var(--nldesign-color-background-darker, #c5c6d5);
 	--utrecht-textbox-color: var(--nldesign-color-text, #1b1b23);
-	--utrecht-textbox-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--utrecht-textbox-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
 
 	/* Focus */
 	--utrecht-focus-outline-color: var(--nldesign-color-primary, #1b1b23);
+
+	/*
+	 * The page's typeface and its navigation links.
+	 *
+	 * The vendored CSS sets `font-family: Roboto` on the app container
+	 * directly, and navigation anchors carry no link class, so neither reaches
+	 * the token layer without being named here.
+	 */
+	--nldesign-body-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--nldesign-nav-link-color: var(
+		--nldesign-color-nav-text,
+		var(
+			--nldesign-color-header-text,
+			var(--nldesign-color-primary-text, #1b1b23)
+		)
+	);
 
 	/* The hero band paints itself, so it names its own foreground */
 	--nldesign-hero-title-color: var(--nldesign-color-primary-text, #fff);
