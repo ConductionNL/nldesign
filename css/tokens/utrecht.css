@@ -27,7 +27,7 @@
 	--utrecht-color-blue-light: #2964A3;
 
 	/* Logo image */
-	--nldesign-logo-url: url('../../../img/logos/utrecht.svg');
+	--nldesign-logo-url: url('../../img/logos/utrecht.svg');
 
 	/* Background colors - for hover states and dark variants. */
 	/* Main background managed by Nextcloud theming system. */

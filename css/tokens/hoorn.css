@@ -9,7 +9,7 @@
 
 :root {
 	/* Logo image */
-	--nldesign-logo-url: url('../../../img/logos/hoorn.svg');
+	--nldesign-logo-url: url('../../img/logos/hoorn.svg');
 
 	/* NL Design tokens */
 	--nldesign-color-blue-20: #09366c;

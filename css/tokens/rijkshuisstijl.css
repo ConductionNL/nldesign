@@ -86,7 +86,7 @@
 	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
 
 	/* Logo image */
-	--nldesign-logo-url: url('../../../img/nederland-logo.svg');
+	--nldesign-logo-url: url('../../img/nederland-logo.svg');
 
 	/* Logo lint/ribbon (rhc.logo.image.* + rhc.size.lint) */
 	/* When these are defined, theme.css renders a colored bar behind the logo */
