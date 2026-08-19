@@ -215,7 +215,7 @@ class TokenSetService {
 	 * cached under the same `ICache` prefix (`nldesign_wcag_level`).
 	 *
 	 * @return array<int, array{id: string, name: string, design_system: string, theming: array<string, string>, wcagLevel: string|null}>
-	 *                                                                                                                                    The public catalogue entries.
+	 *         The public catalogue entries.
 	 *
 	 * @spec openspec/specs/app-token-set-selection/spec.md
 	 */

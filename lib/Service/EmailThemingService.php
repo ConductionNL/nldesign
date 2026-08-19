@@ -370,8 +370,8 @@ class EmailThemingService {
 	 * Get the current toggle state.
 	 *
 	 * @return array{state: string, configReadOnly: bool, foreignClass: ?string} The state:
-	 *                                                                           `state` is one of `disabled`/`enabled`/`foreign`; `foreignClass` is set only
-	 *                                                                           when `state` is `foreign`.
+	 *         `state` is one of `disabled`/`enabled`/`foreign`; `foreignClass` is
+	 *         set only when `state` is `foreign`.
 	 *
 	 * @spec openspec/specs/email-theming/spec.md
 	 */

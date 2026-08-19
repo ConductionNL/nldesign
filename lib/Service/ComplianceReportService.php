@@ -216,7 +216,7 @@ class ComplianceReportService {
 	 * Generate the full compliance report data structure.
 	 *
 	 * @return array{scope: string, metadata: array<string, mixed>, pairs: array<int, array<string, mixed>>, summary: array<string, mixed>}
-	 *                                                                                                                                      The report, ready for either renderer.
+	 *         The report, ready for either renderer.
 	 *
 	 * @spec openspec/specs/compliance-evidence/spec.md
 	 */
@@ -304,7 +304,9 @@ class ComplianceReportService {
 		$lines[] = '- Instance URL: ' . $meta['instanceUrl'];
 		$lines[] = '- nldesign app version: ' . $meta['appVersion'];
 		$lines[] = '- Nextcloud version: ' . $meta['nextcloudVersion'];
-		$lines[] = '- Active token set: ' . $meta['tokenSet']['id'] . ' ("' . $meta['tokenSet']['name'] . '", version ' . $meta['tokenSet']['version'] . ')';
+		$lines[] = '- Active token set: ' . $meta['tokenSet']['id']
+			. ' ("' . $meta['tokenSet']['name'] . '", version '
+			. $meta['tokenSet']['version'] . ')';
 		$lines[] = '- Design system: ' . $meta['designSystem'];
 		$lines[] = '- Generated at: ' . $meta['generatedAt'];
 		$lines[] = '- Custom overrides SHA-256: ' . $meta['overridesHash'];

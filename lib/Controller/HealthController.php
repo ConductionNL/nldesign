@@ -45,6 +45,7 @@ namespace OCA\NLDesign\Controller;
 use OCA\NLDesign\AppInfo\Application;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\AnonRateLimit;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;
@@ -113,12 +114,15 @@ class HealthController extends Controller {
 	 * disabled — the endpoint still answers (the whole point of a health
 	 * probe): `status: degraded`, `checks.openregister: unavailable`, HTTP 200.
 	 *
+	 * Liveness probe — no credential, so a ceiling and no counter.
+	 *
 	 * @return JSONResponse `{status, app, version, checks}`.
 	 *
 	 * @spec openspec/changes/adopt-apphost-2026-06-16/specs/prometheus-metrics/spec.md — Requirement: Health Check Endpoint
 	 */
 	#[PublicPage]
 	#[NoCSRFRequired]
+	#[AnonRateLimit(limit: 120, period: 60)]
 	public function index(): JSONResponse {
 		$engine = $this->engineResult();
 		if ($engine === null) {
@@ -155,7 +159,7 @@ class HealthController extends Controller {
 	 * Run the AppHost observability engine for this app.
 	 *
 	 * @return array{status: string, version: string, checks: array<string, string>, httpStatus: int, cors: bool}|null
-	 *                                                                                                                 Null when the engine is unavailable (openregister absent/disabled).
+	 *         Null when the engine is unavailable (openregister absent/disabled).
 	 */
 	private function engineResult(): ?array {
 		try {

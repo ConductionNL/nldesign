@@ -350,7 +350,8 @@ class ConfigBundleService {
 	 * @param array<string, mixed> $bundle The decoded bundle.
 	 *
 	 * @return array{valid: bool, errors: array<int, array<string, mixed>>, resolved: array<string, mixed>}
-	 *                                                                                                      `resolved` carries the normalised, ready-to-apply data for phase 2 (only meaningful when `valid` is true).
+	 *         `resolved` carries the normalised, ready-to-apply data for phase 2
+	 *         (only meaningful when `valid` is true).
 	 *
 	 * @spec openspec/specs/config-portability/spec.md
 	 */

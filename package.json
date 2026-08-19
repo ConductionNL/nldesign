@@ -2,6 +2,10 @@
 	"name": "nldesign",
 	"version": "0.1.0",
 	"description": "NL Design System Theme for Nextcloud",
+	"engines": {
+		"node": "^22.14 || ^24 || >=26",
+		"npm": "^11.0.0"
+	},
 	"keywords": [
 		"nextcloud",
 		"nl-design-system",
@@ -50,7 +54,7 @@
 		"@gouvfr/dsfr": "^1.15.1"
 	},
 	"devDependencies": {
-		"@conduction/nextcloud-vue": "2.2.0-vue3.16",
+		"@conduction/nextcloud-vue": "^2.3.0",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@nextcloud/prettier-config": "^1.2.0",

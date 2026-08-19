@@ -25,6 +25,7 @@ use OCA\NLDesign\Service\FontValidator;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\AnonRateLimit;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
@@ -179,6 +180,11 @@ class FontController extends Controller {
 	 * authorization gate, so this is a considered public surface, not a
 	 * data leak (route-auth + semantic-auth gate rationale).
 	 *
+	 * Self-hosted webfonts. Every themed page pulls several of these, and the
+	 * whole point of self-hosting them is that they load without a third-party
+	 * request — so the ceiling is the loosest in the app. The id names a
+	 * published font, not a credential, so no brute-force counter.
+	 *
 	 * @param string $id The font id (without the `.woff2` suffix — the
 	 *                   route pattern strips it).
 	 *
@@ -189,6 +195,7 @@ class FontController extends Controller {
 	 */
 	#[PublicPage]
 	#[NoCSRFRequired]
+	#[AnonRateLimit(limit: 480, period: 60)]
 	public function serve(string $id): Response {
 		$content = $this->service->readFontBytes(id: $id);
 		if ($content === null) {
@@ -212,6 +219,9 @@ class FontController extends Controller {
 	 * body (no `@font-face` rules), so a themed instance with zero uploaded
 	 * fonts still resolves the URL cleanly if ever requested directly.
 	 *
+	 * The `@font-face` stylesheet — one fetch per page load, ahead of the fonts
+	 * it declares.
+	 *
 	 * @return Response The generated stylesheet with immutable long-lived
 	 *                  caching (the injected `<link>` carries `?v=<revision>` so a new
 	 *                  upload/delete is picked up via a new URL, not a stale cache hit).
@@ -220,6 +230,7 @@ class FontController extends Controller {
 	 */
 	#[PublicPage]
 	#[NoCSRFRequired]
+	#[AnonRateLimit(limit: 480, period: 60)]
 	public function css(): Response {
 		$response = new DataDisplayResponse($this->service->buildCss(), Http::STATUS_OK, ['Content-Type' => 'text/css']);
 		$this->applyImmutableCache(response: $response);

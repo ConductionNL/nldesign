@@ -255,7 +255,11 @@ class DarkPaletteServiceTest extends TestCase {
 	}//end testNonColorTokensPassThroughUntouched()
 
 	/**
-	 * A `var()` alias and a gradient are unparseable and are skipped, no exception.
+	 * A DANGLING alias and a gradient are unresolvable and are skipped, no exception.
+	 *
+	 * The alias here points at a token the set does not declare, so there is no
+	 * literal to derive from. An alias whose target IS declared is a different
+	 * case entirely — see {@see self::testAnAliasIsResolvedToTheLiteralItPointsAt()}.
 	 */
 	public function testUnparseableValuesAreSkipped(): void {
 		$derived = $this->service->deriveDarkDeclarations(
@@ -267,6 +271,140 @@ class DarkPaletteServiceTest extends TestCase {
 
 		$this->assertSame([], $derived);
 	}//end testUnparseableValuesAreSkipped()
+
+	/**
+	 * An alias is resolved to the literal it points at, and darkened.
+	 *
+	 * THIS IS THE WHOLE POINT OF v2. `--utrecht-document-color:
+	 * var(--tilburg-color-black-txt)` is declared on `:root`, so the browser
+	 * substitutes it AT `:root` using the light value. The generated dark block
+	 * scopes to `body`, a descendant, so darkening the TARGET there cannot
+	 * reach an alias already resolved one level up — body inherits the light
+	 * literal and the text never changes.
+	 *
+	 * Measured on a live portal before this fix: dark mode repainted 51% of the
+	 * page while every text token stayed light-mode dark, leaving a heading at
+	 * contrast 1.06 against its own band.
+	 */
+	public function testAnAliasIsResolvedToTheLiteralItPointsAt(): void {
+		$derived = $this->service->deriveDarkDeclarations(
+			[
+				'--tilburg-color-black-txt' => '#333333',
+				'--utrecht-document-color' => 'var(--tilburg-color-black-txt)',
+			]
+		);
+
+		$this->assertArrayHasKey('--utrecht-document-color', $derived);
+		// A LITERAL, not an alias: the emitted value must not depend on where
+		// the block sits in the cascade.
+		$this->assertStringStartsWith('#', $derived['--utrecht-document-color']);
+		// And it must land light, because it is text.
+		$this->assertGreaterThanOrEqual(0.62, $this->lightnessOf(hex: $derived['--utrecht-document-color']));
+	}//end testAnAliasIsResolvedToTheLiteralItPointsAt()
+
+	/**
+	 * An alias chain is followed to the end.
+	 */
+	public function testAnAliasChainIsFollowedToItsLiteral(): void {
+		$derived = $this->service->deriveDarkDeclarations(
+			[
+				'--vng-color-ink' => '#FFFFFF',
+				'--tilburg-surface' => 'var(--vng-color-ink)',
+				'--utrecht-document-background-color' => 'var(--tilburg-surface)',
+			]
+		);
+
+		// White surface -> near-black.
+		$this->assertLessThanOrEqual(0.16, $this->lightnessOf(hex: $derived['--utrecht-document-background-color']));
+	}//end testAnAliasChainIsFollowedToItsLiteral()
+
+	/**
+	 * A CYCLIC alias terminates instead of recursing forever.
+	 *
+	 * A token set is authored input; two tokens pointing at each other must
+	 * cost a bounded number of hops, not the process.
+	 */
+	public function testACyclicAliasTerminates(): void {
+		$derived = $this->service->deriveDarkDeclarations(
+			[
+				'--a-color' => 'var(--b-color)',
+				'--b-color' => 'var(--a-color)',
+			]
+		);
+
+		$this->assertSame([], $derived);
+	}//end testACyclicAliasTerminates()
+
+	/**
+	 * A `var()` FALLBACK is used only when the target is absent — which is what
+	 * the browser does with it.
+	 */
+	public function testAnAliasFallbackIsUsedOnlyWhenTheTargetIsAbsent(): void {
+		// The two sources are chosen so the OUTCOMES differ: #FFFFFF derives to
+		// the text clamp's floor (0.62) and #111111 to near its ceiling (0.92).
+		// Sources that happened to derive to the same place would let this pass
+		// whichever branch ran.
+		$absent = $this->service->deriveDarkDeclarations(['--utrecht-heading-1-color' => 'var(--nope, #FFFFFF)']);
+		$this->assertLessThanOrEqual(0.7, $this->lightnessOf(hex: $absent['--utrecht-heading-1-color']));
+
+		$present = $this->service->deriveDarkDeclarations(
+			[
+				'--present-color' => '#111111',
+				'--utrecht-heading-1-color' => 'var(--present-color, #FFFFFF)',
+			]
+		);
+		// Derived from #111111, NOT from the ignored #FFFFFF fallback.
+		$this->assertGreaterThanOrEqual(0.85, $this->lightnessOf(hex: $present['--utrecht-heading-1-color']));
+	}//end testAnAliasFallbackIsUsedOnlyWhenTheTargetIsAbsent()
+
+	/**
+	 * A value that merely CONTAINS a `var()` is left alone.
+	 *
+	 * Half-substituting a shorthand would corrupt it, and it is not a colour
+	 * this service can derive in the first place.
+	 */
+	public function testACompoundValueContainingAVarIsNotResolved(): void {
+		$derived = $this->service->deriveDarkDeclarations(
+			[
+				'--x-color' => '#333333',
+				'--utrecht-border' => '1px solid var(--x-color)',
+			]
+		);
+
+		$this->assertArrayNotHasKey('--utrecht-border', $derived);
+	}//end testACompoundValueContainingAVarIsNotResolved()
+
+	/**
+	 * The utrecht convention: `-color` is the TEXT, `-background-color` is the
+	 * surface behind it.
+	 *
+	 * Classifying by the word "text" alone put `--utrecht-document-color` and
+	 * every `--utrecht-heading-N-color` in the background class, so the tokens
+	 * that paint body copy were darkened towards black exactly like the
+	 * surfaces they sit on.
+	 */
+	public function testTheUtrechtColorConventionSplitsTextFromSurface(): void {
+		// A MID-TONE source, deliberately. The two classes use different
+		// formulas — text clamps to [0.62, 0.92], a surface takes
+		// 0.08 + 0.84 * inverted — and at L≈0.5 they disagree (0.62 vs 0.50).
+		// At #333333 or #FFFFFF they happen to agree, so a test built on those
+		// passes under either classification and proves nothing.
+		$derived = $this->service->deriveDarkDeclarations(
+			[
+				'--utrecht-document-color' => '#808080',
+				'--utrecht-document-background-color' => '#FFFFFF',
+				'--utrecht-focus-outline-color' => '#808080',
+			]
+		);
+
+		// Text takes the clamp...
+		$this->assertGreaterThanOrEqual(0.60, $this->lightnessOf(hex: $derived['--utrecht-document-color']));
+		// ...its surface goes dark...
+		$this->assertLessThanOrEqual(0.16, $this->lightnessOf(hex: $derived['--utrecht-document-background-color']));
+		// ...and an outline is not the glyphs, so it must NOT be pulled into
+		// the text class just because its name ends in `-color`.
+		$this->assertLessThan(0.60, $this->lightnessOf(hex: $derived['--utrecht-focus-outline-color']));
+	}//end testTheUtrechtColorConventionSplitsTextFromSurface()
 
 	/**
 	 * `-rgb` companion tokens are regenerated from their derived base token.
@@ -358,6 +496,50 @@ class DarkPaletteServiceTest extends TestCase {
 		$this->assertStringContainsString('sha256:deadbeef', $css);
 		$this->assertStringNotContainsString('!important', $css);
 	}//end testRenderDarkCssSelectorShape()
+
+	/**
+	 * The header names the GENERATOR VERSION, and the freshness check reads it.
+	 *
+	 * The version was stamped into every header from the start and read by
+	 * nothing: {@see DarkPaletteService::isFresh()} compared only the source
+	 * hash. So a generator fix shipped to an installation whose token files had
+	 * not changed found every set "fresh", regenerated none of them, and left
+	 * on disk exactly the artefacts it was written to replace — a silent no-op
+	 * that prints the same output as a successful run. Measured: 41 of 41 sets
+	 * reported `skipped (fresh)` after the algorithm changed underneath them.
+	 *
+	 * Asserted through the PUBLIC surface — the header text a real run writes
+	 * and a real freshness check reads — rather than by reflecting on the
+	 * private method, so it fails if either half drifts from the other.
+	 */
+	public function testAnArtefactFromAnOlderGeneratorIsNotFresh(): void {
+		$tokenCss = ":root {\n\t--nldesign-color-primary: #154273;\n}\n";
+		file_put_contents($this->appDir . '/css/tokens/aset.css', $tokenCss);
+
+		$sourceHash = 'sha256:' . hash('sha256', $tokenCss);
+		mkdir($this->appDir . '/css/tokens/dark', 0777, true);
+		$darkFile = $this->appDir . '/css/tokens/dark/aset.css';
+
+		// An artefact from an EARLIER generator, whose source has NOT changed —
+		// the exact state a shipped algorithm fix arrives in. The source hash
+		// matches, so a hash-only freshness check calls this fresh and skips.
+		$stale = '/* GENERATED by nldesign DarkPaletteService v0 from tokens/aset.css (' . $sourceHash . ') — do not edit */';
+		file_put_contents($darkFile, $stale);
+
+		$result = $this->service->generateAndWrite(setId: 'aset');
+
+		$this->assertTrue($result['written'], 'A v0 artefact must be regenerated: ' . $result['reason']);
+		$this->assertStringContainsString(
+			'DarkPaletteService v' . DarkPaletteService::GENERATOR_VERSION . ' ',
+			(string)file_get_contents($darkFile)
+		);
+
+		// And the other direction, or the check would be satisfied by never
+		// considering anything fresh: the file it just wrote IS fresh.
+		$second = $this->service->generateAndWrite(setId: 'aset');
+		$this->assertFalse($second['written']);
+		$this->assertSame('fresh', $second['reason']);
+	}//end testAnArtefactFromAnOlderGeneratorIsNotFresh()
 
 	/**
 	 * `!important` is never used — body-level scope already out-specifies the
