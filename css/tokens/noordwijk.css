@@ -9,7 +9,7 @@
 
 :root {
 	/* Logo image */
-	--nldesign-logo-url: url('../../../img/logos/noordwijk.svg');
+	--nldesign-logo-url: url('../../img/logos/noordwijk.svg');
 
 	/* NL Design tokens */
 	--nldesign-color-error: #dc3545;

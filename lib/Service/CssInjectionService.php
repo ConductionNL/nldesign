@@ -314,6 +314,17 @@ class CssInjectionService {
 		}
 
 		$this->emitStyle(file: 'tokens/' . $tokenSet);
+		// 3a0. The logo as an ABSOLUTE url, overriding the relative one the token
+		// file declares. See injectLogoUrl() — a relative url() inside a custom
+		// property is resolved against the stylesheet that USES it, and the use
+		// sites sit at different depths.
+		$this->injectLogoUrl(tokenSet: $tokenSet);
+		// 3a. Element overrides belonging to this token set, directly after its
+		// tokens so they win the cascade over the design system's shared
+		// element-overrides.css (emitted in step 2). Kept OUT of the token file
+		// because a shipped token file is exactly one flat `:root { }` block and
+		// the scoped-application contract depends on that shape.
+		$this->injectTokenSetOverrides(tokenSet: $tokenSet);
 		// 3b. Generated dark-mode variant, directly after the light layer
 		// so its media-query/attribute-scoped rules override it — only
 		// when the toggle is on AND a generated file exists for this set.
@@ -420,6 +431,103 @@ class CssInjectionService {
 			$this->emitStyle(file: 'show-menu-labels');
 		}
 	}//end injectConditionalStyles()
+
+	/**
+	 * Re-declare the active set's logo as an ABSOLUTE url.
+	 *
+	 * 🔴 A RELATIVE `url()` INSIDE A CUSTOM PROPERTY IS RESOLVED AGAINST THE
+	 * STYLESHEET THAT USES IT, not the one that declares it. The token files
+	 * declare `url('../../img/logos/<set>.svg')`, which is correct relative to
+	 * `css/tokens/` — but the property is consumed in
+	 * `css/systems/nldesign/theme.css` and in `css/token-overrides/*.css`, which
+	 * sit at DIFFERENT depths, so no single relative path can be right for both.
+	 *
+	 * Measured: the browser asked for `…/css/img/logos/rijkshuisstijl.svg` (the
+	 * `theme.css` depth) and got a 404. A 404 is re-requested on every
+	 * recompute, including on an OS dark/light flip — which is why this
+	 * presented itself as an e2e failure asserting that the OS switch issues no
+	 * requests. The switch was pure CSS; a broken image was not.
+	 *
+	 * `linkTo()` resolves the install root, so this works under `custom_apps`
+	 * and under `apps` without either being hard-coded.
+	 *
+	 * @param string $tokenSet The selected token set id.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	private function injectLogoUrl(string $tokenSet): void {
+		$relative = 'img/logos/' . $tokenSet . '.svg';
+		if (is_file($this->appPath() . '/' . $relative) === false) {
+			return;
+		}
+
+		// UNQUOTED on purpose. `Util::addHeader()` HTML-escapes its text, so a
+		// quoted `url("…")` reaches the page as `url(&quot;…&quot;)` and the
+		// declaration is invalid — measured in the browser. An app path carries
+		// no spaces, parentheses or quotes, so unquoted is both valid and safe.
+		$this->emitInlineStyle(
+			css: ':root{--nldesign-logo-url:url('
+				. $this->urlGenerator->linkTo(appName: Application::APP_ID, file: $relative)
+				. ')}'
+		);
+	}//end injectLogoUrl()
+
+	/**
+	 * Emit one inline `<style>` block into the page head.
+	 *
+	 * Indirected for the same reason as `emitStyle()`: it is a side effect on a
+	 * Nextcloud static, and a test can capture it only if it is overridable.
+	 *
+	 * @param string $css The stylesheet body.
+	 *
+	 * @return void
+	 *
+	 * @SuppressWarnings(PHPMD.StaticAccess) \OCP\Util::addHeader() is the Nextcloud API for header injection.
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	protected function emitInlineStyle(string $css): void {
+		\OCP\Util::addHeader(tag: 'style', attributes: [], text: $css);
+	}//end emitInlineStyle()
+
+	/**
+	 * Emit a token set's own element overrides, when it ships any.
+	 *
+	 * Most sets have none: a token set declares VALUES, and the design system's
+	 * shared stylesheets decide what reads them. A set needs this only when a
+	 * shared rule is wrong specifically for it — `frankendesk` is the one such
+	 * case today, where lasuite's element-overrides.css masks the header logo to
+	 * a single colour and would destroy a deliberately two-tone mark.
+	 *
+	 * Emitted directly after the set's token file, so it wins over the shared
+	 * stylesheets, and only for the set that has one.
+	 *
+	 * @param string $tokenSet The selected token set id.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	private function injectTokenSetOverrides(string $tokenSet): void {
+		if (is_file($this->appPath() . '/css/token-overrides/' . $tokenSet . '.css') === false) {
+			return;
+		}
+
+		$this->emitStyle(file: 'token-overrides/' . $tokenSet);
+	}//end injectTokenSetOverrides()
+
+	/**
+	 * The app's own directory on disk.
+	 *
+	 * @return string The absolute app path.
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	protected function appPath(): string {
+		return dirname(__DIR__, 2);
+	}//end appPath()
 
 	/**
 	 * Add the generated dark-mode stylesheet, when ALL of: the `dark_variants`

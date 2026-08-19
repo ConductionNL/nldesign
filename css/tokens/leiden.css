@@ -11,7 +11,7 @@
 	/* NL Design tokens */
 	--nldesign-color-primary: #d62410;
 	--nldesign-color-primary-hover: #b81f0e;
-	--nldesign-logo-url: url('../../../img/logos/leiden.svg');
+	--nldesign-logo-url: url('../../img/logos/leiden.svg');
 	--nldesign-color-error: #d62410;
 	--nldesign-color-alert-error: #721c24;
 	--nldesign-color-alert-error-background: #f8d7da;

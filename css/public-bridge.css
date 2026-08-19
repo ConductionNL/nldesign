@@ -1,0 +1,332 @@
+/**
+ * PUBLIC RENDERER BRIDGE
+ *
+ * Maps the `--nldesign-color-*` semantic layer that EVERY token set defines
+ * onto the `--utrecht-*` / `--tilburg-*` / `--conduction-*` component roles a
+ * public portal renderer actually paints from.
+ *
+ * WHY THIS EXISTS: THE SHIPPED SETS THEME THE NEXTCLOUD UI, NOT A WEBSITE.
+ *
+ * A token set is a Layer-3 `--nldesign-*` override list — that is its contract,
+ * and it is the right one for theming Nextcloud. The public portal renderer is
+ * a different consumer: it renders vendored NL Design System components, which
+ * read `--utrecht-*` and `--tilburg-*`. Measured on a live portal with the real
+ * `frankendesk` set applied:
+ *
+ *     --nldesign-color-primary   #4844ad   (the set's own violet, correct)
+ *     --utrecht-document-color   (unset)
+ *     header background          rgba(0, 0, 0, 0)   — transparent
+ *
+ * The theme was loading, resolving and doing nothing, because nothing consumed
+ * the family it defines. Of 46 shipped sets exactly one — `vng` — carried the
+ * component roles, and only because they were merged into it by hand.
+ *
+ * ONE MAPPING, NOT FORTY-SIX. Writing the roles into each set was the obvious
+ * fix and the wrong one: it duplicates a mapping that is identical everywhere,
+ * and it makes every future set a porting job. This file is that mapping, once.
+ *
+ * LOAD IT BEFORE THE TOKEN SET. Both are `:root` blocks, so a set that declares
+ * a component role of its own — `vng`, `conduction-new` — wins on order and
+ * keeps its bespoke value. Sets that declare none inherit everything here.
+ * `var()` resolves against the element's final computed value, so referencing
+ * `--nldesign-*` from a file loaded earlier is correct.
+ *
+ * EVERY VALUE CARRIES A FALLBACK, because a set is not obliged to define the
+ * whole semantic layer. A missing token must degrade to a sensible default
+ * rather than to `unset`, which paints black on black.
+ */
+
+:root {
+	/* Document surface and body copy */
+	--utrecht-document-background-color: var(--nldesign-color-background, #fff);
+	--utrecht-document-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-document-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--utrecht-paragraph-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-paragraph-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+
+	/*
+	 * Headings, every level named.
+	 *
+	 * The design system styles `.utrecht-heading-2`, not `h2`, and each level
+	 * reads its OWN token — setting only `--utrecht-heading-color` leaves every
+	 * numbered level unstyled, which is how a page ends up with one styled
+	 * heading and five browser-default ones.
+	 */
+	--utrecht-heading-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--utrecht-heading-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-1-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-2-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-3-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-4-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-5-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-6-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-heading-1-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--utrecht-heading-2-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--utrecht-heading-3-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+
+	/* Links */
+	--utrecht-link-color: var(
+		--nldesign-color-link,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--utrecht-link-hover-color: var(
+		--nldesign-color-primary-hover,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--utrecht-link-visited-color: var(
+		--nldesign-color-link,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+
+	/*
+	 * HEADER AND NAVIGATION.
+	 *
+	 * `--nldesign-color-header-background` is the token a set uses to say
+	 * whether its header is light or dark, and the two cases need OPPOSITE
+	 * foregrounds. A set that declares a white header (frankendesk, lasuite)
+	 * and gets white text has a header that reads as empty — so the foreground
+	 * comes from `--nldesign-color-header-text`, never assumed.
+	 */
+	--utrecht-page-header-background-color: var(
+		--nldesign-color-header-background,
+		var(--nldesign-color-primary, #fff)
+	);
+	--utrecht-page-header-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+	--tilburg-header-background-color: var(
+		--nldesign-color-header-background,
+		var(--nldesign-color-primary, #fff)
+	);
+	--tilburg-header-logo-text-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+	--tilburg-logo-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+	--tilburg-navigation-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--nldesign-header-link-color: var(
+		--nldesign-color-header-text,
+		var(--nldesign-color-primary-text, #1b1b23)
+	);
+
+	--conduction-primary-top-nav-background-color: var(
+		--nldesign-color-nav-background,
+		var(--nldesign-color-primary, #fff)
+	);
+	--conduction-primary-top-nav-color: var(
+		--nldesign-color-nav-text,
+		var(--nldesign-color-header-text, #1b1b23)
+	);
+	--conduction-primary-top-nav-current-background-color: var(
+		--nldesign-color-primary-light,
+		var(--nldesign-color-background-hover, #eee)
+	);
+	--conduction-primary-top-nav-current-color: var(
+		--nldesign-color-primary,
+		#1b1b23
+	);
+	--conduction-primary-top-nav-hover-background-color: var(
+		--nldesign-color-primary-light,
+		var(--nldesign-color-background-hover, #eee)
+	);
+	--conduction-primary-top-nav-hover-color: var(--nldesign-color-primary, #1b1b23);
+
+	/* Footer — an inverse band, so it names its own foreground */
+	--tilburg-footer-background-color: var(
+		--nldesign-color-footer-background,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--tilburg-footer-color: var(
+		--nldesign-color-footer-text,
+		var(--nldesign-color-primary-text, #fff)
+	);
+	--tilburg-footer-icon-color: var(
+		--nldesign-color-footer-text,
+		var(--nldesign-color-primary-text, #fff)
+	);
+	--tilburg-footer-link-color: var(
+		--nldesign-color-footer-text,
+		var(--nldesign-color-primary-text, #fff)
+	);
+	--tilburg-footer-link-hover-color: var(--nldesign-color-primary-light, #eee);
+	--utrecht-page-footer-background-color: var(
+		--nldesign-color-footer-background,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+
+	/*
+	 * The brand ramp the vendored components alias for bands, cards and rules.
+	 *
+	 * These are named `blue` and `gray` because the components were captured
+	 * from one municipality's implementation; they are ROLE slots, not colours,
+	 * and a violet set fills them with violet.
+	 */
+	--tilburg-color-blue-500: var(--nldesign-color-primary, #1b1b23);
+	--tilburg-color-blue-400: var(
+		--nldesign-color-primary-hover,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--tilburg-color-blue-300: var(
+		--nldesign-color-primary-light-hover,
+		var(--nldesign-color-primary-light, #ccc)
+	);
+	--tilburg-color-blue-200: var(
+		--nldesign-color-primary-light-hover,
+		var(--nldesign-color-primary-light, #ddd)
+	);
+	--tilburg-color-blue-100: var(--nldesign-color-primary-light, #eee);
+	--tilburg-color-gray-950: var(--nldesign-color-text, #1b1b23);
+	--tilburg-color-gray-900: var(--nldesign-color-text, #1b1b23);
+	--tilburg-color-gray-800: var(--nldesign-color-text, #1b1b23);
+	--tilburg-color-gray-700: var(--nldesign-color-text-muted, #75758a);
+	--tilburg-color-gray-600: var(--nldesign-color-text-muted, #75758a);
+	--tilburg-color-gray-500: var(--nldesign-color-text-muted, #75758a);
+	--tilburg-color-gray-400: var(--nldesign-color-background-darker, #c5c6d5);
+	--tilburg-color-gray-300: var(--nldesign-color-background-dark, #e2e2ea);
+	--tilburg-color-gray-200: var(--nldesign-color-background-dark, #e2e2ea);
+	--tilburg-color-gray-100: var(--nldesign-color-background-hover, #f0f0f3);
+	--tilburg-color-gray-50: var(--nldesign-color-background, #fff);
+	--tilburg-color-black-txt: var(--nldesign-color-text, #1b1b23);
+	--tilburg-color-black: var(--nldesign-color-text, #1b1b23);
+	--tilburg-color-white: var(--nldesign-color-background, #fff);
+	--tilburg-document-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--tilburg-heading-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--tilburg-typography-font-family-primary: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+	--tilburg-typography-font-family-secondary: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+
+	/*
+	 * Cards, including the hero's search box.
+	 *
+	 * The padding tokens are named because the components fall back to
+	 * `--tilburg-space-block-dog`, a token from one municipality's spacing
+	 * scale. With both absent the padding resolved to ZERO and the hero's
+	 * search field burst out of its own band — a layout token, invisible in any
+	 * colour review, breaking the most prominent control on the page.
+	 */
+	--tilburg-search-card-padding-lg: 2rem;
+	--tilburg-search-card-padding-md: 1.5rem;
+	--tilburg-search-card-padding-sm: 1rem;
+	--tilburg-search-card-background-color: var(--nldesign-color-background, #fff);
+	--tilburg-search-card-blue-background-color: var(
+		--nldesign-color-primary-light,
+		#eee
+	);
+	--tilburg-search-card-border-color: var(
+		--nldesign-color-background-dark,
+		#e2e2ea
+	);
+	--tilburg-search-card-hover-border-color: var(--nldesign-color-primary, #1b1b23);
+	--utrecht-card-heading-color: var(--nldesign-color-text, #1b1b23);
+
+	/* Buttons */
+	--utrecht-button-primary-action-background-color: var(
+		--nldesign-color-primary,
+		#1b1b23
+	);
+	--utrecht-button-primary-action-color: var(--nldesign-color-primary-text, #fff);
+	--utrecht-button-primary-action-hover-background-color: var(
+		--nldesign-color-primary-hover,
+		var(--nldesign-color-primary, #1b1b23)
+	);
+	--utrecht-button-secondary-action-background-color: var(
+		--nldesign-color-background,
+		#fff
+	);
+	--utrecht-button-secondary-action-color: var(--nldesign-color-primary, #1b1b23);
+	--utrecht-button-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+
+	/* Form controls */
+	--utrecht-textbox-border-color: var(--nldesign-color-background-darker, #c5c6d5);
+	--utrecht-textbox-color: var(--nldesign-color-text, #1b1b23);
+	--utrecht-textbox-font-family: var(
+		--nldesign-font-family,
+		system-ui,
+		sans-serif
+	);
+
+	/* Focus */
+	--utrecht-focus-outline-color: var(--nldesign-color-primary, #1b1b23);
+
+	/*
+	 * The page's typeface and its navigation links.
+	 *
+	 * The vendored CSS sets `font-family: Roboto` on the app container
+	 * directly, and navigation anchors carry no link class, so neither reaches
+	 * the token layer without being named here.
+	 */
+	--nldesign-body-font-family: var(--nldesign-font-family, system-ui, sans-serif);
+	--nldesign-nav-link-color: var(
+		--nldesign-color-nav-text,
+		var(
+			--nldesign-color-header-text,
+			var(--nldesign-color-primary-text, #1b1b23)
+		)
+	);
+
+	/* The hero band paints itself, so it names its own foreground */
+	--nldesign-hero-title-color: var(--nldesign-color-primary-text, #fff);
+	--nldesign-hero-body-color: var(--nldesign-color-primary-light, #eee);
+
+	/*
+	 * `--navigation-bar-height` IS DELIBERATELY NOT BRIDGED HERE, and the reason
+	 * is worth keeping: it cannot be.
+	 *
+	 * `.ac-header__navigation-main` sizes itself from that variable, and
+	 * `.ac-header` DECLARES it on itself. A custom property is resolved from the
+	 * nearest ancestor that declares it, so a `:root` declaration — however
+	 * specific its selector — loses to one on an element between the root and the
+	 * consumer. Bridging it here looked correct, changed nothing, and would have
+	 * read as a working line forever.
+	 *
+	 * It is bridged in `portaliq/css/site-theme.css` on `.pq-site .ac-header`
+	 * instead, which is the same element and out-specifies the vendored rule.
+	 */
+}

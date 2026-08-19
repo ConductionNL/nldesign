@@ -791,10 +791,14 @@ class DarkPaletteService {
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	private function relativeDarkLogoPath(string $logoDarkPath): string {
-		// Existing shipped tokens/{set}.css files reach img/ with 3 ".."
-		// (verified: css/tokens/rijkshuisstijl.css uses '../../../img/...').
+		// nldesign is served from a custom_apps URL prefix (the fleet's
+		// standard deployment — no /apps/nldesign/ alias exists there), so
+		// css/tokens/{set}.css (2 levels under the app root: css/ →
+		// tokens/) needs 2 ".." to reach img/, not 3 — verified live against
+		// a running custom-app install (css/tokens/rijkshuisstijl.css's
+		// old 3-".." value 404'd; 2 resolves correctly).
 		// css/tokens/dark/{set}.css is one directory deeper, so it needs one more.
-		return '../../../../' . $logoDarkPath;
+		return '../../../' . $logoDarkPath;
 	}//end relativeDarkLogoPath()
 
 	/**
