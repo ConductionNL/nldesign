@@ -791,7 +791,7 @@ class DarkPaletteService {
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	private function relativeDarkLogoPath(string $logoDarkPath): string {
-		// nldesign is served from a custom_apps URL prefix (the fleet's
+		// This app is served from a custom_apps URL prefix (the fleet's
 		// standard deployment — no /apps/nldesign/ alias exists there), so
 		// css/tokens/{set}.css (2 levels under the app root: css/ →
 		// tokens/) needs 2 ".." to reach img/, not 3 — verified live against
