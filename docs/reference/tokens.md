@@ -50,7 +50,7 @@ The lint (ribbon) system follows the Rijkshuisstijl concept of `rhc.logo.image.*
 
 | Token | Purpose | Default (fallback) | Example (Rijkshuisstijl) |
 |-------|---------|-------------------|--------------------------|
-| `--nldesign-logo-url` | Logo image path | `none` (no logo) | `url('../../img/nederland-logo.svg')` |
+| `--nldesign-logo-url` | Logo image path | `none` (no logo) | `url('../../img/logos/rijkshuisstijl.svg')` |
 | `--nldesign-color-logo-background` | Lint/ribbon background color | `transparent` (no ribbon) | `#154273` |
 | `--nldesign-color-logo-text` | Text color on ribbon | _(unused)_ | `#ffffff` |
 | `--nldesign-size-lint` | Ribbon width in header | `0px` (no ribbon) | `48px` |

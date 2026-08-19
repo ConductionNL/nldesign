@@ -15,7 +15,7 @@
 	 * maintainers requesting solid-colour values. */
 	--nldesign-color-primary: #000000;
 	--nldesign-color-primary-hover: #333333;
-	--nldesign-logo-url: url('../../../img/logos/xxllnc.svg');
+	--nldesign-logo-url: url('../../img/logos/xxllnc.svg');
 	--nldesign-color-error: #dc3545;
 	--nldesign-color-alert-error: #721c24;
 	--nldesign-color-alert-error-background: #f8d7da;

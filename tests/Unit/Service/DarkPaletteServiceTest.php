@@ -691,7 +691,7 @@ class DarkPaletteServiceTest extends TestCase {
 
 		$this->assertNotNull($generated);
 		$this->assertStringContainsString(
-			"--nldesign-logo-url: url('../../../../img/logos/withlogo-dark.svg');",
+			"--nldesign-logo-url: url('../../../img/logos/withlogo-dark.svg');",
 			$generated['css']
 		);
 	}//end testLogoDarkEmitsRelativeLogoUrlOverride()

@@ -9,7 +9,7 @@
 
 :root {
 	/* Logo image */
-	--nldesign-logo-url: url('../../../img/logos/provincie-zuid-holland.svg');
+	--nldesign-logo-url: url('../../img/logos/provincie-zuid-holland.svg');
 
 	/* NL Design tokens */
 	--nldesign-color-wit: #FFFFFF;

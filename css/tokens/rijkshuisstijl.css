@@ -86,7 +86,14 @@
 	--nldesign-font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Cantarell, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
 
 	/* Logo image */
-	--nldesign-logo-url: url('../../../img/nederland-logo.svg');
+	/* `img/logos/<set>.svg`, like every other logo-carrying set. The old
+	   `img/nederland-logo.svg` path did not resolve from the served stylesheet
+	   — the browser asked for `/apps/nldesign/css/img/nederland-logo.svg` and
+	   got a 404, which it then RE-REQUESTED on every recompute, including on an
+	   OS dark/light flip. That is what made the "the OS switch is pure CSS"
+	   e2e assertion fail: the switch really was pure CSS, but a broken image
+	   kept issuing requests underneath it. */
+	--nldesign-logo-url: url('../../img/logos/rijkshuisstijl.svg');
 
 	/* Logo lint/ribbon (rhc.logo.image.* + rhc.size.lint) */
 	/* When these are defined, theme.css renders a colored bar behind the logo */
