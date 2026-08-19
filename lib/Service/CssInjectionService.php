@@ -314,6 +314,12 @@ class CssInjectionService {
 		}
 
 		$this->emitStyle(file: 'tokens/' . $tokenSet);
+		// 3a. Element overrides belonging to this token set, directly after its
+		// tokens so they win the cascade over the design system's shared
+		// element-overrides.css (emitted in step 2). Kept OUT of the token file
+		// because a shipped token file is exactly one flat `:root { }` block and
+		// the scoped-application contract depends on that shape.
+		$this->injectTokenSetOverrides(tokenSet: $tokenSet);
 		// 3b. Generated dark-mode variant, directly after the light layer
 		// so its media-query/attribute-scoped rules override it — only
 		// when the toggle is on AND a generated file exists for this set.
@@ -433,6 +439,44 @@ class CssInjectionService {
 	 *
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
+	/**
+	 * Emit a token set's own element overrides, when it ships any.
+	 *
+	 * Most sets have none: a token set declares VALUES, and the design system's
+	 * shared stylesheets decide what reads them. A set needs this only when a
+	 * shared rule is wrong specifically for it — `frankendesk` is the one such
+	 * case today, where lasuite's element-overrides.css masks the header logo to
+	 * a single colour and would destroy a deliberately two-tone mark.
+	 *
+	 * Emitted directly after the set's token file, so it wins over the shared
+	 * stylesheets emitted in step 2, and only for the set that has one — every
+	 * other pick loads nothing extra.
+	 *
+	 * @param string $tokenSet The selected token set id.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	private function injectTokenSetOverrides(string $tokenSet): void {
+		if (is_file($this->appPath() . '/css/token-overrides/' . $tokenSet . '.css') === false) {
+			return;
+		}
+
+		$this->emitStyle(file: 'token-overrides/' . $tokenSet);
+	}//end injectTokenSetOverrides()
+
+	/**
+	 * The app's own directory on disk.
+	 *
+	 * @return string The absolute app path.
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	protected function appPath(): string {
+		return dirname(__DIR__, 2);
+	}//end appPath()
+
 	private function injectDarkVariantStyle(string $tokenSet): void {
 		$darkVariantsEnabled = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
 		if ($darkVariantsEnabled === false) {

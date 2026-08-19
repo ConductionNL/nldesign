@@ -75,7 +75,7 @@
 
 	/* ---------------------------------------------------------------- */
 	/* DELTA over `lasuite` — the public-portal presentation layer.       */
-	/*                                                                   */
+	/* ---------------------------------------------------------------- */
 	/* The parent set is a Layer-3 `--nldesign-*` list built for theming  */
 	/* Nextcloud. Everything below is what a PUBLIC PORTAL additionally   */
 	/* needs: the surfaces the shared bridge reads, and the geometry that */
@@ -210,23 +210,9 @@
 	--nldesign-footer-legal-link-gap: 8px;
 }
 
-/* The shared lasuite/element-overrides.css masks #header .logo to Nextcloud's
-   stock core/img/logo/logo.svg, flattened to a single brand colour — correct
-   for the plain `lasuite` set, which carries no logo, but wrong here: the
-   Frankendesk mark is deliberately two-tone (light/dark purple squares,
-   black neck bolts) and a single-colour mask would destroy that. This file
-   loads after element-overrides.css in the injection pipeline (design-system
-   stylesheets, then token set CSS — see CssInjectionService::injectDesignSystemAndTokens()),
-   so this redeclaration wins the cascade and only affects the frankendesk
-   pick; the lasuite/cunningham sets are untouched. */
-#header .logo,
-#header .logo-icon {
-	background-color: transparent !important;
-	background-image: var(--nldesign-logo-url, none) !important;
-	background-repeat: no-repeat !important;
-	background-position: center !important;
-	background-size: contain !important;
-	-webkit-mask: none !important;
-	mask: none !important;
-
-}
+/* The #header .logo override that used to live here moved to
+   css/token-overrides/frankendesk.css. A shipped token file is exactly one
+   flat `:root { }` block — the scoped-application contract depends on that
+   shape (TokenCssShapeTest) — and an element rule here broke it for every
+   consumer in order to style one header. The override still loads, and still
+   after element-overrides.css; see CssInjectionService::injectTokenSetOverrides(). */
