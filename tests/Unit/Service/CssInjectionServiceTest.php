@@ -902,4 +902,78 @@ class CssInjectionServiceTest extends TestCase {
 		$this->assertCount(1, $warnings);
 		$this->assertStringContainsString('could not resolve the active token set', $warnings[0]);
 	}//end testAnUnresolvableTokenSetLeavesThePageUnthemedAndLogged()
+
+	/**
+	 * Emit the design system + token set for one set, and return the log.
+	 *
+	 * @param string $tokenSet The selected set.
+	 *
+	 * @return array<int, string> The emitted stylesheets, in order.
+	 */
+	private function emitFor(string $tokenSet): array {
+		$this->configureAppValues(['token_set' => $tokenSet]);
+		$this->designSystemService->method('getTokenSetMeta')->with($tokenSet)
+			->willReturn(['design_system' => 'nldesign']);
+		$this->designSystemService->method('getDesignSystem')->with('nldesign')->willReturn(
+			[
+				'id' => 'nldesign',
+				'name' => 'NL Design System',
+				'description' => '',
+				'stylesheets' => ['systems/nldesign/element-overrides'],
+			]
+		);
+
+		$styleLog = [];
+		$fontLog = [];
+		$this->buildService(styleLog: $styleLog, fontLog: $fontLog)->inject('user');
+
+		return $styleLog;
+	}//end emitFor()
+
+	/**
+	 * A token set that ships element overrides gets them AFTER its tokens.
+	 *
+	 * 🔴 Order is the whole point. The override exists to beat the design
+	 * system's shared `element-overrides.css`, and it can only do that by being
+	 * emitted later. `frankendesk` is the one set that ships such a file today:
+	 * lasuite's shared rule masks the header logo to a single colour, which
+	 * would destroy a deliberately two-tone mark.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	public function testASetWithElementOverridesGetsThemAfterItsTokens(): void {
+		$emitted = $this->emitFor('frankendesk');
+
+		$this->assertContains('token-overrides/frankendesk', $emitted);
+		$this->assertGreaterThan(
+			array_search('systems/nldesign/element-overrides', $emitted, true),
+			array_search('token-overrides/frankendesk', $emitted, true),
+			'the set override must come AFTER the shared element overrides, or it cannot win'
+		);
+		$this->assertGreaterThan(
+			array_search('tokens/frankendesk', $emitted, true),
+			array_search('token-overrides/frankendesk', $emitted, true),
+			'and after its own tokens, whose values it reads'
+		);
+	}//end testASetWithElementOverridesGetsThemAfterItsTokens()
+
+	/**
+	 * A set without an overrides file loads nothing extra.
+	 *
+	 * The control: without this, the test above would pass on an
+	 * implementation that emitted a `token-overrides/` stylesheet for EVERY
+	 * set — including the ~45 that have no such file, each one a 404.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/specs/app-token-set-selection/spec.md
+	 */
+	public function testASetWithoutElementOverridesLoadsNothingExtra(): void {
+		$emitted = $this->emitFor('rijkshuisstijl');
+
+		$this->assertContains('tokens/rijkshuisstijl', $emitted);
+		$this->assertNotContains('token-overrides/rijkshuisstijl', $emitted);
+	}//end testASetWithoutElementOverridesLoadsNothingExtra()
 }//end class
