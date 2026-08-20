@@ -59,7 +59,12 @@ use Psr\Log\AbstractLogger;
  */
 final class CiAppManagerStub implements IAppManager
 {
-    public function getAppInfo(string $appId, bool $path=false, $lang=null)
+    // Return type declared explicitly: OCP\App\IAppManager::getAppInfo() is
+    // `: ?array` and PHP treats a missing return type on the implementation as
+    // incompatible, so without it this script dies with a fatal before it
+    // generates anything — which reads as "dark variants are broken" rather
+    // than "a stub drifted from the interface it implements".
+    public function getAppInfo(string $appId, bool $path=false, $lang=null): ?array
     {
         return [];
     }//end getAppInfo()
@@ -68,6 +73,20 @@ final class CiAppManagerStub implements IAppManager
     {
         return null;
     }//end getAppInfoByPath()
+
+    // Added in Nextcloud 34 (IAppManager @since 34.0.0). A stub only satisfies
+    // an interface as of the version it was written against; these two are the
+    // reason this script stopped running, and the failure surfaced as a fatal
+    // at class-declaration time rather than as anything about dark variants.
+    public function getAppNamespace(string $appId): string
+    {
+        return '';
+    }//end getAppNamespace()
+
+    public function getAppFromNamespace(string $className): ?string
+    {
+        return null;
+    }//end getAppFromNamespace()
 
     public function getAppVersion(string $appId, bool $useCache=true): string
     {

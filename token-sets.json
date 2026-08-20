@@ -351,12 +351,14 @@
 	{
 		"id": "rotterdam",
 		"name": "Gemeente Rotterdam",
-		"description": "Design tokens for Gemeente Rotterdam",
+		"description": "Design tokens for Gemeente Rotterdam, composed from the Rotterdam Design System (RODS)",
 		"theming": {
-			"primary_color": "#00811f",
+			"primary_color": "#00811F",
 			"background_color": "#FFFFFF",
 			"logo": "img/logos/rotterdam.svg"
-		}
+		},
+		"upstreamPackage": "@gemeente-rotterdam/design-tokens",
+		"upstreamVersion": "1.1.0"
 	},
 	{
 		"id": "xxllnc",
