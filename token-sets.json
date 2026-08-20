@@ -361,6 +361,16 @@
 		"upstreamVersion": "1.1.0"
 	},
 	{
+		"id": "opencatalogi",
+		"name": "OpenCatalogi",
+		"description": "Design tokens for OpenCatalogi, transcribed from the tokens opencatalogi.nl ships",
+		"theming": {
+			"primary_color": "#00811f",
+			"background_color": "#FFFFFF",
+			"logo": "img/logos/opencatalogi.svg"
+		}
+	},
+	{
 		"id": "xxllnc",
 		"name": "xxllnc",
 		"description": "Design tokens for xxllnc",
