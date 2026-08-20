@@ -41,6 +41,7 @@ system reads `--nldesign-*` tokens, computed by `ContrastService` over
 | noaberkracht | 4.01:1 | 4.5:1 | 4.01:1 | 3.0:1 | fail |
 | noordoostpolder | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | noordwijk | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
+| opencatalogi | 5.05:1 | 4.5:1 | 5.05:1 | 3.0:1 | pass |
 | provincie-zuid-holland | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | riddeliemers | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |
 | ridderkerk | 10.20:1 | 4.5:1 | 10.20:1 | 3.0:1 | pass |

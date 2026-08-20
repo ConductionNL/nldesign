@@ -185,9 +185,11 @@ function declaration(name, value) {
 function main() {
 	const [brandId, upstreamPath, upstreamVersion] = process.argv.slice(2)
 
-	if (!brandId || !upstreamPath) {
+	// The upstream path is required only by brands that declare one; a brand
+	// with an inline palette is generated with the id alone.
+	if (!brandId) {
 		console.error(
-			'Usage: node scripts/generate-brand-set.mjs <brandId> <pathToUpstreamPackage> [upstreamVersion]',
+			'Usage: node scripts/generate-brand-set.mjs <brandId> [pathToUpstreamPackage] [upstreamVersion]',
 		)
 		process.exit(1)
 	}
@@ -200,40 +202,96 @@ function main() {
 
 	const brand = JSON.parse(readFileSync(brandPath, 'utf8'))
 
-	// ---- A. the brand's own palette -------------------------------------
-	const palettePath = join(upstreamPath, brand.upstream.paletteFile)
-	const themePath = join(upstreamPath, brand.upstream.themeFile)
+	// ---- A + B. the brand's own palette and component mapping ------------
+	//
+	// TWO WAYS IN, because not every design system publishes an npm package.
+	//
+	//   `upstream`  — read the brand's palette and its own NL Design System
+	//                 mapping out of a published package (RODS does this).
+	//   `palette`   — the brand states its palette inline, and contributes NO
+	//                 component mapping of its own; section C then fills the
+	//                 whole component vocabulary from the shared role layer.
+	//
+	// The inline form exists for a set whose tokens were READ OFF A RUNNING
+	// SITE rather than installed. Those values are transcribed here in full
+	// rather than aliased to whichever other set they happen to match today —
+	// two design systems agreeing on a colour is a fact about now, not a
+	// dependency, and expressing it as one makes the wrong set move when the
+	// other one changes.
+	const palette = new Map()
+	let brandComponents = new Map()
 
-	for (const required of [palettePath, themePath]) {
-		if (existsSync(required) === false) {
-			console.error(`Upstream file missing: ${required}`)
+	if (brand.upstream !== undefined) {
+		const palettePath = join(upstreamPath, brand.upstream.paletteFile)
+		const themePath = join(upstreamPath, brand.upstream.themeFile)
+
+		for (const required of [palettePath, themePath]) {
+			if (existsSync(required) === false) {
+				console.error(`Upstream file missing: ${required}`)
+				process.exit(1)
+			}
+		}
+
+		const prefix = brand.upstream.palettePrefix
+		for (const [name, value] of effective(
+			readDeclarations(readFileSync(palettePath, 'utf8')).filter((d) =>
+				d.name.startsWith(prefix),
+			),
+		)) {
+			palette.set(name, value)
+		}
+
+		// Everything that is NOT the brand's private palette prefix: these are
+		// the NL Design System component tokens the brand itself decided on.
+		brandComponents = effective(
+			readDeclarations(readFileSync(themePath, 'utf8')).filter(
+				(d) => d.name.startsWith(prefix) === false,
+			),
+		)
+
+		// The theme file also restates palette entries; fold them in so every
+		// var() reference in B resolves without reaching outside this file.
+		for (const { name, value } of readDeclarations(
+			readFileSync(themePath, 'utf8'),
+		)) {
+			if (name.startsWith(prefix) === true) {
+				palette.set(name, value)
+			}
+		}
+	} else {
+		for (const [name, value] of Object.entries(brand.palette ?? {})) {
+			if (name.startsWith('_') === true) {
+				continue
+			}
+			palette.set(name, value)
+		}
+
+		if (palette.size === 0) {
+			console.error(
+				`Brand '${brandId}' declares neither an \`upstream\` package nor an inline \`palette\`.`,
+			)
 			process.exit(1)
 		}
-	}
 
-	const prefix = brand.upstream.palettePrefix
-	const palette = effective(
-		readDeclarations(readFileSync(palettePath, 'utf8')).filter((d) =>
-			d.name.startsWith(prefix),
-		),
-	)
+		// A brand whose component mapping was CAPTURED rather than installed.
+		// Same role as `upstream.themeFile`: these are the brand's own
+		// decisions about NL Design System components, and section C fills only
+		// what they leave out.
+		//
+		// Held in a separate file because it is machine-captured and roughly
+		// 900 entries; mixing it into the hand-authored brand file would bury
+		// the decisions a reader needs in a wall of measurements.
+		if (brand.componentsFile !== undefined) {
+			const componentsPath = join(BRANDS_DIR, brand.componentsFile)
+			if (existsSync(componentsPath) === false) {
+				console.error(`Captured components file missing: ${componentsPath}`)
+				process.exit(1)
+			}
 
-	// ---- B. the brand's own component mapping ---------------------------
-	// Everything that is NOT the brand's private palette prefix: these are the
-	// NL Design System component tokens the brand itself decided on.
-	const brandComponents = effective(
-		readDeclarations(readFileSync(themePath, 'utf8')).filter(
-			(d) => d.name.startsWith(prefix) === false,
-		),
-	)
-
-	// The theme file also restates palette entries; fold them in so every
-	// var() reference in B resolves without reaching outside this file.
-	for (const { name, value } of readDeclarations(
-		readFileSync(themePath, 'utf8'),
-	)) {
-		if (name.startsWith(prefix) === true) {
-			palette.set(name, value)
+			const captured = JSON.parse(readFileSync(componentsPath, 'utf8'))
+			for (const [name, value] of Object.entries(captured.tokens ?? {})) {
+				brandComponents.set(name, value)
+			}
 		}
 	}
 
@@ -250,18 +308,20 @@ function main() {
 	const upstreamOverrides = Object.entries(brand.upstreamOverrides ?? {}).filter(
 		([name]) => name.startsWith('_') === false,
 	)
-	const missedOverrides = []
+
+	// Applied to A and B here; section C is built below and takes its pass
+	// there, because it does not exist yet at this point. An override that
+	// matches nothing in ANY of the three is reported after C is assembled.
+	const overrideTargets = new Set(upstreamOverrides.map(([name]) => name))
+	const overrideApplied = new Set()
 
 	for (const [name, entry] of upstreamOverrides) {
 		if (brandComponents.has(name) === true) {
 			brandComponents.set(name, entry.value)
+			overrideApplied.add(name)
 		} else if (palette.has(name) === true) {
 			palette.set(name, entry.value)
-		} else {
-			// Not an override of anything. Reported rather than silently
-			// promoted to a new token: the intent was to correct an upstream
-			// value, and if that value is gone the reason no longer applies.
-			missedOverrides.push(name)
+			overrideApplied.add(name)
 		}
 	}
 
@@ -331,6 +391,16 @@ function main() {
 			continue
 		}
 
+		// The role layer's own pass at the deliberate overrides. The logo
+		// tokens live HERE rather than in A or B — the role layer bakes a VNG
+		// mark into them — so without this an override of one matches nothing
+		// and is reported as stale while the wrong logo still ships.
+		if (overrideTargets.has(name) === true) {
+			const entry = brand.upstreamOverrides[name]
+			value = entry.value
+			overrideApplied.add(name)
+		}
+
 		roleFill.push({ name, value })
 		if (
 			name.startsWith('--vng-color-') === false
@@ -393,9 +463,12 @@ function main() {
 	}
 
 	// ---- emit -----------------------------------------------------------
-	const provenance = upstreamVersion
-		? `${brand.upstream.package}@${upstreamVersion}`
-		: brand.upstream.package
+	let provenance = brand.provenance ?? 'an inline palette'
+	if (brand.upstream !== undefined) {
+		provenance = upstreamVersion
+			? `${brand.upstream.package}@${upstreamVersion}`
+			: brand.upstream.package
+	}
 
 	const lines = []
 	lines.push('/**')
@@ -502,9 +575,11 @@ function main() {
 		if (entry !== undefined) {
 			entry.name = brand.name
 			entry.description = brand.description
-			entry.upstreamPackage = brand.upstream.package
-			if (upstreamVersion) {
-				entry.upstreamVersion = upstreamVersion
+			if (brand.upstream !== undefined) {
+				entry.upstreamPackage = brand.upstream.package
+				if (upstreamVersion) {
+					entry.upstreamVersion = upstreamVersion
+				}
 			}
 			entry.theming = {
 				primary_color: brand.semantic.primary,
@@ -551,6 +626,10 @@ function main() {
 		}
 	}
 
+	const missedOverrides = upstreamOverrides
+		.map(([name]) => name)
+		.filter((name) => (overrideApplied.has(name) === false))
+
 	if (missedOverrides.length > 0) {
 		console.log(`\n  ⚠ ${missedOverrides.length} upstreamOverrides entry/entries matched NOTHING upstream`)
 		console.log('    and were dropped. They were written to correct a value that no longer')
@@ -574,9 +653,28 @@ function main() {
 		}
 	}
 
+	// Literals the brand KEEPS on purpose. Separated from the warning below so
+	// that warning keeps meaning something: a list that always prints ten
+	// entries on a correct set is one nobody reads, and the eleventh — the real
+	// drift — arrives into an audience that has learned to skip it.
+	const keptLiterals = Object.entries(brand.keepLiterals ?? {}).filter(
+		([hex]) => hex.startsWith('_') === false,
+	)
+
+	for (const [hex] of keptLiterals) {
+		unsubstituted.delete(normaliseHex(hex))
+	}
+
+	if (keptLiterals.length > 0) {
+		console.log(`\n  Role-layer literals KEPT deliberately (${keptLiterals.length}):`)
+		for (const [hex, reason] of keptLiterals) {
+			console.log(`    ${hex}  ${reason}`)
+		}
+	}
+
 	if (unsubstituted.size === 0) {
 		console.log(
-			'\n  Ramp coverage: complete — no role-layer literal survived unmapped.',
+			'\n  Ramp coverage: complete — every remaining role-layer literal is accounted for.',
 		)
 	} else {
 		const total = [...unsubstituted.values()].reduce((a, b) => a + b, 0)
