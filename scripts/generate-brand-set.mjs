@@ -237,6 +237,34 @@ function main() {
 		}
 	}
 
+	// ---- Deliberate overrides of the brand's own upstream mapping --------
+	//
+	// Applied IN PLACE rather than appended. Appending wins by cascade order
+	// and leaves two declarations of the same custom property in one block —
+	// which stylelint rejects, and rightly: a reader looking up the token
+	// finds the upstream value first and has no reason to keep scrolling.
+	//
+	// Each entry states a reason and the run prints it, because an override
+	// of the brand's OWN decision that nobody can see is how a set quietly
+	// stops being that brand's.
+	const upstreamOverrides = Object.entries(brand.upstreamOverrides ?? {}).filter(
+		([name]) => name.startsWith('_') === false,
+	)
+	const missedOverrides = []
+
+	for (const [name, entry] of upstreamOverrides) {
+		if (brandComponents.has(name) === true) {
+			brandComponents.set(name, entry.value)
+		} else if (palette.has(name) === true) {
+			palette.set(name, entry.value)
+		} else {
+			// Not an override of anything. Reported rather than silently
+			// promoted to a new token: the intent was to correct an upstream
+			// value, and if that value is gone the reason no longer applies.
+			missedOverrides.push(name)
+		}
+	}
+
 	// ---- C. the shared role layer, ramp re-pointed ----------------------
 	const roleLayer = readDeclarations(readFileSync(ROLE_LAYER_PATH, 'utf8'))
 	const roleEffective = effective(roleLayer)
@@ -514,6 +542,24 @@ function main() {
 		`  C. role-layer fill       ${fromRoleLayer} component tokens + ${roleFill.length - fromRoleLayer} ramp entries`,
 	)
 	console.log(`  E. gap fillers           ${overrides.length} tokens`)
+
+	if (upstreamOverrides.length > 0) {
+		console.log(`\n  Upstream values REPLACED (${upstreamOverrides.length}):`)
+		for (const [name, entry] of upstreamOverrides) {
+			console.log(`    ${name}`)
+			console.log(`      ${entry.reason}`)
+		}
+	}
+
+	if (missedOverrides.length > 0) {
+		console.log(`\n  ⚠ ${missedOverrides.length} upstreamOverrides entry/entries matched NOTHING upstream`)
+		console.log('    and were dropped. They were written to correct a value that no longer')
+		console.log('    exists, so the reason attached to them no longer applies:')
+		for (const name of missedOverrides) {
+			console.log(`      ${name}`)
+		}
+	}
+
 	console.log(`  D. semantic layer        ${semantic.length} tokens`)
 
 	if (shadowing.length > 0) {

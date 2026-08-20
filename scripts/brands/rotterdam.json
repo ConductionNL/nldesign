@@ -199,6 +199,29 @@
 		"7": "256px"
 	},
 
+	"_comment_upstream_overrides": [
+		"Values that DELIBERATELY override the brand's own upstream mapping.",
+		"Distinct from componentOverrides, which may only fill gaps: entries here",
+		"beat section B, so each one has to say why in `reason` and the generator",
+		"prints them on every run. An unexplained override of the brand's own",
+		"decision is how a set stops being that brand's.",
+		"",
+		"There is exactly one, and it is a generic default rather than a brand",
+		"decision: RODS ships the shared `basis` layer's placeholder typeface, and",
+		"26 tokens route through it — every heading, form control, blockquote and",
+		"pagination control. Left alone, a Rotterdam portal sets Rotterdam's",
+		"typeface on paragraphs and IBM Plex Sans on its headings. Measured in the",
+		"browser: .utrecht-paragraph resolved to 'Bolder, ArialforRotterdam,",
+		"Arial' while .utrecht-heading-2 resolved to 'IBM Plex Sans'."
+	],
+
+	"upstreamOverrides": {
+		"--basis-text-font-family-default": {
+			"value": "var(--rods-typography-sans-serif-font-family)",
+			"reason": "RODS' own brand typeface, not the basis layer's IBM Plex Sans placeholder; 26 tokens inherit it"
+		}
+	},
+
 	"_comment_component_overrides": [
 		"Component tokens that NEITHER the upstream brand mapping NOR the shared",
 		"role layer defines, so nothing at all would set them.",
