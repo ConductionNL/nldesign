@@ -228,6 +228,10 @@
 	],
 
 	"upstreamOverrides": {
+		"--tilburg-erm-font-size": {
+			"value": "16px",
+			"reason": "THE CAPTURE HOISTED A DELIBERATELY-SCOPED TOKEN. On opencatalogi.nl this is undefined at `html` and 12px only inside `.ac-app-container`, so the `body, html {font-size: var(--tilburg-erm-font-size)}` rule finds nothing and the root stays 16px. Read from the container and written to `:root`, that rule DID find it and every rem on the page shrank 25% — heading-3 rendered 24px against the reference's 32px, small text 9px against 12px"
+		},
 		"--tilburg-typography-font-family-primary": {
 			"value": "TradeGothicCondensed18, Bolder, ArialforRotterdam, 'Arial Narrow', Arial, sans-serif",
 			"reason": "captured verbatim as `TradeGothicCondensed18` with NO fallback — a licensed face this app does not serve, so every heading fell back to the browser's default SERIF"
