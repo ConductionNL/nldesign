@@ -20,6 +20,8 @@
 		"upstreamOverrides.",
 		"",
 		"So: after a re-capture, check anything consumed at `html` or `body` scope.",
+		"A VALUE THAT IS STILL A `{token.path}` PLACEHOLDER IS DROPPED. The reference ships --denhaag-process-steps-step-heading-font-family as the literal string `{utrecht.heading-1.font-family}` — a Style Dictionary reference that never got resolved. It is not valid CSS on that site either; carried into a token set it puts a stray `{` in the flat :root block and breaks the file for every token after it.",
+		"",
 		"Re-capture with the snippet in the commit that added this file rather than",
 		"editing by hand — a value edited here is a claim about a site nobody checked."
 	],
@@ -322,7 +324,6 @@
 		"--denhaag-process-steps-font-size": "1rem",
 		"--denhaag-process-steps-step-distance": "10px",
 		"--denhaag-process-steps-step-heading-color": "#404b4f",
-		"--denhaag-process-steps-step-heading-font-family": "{utrecht.heading-1.font-family}",
 		"--denhaag-process-steps-step-heading-font-size": "1.125rem",
 		"--denhaag-process-steps-step-heading-font-weight": "700",
 		"--denhaag-step-marker-background-color": "#fff",
