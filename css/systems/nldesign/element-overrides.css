@@ -121,7 +121,7 @@ header#header .header-menu__trigger {
 /* Remove gradient masks from header-end icons */
 #header .header-end .icon-vue,
 #header .header-end .button-vue__icon,
-#header .header-end [class*="icon"] {
+#header .header-end [class*='icon'] {
 	mask: none !important;
 	-webkit-mask: none !important;
 	mask-image: none !important;
@@ -164,13 +164,24 @@ header#header .header-menu__trigger {
    HEADINGS VISIBILITY
    ============================================ */
 
-h1, h2, h3, h4, h5, h6,
+/*
+ * Headings are NOT in the blanket text rule's selector list, so they need the
+ * same `--nldesign-color-on-surface` indirection here or they keep inheriting
+ * a hard-coded near-black onto whatever surface they sit on. The dashboard
+ * heading is the measured case (2.91:1 on the plain background).
+ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .dashboard__greeting,
 #greeting,
-[class*="greeting"],
+[class*='greeting'],
 .panel h2,
 .widget h2 {
-	color: var(--nldesign-color-text) !important;
+	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
 	background: transparent !important;
 	background-color: transparent !important;
 	background-image: none !important;
@@ -202,11 +213,11 @@ header#header {
    NAVIGATION ICON GRADIENT REMOVAL
    ============================================ */
 
-#appmenu [class*="icon-"],
+#appmenu [class*='icon-'],
 #appmenu .icon,
-.app-menu [class*="icon-"],
+.app-menu [class*='icon-'],
 .app-menu .icon,
-header nav [class*="icon-"],
+header nav [class*='icon-'],
 header nav .icon {
 	background-image: none !important;
 	background: transparent !important;
@@ -248,8 +259,8 @@ header nav .icon {
 .panel:not(#header *),
 .widget:not(#header *),
 .dashboard-widget:not(#header *),
-[class*="panel"]:not(#header *),
-[class*="widget"]:not(#header *),
+[class*='panel']:not(#header *),
+[class*='widget']:not(#header *),
 #app-content,
 .app-content {
 	background: #ffffff;
@@ -263,21 +274,106 @@ header nav .icon {
    TEXT COLOR FIXES
    ============================================ */
 
+/*
+ * This rule forces the body text colour onto essentially every text-bearing
+ * element, with `!important` and ID-level specificity (each `:not(#header …)`
+ * contributes an ID to the total, so the span selector scores 2-4-6). Nothing
+ * downstream can outrank it by writing a more specific `color` rule.
+ *
+ * That is a problem wherever a surface paints itself with a saturated colour
+ * and relies on its own light-on-dark pairing — Nextcloud's dashboard heading
+ * on the plain background, the Appearance preview card header on the primary
+ * colour. Those used to be handled by adding another `:not()` to the list, which
+ * is an allowlist of the dark surfaces somebody happened to remember; the next
+ * one to appear inherits near-black text and fails WCAG AA silently.
+ *
+ * So the forced value is INDIRECT. Any surface can opt out by setting
+ * `--nldesign-color-on-surface` on itself; because custom properties inherit,
+ * the opt-out reaches every descendant without competing on specificity, and a
+ * nested light surface opts back in by resetting the same property. The
+ * pairings live in css/error-contrast.css next to the other on-fill fixes.
+ */
 body,
 #app,
 #content,
 .app-content,
 p,
-span:not(#header span):not(#header * span):not(.tile-widget span):not(.tile-widget * span):not(.button-vue--vue-primary span):not(.button-vue--vue-primary *),
-div:not(#header div):not(#header * div):not(.tile-widget div):not(.tile-widget * div):not(.button-vue--vue-primary div),
+span:not(#header span):not(#header * span):not(.tile-widget span):not(
+		.tile-widget * span
+	):not(.button-vue--vue-primary span):not(.button-vue--vue-primary *),
+div:not(#header div):not(#header * div):not(.tile-widget div):not(
+		.tile-widget * div
+	):not(.button-vue--vue-primary div),
 li:not(#header li):not(#header * li),
 a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
-	color: var(--nldesign-color-text) !important;
+	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
 }
 
 a:not(#header a):not(.tile-widget a):not(.tile-widget * a) {
-	color: var(--nldesign-color-link) !important;
+	color: var(--nldesign-color-on-surface, var(--nldesign-color-link)) !important;
 }
+
+/* ============================================
+   ON-SURFACE PAIRINGS (WCAG AA)
+   ============================================ */
+
+/*
+ * Nextcloud paints two surfaces with a saturated colour and pairs each with its
+ * own light foreground token. The blanket rule above outranks both, so without
+ * these opt-outs they render near-black text on a dark fill:
+ *
+ *   /apps/dashboard/  #app-dashboard > h2            1.75-2.91:1
+ *   /settings/user    .preview-card__header > span   1.75:1
+ *
+ * The value is Nextcloud's OWN paired token, not a literal — `-plain-text` and
+ * `-primary-text` are whatever the active token set says goes on that fill, so
+ * a set that inverts to a light primary keeps a readable pairing for free.
+ */
+/*
+ * `color` is declared here as well as the property. The dashboard heading is an
+ * `h2`, and no heading is in the blanket rule's selector list — it INHERITS its
+ * colour from this container. A custom property set on a container only reaches
+ * declarations on that container or below, so setting the property alone left
+ * the container itself computing the dark value and the heading inheriting it
+ * (measured: the heading stayed at 2.91:1 while every element the blanket rule
+ * matches directly was already fixed).
+ */
+#app-dashboard {
+	--nldesign-color-on-surface: var(--color-background-plain-text, #ffffff);
+
+	color: var(--nldesign-color-on-surface, var(--nldesign-color-text)) !important;
+}
+
+/*
+ * …but SOLID BACKGROUNDS above repaints every panel/widget INSIDE the dashboard
+ * opaque white, and the property inherits. Those opt back in, with the same
+ * selector list that painted them, or the widgets render white-on-white.
+ *
+ * `initial`, and NOT `var(--nldesign-color-text)`. One property is read by two
+ * rules that want DIFFERENT foregrounds — body text and link text — so naming
+ * the text colour here repaints every link inside a dashboard widget in body
+ * text. Measured: the recommended-files links went #01689b → #0f172a. That is a
+ * real regression introduced by the contrast fix itself, and INVISIBLE to any
+ * contrast check, because body text on white passes AA comfortably.
+ *
+ * Setting a custom property to `initial` makes it the guaranteed-invalid value,
+ * so every `var(--nldesign-color-on-surface, X)` falls back to its OWN X — text
+ * to the text colour, links to the link colour. One reset, both roles correct.
+ */
+#app-dashboard [class*='panel'],
+#app-dashboard [class*='widget'] {
+	--nldesign-color-on-surface: initial;
+}
+
+.preview-card__header {
+	--nldesign-color-on-surface: var(--color-primary-text, #ffffff);
+}
+
+/*
+ * The NcNoteCard fill is NOT fixed here — every design system that reads
+ * `--nldesign-*` inverts the same contract, so it lives in the shared
+ * css/error-contrast.css instead.
+ */
 
 /* ============================================
    BUTTON TEXT COLOR FIXES
@@ -298,10 +394,10 @@ a.primary *,
 .button.primary *,
 .button-vue.button-vue--vue-primary,
 .button-vue.button-vue--vue-primary *,
-button[class*="primary"],
-button[class*="primary"] *,
-.button-vue[class*="primary"],
-.button-vue[class*="primary"] * {
+button[class*='primary'],
+button[class*='primary'] *,
+.button-vue[class*='primary'],
+.button-vue[class*='primary'] * {
 	color: var(--nldesign-color-primary-text) !important;
 }
 
@@ -500,7 +596,7 @@ body {
 	opacity: 1 !important;
 }
 
-#header .header-right [class^="icon-"],
+#header .header-right [class^='icon-'],
 #header .header-right svg {
 	filter: none !important;
 	opacity: 0.8 !important;

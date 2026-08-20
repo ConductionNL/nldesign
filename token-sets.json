@@ -351,12 +351,14 @@
 	{
 		"id": "rotterdam",
 		"name": "Gemeente Rotterdam",
-		"description": "Design tokens for Gemeente Rotterdam",
+		"description": "Design tokens for Gemeente Rotterdam, composed from the Rotterdam Design System (RODS)",
 		"theming": {
-			"primary_color": "#00811f",
+			"primary_color": "#00811F",
 			"background_color": "#FFFFFF",
 			"logo": "img/logos/rotterdam.svg"
-		}
+		},
+		"upstreamPackage": "@gemeente-rotterdam/design-tokens",
+		"upstreamVersion": "1.1.0"
 	},
 	{
 		"id": "xxllnc",
@@ -383,6 +385,57 @@
 		"description": "Design tokens for Gemeente Zwolle",
 		"theming": {
 			"primary_color": "#3A4F93",
+			"background_color": "#FFFFFF"
+		}
+	},
+	{
+		"id": "hoog-contrast",
+		"name": "Hoog contrast (WCAG AAA)",
+		"description": "Maximaal contrast — zwart op wit voor optimale leesbaarheid. Voldoet aan WCAG 2.2 AAA (>= 7:1) en werkt samen met OS hoog-contrast (prefers-contrast / forced-colors, EN 301 549).",
+		"design_system": "high-contrast",
+		"theming": {
+			"primary_color": "#000000",
+			"background_color": "#FFFFFF"
+		}
+	},
+	{
+		"id": "lasuite",
+		"name": "La Suite numérique",
+		"description": "European sovereign-workplace theme (MinBZK/mijn-bureau EDIC bundle) — Cunningham design tokens (MIT), self-hosted Inter, brand blue-violet #4844AD. No La Suite/state logo bundled (trademark).",
+		"design_system": "lasuite",
+		"theming": {
+			"primary_color": "#4844AD",
+			"background_color": "#FFFFFF"
+		}
+	},
+	{
+		"id": "frankendesk",
+		"name": "La Frankendesk",
+		"description": "Conduction's own branded riff on the lasuite bundle. EXTENDS `lasuite`: the renderer loads the parent set first and this one after, so this file is the DELTA — the logo and anything Conduction deliberately changes — instead of a copy that drifts. Same violet Cunningham design tokens (MIT), self-hosted Inter, brand blue-violet #4844AD, with the original \"La Frankendesk\" mark as logo.",
+		"design_system": "lasuite",
+		"theming": {
+			"primary_color": "#4844AD",
+			"background_color": "#FFFFFF",
+			"logo": "img/logos/frankendesk.svg"
+		},
+		"extends": "lasuite"
+	},
+	{
+		"id": "cunningham",
+		"name": "Cunningham (blue base)",
+		"description": "The published Cunningham design system (MIT, @openfun/cunningham-tokens) as distributed — blue base (brand-650 #1A509F, the same scale step the shared bridge/element-overrides derive --color-primary from for lasuite's violet #4844AD), self-hosted Inter. Secondary/optional sibling of lasuite: same generated token base, without the deployed violet La Suite brand override. No logo bundled.",
+		"design_system": "cunningham",
+		"theming": {
+			"primary_color": "#1A509F",
+			"background_color": "#FFFFFF"
+		}
+	},
+	{
+		"id": "conduction-new",
+		"name": "Conduction 2026",
+		"description": "Conduction house style as published at identity.conduction.nl (theme-conduction-2026): cobalt #21468B, KNVB orange accent, Figtree. Independent of the older vendored conduction theme.",
+		"theming": {
+			"primary_color": "#21468B",
 			"background_color": "#FFFFFF"
 		}
 	}

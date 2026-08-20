@@ -8,34 +8,38 @@ Apply Dutch government design tokens (NL Design System) to your Nextcloud instan
 
 ## Features
 
-- **Multiple Token Sets**: Choose from various Dutch government design systems:
+- **46 token sets**: Choose from Dutch government design systems, including:
   - Rijkshuisstijl (Dutch national government)
   - Gemeente Utrecht
   - Gemeente Amsterdam
   - Gemeente Den Haag
   - Gemeente Rotterdam
+  - La Suite numérique (Cunningham design system, European sovereign-workplace / MinBZK-mijn-bureau EDIC bundles) — plus the published Cunningham blue base as an optional sibling set
+  - …and a broad set of community-maintained municipality and organization brands
 
-- **Open Source Fonts**: Uses **Fira Sans** from `@fontsource/fira-sans` as a professional alternative to proprietary government fonts
+- **Open Source Fonts**: Uses **Fira Sans** from `@fontsource/fira-sans` and **Inter** (self-hosted from `@fontsource/inter`) as professional alternatives to proprietary government fonts
 
 - **Easy Configuration**: Select your preferred token set via the admin settings panel
 
 - **CSS Variables**: Uses CSS custom properties for flexible theming that integrates with Nextcloud's existing theme system
 
-- **No Build Required**: Fonts loaded via CDN, tokens are pre-compiled CSS
+- **No Build Required**: Tokens are pre-compiled CSS and fonts are bundled and self-hosted (no external CDN)
 
-- **Amsterdam Design System Icons**: Includes 344 SVG icons from the official Amsterdam Design System, plus 23 organization logos, for use across all Nextcloud apps
+- **NL-Government and French-Government Icons**: Includes 1488 SVG icons sourced from `@conduction/nextcloud-vue`'s EUPL-compatible NL-government packs (RVO, OpenGemeenten, Gemeente Den Haag) plus 1038 SVG icons from the French-government DSFR pack (`@gouvfr/dsfr`, Etalab-2.0) — 2526 icons total — plus 23 organization logos, for use across all Nextcloud apps
+
+- **Theme-switchable iconography**: The icon pack an app resolves through nldesign travels with the active design system — a French-government (`lasuite`) theme serves the DSFR pack, a Dutch-government theme serves the RVO/OpenGemeenten/Den Haag packs — resolved via `DesignSystemService` and advertised on the public capability (`iconPacks`). See `img/ICONS.md`.
 
 ## Icons
 
-The app includes **344 icons** and **23 logos**:
+The app includes **2526 icons** across four government icon sets and **24 logos**:
 
-- Search, navigation, and UI icons from the Amsterdam Design System
-- Filled and outline variants
+- RVO, OpenGemeenten, Gemeente Den Haag — **1488 icons** (CC0-1.0 / CC0-1.0 / EUPL-1.2), materialized from `@conduction/nextcloud-vue`
+- DSFR (Système de Design de l'État) — **1038 icons** (**Etalab-2.0**), materialized from `@gouvfr/dsfr`
 - Government and municipal organization logos
 - SVG format for scalability
-- Accessible via Nextcloud's image path API
+- Accessible via Nextcloud's image path API, or via the theme-switchable icon-pack resolver (active design system's pack)
 
-Icon and logo filenames are a public API: other apps reference them by name (e.g. `MagnifyingGlass.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and MPL-2.0 licensing contract.
+Icon and logo filenames are a public API: other apps reference them by name (e.g. `icons/rvo/rvo-zoek.svg`, `icons/dsfr/arrow-right-line.svg`), so renames and removals are breaking changes. See the [icon documentation](img/ICONS.md) for the naming-stability and licensing contract. The proprietary City-of-Amsterdam icon set is **not** bundled — see `img/ICONS.md` for the licensing rationale.
 
 **[View Icon Documentation →](img/ICONS.md)**
 
@@ -113,10 +117,10 @@ By delegating background color management to Nextcloud's theming system, organiz
 
 This app uses **Fira Sans** as an open-source alternative to the proprietary government fonts:
 
-- **Source**: `@fontsource/fira-sans` npm package
+- **Source**: `@fontsource/fira-sans` npm package (woff2/woff committed under `css/fonts/`)
 - **License**: SIL Open Font License 1.1 (free to use)
 - **Weights**: Regular (400) and Bold (700), plus italic variants
-- **Delivery**: Loaded via CDN from jsdelivr.net
+- **Delivery**: Bundled and self-hosted — loaded from app-relative paths in `css/fonts.css`, never from an external CDN. Self-hosting keeps the fonts inside Nextcloud's default Content-Security-Policy and works on the air-gapped instances typical of Dutch government.
 - **No permission needed**: Unlike RijksoverheidSansWebText, Fira Sans is freely available
 
 ### Why Fira Sans?
@@ -126,6 +130,37 @@ This app uses **Fira Sans** as an open-source alternative to the proprietary gov
 - Excellent legibility for government services
 - Similar characteristics to official government fonts
 - Officially recommended by Rijkshuisstijl Community as open-source alternative
+
+## Marianne Font (La Suite numérique) — restricted, off by default
+
+> ⚠️ **Marianne is the official typeface of the French State, reserved for
+> French State administrations ("réservée aux administrations de l'État").**
+> This app bundles it self-hosted, but it is **inert until an admin
+> explicitly enables it** — enabling it is the operator's affirmation that
+> their organisation is a French State agency. Every other instance, and
+> every instance with the gate left off (the default), renders **Inter**.
+
+The `lasuite` token set's own configured font stack is `Marianne, Inter,
+Roboto Flex Variable, sans-serif` (Cunningham design system). This app:
+
+- **Bundles** the 8 Marianne `woff2` weights (Light, Regular, Medium, Bold +
+  italics) from `@gouvfr/dsfr@1.15.1` (the official French government Design
+  System) under `css/systems/lasuite/fonts/marianne/`, self-hosted, no
+  external request — licensed **Etalab Open Licence 2.0**, see
+  [`MARIANNE-LICENCE.md`](MARIANNE-LICENCE.md).
+- **Keeps Marianne inert by default.** The real `@font-face Marianne`
+  declarations live in a separate stylesheet
+  (`css/systems/lasuite/marianne.css`) that only loads when BOTH the
+  `lasuite` design system is active AND an admin has ticked *"Our
+  organisation is a French State agency (administration de l'État)"* in
+  Administration Settings. Until then, no Marianne byte is ever requested
+  and the `lasuite` set renders **Inter** (SIL OFL 1.1, also self-hosted).
+- **Requires an explicit agreement** to enable — see
+  [`AGREEMENT-MARIANNE.md`](AGREEMENT-MARIANNE.md) for the operator user
+  agreement that ticking the checkbox constitutes.
+
+This is **not** an unconditionally free/open font: do not enable it unless
+your organisation is a French State agency.
 
 ## Architecture
 
@@ -181,11 +216,13 @@ nldesign/
    }
    ```
 
-3. **Font Loading**: The `fonts.css` file loads Fira Sans from CDN:
+3. **Font Loading**: The `fonts.css` file loads Fira Sans from bundled, self-hosted files (app-relative `url()`, no external CDN):
    ```css
    @font-face {
        font-family: 'Fira Sans';
-       src: url('https://cdn.jsdelivr.net/npm/@fontsource/fira-sans@5.0.0/...');
+       src: local('Fira Sans'),
+            url('fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
+            url('fonts/fira-sans-latin-400-normal.woff') format('woff');
    }
    ```
 
@@ -214,14 +251,14 @@ npm install
 
 ### Updating Fonts
 
-The fonts are loaded from CDN, so no build step is required. However, if you want to download fonts locally:
+The fonts are bundled and self-hosted (committed under `css/systems/nldesign/fonts/`), so no build step and no network access are required at runtime. To refresh them from the npm package:
 
 ```bash
 # Fonts are in node_modules/@fontsource/fira-sans/files/
 cp node_modules/@fontsource/fira-sans/files/*.woff2 css/fonts/
 ```
 
-Then update `css/fonts.css` to use local paths instead of CDN.
+Keep the `url()` references in `css/fonts.css` app-relative — never point them at an external CDN, which Nextcloud's Content-Security-Policy blocks and which fails on air-gapped instances.
 
 ### Creating New Token Sets
 
@@ -306,16 +343,18 @@ All dependencies (PHP and JavaScript) are automatically checked against an appro
 
 - **Permissive:** MIT, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Apache-2.0, Unlicense, CC0-1.0, CC-BY-3.0, CC-BY-4.0, Zlib, BlueOak-1.0.0, Artistic-2.0, BSL-1.0
 - **Copyleft (EUPL-compatible):** LGPL-2.0/2.1/3.0, GPL-2.0/3.0, AGPL-3.0, EUPL-1.1/1.2, MPL-2.0
-- **Font licenses:** OFL-1.0, OFL-1.1
+- **Font licenses:** OFL-1.0, OFL-1.1, Etalab-2.0 (Marianne only, see below)
 
 Dependencies with licenses not on this list will fail CI unless explicitly approved in `.license-overrides.json` with a documented justification.
 
 ### License exceptions
 
-| Package | Reason |
-|---------|--------|
-| `@amsterdam/design-system-assets` | Amsterdam Design System - government open-source, EUPL-compatible — approved 2026-03-15 |
-| `@amsterdam/design-system-react-icons` | Amsterdam Design System - government open-source, EUPL-compatible — approved 2026-03-15 |
+`@gouvfr/dsfr` (Etalab-2.0, devDependency, build-time only) is the source for **two** distinct, separately-governed assets, both approved via [`.license-overrides.json`](.license-overrides.json) — the Etalab Open Licence 2.0 is a free/open, attribution-only redistribution licence not yet on the general SPDX allowlist above:
+
+- **DSFR icons** (`scripts/build-icons.js` → `img/icons/dsfr/`) — freely redistributable, bundled unconditionally.
+- **Marianne typeface** (`scripts/build-fonts-marianne.js` → `css/systems/lasuite/fonts/marianne/*.woff2`, each mapped to `Etalab-2.0`; full text: [`LICENSES/Etalab-2.0.txt`](LICENSES/Etalab-2.0.txt)) — the FR-State-**restricted** typeface, bundled behind an admin acknowledgement gate ([off by default](#marianne-font-la-suite-numérique--restricted-off-by-default)); see [`MARIANNE-LICENCE.md`](MARIANNE-LICENCE.md) and [`AGREEMENT-MARIANNE.md`](AGREEMENT-MARIANNE.md) for the usage restriction.
+
+`@conduction/nextcloud-vue` (EUPL-1.2, devDependency, build-time icon source only) is already covered by the EUPL-1.1/1.2 allowlist entry above, and the proprietary `@amsterdam/design-system-assets` / `@amsterdam/design-system-react-icons` packages that previously required an exception here have been removed — see [CHANGELOG.md](CHANGELOG.md).
 
 ## Contributing
 
@@ -340,7 +379,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Initial release
 - Support for 5 token sets (Rijkshuisstijl, Utrecht, Amsterdam, Den Haag, Rotterdam)
 - Fira Sans font integration via @fontsource
-- CDN-based font loading
+- Bundled, self-hosted font loading (no external CDN)
 - Full CSS variable mapping
 - Admin settings panel
 - Background image removal for clean Rijkshuisstijl compliance

@@ -16,7 +16,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('vng-token-set', () => {
-
 	// @e2e exclude openspec/specs/vng-token-set/spec.md#vng-token-file-exists-and-loads
 	// Requires selecting VNG token set — mutates IConfig.
 
@@ -54,18 +53,16 @@ test.describe('vng-token-set', () => {
 	// CSS file content assertion — not DOM-testable.
 
 	// Smoke: VNG option is present in the token set dropdown
-	test(
-		// @e2e openspec/specs/vng-token-set/spec.md#vng-appears-in-admin-dropdown
-		'VNG token set appears as a selectable option in the admin dropdown',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
-			const select = page.locator('#nldesign-token-set-select')
-			await expect(select).toBeVisible()
-			// VNG option must exist in the dropdown
-			const vngOption = select.locator('option[value="vng"]')
-			await expect(vngOption).toBeAttached()
-		},
-	)
-
+	test(// @e2e openspec/specs/vng-token-set/spec.md#vng-appears-in-admin-dropdown
+	'VNG token set appears as a selectable option in the admin dropdown', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		const select = page.locator('#nldesign-token-set-select')
+		await expect(select).toBeVisible()
+		// VNG option must exist in the dropdown
+		const vngOption = select.locator('option[value="vng"]')
+		await expect(vngOption).toBeAttached()
+	})
 })

@@ -25,6 +25,7 @@
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+ * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
  */
 
 declare(strict_types=1);
@@ -33,13 +34,24 @@ namespace OCA\NLDesign\Controller;
 
 use OCA\NLDesign\AppInfo\Application;
 use OCA\NLDesign\Service\AppThemingService;
+use OCA\NLDesign\Service\ComplianceReportService;
+use OCA\NLDesign\Service\EmailThemingService;
+use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
+use OCA\NLDesign\Service\Exception\FooterValidationException;
+use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
+use OCA\NLDesign\Service\Exception\GroupThemingValidationException;
+use OCA\NLDesign\Service\GroupThemingService;
+use OCA\NLDesign\Service\ThemingAuditService;
 use OCA\NLDesign\Service\ThemingService;
 use OCA\NLDesign\Service\TokenSetPreviewService;
 use OCA\NLDesign\Service\TokenSetService;
+use OCA\NLDesign\Service\UpstreamFreshnessService;
 use OCA\NLDesign\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
+use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\Response;
 use OCP\IConfig;
 use OCP\IRequest;
 
@@ -61,312 +73,749 @@ use OCP\IRequest;
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects) - This controller aggregates every settings
+ * endpoint of the app (token set, toggles, theming sync, per-app theming, audit trail, email
+ * theming); each dependency is one endpoint's service. Splitting it is tracked implicitly by
+ * the per-feature OpenSpec changes, not worth a synthetic split today.
  */
-class SettingsController extends Controller
-{
+class SettingsController extends Controller {
 
-    /**
-     * The application configuration service.
-     *
-     * @var IConfig
-     */
-    private IConfig $config;
+	/**
+	 * The application configuration service.
+	 *
+	 * @var IConfig
+	 */
+	private IConfig $config;
 
-    /**
-     * The token set service.
-     *
-     * @var TokenSetService
-     */
-    private TokenSetService $tokenSetService;
+	/**
+	 * The token set service.
+	 *
+	 * @var TokenSetService
+	 */
+	private TokenSetService $tokenSetService;
 
-    /**
-     * The theming service.
-     *
-     * @var ThemingService
-     */
-    private ThemingService $themingService;
+	/**
+	 * The theming service.
+	 *
+	 * @var ThemingService
+	 */
+	private ThemingService $themingService;
 
-    /**
-     * The token set preview service.
-     *
-     * @var TokenSetPreviewService
-     */
-    private TokenSetPreviewService $previewService;
+	/**
+	 * The token set preview service.
+	 *
+	 * @var TokenSetPreviewService
+	 */
+	private TokenSetPreviewService $previewService;
 
-    /**
-     * The per-app theming service.
-     *
-     * @var AppThemingService
-     */
-    private AppThemingService $appThemingService;
+	/**
+	 * The per-app theming service.
+	 *
+	 * @var AppThemingService
+	 */
+	private AppThemingService $appThemingService;
 
-    /**
-     * Constructor.
-     *
-     * @param string                 $appName           The app name.
-     * @param IRequest               $request           The request object.
-     * @param IConfig                $config            The config service.
-     * @param TokenSetService        $tokenSetService   The token set service.
-     * @param ThemingService         $themingService    The theming service.
-     * @param TokenSetPreviewService $previewService    The token set preview service.
-     * @param AppThemingService      $appThemingService The per-app theming service.
-     */
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        IConfig $config,
-        TokenSetService $tokenSetService,
-        ThemingService $themingService,
-        TokenSetPreviewService $previewService,
-        AppThemingService $appThemingService
-    ) {
-        parent::__construct(appName: $appName, request: $request);
-        $this->config            = $config;
-        $this->tokenSetService   = $tokenSetService;
-        $this->themingService    = $themingService;
-        $this->previewService    = $previewService;
-        $this->appThemingService = $appThemingService;
-    }//end __construct()
+	/**
+	 * The compliance evidence report service.
+	 *
+	 * @var ComplianceReportService
+	 */
+	private ComplianceReportService $complianceService;
 
-    /**
-     * Set the active design token set.
-     *
-     * @param string $tokenSet The token set name.
-     *
-     * @return JSONResponse The response with status and selected token set.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function setTokenSet(string $tokenSet): JSONResponse
-    {
-        if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
-            return new JSONResponse(['error' => 'Invalid token set'], 400);
-        }
+	/**
+	 * The theming audit trail service.
+	 *
+	 * @var ThemingAuditService
+	 */
+	private ThemingAuditService $auditService;
 
-        $this->config->setAppValue(Application::APP_ID, 'token_set', $tokenSet);
+	/**
+	 * The email theming service.
+	 *
+	 * @var EmailThemingService
+	 */
+	private EmailThemingService $emailThemingService;
 
-        return new JSONResponse(['status' => 'ok', 'tokenSet' => $tokenSet]);
-    }//end setTokenSet()
+	/**
+	 * The upstream token freshness service.
+	 *
+	 * @var UpstreamFreshnessService
+	 */
+	private UpstreamFreshnessService $freshnessService;
 
-    /**
-     * Get the currently active design token set.
-     *
-     * @return JSONResponse The response with the current token set.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function getTokenSet(): JSONResponse
-    {
-        $tokenSet = $this->config->getAppValue(
-            Application::APP_ID,
-            'token_set',
-            'nextcloud'
-        );
+	/**
+	 * The group theming mapping/resolution service.
+	 *
+	 * @var GroupThemingService
+	 */
+	private GroupThemingService $groupThemingService;
 
-        return new JSONResponse(['tokenSet' => $tokenSet]);
-    }//end getTokenSet()
+	/**
+	 * Constructor.
+	 *
+	 * @param string $appName The app name.
+	 * @param IRequest $request The request object.
+	 * @param IConfig $config The config service.
+	 * @param TokenSetService $tokenSetService The token set service.
+	 * @param ThemingService $themingService The theming service.
+	 * @param TokenSetPreviewService $previewService The token set preview service.
+	 * @param AppThemingService $appThemingService The per-app theming service.
+	 * @param ComplianceReportService $complianceService The compliance evidence report service.
+	 * @param ThemingAuditService $auditService The theming audit trail service.
+	 * @param EmailThemingService $emailThemingService The email theming service.
+	 * @param UpstreamFreshnessService $freshnessService The upstream token freshness service.
+	 * @param GroupThemingService $groupThemingService The group theming mapping/resolution service.
+	 *
+	 * @SuppressWarnings(PHPMD.ExcessiveParameterList) - This is the app's aggregating settings
+	 * controller; each dependency backs one settings endpoint family (token set, theming sync,
+	 * per-app theming, compliance report, audit trail, email theming, upstream freshness, group
+	 * theming). NC's DI container supplies them; a synthetic parameter-object split would not
+	 * reduce the real coupling.
+	 */
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		IConfig $config,
+		TokenSetService $tokenSetService,
+		ThemingService $themingService,
+		TokenSetPreviewService $previewService,
+		AppThemingService $appThemingService,
+		ComplianceReportService $complianceService,
+		ThemingAuditService $auditService,
+		EmailThemingService $emailThemingService,
+		UpstreamFreshnessService $freshnessService,
+		GroupThemingService $groupThemingService,
+	) {
+		parent::__construct(appName: $appName, request: $request);
+		$this->config = $config;
+		$this->tokenSetService = $tokenSetService;
+		$this->themingService = $themingService;
+		$this->previewService = $previewService;
+		$this->appThemingService = $appThemingService;
+		$this->complianceService = $complianceService;
+		$this->auditService = $auditService;
+		$this->emailThemingService = $emailThemingService;
+		$this->freshnessService = $freshnessService;
+		$this->groupThemingService = $groupThemingService;
+	}//end __construct()
 
-    /**
-     * Get all available token sets.
-     *
-     * @return JSONResponse The list of available token sets.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function getAvailableTokenSets(): JSONResponse
-    {
-        $tokenSets = $this->tokenSetService->getAvailableTokenSets();
+	/**
+	 * Set the active design token set.
+	 *
+	 * @param string $tokenSet The token set name.
+	 *
+	 * @return JSONResponse The response with status and selected token set.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-14
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setTokenSet(string $tokenSet): JSONResponse {
+		if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSet) === false) {
+			return new JSONResponse(['error' => 'Invalid token set'], 400);
+		}
 
-        return new JSONResponse(['tokenSets' => $tokenSets]);
-    }//end getAvailableTokenSets()
+		$previous = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
+		$this->config->setAppValue(Application::APP_ID, 'token_set', $tokenSet);
 
-    /**
-     * Store a boolean app setting as '0' or '1'.
-     *
-     * @param string $key   The app config key.
-     * @param bool   $value The boolean value.
-     *
-     * @return void
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
-     */
-    private function saveBooleanSetting(string $key, bool $value): void
-    {
-        $stored = '0';
-        if ($value === true) {
-            $stored = '1';
-        }
+		$this->auditService->log(
+			action: 'token_set_changed',
+			context: [
+				'old' => $previous,
+				'new' => $tokenSet,
+			]
+		);
 
-        $this->config->setAppValue(Application::APP_ID, $key, $stored);
-    }//end saveBooleanSetting()
+		return new JSONResponse(['status' => 'ok', 'tokenSet' => $tokenSet]);
+	}//end setTokenSet()
 
-    /**
-     * Set the hide slogan setting.
-     *
-     * @param bool $hideSlogan Whether to hide the slogan on login page.
-     *
-     * @return JSONResponse The response with the status.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function setSloganSetting(bool $hideSlogan): JSONResponse
-    {
-        $this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
+	/**
+	 * Get the currently active design token set.
+	 *
+	 * @return JSONResponse The response with the current token set.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-15
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getTokenSet(): JSONResponse {
+		$tokenSet = $this->config->getAppValue(
+			Application::APP_ID,
+			'token_set',
+			'nextcloud'
+		);
 
-        return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
-    }//end setSloganSetting()
+		return new JSONResponse(['tokenSet' => $tokenSet]);
+	}//end getTokenSet()
 
-    /**
-     * Set the show menu labels setting.
-     *
-     * @param bool $showMenuLabels Whether to show text labels in app menu.
-     *
-     * @return JSONResponse The response with the status.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse
-    {
-        $this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
+	/**
+	 * Get all available token sets.
+	 *
+	 * @return JSONResponse The list of available token sets.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-16
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getAvailableTokenSets(): JSONResponse {
+		$tokenSets = $this->tokenSetService->getAvailableTokenSets();
 
-        return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
-    }//end setMenuLabelsSetting()
+		return new JSONResponse(['tokenSets' => $tokenSets]);
+	}//end getAvailableTokenSets()
 
-    /**
-     * Update Nextcloud theming values from NL Design tokens.
-     *
-     * @return JSONResponse The response with updated fields.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function updateThemingValues(): JSONResponse
-    {
-        $params = $this->request->getParams();
+	/**
+	 * Store a boolean app setting as '0' or '1'.
+	 *
+	 * @param string $key The app config key.
+	 * @param bool $value The boolean value.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-17
+	 */
+	private function saveBooleanSetting(string $key, bool $value): void {
+		$stored = '0';
+		if ($value === true) {
+			$stored = '1';
+		}
 
-        $colorError = $this->themingService->validateColors(params: $params);
-        if ($colorError !== null) {
-            return new JSONResponse(['error' => $colorError], 400);
-        }
+		$this->config->setAppValue(Application::APP_ID, $key, $stored);
+	}//end saveBooleanSetting()
 
-        $imageError = $this->themingService->validateImagePaths(params: $params);
-        if ($imageError !== null) {
-            return new JSONResponse(['error' => $imageError], 400);
-        }
+	/**
+	 * Set the hide slogan setting.
+	 *
+	 * @param bool $hideSlogan Whether to hide the slogan on login page.
+	 *
+	 * @return JSONResponse The response with the status.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-18
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setSloganSetting(bool $hideSlogan): JSONResponse {
+		$previous = ($this->config->getAppValue(Application::APP_ID, 'hide_slogan', '0') === '1');
+		$this->saveBooleanSetting(key: 'hide_slogan', value: $hideSlogan);
 
-        $updatedColors = $this->themingService->applyColors(params: $params);
-        $updatedImages = $this->themingService->applyImages(params: $params);
-        $updated       = array_merge($updatedColors, $updatedImages);
+		$this->auditService->log(
+			action: 'toggle_changed',
+			context: [
+				'key' => 'hide_slogan',
+				'old' => $previous,
+				'new' => $hideSlogan,
+			]
+		);
 
-        // Increment the theming sync counter exposed by MetricsController as
-        // nldesign_theming_syncs_total. Only counted on success (after both
-        // apply* calls completed without throwing).
-        $current = (int) $this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
-        $this->config->setAppValue(Application::APP_ID, 'theming_syncs_total', (string) ($current + 1));
+		return new JSONResponse(['status' => 'ok', 'hideSlogan' => $hideSlogan]);
+	}//end setSloganSetting()
 
-        return new JSONResponse(['status' => 'ok', 'updated' => $updated]);
-    }//end updateThemingValues()
+	/**
+	 * Set the show menu labels setting.
+	 *
+	 * @param bool $showMenuLabels Whether to show text labels in app menu.
+	 *
+	 * @return JSONResponse The response with the status.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-19
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setMenuLabelsSetting(bool $showMenuLabels): JSONResponse {
+		$previous = ($this->config->getAppValue(Application::APP_ID, 'show_menu_labels', '0') === '1');
+		$this->saveBooleanSetting(key: 'show_menu_labels', value: $showMenuLabels);
 
-    /**
-     * Get current Nextcloud theming values for comparison.
-     *
-     * @return JSONResponse The current theming values.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function getThemingValues(): JSONResponse
-    {
-        $values = $this->buildThemingSnapshot();
+		$this->auditService->log(
+			action: 'toggle_changed',
+			context: [
+				'key' => 'show_menu_labels',
+				'old' => $previous,
+				'new' => $showMenuLabels,
+			]
+		);
 
-        return new JSONResponse($values);
-    }//end getThemingValues()
+		return new JSONResponse(['status' => 'ok', 'showMenuLabels' => $showMenuLabels]);
+	}//end setMenuLabelsSetting()
 
-    /**
-     * Build a snapshot of the current theming state.
-     *
-     * @return array<string, mixed> The theming snapshot.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
-     */
-    private function buildThemingSnapshot(): array
-    {
-        $imgManager = $this->themingService->getImageManager();
+	/**
+	 * Update Nextcloud theming values from NL Design tokens.
+	 *
+	 * @return JSONResponse The response with updated fields.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-22
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function updateThemingValues(): JSONResponse {
+		$params = $this->request->getParams();
 
-        return [
-            'primary_color'         => $this->config->getAppValue('theming', 'primary_color', ''),
-            'background_color'      => $this->config->getAppValue('theming', 'background_color', ''),
-            'logo_url'              => $imgManager->getImageUrl('logo'),
-            'background_url'        => $imgManager->getImageUrl('background'),
-            'has_custom_logo'       => $imgManager->hasImage('logo'),
-            'has_custom_background' => $imgManager->hasImage('background'),
-        ];
-    }//end buildThemingSnapshot()
+		$colorError = $this->themingService->validateColors(params: $params);
+		if ($colorError !== null) {
+			return new JSONResponse(['error' => $colorError], 400);
+		}
 
-    /**
-     * Get resolved --color-* values for a given token set.
-     *
-     * Used by the apply dialog to compare current resolved values against what
-     * a token set would produce, without applying anything to the CSS stack.
-     *
-     * @param string $tokenSetId The token set identifier.
-     *
-     * @return JSONResponse The resolved color map.
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function getTokenSetPreview(string $tokenSetId): JSONResponse
-    {
-        if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSetId) === false) {
-            return new JSONResponse(['error' => 'Token set not found'], 404);
-        }
+		$imageError = $this->themingService->validateImagePaths(params: $params);
+		if ($imageError !== null) {
+			return new JSONResponse(['error' => $imageError], 400);
+		}
 
-        $resolved = $this->previewService->getResolvedColors(tokenSetId: $tokenSetId);
+		$before = $this->buildThemingSnapshot();
 
-        return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
-    }//end getTokenSetPreview()
+		$updatedColors = $this->themingService->applyColors(params: $params);
+		$updatedImages = $this->themingService->applyImages(params: $params);
+		$updated = array_merge($updatedColors, $updatedImages);
 
-    /**
-     * List enabled apps with their per-app theming state.
-     *
-     * @return JSONResponse The list of { id, name, themed } entries.
-     *
-     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function getAppTheming(): JSONResponse
-    {
-        return new JSONResponse(['apps' => $this->appThemingService->getThemableApps()]);
-    }//end getAppTheming()
+		// Increment the theming sync counter exposed by MetricsController as
+		// nldesign_theming_syncs_total. Only counted on success (after both
+		// apply* calls completed without throwing).
+		$current = (int)$this->config->getAppValue(Application::APP_ID, 'theming_syncs_total', '0');
+		$this->config->setAppValue(Application::APP_ID, 'theming_syncs_total', (string)($current + 1));
 
-    /**
-     * Replace the per-app theming exclusion list.
-     *
-     * Accepts { disabledApps: string[] }. Unknown and protected ids are dropped
-     * by the service before persisting.
-     *
-     * @param array $disabledApps The app ids to exclude from theming.
-     *
-     * @return JSONResponse The persisted state after validation.
-     *
-     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
-     */
-    #[AuthorizedAdminSetting(Admin::class)]
-    public function setAppTheming(array $disabledApps=[]): JSONResponse
-    {
-        $this->appThemingService->setDisabledApps(appIds: $disabledApps);
+		$this->auditService->log(
+			action: 'theming_sync_applied',
+			context: [
+				'old' => $before,
+				'new' => $updated,
+			]
+		);
 
-        return new JSONResponse(
-            [
-                'status'       => 'ok',
-                'disabledApps' => $this->appThemingService->getDisabledApps(),
-            ]
-        );
-    }//end setAppTheming()
+		return new JSONResponse(['status' => 'ok', 'updated' => $updated]);
+	}//end updateThemingValues()
+
+	/**
+	 * Get current Nextcloud theming values for comparison.
+	 *
+	 * @return JSONResponse The current theming values.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-23
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getThemingValues(): JSONResponse {
+		$values = $this->buildThemingSnapshot();
+
+		return new JSONResponse($values);
+	}//end getThemingValues()
+
+	/**
+	 * Build a snapshot of the current theming state.
+	 *
+	 * @return array<string, mixed> The theming snapshot.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-24
+	 */
+	private function buildThemingSnapshot(): array {
+		$imgManager = $this->themingService->getImageManager();
+
+		return [
+			'primary_color' => $this->config->getAppValue('theming', 'primary_color', ''),
+			'background_color' => $this->config->getAppValue('theming', 'background_color', ''),
+			'logo_url' => $imgManager->getImageUrl('logo'),
+			'background_url' => $imgManager->getImageUrl('background'),
+			'has_custom_logo' => $imgManager->hasImage('logo'),
+			'has_custom_background' => $imgManager->hasImage('background'),
+		];
+	}//end buildThemingSnapshot()
+
+	/**
+	 * Get resolved --color-* values for a given token set.
+	 *
+	 * Used by the apply dialog to compare current resolved values against what
+	 * a token set would produce, without applying anything to the CSS stack.
+	 *
+	 * @param string $tokenSetId The token set identifier.
+	 *
+	 * @return JSONResponse The resolved color map.
+	 *
+	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-25
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getTokenSetPreview(string $tokenSetId): JSONResponse {
+		if ($this->tokenSetService->isValidTokenSet(tokenSetId: $tokenSetId) === false) {
+			return new JSONResponse(['error' => 'Token set not found'], 404);
+		}
+
+		$resolved = $this->previewService->getResolvedColors(tokenSetId: $tokenSetId);
+
+		return new JSONResponse(['tokenSetId' => $tokenSetId, 'resolved' => $resolved]);
+	}//end getTokenSetPreview()
+
+	/**
+	 * List enabled apps with their per-app theming state.
+	 *
+	 * @return JSONResponse The list of { id, name, themed } entries.
+	 *
+	 * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getAppTheming(): JSONResponse {
+		return new JSONResponse(['apps' => $this->appThemingService->getThemableApps()]);
+	}//end getAppTheming()
+
+	/**
+	 * Replace the per-app theming exclusion list.
+	 *
+	 * Accepts { disabledApps: string[] }. Unknown and protected ids are dropped
+	 * by the service before persisting.
+	 *
+	 * @param array $disabledApps The app ids to exclude from theming.
+	 *
+	 * @return JSONResponse The persisted state after validation.
+	 *
+	 * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-3.1
+	 * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setAppTheming(array $disabledApps = []): JSONResponse {
+		$before = $this->appThemingService->getDisabledApps();
+		$this->appThemingService->setDisabledApps(appIds: $disabledApps);
+		$after = $this->appThemingService->getDisabledApps();
+
+		$this->auditService->log(
+			action: 'app_exclusions_changed',
+			context: [
+				'old' => $before,
+				'new' => $after,
+			]
+		);
+
+		return new JSONResponse(
+			[
+				'status' => 'ok',
+				'disabledApps' => $after,
+			]
+		);
+	}//end setAppTheming()
+
+	/**
+	 * Get the upstream token freshness status: whether the opt-in check is
+	 * enabled, the last-checked timestamp, and any notices still visible
+	 * after dismissal filtering.
+	 *
+	 * @return JSONResponse The status payload.
+	 *
+	 * @spec openspec/specs/upstream-freshness/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getUpstreamFreshness(): JSONResponse {
+		return new JSONResponse($this->freshnessService->getStatus());
+	}//end getUpstreamFreshness()
+
+	/**
+	 * Enable or disable the upstream token freshness check. This is the
+	 * app's first outbound network egress and defaults to disabled — enabling
+	 * it takes effect on the next daily background job run.
+	 *
+	 * @param bool $enabled Whether the check should be enabled.
+	 *
+	 * @return JSONResponse The response with the persisted state.
+	 *
+	 * @spec openspec/specs/upstream-freshness/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setUpstreamFreshness(bool $enabled): JSONResponse {
+		$this->freshnessService->setEnabled(enabled: $enabled);
+
+		return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+	}//end setUpstreamFreshness()
+
+	/**
+	 * Dismiss an upstream freshness notice for a set at a specific
+	 * version/SHA marker. A later detection carrying a different marker for
+	 * the same set re-surfaces regardless of this dismissal.
+	 *
+	 * @param string $setId The token set id, or the generic notice key.
+	 * @param string $version The version (or SHA) marker being dismissed.
+	 *
+	 * @return JSONResponse The response with the status.
+	 *
+	 * @spec openspec/specs/upstream-freshness/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function dismissUpstreamNotice(string $setId, string $version): JSONResponse {
+		$this->freshnessService->dismiss(setId: $setId, versionOrSha: $version);
+
+		return new JSONResponse(['status' => 'ok']);
+	}//end dismissUpstreamNotice()
+
+	/**
+	 * Export the active-configuration WCAG contrast compliance evidence report.
+	 *
+	 * Color-contrast evidence for theme tokens only — NOT a WCAG-EM audit and
+	 * NOT a full WCAG evaluation (see ComplianceReportService::SCOPE_STATEMENT).
+	 * Served as a download so it can be attached directly to a
+	 * toegankelijkheidsverklaring evidence package.
+	 *
+	 * @param string $format The requested format: "json" (default) or "markdown".
+	 *
+	 * @return Response The report download, or a 400 JSON error for an unknown format.
+	 *
+	 * @spec openspec/specs/compliance-evidence/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function complianceReport(string $format = 'json'): Response {
+		if ($format !== 'json' && $format !== 'markdown') {
+			return new JSONResponse(['error' => 'Unknown format. Use "json" or "markdown".'], 400);
+		}
+
+		$tokenSetId = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
+		$instanceId = $this->config->getSystemValue('instanceid', 'unknown');
+		$date = gmdate('Ymd');
+
+		$extension = 'json';
+		$contentType = 'application/json';
+		$content = $this->complianceService->renderJson();
+		if ($format === 'markdown') {
+			$extension = 'md';
+			$contentType = 'text/markdown';
+			$content = $this->complianceService->renderMarkdown();
+		}
+
+		$filename = sprintf('nldesign-compliance-%s-%s-%s.%s', $instanceId, $tokenSetId, $date, $extension);
+
+		return new DataDownloadResponse(data: $content, filename: $filename, contentType: $contentType);
+	}//end complianceReport()
+
+	/**
+	 * Get the email template toggle state and compliance footer config.
+	 *
+	 * @return JSONResponse The state, footer config, and manual occ commands.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getEmailTheming(): JSONResponse {
+		return new JSONResponse(
+			[
+				'state' => $this->emailThemingService->getState(),
+				'footer' => $this->emailThemingService->getFooterConfig(),
+				'occEnable' => EmailThemingService::OCC_ENABLE_COMMAND,
+				'occDisable' => EmailThemingService::OCC_DISABLE_COMMAND,
+			]
+		);
+	}//end getEmailTheming()
+
+	/**
+	 * Save the compliance footer config and toggle the email template.
+	 *
+	 * The footer config is always applied first (app config, always
+	 * writable) and independently reported, so it saves successfully even
+	 * when the system-config toggle write fails (read-only config.php or a
+	 * foreign `mail_template_class`).
+	 *
+	 * @param bool $enabled Whether the branded template should be enabled.
+	 * @param string $orgName The organization name.
+	 * @param string $accessibilityUrl The toegankelijkheidsverklaring URL.
+	 * @param string $privacyUrl The privacy statement URL.
+	 *
+	 * @return JSONResponse The result, or a structured 409/422 error.
+	 *
+	 * @spec openspec/specs/email-theming/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setEmailTheming(
+		bool $enabled,
+		string $orgName = '',
+		string $accessibilityUrl = '',
+		string $privacyUrl = '',
+	): JSONResponse {
+		try {
+			$this->emailThemingService->setFooterConfig($orgName, $accessibilityUrl, $privacyUrl);
+		} catch (FooterValidationException $e) {
+			return new JSONResponse(
+				[
+					'error' => 'invalid_footer',
+					'field' => $e->getField(),
+					'message' => $e->getMessage(),
+				],
+				422
+			);
+		}
+
+		try {
+			if ($enabled === true) {
+				$this->emailThemingService->enable();
+			}
+
+			if ($enabled === false) {
+				$this->emailThemingService->disable();
+			}
+		} catch (ConfigReadOnlyException $e) {
+			return new JSONResponse(
+				[
+					'error' => 'config_read_only',
+					'occEnable' => $e->getOccEnableCommand(),
+					'occDisable' => $e->getOccDisableCommand(),
+					'footer' => $this->emailThemingService->getFooterConfig(),
+				],
+				409
+			);
+		} catch (ForeignMailTemplateClassException $e) {
+			return new JSONResponse(
+				[
+					'error' => 'foreign_mail_template_class',
+					'class' => $e->getForeignClass(),
+					'footer' => $this->emailThemingService->getFooterConfig(),
+				],
+				409
+			);
+		}//end try
+
+		return new JSONResponse(
+			[
+				'status' => 'ok',
+				'state' => $this->emailThemingService->getState(),
+				'footer' => $this->emailThemingService->getFooterConfig(),
+			]
+		);
+	}//end setEmailTheming()
+
+	/**
+	 * Get the instance-wide dark-mode variants toggle state.
+	 *
+	 * @return JSONResponse The `{ enabled }` state (default enabled).
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getDarkVariants(): JSONResponse {
+		$enabled = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+
+		return new JSONResponse(['enabled' => $enabled]);
+	}//end getDarkVariants()
+
+	/**
+	 * Set the instance-wide dark-mode variants toggle. Disabling stops the
+	 * generated dark stylesheet from loading (see
+	 * `Application::injectThemeCSS()`) without deleting the generated files.
+	 *
+	 * @param bool $enabled Whether dark-mode variants should be active.
+	 *
+	 * @return JSONResponse The response with the persisted state.
+	 *
+	 * @spec openspec/specs/dark-mode/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setDarkVariants(bool $enabled): JSONResponse {
+		$previous = ($this->config->getAppValue(Application::APP_ID, 'dark_variants', '1') === '1');
+		$this->saveBooleanSetting(key: 'dark_variants', value: $enabled);
+
+		$this->auditService->log(
+			action: 'toggle_changed',
+			context: [
+				'key' => 'dark_variants',
+				'old' => $previous,
+				'new' => $enabled,
+			]
+		);
+
+		return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+	}//end setDarkVariants()
+
+	/**
+	 * Get the Marianne (French State typeface) acknowledgement gate state.
+	 *
+	 * @return JSONResponse The `{ enabled }` state (default disabled).
+	 *
+	 * @spec openspec/specs/marianne-font/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getMarianneEnabled(): JSONResponse {
+		$enabled = ($this->config->getAppValue(Application::APP_ID, 'marianne_enabled', '0') === '1');
+
+		return new JSONResponse(['enabled' => $enabled]);
+	}//end getMarianneEnabled()
+
+	/**
+	 * Set the Marianne acknowledgement gate. Enabling it is the operator's
+	 * affirmation that their organisation is a French State agency
+	 * (administration de l'État) entitled to use the Marianne typeface (see
+	 * AGREEMENT-MARIANNE.md) — `CssInjectionService` only emits the
+	 * self-hosted `@font-face Marianne` layer while this flag is `'1'` AND
+	 * the active design system is `lasuite`. Disabling it reverts every
+	 * subsequent render to Inter without deleting the bundled font files.
+	 *
+	 * @param bool $enabled Whether the Marianne gate should be active.
+	 *
+	 * @return JSONResponse The response with the persisted state.
+	 *
+	 * @spec openspec/specs/marianne-font/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setMarianneEnabled(bool $enabled): JSONResponse {
+		$previous = ($this->config->getAppValue(Application::APP_ID, 'marianne_enabled', '0') === '1');
+		$this->saveBooleanSetting(key: 'marianne_enabled', value: $enabled);
+
+		$this->auditService->log(
+			action: 'toggle_changed',
+			context: [
+				'key' => 'marianne_enabled',
+				'old' => $previous,
+				'new' => $enabled,
+			]
+		);
+
+		return new JSONResponse(['status' => 'ok', 'enabled' => $enabled]);
+	}//end setMarianneEnabled()
+
+	/**
+	 * Get the group theming mapping plus the picker option lists.
+	 *
+	 * @return JSONResponse The ordered mapping, available groups, and available token sets.
+	 *
+	 * @spec openspec/specs/per-group-theming/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function getGroupTheming(): JSONResponse {
+		return new JSONResponse(
+			[
+				'mapping' => $this->groupThemingService->getMapping(),
+				'groups' => $this->groupThemingService->getAvailableGroups(),
+				'tokenSets' => $this->tokenSetService->getAvailableTokenSets(),
+			]
+		);
+	}//end getGroupTheming()
+
+	/**
+	 * Replace the full ordered group theming mapping.
+	 *
+	 * Accepts `{ mapping: {group, tokenSet}[] }` in priority order. On
+	 * validation failure the save is rejected wholesale (HTTP 422 naming the
+	 * offending entry and reason) and nothing is persisted.
+	 *
+	 * @param array $mapping The desired ordered mapping.
+	 *
+	 * @return JSONResponse The persisted mapping, or a 422 validation error.
+	 *
+	 * @spec openspec/specs/per-group-theming/spec.md
+	 */
+	#[AuthorizedAdminSetting(Admin::class)]
+	public function setGroupTheming(array $mapping = []): JSONResponse {
+		$before = $this->groupThemingService->getMapping();
+
+		try {
+			$after = $this->groupThemingService->setMapping(entries: $mapping);
+		} catch (GroupThemingValidationException $e) {
+			return new JSONResponse(
+				[
+					'error' => 'invalid_mapping',
+					'entry' => $e->getEntry(),
+					'reason' => $e->getReason(),
+				],
+				422
+			);
+		}
+
+		$this->auditService->log(
+			action: 'group_theming_changed',
+			context: [
+				'old' => $before,
+				'new' => $after,
+			]
+		);
+
+		return new JSONResponse(
+			[
+				'status' => 'ok',
+				'mapping' => $after,
+			]
+		);
+	}//end setGroupTheming()
 }//end class

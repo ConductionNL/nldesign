@@ -4,15 +4,32 @@
 *.Identifier
 .vscode/
 
-# Dependencies
+# Dependencies — both forms: with trailing slash (directory) and without
+# (worktree setups symlink these, and `/vendor/` does not match a symlink,
+# which is how the symlinks got committed once).
 /vendor/
+/vendor
 /node_modules/
+/node_modules
+
+# Scratch input for the Marianne font bundling change — the DSFR source
+# tarball's font directory, staged locally so scripts/build-fonts-marianne.js
+# (or a direct commit) can materialise css/systems/lasuite/fonts/marianne/
+# from it. Never committed itself: only the woff2 files it produces are.
+/.dsfr-src/
 
 # Runtime theme state — written by the NL Design theme editor at runtime
 # (CustomOverridesService). ensureExists() recreates an empty :root {} on
 # boot, so it must never be committed (a stray test value here restyles the
 # whole instance the moment the app is activated).
 /css/custom-overrides.css
+
+# Scratch input for scripts/build-icons.js's DSFR pack — the pre-fetched
+# @gouvfr/dsfr dist/icons/**/*.svg tree (that package cannot be npm-installed:
+# broken optional deps upstream). The build script materializes it into the
+# COMMITTED img/icons/dsfr/ output; this scratch source directory is never
+# itself committed (see openspec/changes/theme-switchable-iconography).
+/.dsfr-src/
 
 # Build artifacts
 # admin.js + its extracted pure helpers (js/lib/) are hand-authored SOURCE
@@ -22,6 +39,7 @@
 /js/*
 !/js/admin.js
 !/js/lib/
+!/js/preview-banner.js
 /build/
 /dist/
 
@@ -68,3 +86,8 @@ tests/e2e/test-results/
 tests/e2e/.auth/
 /coverage-vitest/
 /coverage/
+
+# Scratch research inputs for the lasuite-token-completeness change — captured
+# facts about the LIVE docs.numerique.gouv.fr bundle, not app source. The
+# authoritative, committed output is css/systems/lasuite/brand-override.css.
+/.lasuite-src/

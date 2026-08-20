@@ -8,10 +8,8 @@ enriched_date: 2026-03-20
 
 ## Purpose
 Defines the admin settings panel for the NL Design app. The settings panel is located in Nextcloud's administration area under the Theming section. It provides controls for selecting the active token set, toggling the hide slogan feature, toggling show menu labels, and previewing the selected theme. The UI is built with vanilla PHP templates and vanilla JavaScript (no Vue or webpack). Additionally, the panel hosts the token editor for customizing individual Nextcloud CSS tokens, and triggers the theming sync dialog when a token set with theming metadata is selected.
-
 ## Requirements
-
-### REQ-ASET-001: Settings Panel Registration
+### Requirement: Settings Panel Registration
 The admin settings panel MUST be registered in the Nextcloud Theming section with a defined priority.
 
 #### Scenario: Settings panel appears in admin area
@@ -34,7 +32,7 @@ The admin settings panel MUST be registered in the Nextcloud Theming section wit
 - THEN the "NL Design System Theme" section MUST NOT appear
 - AND no nldesign CSS MUST be injected into the page
 
-### REQ-ASET-002: Template Response and Parameters
+### Requirement: Template Response and Parameters
 The settings form MUST return a `TemplateResponse` with all required parameters for the admin template.
 @e2e exclude PHP controller internals (TemplateResponse parameters, default config values) — not testable via browser UI; covered by unit tests.
 
@@ -60,7 +58,7 @@ The settings form MUST return a `TemplateResponse` with all required parameters 
 - AND `hideSlogan` MUST be `false`
 - AND `showMenuLabels` MUST be `false`
 
-### REQ-ASET-003: Token Set Selector Dropdown
+### Requirement: Token Set Selector Dropdown
 The settings panel MUST provide a searchable dropdown for selecting the active design token set from all available sets.
 
 #### Scenario: Dropdown populated with token sets
@@ -100,7 +98,7 @@ The settings panel MUST provide a searchable dropdown for selecting the active d
 - WHEN the dropdown change event fires
 - THEN the `#nldesign-design-system-badge` element MUST update to show the design system name
 
-### REQ-ASET-004: Live Preview Box
+### Requirement: Live Preview Box
 The settings panel MUST include a preview box that shows the visual effect of the selected token set.
 
 #### Scenario: Preview box renders with token set colors
@@ -124,7 +122,7 @@ The settings panel MUST include a preview box that shows the visual effect of th
 - WHEN the preview renders
 - THEN it MUST fall back to Rijkshuisstijl default colors (#154273 primary, #ffffff text)
 
-### REQ-ASET-005: Hide Slogan Checkbox
+### Requirement: Hide Slogan Checkbox
 The settings panel MUST include a checkbox to toggle the hide slogan feature.
 
 #### Scenario: Checkbox reflects enabled state
@@ -152,7 +150,7 @@ The settings panel MUST include a checkbox to toggle the hide slogan feature.
 - THEN JavaScript MUST call `POST /apps/nldesign/settings/slogan` with `hideSlogan` as a boolean
 - AND the response MUST be checked for success before confirming the change
 
-### REQ-ASET-006: Show Menu Labels Checkbox
+### Requirement: Show Menu Labels Checkbox
 The settings panel MUST include a checkbox to toggle the show menu labels feature.
 
 #### Scenario: Checkbox reflects enabled state
@@ -177,7 +175,7 @@ The settings panel MUST include a checkbox to toggle the show menu labels featur
 - WHEN the change event fires
 - THEN JavaScript MUST call `POST /apps/nldesign/settings/menulabels` with `showMenuLabels` as a boolean
 
-### REQ-ASET-007: External Documentation Links
+### Requirement: External Documentation Links
 The settings panel MUST include external links to relevant documentation with proper security attributes.
 
 #### Scenario: Documentation link rendered
@@ -202,7 +200,7 @@ The settings panel MUST include external links to relevant documentation with pr
 - THEN `rel="noopener noreferrer"` MUST prevent the opened page from accessing `window.opener`
 - AND `target="_blank"` MUST open in a new tab/window
 
-### REQ-ASET-008: Vanilla Implementation (No Vue)
+### Requirement: Vanilla Implementation (No Vue)
 The admin settings MUST be implemented using vanilla PHP templates and vanilla JavaScript without Vue, webpack, or any frontend build step.
 @e2e exclude Implementation-architecture requirement (template type, build tooling) — verified by code inspection and the fact that the admin page loads correctly; not testable via browser UI.
 
@@ -216,9 +214,9 @@ The admin settings MUST be implemented using vanilla PHP templates and vanilla J
 
 #### Scenario: XSS prevention via output escaping
 - GIVEN dynamic values are rendered in the template
-- WHEN token set data is output in HTML attributes
-- THEN `p(json_encode(...))` MUST be used for the `data-token-sets` attribute (the `p()` helper HTML-escapes the JSON output)
-- AND `p()` helper MUST be used for individual value output (escapes HTML)
+- WHEN server values are output into the template
+- THEN `p()` MUST be used for every individual value output (escapes HTML)
+- AND structured server data MUST NOT be hand-encoded into an attribute at all — it travels via initial state, which owns its own encoding
 - AND localized strings MUST use `p($l->t(...))` for safe output
 
 #### Scenario: No build step required
@@ -227,7 +225,7 @@ The admin settings MUST be implemented using vanilla PHP templates and vanilla J
 - THEN the changes MUST take effect immediately without running any build command
 - AND no `node_modules/`, `package.json`, or webpack config MUST be required for the admin UI
 
-### REQ-ASET-009: Admin-Only Access Control
+### Requirement: Admin-Only Access Control
 All settings endpoints and the settings panel MUST be restricted to administrators.
 
 #### Scenario: Settings panel restricted to admin
@@ -249,7 +247,7 @@ All settings endpoints and the settings panel MUST be restricted to administrato
 - THEN the request MUST be processed normally
 - AND the response MUST include the expected data
 
-### REQ-ASET-010: Token Editor Panel Integration
+### Requirement: Token Editor Panel Integration
 The settings panel MUST include a mount point for the token editor that allows customizing individual Nextcloud CSS tokens.
 
 #### Scenario: Token editor mount point rendered
@@ -273,7 +271,7 @@ The settings panel MUST include a mount point for the token editor that allows c
 - THEN it MUST call `POST /apps/nldesign/settings/overrides` with the updated overrides map
 - AND the response MUST confirm success before applying changes
 
-### REQ-ASET-011: Settings Hint Text
+### Requirement: Settings Hint Text
 The settings panel MUST include instructional text explaining the purpose of the controls.
 
 #### Scenario: Settings hint rendered
@@ -295,30 +293,47 @@ The settings panel MUST include instructional text explaining the purpose of the
 - THEN they MUST understand that they can either select a preset token set OR customize individual tokens
 - AND the two-action guidance prevents confusion about the panel's dual purpose
 
-### REQ-ASET-012: Data Attributes for JavaScript Initialization
-The settings panel MUST pass configuration data to JavaScript via HTML data attributes.
+### Requirement: Initial State for JavaScript Initialization
+The settings panel MUST pass configuration data to JavaScript via Nextcloud's
+initial-state channel, and MUST NOT pass it via HTML `data-*` attributes.
 
-#### Scenario: Token sets data attribute
+This requirement previously mandated the opposite. It was rewritten because it
+contradicted ADR-004, which is the company-wide rule and wins: server data
+reaches the frontend through `IInitialState::provideInitialState()` in PHP and
+`loadState()` in JavaScript. Data attributes are not merely unidiomatic — they
+break on CSP-hardened instances, and they break SILENTLY, because any markup
+change that moves or renames the carrying element leaves the script parsing an
+empty string and rendering as though the server had sent nothing at all.
+
+#### Scenario: Token sets provided as initial state
 - GIVEN the settings panel renders
-- WHEN the `#nldesign-settings` div is output
-- THEN it MUST have a `data-token-sets` attribute containing JSON-encoded array of all token sets
-- AND the JSON MUST be HTML-escaped via `p(json_encode(...))` to prevent XSS
+- WHEN `lib/Settings/Admin.php` builds the form
+- THEN it MUST call `provideInitialState('tokenSets', ...)` with the full token set array
+- AND the `#nldesign-settings` div MUST NOT carry a `data-token-sets` attribute
+- AND encoding MUST be left to the initial-state channel rather than to `p(json_encode(...))` in the template
 
-#### Scenario: Current token set data attribute
+#### Scenario: Current token set provided as initial state
 - GIVEN the active token set is "amsterdam"
-- WHEN the `#nldesign-settings` div is output
-- THEN it MUST have a `data-current-token-set` attribute with value "amsterdam"
-- AND the value MUST be HTML-escaped via `p()`
+- WHEN `lib/Settings/Admin.php` builds the form
+- THEN it MUST call `provideInitialState('currentTokenSet', 'amsterdam')`
+- AND the `#nldesign-settings` div MUST NOT carry a `data-current-token-set` attribute
 
-#### Scenario: JavaScript reads data attributes on initialization
-@e2e exclude Internal JS initialization detail — observable effect (correct dropdown state + preview) is covered by admin-settings spec-coverage; data-attribute presence is also verified.
+#### Scenario: Active preview and icon pack source provided as initial state
+- GIVEN a theme preview is running for the requesting admin, or an `icon_pack` override is set
+- WHEN `lib/Settings/Admin.php` builds the form
+- THEN it MUST call `provideInitialState('activePreview', ...)` and `provideInitialState('iconPackSource', ...)`
+- AND neither value MUST appear as a `data-*` attribute on any rendered element
+
+#### Scenario: JavaScript reads initial state on initialization
+@e2e exclude Internal JS initialization detail — the observable effect (correct dropdown state, preview, and icon-pack indicator) is covered by admin-settings spec-coverage; the read path itself is covered by tests/vitest/admin-a11y.spec.js and tests/vitest/admin-dark-mode.spec.js, which fail if the script falls back to defaults.
 - GIVEN the admin.js script loads
 - WHEN it initializes the settings panel
-- THEN it MUST read token set data from `data-token-sets` and parse it as JSON
-- AND it MUST read the current token set from `data-current-token-set`
+- THEN it MUST read token set data via `OCP.InitialState.loadState('nldesign', 'tokenSets', [])`
+- AND it MUST read the current token set via `OCP.InitialState.loadState('nldesign', 'currentTokenSet', '')`
+- AND it MUST NOT call `getAttribute('data-…')` for any server-provided value
 - AND these values MUST drive the initial state of the dropdown and preview
 
-### REQ-ASET-013: Localization Support
+### Requirement: Localization Support
 All user-visible text in the settings panel MUST be localizable via Nextcloud's l10n system.
 @e2e exclude l10n system verification — requires Dutch-language session and translation file inspection; not testable via browser UI in English-only test environment.
 
@@ -339,6 +354,171 @@ All user-visible text in the settings panel MUST be localizable via Nextcloud's 
 - WHEN the settings panel loads
 - THEN all strings MUST fall back to English (the source strings)
 
+### Requirement: Theming Audit Log Panel
+
+The settings panel MUST include a "Theming audit log" block showing the most recent 20 audit
+entries in a table with columns Timestamp, User, Action, and Details, populated on panel load
+from `GET /settings/audit?limit=20`, plus a **Download full log** control pointing at
+`GET /settings/audit/export`. The table MUST render all entry values as text (escaped — entry
+details can contain admin-supplied names), show an empty-state message when no entries exist,
+and follow the panel's vanilla-JS, no-build-step architecture with localized English-source
+strings.
+
+#### Scenario: Recent entries are shown after a change
+
+- GIVEN the admin has just changed the token set
+- WHEN the settings panel reloads
+- THEN the audit table's top row MUST show the `token_set_changed` entry with the admin's uid,
+  the old and new set ids, and the timestamp
+
+#### Scenario: Empty state
+
+- GIVEN no audit entries exist yet
+- WHEN the panel loads
+- THEN the block MUST show a localized empty-state message instead of an empty table
+
+#### Scenario: Entry content is escaped
+
+- GIVEN an audit entry whose details contain markup-like characters (e.g. a custom set named
+  `<img src=x>`)
+- WHEN the table renders
+- THEN the characters MUST appear as literal text and MUST NOT be parsed as HTML
+
+#### Scenario: Full log download from the panel
+
+- GIVEN entries exist
+- WHEN the admin activates "Download full log"
+- THEN the browser MUST download `nldesign-audit.jsonl` containing every retained entry
+
+### Requirement: Group Theming Mapping Section
+
+The settings panel MUST include a "Group theming" section, implemented as vanilla PHP template
+plus vanilla JavaScript (consistent with REQ-ASET-008 and the existing per-app theming list
+pattern in `js/admin.js`), that lists the ordered group→token-set mapping rows and lets the
+admin add, remove, and reorder them. Each row MUST contain: a group `<select>` (options from
+the groups returned by `GET /settings/group-theming`, showing display names), a token-set
+`<select>` (same option source as the main token-set dropdown), keyboard-operable move-up /
+move-down buttons for priority reordering (no drag-and-drop requirement), and a remove button.
+Every control MUST have an accessible name (associated `<label>` or `aria-label`). The section
+MUST include an "Add mapping" button, a Save button that POSTs the full ordered mapping to
+`/settings/group-theming`, a feedback element announcing success or the server's per-entry
+validation error, and a localized hint stating (a) that row order is priority order — the first
+matching group wins — and (b) the core-theming limitation: logo, mail templates and Nextcloud
+core branding follow the instance default set, not the group set. Rendering an empty state
+("No group mappings configured") is required when the mapping is empty. All strings use
+`$l->t()` / the JS translation helpers with English source keys.
+
+#### Scenario: Section lists mappings in priority order
+
+- GIVEN a stored mapping `[{gemeente-a → amsterdam}, {gemeente-b → utrecht}]`
+- WHEN the admin opens the settings panel
+- THEN the group theming section MUST render two rows in that order
+- AND each row MUST show the group display name and the token set name in its selects
+
+#### Scenario: Admin adds, reorders, and saves a mapping
+
+- GIVEN the admin adds a row mapping `gemeente-b` to `utrecht` and moves it above an existing
+  row using the move-up button
+- WHEN they press Save
+- THEN the POST body MUST contain the rows in the displayed order
+- AND on success the feedback element MUST announce the save
+- AND after a panel reload the rows MUST render in the saved order
+
+#### Scenario: Server validation error is surfaced per entry
+
+@e2e exclude error branch — vitest with a mocked 422 response
+- GIVEN the server rejects the save with HTTP 422 naming an offending entry
+- WHEN the response is handled
+- THEN the feedback element MUST display the localized error including the offending
+  group/set
+- AND the rows MUST remain editable with no silent state reset
+
+#### Scenario: Reordering works with the keyboard alone
+
+- GIVEN focus is on a row's move-up button
+- WHEN the admin activates it with Enter or Space
+- THEN the row MUST swap with its predecessor
+- AND focus MUST remain on the moved row's move-up button (WCAG 2.1.1, no keyboard trap)
+
+#### Scenario: Empty state and limitation hint are shown
+
+- GIVEN no group mappings are configured
+- WHEN the section renders
+- THEN it MUST show the localized empty state
+- AND the hint stating priority ordering and the instance-global core-theming limitation MUST
+  be visible whether or not mappings exist
+
+### Requirement: Session Preview Controls
+
+The settings panel MUST provide a "Preview in my session" button adjacent to the token set
+dropdown that starts a per-user preview of the currently selected set (via
+`POST /settings/preview`) instead of applying it instance-wide. While the requesting admin has
+an active preview, the panel MUST display an active-preview row showing the previewed set's name
+with Publish and Discard controls, and `js/admin.js` MUST detect the active preview on load so a
+banner-initiated Publish opens the existing apply-dialog flow for the previewed set (whose
+confirmation calls `POST /settings/preview/publish` rather than `POST /settings/tokenset`). All
+new controls MUST follow the panel's existing vanilla-JS architecture (no Vue, no build step),
+be localized via `$l->t()` / `t('nldesign', …)` with English source keys, and carry labels
+programmatically associated with their controls.
+
+#### Scenario: Preview button starts a session-only preview
+
+- GIVEN the admin selects "Gemeente Amsterdam" in the token set dropdown
+- WHEN they activate "Preview in my session"
+- THEN the client MUST call `POST /settings/preview` with the selected id
+- AND the instance-wide `token_set` app value MUST NOT change
+- AND after reload the panel MUST show the active-preview row for "Gemeente Amsterdam"
+
+#### Scenario: Active-preview row offers Publish and Discard
+
+- GIVEN the requesting admin has an active preview
+- WHEN the settings panel loads
+- THEN a row MUST show the previewed set's name and Publish and Discard controls
+- AND Discard MUST call `DELETE /settings/preview` and refresh the panel state
+- AND Publish MUST run the existing apply dialog (and theming-sync dialog when applicable)
+  before calling `POST /settings/preview/publish`
+
+#### Scenario: Panel without an active preview is unchanged
+
+- GIVEN the requesting admin has no active preview
+- WHEN the settings panel loads
+- THEN no active-preview row MUST render and every pre-existing control MUST behave exactly as
+  specified by the other requirements of this spec
+
+### Requirement: Configuration Bundle Controls
+
+The settings panel MUST provide a "Configuration" block with a **Download configuration** button
+(navigating to `GET /settings/config/export`) and an **Upload configuration** control
+(multipart `POST /settings/config/import`). After an upload, the panel MUST display the
+per-section import result — applied counts on success, or the complete all-or-nothing error
+listing on validation failure — as a dismissible message, and on a successfully applied import
+MUST refresh the panel so the token set dropdown, toggles, exclusion list, and token editor
+reflect the imported state. The controls MUST follow the panel's vanilla-JS architecture (no
+Vue, no build step), be localized with English source keys, and have labels programmatically
+associated with the controls. The block SHOULD state that this bundle is the OTAP-promotion
+path and covers the complete configuration, unlike the overrides-only download.
+
+#### Scenario: Download configuration button
+
+- GIVEN the settings panel is loaded
+- WHEN the admin activates "Download configuration"
+- THEN the browser MUST download `nldesign-config.json` containing the full bundle
+
+#### Scenario: Successful upload refreshes panel state
+
+- GIVEN a valid bundle whose token set differs from the live one
+- WHEN the admin uploads it
+- THEN the per-section applied counts MUST be shown
+- AND after refresh the dropdown, toggles, exclusion list, and token editor MUST show the
+  imported values
+
+#### Scenario: Failed upload shows the full error listing and changes nothing
+
+- GIVEN a bundle with a hard validation error in one section
+- WHEN the admin uploads it
+- THEN the panel MUST show the complete per-section error listing (HTTP 400 body)
+- AND every control MUST still show the pre-upload configuration
+
 ## Current Implementation Status
 
 **Fully implemented:**
@@ -352,10 +532,10 @@ All user-visible text in the settings panel MUST be localizable via Nextcloud's 
 - External link to `https://nldesign.app` with `target="_blank"` and `rel="noopener noreferrer"` (`templates/settings/admin.php` lines 16-19)
 - External link to `https://nldesignsystem.nl/` with arrow indicator (`templates/settings/admin.php` lines 80-82)
 - Vanilla PHP template loads `script('nldesign', 'admin')` and `style('nldesign', 'admin')` with no Vue/webpack (`templates/settings/admin.php` lines 7-8)
-- XSS prevention via `p(json_encode(...))` for `data-token-sets` and `p()` for other values (`templates/settings/admin.php` lines 12-13)
+- XSS prevention via `p()` for every value rendered into the template; structured server data is not hand-encoded into markup at all (`templates/settings/admin.php`)
 - `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods (`lib/Controller/SettingsController.php`)
 - Token editor mount point at `#nldesign-token-editor` (`templates/settings/admin.php` lines 74-77)
-- Data attributes on `#nldesign-settings` div for JS initialization (`templates/settings/admin.php` lines 11-13)
+- Initial state (`tokenSets`, `currentTokenSet`, `activePreview`, `iconPackSource`) provided for JS initialization (`lib/Settings/Admin.php`); no `data-*` attributes on the `#nldesign-settings` div
 - All user-visible text uses `$l->t()` for localization
 - Design system badge element `#nldesign-design-system-badge` (`templates/settings/admin.php` line 36)
 

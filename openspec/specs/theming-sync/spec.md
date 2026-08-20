@@ -10,45 +10,72 @@ enriched_date: 2026-03-20
 Defines how the NL Design app synchronizes design token values with Nextcloud's built-in theming system.
 
 @e2e exclude Backend/API theming-sync spec — scenarios cover PHP service logic, validation methods, IConfig/ImageManager API calls, and route config; the frontend dialog surface is covered by theming-sync-dialog tests. When a token set includes theming metadata (primary color, background color, logo, background image), the app can update Nextcloud's `ThemingDefaults` and `ImageManager` to ensure consistency between the NL Design CSS layer and Nextcloud's core theming (which controls background images, server branding, and email templates). This prevents a split-brain state where CSS tokens show one color scheme but Nextcloud's internal theming references another.
-
 ## Requirements
+### Requirement: Theming Metadata in Token Sets
 
-### REQ-SYNC-001: Theming Metadata in Token Sets
-The system MUST support an optional `theming` object in a token set manifest that defines values suitable for synchronization with Nextcloud's built-in theming system.
+The system MUST support an optional `theming` object in a token set manifest that defines values
+suitable for synchronization with Nextcloud's built-in theming system.
 
 #### Scenario: Token set with full theming metadata
+
 - GIVEN the `token-sets.json` entry for `rijkshuisstijl` has a `theming` object
 - WHEN the metadata is read
 - THEN the `theming` object MUST contain `primary_color` (hex string, e.g. `"#154273"`)
 - AND it MUST contain `background_color` (hex string, e.g. `"#F5F6F7"`)
 - AND it MAY contain `logo` (relative path, e.g. `"img/logos/rijkshuisstijl.svg"`)
+- AND it MAY contain `logo_dark` (relative path to a dark-surface logo variant, e.g.
+  `"img/logos/rijkshuisstijl-dark.svg"`)
 
 #### Scenario: Token set with logo and background theming
+
 - GIVEN a token set entry has `theming.logo` and `theming.background` fields
 - WHEN the metadata is read
 - THEN `logo` MUST be a relative path within `img/logos/`
 - AND `background` MUST be a relative path within `img/backgrounds/`
 - AND both paths MUST reference files that exist in the nldesign app directory
 
+#### Scenario: Dark logo path validated like the light logo
+
+- GIVEN a token set entry has a `theming.logo_dark` field
+- WHEN the metadata is validated (manifest audit or sync request)
+- THEN `logo_dark` MUST satisfy the same rules as `logo`: no path traversal, path within
+  `img/logos/`, file exists in the app directory
+- AND a `logo_dark` value violating any rule MUST be rejected with the same error shapes
+  REQ-SYNC-004 defines for `logo`
+
+#### Scenario: Dark logo is not synced to Nextcloud core theming
+
+- GIVEN a token set with `theming.logo_dark`
+- WHEN theming sync is applied
+- THEN `logo_dark` MUST NOT be passed to `ImageManager::updateImage()` (Nextcloud core has a
+  single logo slot — a dark slot is the open upstream request nextcloud/server#47357)
+- AND the dark logo MUST instead be delivered by nldesign's generated dark variant stylesheet
+  (see the `dark-mode` spec)
+
 #### Scenario: Token set without theming metadata
+
 - GIVEN a token set entry in `token-sets.json` has no `theming` key
 - WHEN the token set is retrieved via the API
 - THEN the `theming` field MUST be absent from the response
 - AND theming sync MUST NOT be offered for this token set in the admin UI
 
 #### Scenario: Theming metadata included in API response
+
 - GIVEN a token set with theming metadata is retrieved via `GET /settings/tokensets`
 - WHEN the response is generated
-- THEN the token set object MUST include the `theming` object with all its fields
+- THEN the token set object MUST include the `theming` object with all its fields, including
+  `logo_dark` when present
 - AND the frontend can use this data to display the theming sync dialog
 
 #### Scenario: Partial theming metadata accepted
-- GIVEN a token set has `theming: {"primary_color": "#004699"}` with no background_color or logo
+
+- GIVEN a token set has `theming: {"primary_color": "#004699"}` with no background_color, logo,
+  or logo_dark
 - WHEN the metadata is read
 - THEN only the `primary_color` MUST be available for syncing
 - AND missing fields MUST NOT cause errors
 
-### REQ-SYNC-002: Get Current Theming Values
+### Requirement: Get Current Theming Values
 The app MUST provide an API endpoint to retrieve current Nextcloud theming values for comparison with token set metadata.
 
 #### Scenario: Retrieve theming values
@@ -78,7 +105,7 @@ The app MUST provide an API endpoint to retrieve current Nextcloud theming value
 - THEN `buildThemingSnapshot()` MUST read `primary_color` and `background_color` from `IConfig::getAppValue('theming', ...)`
 - AND it MUST read logo and background image state from `ThemingService::getImageManager()`
 
-### REQ-SYNC-003: Color Validation
+### Requirement: Color Validation
 All color values submitted to the theming sync API MUST be validated as valid hex color strings before being applied.
 
 #### Scenario: Valid 6-digit hex color accepted
@@ -110,7 +137,7 @@ All color values submitted to the theming sync API MUST be validated as valid he
 - AND the hex regex MUST be `/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/`
 - AND validation MUST iterate over both fields, returning the first error found
 
-### REQ-SYNC-004: Image Path Validation
+### Requirement: Image Path Validation
 All image paths submitted to the theming sync API MUST be validated against path traversal attacks, allowed directories, and file existence.
 
 #### Scenario: Valid logo path accepted
@@ -149,7 +176,7 @@ All image paths submitted to the theming sync API MUST be validated against path
 - AND paths MUST start with either `img/logos/` or `img/backgrounds/`
 - AND validation MUST return the first error found
 
-### REQ-SYNC-005: Apply Colors to Nextcloud Theming
+### Requirement: Apply Colors to Nextcloud Theming
 The app MUST apply validated color values to Nextcloud's `ThemingDefaults` service.
 
 #### Scenario: Primary color applied
@@ -176,7 +203,7 @@ The app MUST apply validated color values to Nextcloud's `ThemingDefaults` servi
 - THEN `ThemingDefaults::set()` MUST NOT be called for `primary_color`
 - AND `"primary_color"` MUST NOT appear in the updated list
 
-### REQ-SYNC-006: Apply Images to Nextcloud Theming
+### Requirement: Apply Images to Nextcloud Theming
 The app MUST apply validated image paths to Nextcloud's `ImageManager` service using full filesystem paths.
 
 #### Scenario: Logo image applied
@@ -204,7 +231,7 @@ The app MUST apply validated image paths to Nextcloud's `ImageManager` service u
 - THEN `IAppManager::getAppPath('nldesign')` MUST be used to resolve the base directory
 - AND the relative path MUST be appended to get the full filesystem path
 
-### REQ-SYNC-007: Update Theming API Endpoint
+### Requirement: Update Theming API Endpoint
 The app MUST provide an admin-only API endpoint that validates and applies theming changes in a defined order.
 
 #### Scenario: Successful theming update
@@ -243,7 +270,7 @@ The app MUST provide an admin-only API endpoint that validates and applies themi
 - THEN validation MUST pass (no fields to validate)
 - AND the response MUST be `{"status": "ok", "updated": []}`
 
-### REQ-SYNC-008: Theming Dependencies
+### Requirement: Theming Dependencies
 The theming sync feature MUST depend on the Nextcloud `theming` app for `ThemingDefaults` and `ImageManager`, injected via constructor.
 
 #### Scenario: ThemingService dependencies injected
@@ -264,7 +291,7 @@ The theming sync feature MUST depend on the Nextcloud `theming` app for `Theming
 - THEN Nextcloud's DI container MUST handle the missing dependency
 - AND the nldesign app SHOULD declare `theming` as a dependency in `info.xml`
 
-### REQ-SYNC-009: Validation Order
+### Requirement: Validation Order
 The theming sync endpoint MUST validate all inputs before applying any changes, ensuring atomicity of the validation phase.
 
 #### Scenario: Colors validated before images
@@ -287,41 +314,66 @@ The theming sync endpoint MUST validate all inputs before applying any changes, 
 - THEN `$this->request->getParams()` MUST be used to get all parameters
 - AND these params MUST be passed to both validation and apply methods
 
-### REQ-SYNC-010: Theming Sync Dialog (Frontend)
-The admin JavaScript MUST show a confirmation dialog when switching to a token set that has theming metadata, allowing the admin to review and approve theming changes.
+### Requirement: Theming Sync Dialog (Frontend)
+
+The admin JavaScript MUST show a confirmation dialog when switching to a token set that has
+theming metadata, allowing the admin to review and approve theming changes.
 
 #### Scenario: Dialog shown for token set with theming metadata
+
 - GIVEN the admin selects a token set that has a `theming` object
 - WHEN the token set selection is saved
 - THEN the JavaScript MUST call `checkAndShowThemingDialog()`
 - AND a modal dialog MUST appear showing the proposed theming changes
 
 #### Scenario: Dialog shows color comparison
+
 - GIVEN the theming dialog opens
 - WHEN the current theming values differ from the token set's proposed values
 - THEN the dialog MUST show current vs proposed colors with visual swatches
 - AND the admin MUST be able to see the difference before confirming
 
+#### Scenario: Dialog offers the dark logo when present
+
+- GIVEN the selected token set's `theming` object contains `logo_dark`
+- WHEN the theming dialog opens
+- THEN the dialog MUST render a dark-logo preview row (the dark logo shown on a dark swatch
+  background)
+- AND the row MUST carry an explanatory note (i18n key in English) that the dark logo is applied
+  by nldesign's dark stylesheet because Nextcloud core has no dark logo slot
+- AND confirming the dialog MUST NOT add a `logo_dark` field to the
+  `POST /settings/theming` request
+
+#### Scenario: Dialog omits the dark logo row when absent
+
+- GIVEN the selected token set's `theming` object has no `logo_dark`
+- WHEN the theming dialog opens
+- THEN no dark-logo row MUST be rendered
+
 #### Scenario: Dialog not shown for sets without theming metadata
+
 - GIVEN the admin selects a token set without a `theming` object
 - WHEN the token set selection is saved
 - THEN no theming sync dialog MUST be shown
 - AND the token set MUST be applied without further prompts
 
 #### Scenario: Admin confirms theming sync
+
 - GIVEN the theming dialog is shown
 - WHEN the admin clicks the confirm/apply button
 - THEN `POST /apps/nldesign/settings/theming` MUST be called with the proposed values
 - AND on success, Nextcloud's theming MUST be updated
 
 #### Scenario: Admin cancels theming sync
+
 - GIVEN the theming dialog is shown
 - WHEN the admin clicks cancel
 - THEN the dialog MUST close
 - AND no theming changes MUST be applied
-- AND the token set selection MUST still take effect (CSS tokens change, but Nextcloud core theming remains unchanged)
+- AND the token set selection MUST still take effect (CSS tokens change, but Nextcloud core
+  theming remains unchanged)
 
-### REQ-SYNC-011: Route Configuration
+### Requirement: Route Configuration
 The theming sync endpoints MUST be registered in the app's route configuration.
 
 #### Scenario: GET theming route

@@ -16,7 +16,8 @@
 			"systems/nldesign/theme",
 			"systems/nldesign/overrides",
 			"systems/nldesign/element-overrides"
-		]
+		],
+		"icon_pack": ["rvo", "open-gemeenten", "den-haag"]
 	},
 	{
 		"id": "summer-breeze",
@@ -26,6 +27,40 @@
 			"systems/summer-breeze/fonts",
 			"systems/summer-breeze/theme",
 			"systems/summer-breeze/element-overrides"
+		]
+	},
+	{
+		"id": "high-contrast",
+		"name": "High contrast (WCAG AAA)",
+		"description": "Maximum-legibility black-on-white theme — pure black interactive/foreground on white, heavy borders, thick focus rings, bundled Fira Sans. Cooperates with OS high-contrast via prefers-contrast and forced-colors (EN 301 549).",
+		"stylesheets": [
+			"systems/high-contrast/fonts",
+			"systems/high-contrast/theme",
+			"systems/high-contrast/element-overrides"
+		]
+	},
+	{
+		"id": "lasuite",
+		"name": "La Suite numérique",
+		"description": "Pixel-adjacent match to La Suite numérique's Cunningham design system (MIT) — the Docs/Meet/Chat suite behind MinBZK/mijn-bureau — so a Nextcloud core in a sovereign-workplace (EDIC) bundle shows no visual seam. Self-hosted Inter (SIL OFL 1.1) with Marianne resolved only via local() install; no Marianne files, no La Suite/state logos shipped. Cunningham base is generated (1167 tokens, blue); the deployed violet brand is a separate, sourced override layer.",
+		"stylesheets": [
+			"systems/lasuite/fonts",
+			"systems/lasuite/defaults",
+			"systems/lasuite/brand-override",
+			"systems/lasuite/bridge",
+			"systems/lasuite/element-overrides"
+		],
+		"icon_pack": "dsfr"
+	},
+	{
+		"id": "cunningham",
+		"name": "Cunningham (blue base)",
+		"description": "The published Cunningham design system (MIT) as the npm packages actually distribute it — blue base (brand-600 #0659C5), no La Suite deployment override. Reuses the same generated defaults as lasuite, minus the sourced violet brand-override layer. Self-hosted Inter (SIL OFL 1.1) with Marianne resolved only via local() install; no Marianne files, no logos shipped.",
+		"stylesheets": [
+			"systems/lasuite/fonts",
+			"systems/lasuite/defaults",
+			"systems/lasuite/bridge",
+			"systems/lasuite/element-overrides"
 		]
 	}
 ]

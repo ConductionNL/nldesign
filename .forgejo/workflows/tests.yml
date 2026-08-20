@@ -12,8 +12,12 @@
 #                     so this needs no service container.
 #   • l10n-check    — HARD GATE. tests/l10n/check-l10n.js asserts every
 #                     t('<app>', '...') / n(...) source string is present in
-#                     l10n/en.json (the i18n-extraction-drift guard). Pure
-#                     Node, no NC.
+#                     l10n/en.json (the i18n-extraction-drift guard). Also runs
+#                     tests/l10n/check-l10n-completeness.js, which asserts every
+#                     en.json key is present (as a key — untranslated is fine,
+#                     MISSING is not) in every other l10n/*.json locale file,
+#                     so a locale can never silently drift behind en.json.
+#                     Pure Node, no NC.
 #   • e2e-deep      — SCAFFOLDED (non-gating). Playwright tests/e2e/workflows/
 #                     need a live, seeded NC. See the TODO in that job.
 #   • newman        — SCAFFOLDED (non-gating). tests/integration Postman
@@ -75,6 +79,10 @@ jobs:
           apt-get install -y --no-install-recommends \
             git curl ca-certificates gnupg jq unzip zip \
             libzip-dev libpng-dev python3
+          # Node is required by actions/checkout@v4 (a JS action) which runs
+          # inside this php:8.3-cli container; the stock image ships no node.
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y --no-install-recommends nodejs
           docker-php-ext-install -j"$(nproc)" zip gd
           curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -105,12 +113,17 @@ jobs:
       - name: Assert every t() source string is in l10n/en.json
         run: node tests/l10n/check-l10n.js
 
+      - name: Assert every l10n/*.json locale has every en.json key
+        run: node tests/l10n/check-l10n-completeness.js
+
   # ---------------------------------------------------------------------------
   # HARD GATE 3 — frontend unit suite (Vitest, OFFLINE; no NC needed).
   #
-  # Runs the pure-logic Vitest suite under tests/vitest/** (the pure design-
-  # token / colour transforms in js/lib/tokenTransforms.js). These need no
-  # DOM/NC runtime. Always gating.
+  # Runs the pure-logic Vitest suite under tests/vitest/** (Pinia store
+  # state transitions, util/formatter calc, form-validation mappers, and any
+  # offline component mounts). These need no DOM/NC runtime — @nextcloud/* and
+  # @conduction/nextcloud-vue are aliased to deterministic stubs in
+  # vitest.config.js. Always gating.
   # ---------------------------------------------------------------------------
   frontend-unit:
     name: Frontend unit (Vitest — ${{ inputs.app-id }})
@@ -130,8 +143,9 @@ jobs:
   # ---------------------------------------------------------------------------
   # COVERAGE GATE A — PHPUnit COVERAGE RATCHET (PCOV clover line coverage).
   # Fails a PR that drops backend coverage below tests/.coverage-baseline.json
-  # `phpunit` minus tolerance. Inherits continue-on-error from unit-gating.
-  # See TESTING-CI-ROLLOUT.md "Coverage ratchet".
+  # `phpunit` minus tolerance. Inherits continue-on-error from unit-gating so a
+  # red unit suite records-but-does-not-block. Seeds on first --update run when
+  # the baseline is null. See TESTING-CI-ROLLOUT.md "Coverage ratchet".
   # ---------------------------------------------------------------------------
   phpunit-coverage-ratchet:
     name: PHPUnit coverage ratchet (${{ inputs.app-id }})
@@ -146,6 +160,10 @@ jobs:
           apt-get install -y --no-install-recommends \
             git curl ca-certificates gnupg jq unzip zip \
             libzip-dev libpng-dev python3
+          # Node is required by actions/checkout@v4 (a JS action) which runs
+          # inside this php:8.3-cli container; the stock image ships no node.
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y --no-install-recommends nodejs
           docker-php-ext-install -j"$(nproc)" zip gd
           curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -177,9 +195,9 @@ jobs:
           bash tests/coverage-ratchet.sh phpunit coverage/clover.xml
 
   # ---------------------------------------------------------------------------
-  # COVERAGE GATE B — FRONTEND COVERAGE RATCHET (Vitest v8).
-  # nldesign ships its frontend under js/ (no src/), so coverage is measured
-  # over js/**. Fails a PR that drops below baseline `vitest` minus tolerance.
+  # COVERAGE GATE B — FRONTEND COVERAGE RATCHET (Vitest v8, src/** line coverage).
+  # Fails a PR that drops frontend coverage below baseline `vitest` minus
+  # tolerance. Seeds on first --update run when the baseline is null.
   # ---------------------------------------------------------------------------
   frontend-coverage-ratchet:
     name: Frontend coverage ratchet (${{ inputs.app-id }})
@@ -196,19 +214,21 @@ jobs:
           VITEST_VER="$(node -e "console.log(require('./node_modules/vitest/package.json').version)")"
           npm install --no-save --legacy-peer-deps "@vitest/coverage-v8@${VITEST_VER}"
 
-      - name: Run Vitest WITH coverage (json-summary over js/**)
+      - name: Run Vitest coverage + ratchet (honors each app's own --coverage.include)
         run: |
-          npx vitest run --coverage --coverage.provider=v8 \
-            --coverage.reporter=json-summary --coverage.reporter=text-summary \
-            --coverage.include='js/**' \
-            --coverage.reportsDirectory=coverage-vitest || true
-          test -f coverage-vitest/coverage-summary.json \
-            || { echo "no coverage-summary.json — vitest coverage unavailable; skipping ratchet"; exit 0; }
-
-      - name: Coverage ratchet (fail on drop)
-        run: |
-          test -f coverage-vitest/coverage-summary.json || exit 0
-          bash tests/coverage-ratchet.sh vitest coverage-vitest/coverage-summary.json
+          # Use the app's OWN coverage script so its per-app --coverage.include is
+          # honored (apps keep frontend JS under src/** OR js/**; hardcoding src/**
+          # here makes js/**-based apps measure 0 files -> "Unknown" -> ratchet exit 2).
+          if npm run 2>/dev/null | grep -qE '(^|[[:space:]])test:coverage-ratchet([[:space:]]|$)'; then
+            npm run test:coverage-ratchet
+          elif npm run 2>/dev/null | grep -qE '(^|[[:space:]])test:coverage([[:space:]]|$)'; then
+            npm run test:coverage
+            test -f coverage-vitest/coverage-summary.json \
+              && bash tests/coverage-ratchet.sh vitest coverage-vitest/coverage-summary.json \
+              || { echo "no coverage-summary.json — vitest coverage unavailable; skipping ratchet"; exit 0; }
+          else
+            echo "no frontend coverage script for this app; skipping ratchet"; exit 0
+          fi
 
   # ---------------------------------------------------------------------------
   # SCAFFOLD — deep e2e (Playwright tests/e2e/workflows/). Opt-in via run-e2e.

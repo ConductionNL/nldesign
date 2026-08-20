@@ -1,6 +1,6 @@
 /**
  * SPDX-FileCopyrightText: 2026 Conduction / NL Design System Contributors
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-License-Identifier: EUPL-1.2
  *
  * Vitest configuration for the NL Design System app's frontend unit tests.
  *
@@ -25,8 +25,6 @@ module.exports = {
 		exclude: ['tests/e2e/**', 'tests/integration/**', 'node_modules/**'],
 	},
 	resolve: {
-		alias: [
-			{ find: '@', replacement: path.resolve(__dirname, 'js') },
-		],
+		alias: [{ find: '@', replacement: path.resolve(__dirname, 'js') }],
 	},
 }

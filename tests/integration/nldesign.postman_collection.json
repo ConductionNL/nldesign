@@ -4,6 +4,58 @@
     "description": "Newman/Postman API-contract tests for the nldesign (NL Design System Theme) Nextcloud app. Locks the HTTP contract of nldesign's admin-theming controllers (appinfo/routes.php + lib/Controller/SettingsController.php + lib/Controller/OverridesController.php): token-set selection, theming values, login-page slogan/menu-label toggles, and the custom CSS-token overrides. nldesign is a server-rendered admin theming app with a small but real JSON API; this suite exercises the real endpoints (reads + writes + validation + authz).\n\nEvery family is exercised for a happy path, a validation/error case (clean 4xx, not 500 where the controller is correct), and an authorization case (no auth -> 401). Every endpoint is #[AuthorizedAdminSetting(Admin::class)]: the admin user (admin:admin) is an admin, so authed requests return 200/4xx; unauthenticated requests are rejected 401.\n\nThe suite is self-contained and idempotent: it first reads and stashes the live token_set, hide_slogan and overrides, then asserts the write round-trips, and finally restores all three to their captured values in teardown so a CI run leaves no theming drift.\n\nAUTH MODEL: collection auth is noauth; every authenticated request carries an EXPLICIT basic-auth block (admin:admin via adminUser/adminPass) plus the OCS-APIRequest:true header (which lets state-changing POSTs through NC's CSRF middleware for an API client). The no-auth authz requests target {{noAuthBase}} (127.0.0.1) so the host-scoped NC session cookie established on {{baseUrl}} (localhost) is never sent to them. Run with --ignore-redirects so an unauthenticated request asserts NC's 401 directly instead of following a 303 to the HTML login page. See run-newman.sh.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Honour the snake_case variable names the shared CI workflow passes.",
+          "//",
+          "// ConductionNL/.github .github/workflows/quality.yml (job `newman`) runs",
+          "// every collection with:",
+          "//   --env-var base_url=... --env-var admin_user=... --env-var admin_password=...",
+          "// This collection's requests use {{baseUrl}} / {{adminUser}} / {{adminPass}}.",
+          "// Nothing mapped one onto the other, so those three CI flags were INERT:",
+          "// the run silently fell back to the collection defaults instead. Today the",
+          "// defaults happen to equal what CI passes, so it looked fine — but point",
+          "// base_url anywhere else and the suite keeps testing localhost:8080 while",
+          "// reporting on it, which is how a run targets a completely different",
+          "// instance and still calls itself green.",
+          "//",
+          "// Precedence is preserved: an explicitly supplied camelCase variable lives",
+          "// in the environment scope, which outranks the collection scope written",
+          "// here, so `--env-var baseUrl=...` (what run-newman.sh passes) still wins.",
+          "const alias = (snake, camel) => {",
+          "  const explicit = pm.environment.get(camel);",
+          "  if (explicit !== undefined && explicit !== null && explicit !== '') { return; }",
+          "  const supplied = pm.environment.get(snake);",
+          "  if (supplied !== undefined && supplied !== null && supplied !== '') {",
+          "    pm.collectionVariables.set(camel, supplied);",
+          "  }",
+          "};",
+          "",
+          "alias('base_url', 'baseUrl');",
+          "alias('admin_user', 'adminUser');",
+          "alias('admin_password', 'adminPass');",
+          "",
+          "// The authz requests must reach the SAME instance through a DIFFERENT host",
+          "// alias, so the host-scoped NC session cookie established on {{baseUrl}} is",
+          "// never sent with them and they stay genuinely unauthenticated. Derive it",
+          "// from the effective base URL unless one was supplied explicitly.",
+          "const explicitNoAuth = pm.environment.get('noAuthBase');",
+          "if (explicitNoAuth === undefined || explicitNoAuth === null || explicitNoAuth === '') {",
+          "  const base = pm.collectionVariables.get('baseUrl') || '';",
+          "  if (base.indexOf('localhost') !== -1) {",
+          "    pm.collectionVariables.set('noAuthBase', base.replace('localhost', '127.0.0.1'));",
+          "  } else if (base.indexOf('127.0.0.1') !== -1) {",
+          "    pm.collectionVariables.set('noAuthBase', base.replace('127.0.0.1', 'localhost'));",
+          "  }",
+          "}"
+        ]
+      }
+    }
+  ],
   "variable": [
     {
       "key": "baseUrl",
@@ -1339,7 +1391,7 @@
               "formdata": [
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-valid.css",
+                  "src": "fixtures/newman-valid.css",
                   "type": "file"
                 }
               ]
@@ -1416,7 +1468,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-valid.css",
+                  "src": "fixtures/newman-valid.css",
                   "type": "file"
                 }
               ]
@@ -1488,7 +1540,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-valid.css",
+                  "src": "fixtures/newman-valid.css",
                   "type": "file"
                 }
               ]
@@ -1560,7 +1612,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-bad-selector.css",
+                  "src": "fixtures/newman-bad-selector.css",
                   "type": "file"
                 }
               ]
@@ -1632,7 +1684,7 @@
                 },
                 {
                   "key": "file",
-                  "src": "tests/integration/fixtures/newman-malformed.tokens.json",
+                  "src": "fixtures/newman-malformed.tokens.json",
                   "type": "file"
                 }
               ]
@@ -2373,6 +2425,245 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"disabledApps\": [\"files\"]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Public catalogue + contrast evaluation (app-token-set-selection)",
+      "item": [
+        {
+          "name": "GET token-sets catalogue (200, closed 5-field shape)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('catalogue (200)', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has tokenSets array', () => pm.expect(b.tokenSets).to.be.an('array'));",
+                  "pm.test('at least one entry', () => pm.expect(b.tokenSets.length).to.be.above(0));",
+                  "const first = b.tokenSets[0];",
+                  "pm.test('entry has exactly the 5 allowlisted keys', () => {",
+                  "  const keys = Object.keys(first).sort();",
+                  "  pm.expect(keys).to.eql(['design_system', 'id', 'name', 'theming', 'wcagLevel']);",
+                  "});",
+                  "pm.test('theming has primary_color and background_color', () => {",
+                  "  pm.expect(first.theming).to.have.property('primary_color');",
+                  "  pm.expect(first.theming).to.have.property('background_color');",
+                  "});",
+                  "pm.test('no admin-only fields leak', () => {",
+                  "  pm.expect(first).to.not.have.property('description');",
+                  "  pm.expect(first).to.not.have.property('custom');",
+                  "  pm.expect(first).to.not.have.property('warnings');",
+                  "  pm.expect(first).to.not.have.property('upstreamVersion');",
+                  "  pm.expect(first).to.not.have.property('upstreamRef');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{adminUser}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "OCS-APIRequest",
+                "value": "true"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/index.php/apps/nldesign/api/token-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "token-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET token-sets AUTHZ: anonymous -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('anonymous rejected 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{noAuthBase}}/index.php/apps/nldesign/api/token-sets",
+              "host": [
+                "{{noAuthBase}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "token-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST contrast/evaluate (200, ratio shape, no verdict field)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('contrast evaluate (200)', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has results array', () => pm.expect(b.results).to.be.an('array'));",
+                  "pm.test('one result per candidate', () => pm.expect(b.results.length).to.eql(2));",
+                  "const primary = b.results.find(r => r.name === 'primary');",
+                  "pm.test('primary (text role) uses 4.5 threshold', () => pm.expect(primary.threshold).to.eql(4.5));",
+                  "pm.test('primary ratio and pass are present', () => {",
+                  "  pm.expect(primary.ratio).to.be.a('number');",
+                  "  pm.expect(primary).to.have.property('pass');",
+                  "});",
+                  "pm.test('no blocked/allowed/verdict field anywhere', () => {",
+                  "  const raw = JSON.stringify(b);",
+                  "  pm.expect(raw).to.not.include('\"blocked\"');",
+                  "  pm.expect(raw).to.not.include('\"allowed\"');",
+                  "  pm.expect(raw).to.not.include('\"verdict\"');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{adminUser}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "OCS-APIRequest",
+                "value": "true"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/index.php/apps/nldesign/api/contrast/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "contrast",
+                "evaluate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidates\": [\n    { \"name\": \"primary\", \"value\": \"#154273\", \"role\": \"text\" },\n    { \"name\": \"accent\", \"value\": \"#e8f0f8\", \"role\": \"ui\" }\n  ],\n  \"background\": \"#F5F6F7\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST contrast/evaluate AUTHZ: anonymous -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('anonymous rejected 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{noAuthBase}}/index.php/apps/nldesign/api/contrast/evaluate",
+              "host": [
+                "{{noAuthBase}}"
+              ],
+              "path": [
+                "index.php",
+                "apps",
+                "nldesign",
+                "api",
+                "contrast",
+                "evaluate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidates\": [\n    { \"name\": \"primary\", \"value\": \"#154273\", \"role\": \"text\" }\n  ],\n  \"background\": \"#F5F6F7\"\n}"
             }
           }
         }

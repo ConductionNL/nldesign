@@ -8,7 +8,7 @@ NL Design has no direct GEMMA component mapping — it is a cross-cutting infras
 
 | Standard | Status | Description |
 |----------|--------|-------------|
-| NL Design System | Beschikbaar | `--nldesign-*` token namespace; 39+ organization token sets |
+| NL Design System | Beschikbaar | `--nldesign-*` token namespace; 43 organization token sets |
 | Rijkshuisstijl | Beschikbaar | National government visual identity token set |
 | WCAG 2.1 AA | Beschikbaar | Contrast, font size, and spacing tokens enforced per token set |
 | Digitoegankelijk (EN 301 549) | Beschikbaar | Accessible colour and typography via design tokens |

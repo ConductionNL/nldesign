@@ -16,7 +16,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('component-tokens', () => {
-
 	// All scenarios in this spec carry a spec-level @e2e exclude because they
 	// describe CSS-variable cascade, bridge file contents, and default token
 	// values — none of which are observable via browser DOM assertions.
@@ -55,15 +54,13 @@ test.describe('component-tokens', () => {
 	// CSS cascade — not testable via DOM.
 
 	// Smoke: admin theming page renders without JS errors (verifies CSS loads correctly)
-	test(
-		// @e2e openspec/specs/component-tokens/spec.md#bridge-maps-utrecht-tokens-to-nldesign
-		'Admin theming page loads without CSS errors (component-tokens infrastructure)',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
-			// The NL Design section must render — proves CSS stack (incl. component tokens) loaded
-			await expect(page.locator('#nldesign-settings')).toBeAttached()
-		},
-	)
-
+	test(// @e2e openspec/specs/component-tokens/spec.md#bridge-maps-utrecht-tokens-to-nldesign
+	'Admin theming page loads without CSS errors (component-tokens infrastructure)', async ({
+		page,
+	}) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		// The NL Design section must render — proves CSS stack (incl. component tokens) loaded
+		await expect(page.locator('#nldesign-settings')).toBeAttached()
+	})
 })

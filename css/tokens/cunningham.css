@@ -1,0 +1,64 @@
+/**
+ * Cunningham (blue base) — Token Set
+ *
+ * Standard Layer-3 `--nldesign-*` overrides for the `cunningham` token set
+ * (REQ-TSET-005). This is the PUBLISHED Cunningham blue base — the artifact
+ * `@openfun/cunningham-tokens`/`@gouvfr-lasuite/ui-kit` actually distribute —
+ * as opposed to `lasuite.css`, which pins the deployed VIOLET brand no
+ * package ships. Both reuse the same generated
+ * css/systems/lasuite/defaults.css; this set's design system
+ * (`systems/lasuite/*` bundle minus `brand-override`) is what keeps the
+ * cascade blue. This is a deliberately PARTIAL set: it only pins the
+ * set-level identity values — everything else falls through to the shared
+ * lasuite bridge layer (css/systems/lasuite/bridge.css).
+ *
+ * Colour source: Cunningham (`@openfun/cunningham-tokens`, MIT) — see
+ * css/systems/lasuite/defaults.css for full attribution.
+ *
+ * PRIMARY = brand-650, not brand-600: the shared bridge.css/element-
+ * overrides.css (both files are REUSED as-is from the lasuite bundle) derive
+ * `--color-primary` and every brand-accent rule from `--lasuite-color-
+ * brand-650` specifically — the same step that resolves to the deployed
+ * violet #4844AD for lasuite. Pinning this file's `--nldesign-color-primary`
+ * to that same step (its blue-base value, #1a509f) keeps the swatch
+ * consistent with what the design system ACTUALLY renders, matching
+ * lasuite.css's own brand-650-based swatch.
+ */
+
+:root {
+	/* Cunningham brand — brand-650 (published blue base) */
+	--nldesign-color-primary: #1a509f;
+	--nldesign-color-primary-text: #ffffff;
+	--nldesign-color-primary-hover: #203c63;
+	--nldesign-color-primary-light: #eaf1fb;
+	--nldesign-color-primary-light-hover: #d5e4f7;
+
+	/* Background tones — Cunningham greyscale (gray-000/025/050). */
+	--nldesign-color-background-hover: #f0f1f2;
+	--nldesign-color-background-dark: #e1e2e5;
+	--nldesign-color-background-darker: #c4c7cb;
+
+	/* Header — white, matching the element-overrides hairline treatment. */
+	--nldesign-color-header-background: #ffffff;
+	--nldesign-color-header-text: #1b1c1d;
+	--nldesign-color-nav-background: #ffffff;
+
+	/* Text */
+	--nldesign-color-text: #1b1c1d;
+	--nldesign-color-text-muted: #74777c;
+	--nldesign-color-text-light: #ffffff;
+
+	/* Border */
+	--nldesign-color-border: #c4c7cb;
+	--nldesign-color-border-dark: #74777c;
+
+	/* Typography — Marianne (local-only) then self-hosted Inter, same stack
+	 * as lasuite (shared systems/lasuite/fonts stylesheet). */
+	--nldesign-font-family: Marianne, Inter, sans-serif;
+
+	/* Border radius — Cunningham is a flat 4px system. */
+	--nldesign-border-radius: 4px;
+	--nldesign-border-radius-small: 4px;
+	--nldesign-border-radius-large: 4px;
+	--nldesign-border-radius-rounded: 4px;
+}

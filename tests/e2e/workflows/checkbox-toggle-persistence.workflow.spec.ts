@@ -22,7 +22,9 @@ import { openTheming, requestToken, setSlogan, setMenuLabels } from './_helpers'
 async function checkboxState(page: Page, id: string): Promise<boolean> {
 	// The native checkbox is visually hidden by Nextcloud styling; read the
 	// underlying checked property directly rather than relying on visibility.
-	return await page.locator(`#${id}`).evaluate((el) => (el as HTMLInputElement).checked)
+	return await page
+		.locator(`#${id}`)
+		.evaluate((el) => (el as HTMLInputElement).checked)
 }
 
 /**
@@ -32,7 +34,12 @@ async function checkboxState(page: Page, id: string): Promise<boolean> {
  * POST to resolve before returning so the caller can safely reload and assert
  * the persisted state (otherwise the save races the reload).
  */
-async function setCheckbox(page: Page, id: string, target: boolean, endpoint: string): Promise<void> {
+async function setCheckbox(
+	page: Page,
+	id: string,
+	target: boolean,
+	endpoint: string,
+): Promise<void> {
 	const current = await checkboxState(page, id)
 	if (current === target) {
 		return
@@ -50,7 +57,9 @@ async function setCheckbox(page: Page, id: string, target: boolean, endpoint: st
 	expect(resp.status(), `${endpoint} save should 200`).toBe(200)
 	const body = await resp.json()
 	expect(body.status).toBe('ok')
-	await expect.poll(async () => await checkboxState(page, id), { timeout: 5_000 }).toBe(target)
+	await expect
+		.poll(async () => await checkboxState(page, id), { timeout: 5_000 })
+		.toBe(target)
 }
 
 let baselineHideSlogan = false
@@ -76,8 +85,12 @@ test.describe('workflow: checkbox toggle persistence', () => {
 		await setMenuLabels(page, token, baselineMenuLabels)
 		// Verify the reload reflects the restored state.
 		await openTheming(page)
-		expect(await checkboxState(page, 'nldesign-hide-slogan')).toBe(baselineHideSlogan)
-		expect(await checkboxState(page, 'nldesign-show-menu-labels')).toBe(baselineMenuLabels)
+		expect(await checkboxState(page, 'nldesign-hide-slogan')).toBe(
+			baselineHideSlogan,
+		)
+		expect(await checkboxState(page, 'nldesign-show-menu-labels')).toBe(
+			baselineMenuLabels,
+		)
 		await page.close()
 	})
 
@@ -91,26 +104,50 @@ test.describe('workflow: checkbox toggle persistence', () => {
 
 		// Reload fresh: the server-rendered checkbox must reflect the new persisted value.
 		await openTheming(page)
-		expect(await checkboxState(page, 'nldesign-hide-slogan'), 'hide-slogan should persist toggled state').toBe(target)
+		expect(
+			await checkboxState(page, 'nldesign-hide-slogan'),
+			'hide-slogan should persist toggled state',
+		).toBe(target)
 
 		// Toggle back and confirm the reverse also persists.
 		await setCheckbox(page, 'nldesign-hide-slogan', before, '/settings/slogan')
 		await openTheming(page)
-		expect(await checkboxState(page, 'nldesign-hide-slogan'), 'hide-slogan should persist reverted state').toBe(before)
+		expect(
+			await checkboxState(page, 'nldesign-hide-slogan'),
+			'hide-slogan should persist reverted state',
+		).toBe(before)
 	})
 
-	test('toggling show-menu-labels PERSISTS across a fresh reload', async ({ page }) => {
+	test('toggling show-menu-labels PERSISTS across a fresh reload', async ({
+		page,
+	}) => {
 		await openTheming(page)
 		const before = await checkboxState(page, 'nldesign-show-menu-labels')
 		const target = !before
 
-		await setCheckbox(page, 'nldesign-show-menu-labels', target, '/settings/menulabels')
+		await setCheckbox(
+			page,
+			'nldesign-show-menu-labels',
+			target,
+			'/settings/menulabels',
+		)
 
 		await openTheming(page)
-		expect(await checkboxState(page, 'nldesign-show-menu-labels'), 'menu-labels should persist toggled state').toBe(target)
+		expect(
+			await checkboxState(page, 'nldesign-show-menu-labels'),
+			'menu-labels should persist toggled state',
+		).toBe(target)
 
-		await setCheckbox(page, 'nldesign-show-menu-labels', before, '/settings/menulabels')
+		await setCheckbox(
+			page,
+			'nldesign-show-menu-labels',
+			before,
+			'/settings/menulabels',
+		)
 		await openTheming(page)
-		expect(await checkboxState(page, 'nldesign-show-menu-labels'), 'menu-labels should persist reverted state').toBe(before)
+		expect(
+			await checkboxState(page, 'nldesign-show-menu-labels'),
+			'menu-labels should persist reverted state',
+		).toBe(before)
 	})
 })

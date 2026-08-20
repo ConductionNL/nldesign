@@ -17,7 +17,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('hide-slogan', () => {
-
 	// @e2e exclude openspec/specs/hide-slogan/spec.md#setting-stored-as-enabled
 	// IConfig mutation + API response assertion — not DOM-testable.
 
@@ -112,17 +111,15 @@ test.describe('hide-slogan', () => {
 	// Requires enabling the setting first — would mutate shared env.
 
 	// Smoke: hide-slogan checkbox is present in admin settings (the UI entry point for this feature)
-	test(
-		// @e2e openspec/specs/hide-slogan/spec.md#checkbox-reflects-current-state-on-load
-		'Hide slogan checkbox is present in admin settings panel',
-		async ({ page }) => {
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
-			const checkbox = page.locator('#nldesign-hide-slogan')
-			await expect(checkbox).toBeAttached()
-			const label = page.locator('label[for="nldesign-hide-slogan"]')
-			await expect(label).toContainText('Hide Nextcloud slogan/payoff on login page')
-		},
-	)
-
+	test(// @e2e openspec/specs/hide-slogan/spec.md#checkbox-reflects-current-state-on-load
+	'Hide slogan checkbox is present in admin settings panel', async ({ page }) => {
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		const checkbox = page.locator('#nldesign-hide-slogan')
+		await expect(checkbox).toBeAttached()
+		const label = page.locator('label[for="nldesign-hide-slogan"]')
+		await expect(label).toContainText(
+			'Hide Nextcloud slogan/payoff on login page',
+		)
+	})
 })

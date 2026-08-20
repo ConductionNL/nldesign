@@ -4,7 +4,7 @@ context: |
   Project: NL Design
   Repo: ConductionNL/nldesign
   Type: Nextcloud App (PHP backend + vanilla JS admin)
-  Description: Dutch government theming for Nextcloud — 39 token sets, 7-layer CSS, theming sync
+  Description: Dutch government theming for Nextcloud — token sets (count derived from token-sets.json), 7-layer CSS, theming sync
   Key components: Token Sets, CSS Architecture, Theming Sync, Admin Settings
   Database: None (uses Nextcloud IConfig key-value)
   Mount path: /var/www/html/custom_apps/nldesign

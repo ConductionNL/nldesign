@@ -1,0 +1,92 @@
+/**
+ * High contrast (WCAG AAA) — element-level overrides.
+ *
+ * Heavy visible borders on interactive controls and table rows, a thick focus
+ * ring, and non-low-contrast placeholder text, so the interface stays legible
+ * for low-vision users. The forced-colors block preserves control borders and
+ * focus under Windows High Contrast Mode using system-color keywords.
+ *
+ * Load order: fonts -> theme -> element-overrides, then tokens/hoog-contrast.
+ */
+
+/* Controls — thick, always-visible borders. */
+input,
+textarea,
+select,
+button,
+.button-vue,
+.button {
+	border: 2px solid var(--nldesign-color-border) !important;
+	box-shadow: none !important;
+	font-family: var(--nldesign-font-family);
+}
+
+/* Focus — thick ring on every interactive element. */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus,
+.button-vue:focus,
+a:focus,
+*:focus-visible {
+	outline: 3px solid var(--nldesign-color-focus) !important;
+	outline-offset: 2px !important;
+}
+
+/* Placeholders — no low-contrast grey. */
+::placeholder {
+	color: var(--nldesign-color-placeholder-dark) !important;
+	opacity: 1 !important;
+}
+
+/* Tables — visible cell and row separators. */
+table,
+th,
+td {
+	border: 1px solid var(--nldesign-color-border) !important;
+}
+
+tr {
+	border-bottom: 2px solid var(--nldesign-color-border) !important;
+}
+
+/* Cards / panels — solid, bordered, no shadow. */
+.panel,
+.widget,
+.dashboard-widget,
+.app-navigation-entry {
+	border: 1px solid var(--nldesign-color-border) !important;
+	box-shadow: none !important;
+}
+
+/* Checkboxes / radios use the primary (black) fill. */
+input[type='checkbox']:checked,
+input[type='radio']:checked {
+	background-color: var(--nldesign-color-primary) !important;
+	border-color: var(--nldesign-color-primary) !important;
+}
+
+/* forced-colors:active — keep controls and focus visible via system colours. */
+@media (forced-colors: active) {
+	input,
+	textarea,
+	select,
+	button,
+	.button-vue {
+		border: 2px solid ButtonText !important;
+	}
+
+	input:focus,
+	textarea:focus,
+	select:focus,
+	button:focus,
+	.button-vue:focus,
+	*:focus-visible {
+		outline: 3px solid CanvasText !important;
+		outline-offset: 2px !important;
+	}
+
+	::placeholder {
+		color: GrayText !important;
+	}
+}

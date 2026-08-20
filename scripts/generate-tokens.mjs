@@ -7,17 +7,20 @@
  * and generates CSS token files with --nldesign-* prefixed variables.
  *
  * Usage:
- *   node scripts/generate-tokens.mjs /path/to/themes
+ *   node scripts/generate-tokens.mjs /path/to/themes [themesCommitSha]
  *
  * The themes repo should be cloned from:
  *   https://github.com/nl-design-system/themes
  *
- * Directory structure expected:
- *   proprietary/{org}-design-tokens/
- *     src/config.json              — metadata (fullName, name, prefix)
- *     src/brand/{orgname}/*.tokens.json  — brand/color tokens
- *     src/component/utrecht/*.tokens.json — component tokens
- *     src/common/*.tokens.json     — common tokens (optional)
+ * themesCommitSha (2nd arg, falls back to THEMES_COMMIT_SHA env var) is the
+ * commit SHA of the themes-repo checkout being processed. When provided, it
+ * is recorded as `upstreamRef` on every entry this run (re)generates — the
+ * comparison baseline the deployed instances' upstream-freshness background
+ * job (openspec/specs/upstream-freshness/spec.md) checks against. Each
+ * entry also records `upstreamVersion` when the org's package declares one
+ * (package.json "version", falling back to config.json "version"). Both
+ * fields are optional: omitted entirely when not resolvable, and never
+ * written for hand-authored entries this script does not (re)generate.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
@@ -151,6 +154,34 @@ function readOrgConfig(orgDir) {
 }
 
 /**
+ * Resolve the upstream theme package's version for provenance, when the
+ * upstream package declares one. Tries the org's own package.json first
+ * (npm-package convention), then falls back to a "version" key on
+ * config.json. Returns null when neither is present or parseable — the
+ * upstreamVersion field is then simply omitted (optional per the
+ * token-sets manifest schema).
+ */
+function readOrgVersion(orgDir, config) {
+	const pkgPath = join(orgDir, 'package.json');
+	if (existsSync(pkgPath)) {
+		try {
+			const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+			if (typeof pkg.version === 'string' && pkg.version.trim() !== '') {
+				return pkg.version.trim();
+			}
+		} catch {
+			// Fall through to the config.json fallback below.
+		}
+	}
+
+	if (config && typeof config.version === 'string' && config.version.trim() !== '') {
+		return config.version.trim();
+	}
+
+	return null;
+}
+
+/**
  * Generate a CSS file for a single organization.
  */
 function generateOrgCSS(orgId, displayName, tokens, orgPrefixes) {
@@ -227,13 +258,21 @@ function generateOrgCSS(orgId, displayName, tokens, orgPrefixes) {
  */
 function main() {
 	const themesPath = process.argv[2];
+	const upstreamRef = process.argv[3] || process.env.THEMES_COMMIT_SHA || null;
 
 	if (!themesPath) {
-		console.error('Usage: node scripts/generate-tokens.mjs /path/to/themes');
+		console.error('Usage: node scripts/generate-tokens.mjs /path/to/themes [themesCommitSha]');
 		console.error('');
 		console.error('Clone the themes repo first:');
 		console.error('  git clone https://github.com/nl-design-system/themes.git');
 		process.exit(1);
+	}
+
+	if (!upstreamRef) {
+		console.warn(
+			'Warning: no themes-repo commit SHA provided (2nd arg or THEMES_COMMIT_SHA env var); ' +
+			'generated entries will have no upstreamRef and will be excluded from the upstream-freshness check.'
+		);
 	}
 
 	const resolvedPath = resolve(themesPath);
@@ -320,6 +359,15 @@ function main() {
 		if (errorCount > 0 && allTokens.length === 0) {
 			console.warn(`  SKIP ${orgDirName}: all token files malformed`);
 			skipped++;
+			// Preserve the existing manifest entry (name, description, and
+			// provenance) unchanged: a transient malformed upstream file must
+			// not silently delete this organization from token-sets.json, and
+			// its stale upstreamRef/upstreamVersion must be left exactly as
+			// recorded so the upstream-freshness check keeps reporting it as
+			// outdated rather than losing track of it entirely.
+			if (existingManifest[orgId] !== undefined) {
+				manifest.push(existingManifest[orgId]);
+			}
 			continue;
 		}
 
@@ -339,11 +387,25 @@ function main() {
 
 		// Build manifest entry, preserving existing metadata
 		const existing = existingManifest[orgId] || {};
-		manifest.push({
+		const entry = {
 			id: orgId,
 			name: existing.name || displayName,
 			description: existing.description || `Design tokens for ${displayName}`,
-		});
+		};
+
+		// Upstream provenance (upstream-freshness spec): only recorded for
+		// entries this run actually (re)generated, and only when resolvable —
+		// both fields are optional and simply omitted otherwise.
+		if (upstreamRef) {
+			entry.upstreamRef = upstreamRef;
+		}
+
+		const upstreamVersion = readOrgVersion(orgDir, config);
+		if (upstreamVersion) {
+			entry.upstreamVersion = upstreamVersion;
+		}
+
+		manifest.push(entry);
 	}
 
 	// Write token-sets.json

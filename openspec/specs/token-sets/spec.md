@@ -10,10 +10,8 @@ enriched_date: 2026-03-20
 Defines how the NL Design app discovers, validates, stores, and serves design token sets.
 
 @e2e exclude Backend/filesystem/API spec — scenarios cover TokenSetService PHP logic, manifest parsing, IConfig storage, path-traversal checks, and route configuration; the admin dropdown UI surface is covered by admin-settings tests. Token sets are organization-specific CSS files that override default Rijkshuisstijl design tokens, enabling Dutch government organizations to apply their own visual identity to Nextcloud. The system uses filesystem-based discovery combined with a JSON manifest for metadata, and supports multiple design systems via a `design_system` field that determines which CSS stack is loaded.
-
 ## Requirements
-
-### REQ-TSET-001: Filesystem-Based Discovery
+### Requirement: Filesystem-Based Discovery
 The app MUST discover available token sets by scanning the `css/tokens/` directory for CSS files and merging metadata from `token-sets.json` for shipped sets and from the `custom_token_sets` appconfig manifest for uploaded sets (files matching `custom-*.css`).
 
 #### Scenario: Token sets discovered from filesystem
@@ -69,19 +67,50 @@ The app MUST discover available token sets by scanning the `css/tokens/` directo
 - WHEN the list is returned
 - THEN the token sets MUST be sorted alphabetically by `name` (case-insensitive via `strcasecmp`) across both groups
 
-### REQ-TSET-002: Token Set Manifest Structure
+### Requirement: Token Set Manifest Structure
+
 The `token-sets.json` manifest MUST follow a defined schema for each entry.
 
 #### Scenario: Manifest entry with full metadata
+
 - GIVEN a manifest entry for an organization
 - WHEN the entry is valid
 - THEN it MUST have an `id` field (string, kebab-case identifier matching the CSS filename)
 - AND it MUST have a `name` field (string, human-readable display name)
 - AND it MUST have a `description` field (string)
 - AND it MUST have a `design_system` field (string, referencing an id in `design-systems.json`)
-- AND it MAY have a `theming` object with optional keys: `primary_color` (hex), `background_color` (hex), `logo` (relative path), `background` (relative path)
+- AND it MAY have a `theming` object with optional keys: `primary_color` (hex),
+  `background_color` (hex), `logo` (relative path), `background` (relative path), and
+  `logo_dark` (relative path to a dark-surface logo variant within `img/logos/`)
+
+#### Scenario: Dark logo metadata passed through
+
+- GIVEN a manifest entry whose `theming` object contains
+  `logo_dark: "img/logos/rijkshuisstijl-dark.svg"`
+- WHEN the token sets are retrieved via `GET /settings/tokensets`
+- THEN the entry's `theming` object in the response MUST include the `logo_dark` key unchanged
+- AND sets without `logo_dark` MUST simply omit the key (no null placeholder)
+
+#### Scenario: Dark logo consumed by the generated dark variant
+
+- GIVEN a token set with `theming.logo_dark` set and an existing dark logo file
+- WHEN the set's dark variant is generated (see the `dark-mode` spec)
+- THEN the generated `css/tokens/dark/<set>.css` MUST override `--nldesign-logo-url` with the
+  dark logo path inside its dark-scoped blocks
+- AND the light layer's `--nldesign-logo-url` MUST remain untouched
+
+#### Scenario: Token set file may carry a hand-authored dark block
+
+- GIVEN a token set CSS file containing a top-level
+  `@media (prefers-color-scheme: dark) { :root { … } }` block
+- WHEN the file is loaded as Layer 3
+- THEN the block's presence MUST NOT affect light rendering (Layer 3 light declarations still
+  live on plain `:root`)
+- AND the block MUST be recognised by dark-variant generation as the hand-authored override
+  source (see the `dark-mode` spec's override requirement)
 
 #### Scenario: Manifest is malformed JSON
+
 - GIVEN `token-sets.json` contains invalid JSON
 - WHEN `readManifest()` is called
 - THEN it MUST return an empty array
@@ -89,24 +118,27 @@ The `token-sets.json` manifest MUST follow a defined schema for each entry.
 - AND the app MUST NOT throw an exception or display an error
 
 #### Scenario: Manifest is missing
+
 - GIVEN `token-sets.json` does not exist
 - WHEN `readManifest()` is called
 - THEN it MUST return an empty array
 - AND the system MUST still discover token sets with auto-generated names and default design_system
 
 #### Scenario: Manifest file unreadable
+
 - GIVEN `token-sets.json` exists but `file_get_contents()` returns `false`
 - WHEN `readManifest()` is called
 - THEN it MUST return an empty array
 - AND the system MUST continue with auto-generated metadata
 
 #### Scenario: Manifest indexed by id
+
 - GIVEN the manifest contains multiple entries
 - WHEN `readManifest()` processes them
 - THEN entries MUST be indexed by their `id` field
 - AND entries without an `id` field MUST be skipped
 
-### REQ-TSET-003: Active Token Set Storage
+### Requirement: Active Token Set Storage
 The active token set MUST be stored in Nextcloud's `IConfig` and default to `nextcloud`.
 
 #### Scenario: No token set configured (fresh install)
@@ -131,7 +163,7 @@ The active token set MUST be stored in Nextcloud's `IConfig` and default to `nex
 - THEN `$config->getAppValue('nldesign', 'token_set', 'nextcloud')` MUST return `'amsterdam'`
 - AND `tokens/amsterdam` MUST be loaded as Layer 3 in the CSS stack
 
-### REQ-TSET-004: Token Set Validation
+### Requirement: Token Set Validation
 The app MUST validate that a token set is valid (exists on filesystem, no path traversal) before accepting it as the active set.
 
 #### Scenario: Valid token set selected
@@ -165,7 +197,7 @@ The app MUST validate that a token set is valid (exists on filesystem, no path t
 - THEN it MUST construct the path `{appPath}/css/tokens/{tokenSetId}.css`
 - AND it MUST verify the file exists via `file_exists()`
 
-### REQ-TSET-005: Token Set CSS Structure
+### Requirement: Token Set CSS Structure
 Each token set CSS file MUST define organization-specific `--nldesign-*` variables on `:root`.
 
 #### Scenario: Complete token set
@@ -200,7 +232,7 @@ Each token set CSS file MUST define organization-specific `--nldesign-*` variabl
 - THEN the contrast ratio MUST be at least 4.5:1 for normal text
 - AND token set authors MUST ensure their color combinations meet WCAG AA
 
-### REQ-TSET-006: Token Sets API Endpoints
+### Requirement: Token Sets API Endpoints
 The app MUST expose admin-only API endpoints for listing, getting, and setting token sets.
 
 #### Scenario: List all available token sets
@@ -234,27 +266,68 @@ The app MUST expose admin-only API endpoints for listing, getting, and setting t
 - WHEN any `/settings/tokenset` or `/settings/tokensets` endpoint is called
 - THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
 
-### REQ-TSET-007: Token Set Count and Coverage
-The app MUST support at minimum the documented set of Dutch government organizations as token sets.
+### Requirement: Token Set Count and Coverage
+
+The app MUST support at minimum the documented set of Dutch government organizations as token
+sets, plus the `lasuite` set for European sovereign-workplace (MijnBureau/EDIC) bundles, and MAY
+additionally ship the published Cunningham blue base as a `cunningham` set.
 
 #### Scenario: All required token sets present
+
 - GIVEN the nldesign app is installed
 - WHEN the `css/tokens/` directory is scanned
-- THEN it MUST contain CSS files for at least: rijkshuisstijl, amsterdam, utrecht, rotterdam, denhaag, nextcloud
-- AND the total number MUST be at least 39
+- THEN it MUST contain CSS files for at least: rijkshuisstijl, amsterdam, utrecht, rotterdam,
+  denhaag, nextcloud, lasuite
+- AND the total number MUST be at least 40
 
 #### Scenario: Token set count matches manifest
+
 - GIVEN the `token-sets.json` manifest lists N entries
 - WHEN the `css/tokens/` directory is scanned
 - THEN each manifest entry MUST have a corresponding CSS file
-- AND conversely, each CSS file SHOULD have a corresponding manifest entry (files without manifest entries receive auto-generated names)
+- AND conversely, each CSS file SHOULD have a corresponding manifest entry (files without
+  manifest entries receive auto-generated names)
 
 #### Scenario: Token sets include major Dutch municipalities
+
 - GIVEN the available token sets
-- THEN they MUST include: amsterdam, rotterdam, denhaag, utrecht, groningen, nijmegen, leiden, tilburg, zwolle, haarlem
+- THEN they MUST include: amsterdam, rotterdam, denhaag, utrecht, groningen, nijmegen, leiden,
+  tilburg, zwolle, haarlem
 - AND they MUST include government organizations: rijkshuisstijl, duo, vng
 
-### REQ-TSET-008: Design System Association
+#### Scenario: La Suite set manifest entry
+
+- GIVEN the `token-sets.json` manifest
+- WHEN the `lasuite` entry is read
+- THEN it MUST declare `design_system: "lasuite"`
+- AND its `theming` object MUST contain `primary_color: "#4844AD"` (the deployed violet brand) and
+  `background_color: "#FFFFFF"`
+- AND it MUST NOT contain a `logo` key (no La Suite/state logos are bundled — the logo slot
+  stays empty for trademark reasons)
+
+#### Scenario: La Suite token set file is a standard Layer-3 set
+
+- GIVEN `css/tokens/lasuite.css`
+- WHEN it is loaded after the lasuite design system bundle
+- THEN it MUST declare only `--nldesign-*` custom properties on `:root` (REQ-TSET-005 rules
+  apply unchanged)
+- AND undefined tokens MUST fall through to the lasuite bridge/defaults values
+
+#### Scenario: Cunningham blue-base set manifest entry (optional sibling)
+
+- GIVEN the app ships the optional `cunningham` sibling set
+- WHEN the `cunningham` entry in `token-sets.json` is read
+- THEN it MUST declare `design_system: "cunningham"`
+- AND its `theming` object MUST contain `primary_color: "#1A509F"` (brand-650 of the published
+  Cunningham blue base — the same scale step the shared bridge/element-overrides derive
+  `--color-primary` from for lasuite's violet `#4844AD`, so the swatch matches what actually
+  renders) and `background_color: "#FFFFFF"`
+- AND it MUST NOT contain a `logo` key
+- AND `css/tokens/cunningham.css` MUST exist as a standard Layer-3 `--nldesign-*` set pinning the blue
+  identity, reusing the shared generated `defaults.css` via its design system bundle
+- AND shipping or omitting this set MUST NOT change any `lasuite` behaviour
+
+### Requirement: Design System Association
 Each token set MUST be associated with a design system that determines which CSS layers are loaded.
 
 #### Scenario: Token set with nldesign design system
@@ -276,7 +349,7 @@ Each token set MUST be associated with a design system that determines which CSS
 - THEN `design_system` MUST default to `"nldesign"`
 - AND the full nldesign CSS stack MUST be loaded when this set is activated
 
-### REQ-TSET-009: Token Set Preview
+### Requirement: Token Set Preview
 The app MUST provide an endpoint for previewing the resolved CSS values of a token set without applying it.
 
 #### Scenario: Valid token set preview
@@ -299,7 +372,7 @@ The app MUST provide an endpoint for previewing the resolved CSS values of a tok
 - AND it MUST compare these against the current custom overrides
 - AND it MUST display the differences for the admin to review
 
-### REQ-TSET-010: Token Set Service Architecture
+### Requirement: Token Set Service Architecture
 The `TokenSetService` MUST be a clean service class with `IAppManager` as its only dependency.
 
 #### Scenario: Constructor dependency
@@ -320,7 +393,7 @@ The `TokenSetService` MUST be a clean service class with `IAppManager` as its on
 - AND `SettingsController::setTokenSet()` also creates a new instance
 - AND the `SettingsController` also receives an injected instance via constructor for `getAvailableTokenSets()`
 
-### REQ-TSET-011: Route Configuration
+### Requirement: Route Configuration
 Token set management endpoints MUST be registered in the route configuration.
 
 #### Scenario: List token sets route

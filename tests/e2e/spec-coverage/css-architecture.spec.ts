@@ -16,7 +16,6 @@ import { test, expect } from '@playwright/test'
 const THEMING_URL = '/settings/admin/theming'
 
 test.describe('css-architecture', () => {
-
 	// All scenarios describe PHP boot-time CSS injection, cascade layer ordering,
 	// font declarations, and file-structure conventions. These are not observable
 	// via browser DOM assertions and are covered by unit tests and code inspection.
@@ -160,21 +159,21 @@ test.describe('css-architecture', () => {
 	// Filesystem structure — not DOM-testable.
 
 	// Smoke: the CSS stack loads successfully (admin settings page renders correctly)
-	test(
-		// @e2e openspec/specs/css-architecture/spec.md#standard-css-load-order-for-nldesign-design-system
-		'CSS architecture loads correctly — admin theming page renders without errors',
-		async ({ page }) => {
-			const errors: string[] = []
-			page.on('console', msg => {
-				if (msg.type() === 'error') errors.push(msg.text())
-			})
-			await page.goto(THEMING_URL)
-			await page.waitForLoadState('networkidle')
-			// Admin settings section must render — proves CSS stack bootstrapped OK
-			await expect(page.locator('#nldesign-settings')).toBeAttached()
-			// The NL Design h2 heading confirms the PHP template rendered (CSS was injected)
-			await expect(page.locator('h2:has-text("NL Design System Theme")')).toBeVisible()
-		},
-	)
-
+	test(// @e2e openspec/specs/css-architecture/spec.md#standard-css-load-order-for-nldesign-design-system
+	'CSS architecture loads correctly — admin theming page renders without errors', async ({
+		page,
+	}) => {
+		const errors: string[] = []
+		page.on('console', (msg) => {
+			if (msg.type() === 'error') errors.push(msg.text())
+		})
+		await page.goto(THEMING_URL)
+		await page.waitForLoadState('domcontentloaded')
+		// Admin settings section must render — proves CSS stack bootstrapped OK
+		await expect(page.locator('#nldesign-settings')).toBeAttached()
+		// The NL Design h2 heading confirms the PHP template rendered (CSS was injected)
+		await expect(
+			page.locator('h2:has-text("NL Design System Theme")'),
+		).toBeVisible()
+	})
 })

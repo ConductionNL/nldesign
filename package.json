@@ -2,6 +2,10 @@
 	"name": "nldesign",
 	"version": "0.1.0",
 	"description": "NL Design System Theme for Nextcloud",
+	"engines": {
+		"node": "^22.14 || ^24 || >=26",
+		"npm": "^11.0.0"
+	},
 	"keywords": [
 		"nextcloud",
 		"nl-design-system",
@@ -11,7 +15,7 @@
 		"theming"
 	],
 	"homepage": "https://codeberg.org/Conduction/nldesign",
-	"license": "AGPL-3.0-or-later",
+	"license": "EUPL-1.2",
 	"repository": {
 		"type": "git",
 		"url": "https://codeberg.org/Conduction/nldesign.git"
@@ -19,30 +23,50 @@
 	"scripts": {
 		"test:l10n": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js",
 		"test:l10n:write": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js --write",
-		"build": "npm run build:fonts && npm run build:icons",
+		"test:l10n:completeness": "node tests/l10n/check-l10n-completeness.js",
+		"test:l10n:completeness:write": "node tests/l10n/check-l10n-completeness.js --write",
+		"generate:lasuite-tokens": "node scripts/generate-lasuite-tokens.mjs",
+		"test:lasuite-tokens": "node scripts/generate-lasuite-tokens.mjs --check",
+		"generate:lasuite-override": "node scripts/generate-lasuite-tokens.mjs --override",
+		"test:lasuite-override": "node scripts/generate-lasuite-tokens.mjs --override --check",
+		"test:lasuite-bridge-coverage": "node tests/css/check-lasuite-bridge-coverage.js",
+		"build": "npm run build:fonts && npm run build:fonts:marianne && npm run build:icons",
 		"build:fonts": "node scripts/build-fonts.js",
+		"build:fonts:marianne": "node scripts/build-fonts-marianne.js",
 		"build:icons": "node scripts/build-icons.js",
 		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
-		"stylelint": "stylelint 'css/**/*.css'",
-		"stylelint:fix": "stylelint 'css/**/*.css' --fix",
+		"stylelint": "stylelint \"css/**/*.{css,scss}\"",
+		"stylelint:fix": "stylelint \"css/**/*.{css,scss}\" --fix",
 		"test": "echo 'No tests yet'",
 		"test:unit": "vitest run",
 		"test:coverage": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=json-summary --coverage.reporter=text-summary --coverage.include=js/** --coverage.reportsDirectory=coverage-vitest",
 		"test:coverage-ratchet": "npm run test:coverage && bash tests/coverage-ratchet.sh vitest coverage-vitest/coverage-summary.json",
-		"test:unit:watch": "vitest"
+		"test:unit:watch": "vitest",
+		"check:manifest": "node tests/validate-manifest.js",
+		"format": "prettier --check \"**/*.{js,ts,vue,css,scss}\"",
+		"format:fix": "prettier --write \"**/*.{js,ts,vue,css,scss}\"",
+		"prepare": "git config core.hooksPath .githooks || true"
 	},
 	"dependencies": {
-		"@amsterdam/design-system-assets": "latest",
-		"@amsterdam/design-system-react-icons": "latest",
 		"@fontsource/fira-sans": "^5.0.0"
 	},
+	"optionalDependencies": {
+		"@gouvfr/dsfr": "^1.15.1"
+	},
 	"devDependencies": {
+		"@conduction/nextcloud-vue": "^2.3.0",
 		"@cyclonedx/cyclonedx-npm": "^4.2.1",
+		"@openfun/cunningham-tokens": "^3.0.0",
+		"@nextcloud/prettier-config": "^1.2.0",
 		"@playwright/test": "^1.60.0",
+		"@vitest/coverage-v8": "^1.6.1",
+		"jsdom": "^29.1.1",
+		"prettier": "^3.9.6",
 		"stylelint": "^17.4.0",
 		"stylelint-config-standard": "^40.0.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^6.0.3",
 		"vitest": "^1.6.1"
-	}
+	},
+	"prettier": "@nextcloud/prettier-config"
 }

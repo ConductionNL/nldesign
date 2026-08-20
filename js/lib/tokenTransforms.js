@@ -1,6 +1,6 @@
 /**
  * SPDX-FileCopyrightText: 2026 Conduction / NL Design System Contributors
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-License-Identifier: EUPL-1.2
  *
  * Pure design-token / colour transforms for the NL Design System admin
  * settings page.
@@ -16,7 +16,7 @@
  * so it can be served as a plain <script> alongside admin.js without a bundler.
  */
 
-(function (root, factory) {
+;(function (root, factory) {
 	var api = factory()
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = api
@@ -24,7 +24,7 @@
 	if (root) {
 		root.NldesignTokenTransforms = api
 	}
-}(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function () {
 	'use strict'
 
 	/**
@@ -37,7 +37,9 @@
 	 */
 	function darkenHex(hex, fraction) {
 		var m = /^#([0-9a-fA-F]{6})$/.exec(hex)
-		if (m === null) { return hex }
+		if (m === null) {
+			return hex
+		}
 		var f = Math.min(1, Math.max(0, Number(fraction) || 0))
 		var r = Math.max(0, Math.round(parseInt(m[1].substring(0, 2), 16) * (1 - f)))
 		var g = Math.max(0, Math.round(parseInt(m[1].substring(2, 4), 16) * (1 - f)))
@@ -67,9 +69,10 @@
 	 * @return {{primary: string, primaryHover: string, primaryText: string}} The palette.
 	 */
 	function getPreviewColors(tokenSet) {
-		var primary = (tokenSet && tokenSet.theming && tokenSet.theming.primary_color)
-			? tokenSet.theming.primary_color
-			: '#333333'
+		var primary =
+			tokenSet && tokenSet.theming && tokenSet.theming.primary_color
+				? tokenSet.theming.primary_color
+				: '#333333'
 		return {
 			primary: primary,
 			primaryHover: darkenHex(primary, 0.1),
@@ -115,10 +118,43 @@
 		return names[dsId] || dsId
 	}
 
+	/**
+	 * Group a flat list of DTCG import diagnostics (`{path, reason, detail?}`,
+	 * the shape a custom-token-set upload response's `skipped`/`errors` arrays
+	 * carry) by `reason`, sorted alphabetically by reason so rendering is
+	 * stable. Framework-free and i18n-free — the caller (admin.js) turns each
+	 * `reason` code into a localised label; this only groups.
+	 *
+	 * @param {Array<{path: string, reason: string, detail?: string}>} entries Diagnostic entries.
+	 * @return {Array<{reason: string, items: Array<{path: string, reason: string, detail?: string}>}>}
+	 *   One group per distinct reason, alphabetically ordered.
+	 */
+	function groupDiagnosticsByReason(entries) {
+		if (!Array.isArray(entries) || entries.length === 0) {
+			return []
+		}
+
+		var byReason = {}
+		entries.forEach(function (entry) {
+			var reason = (entry && entry.reason) || 'unknown'
+			if (byReason[reason] === undefined) {
+				byReason[reason] = []
+			}
+			byReason[reason].push(entry)
+		})
+
+		return Object.keys(byReason)
+			.sort()
+			.map(function (reason) {
+				return { reason: reason, items: byReason[reason] }
+			})
+	}
+
 	return {
 		darkenHex: darkenHex,
 		getPreviewColors: getPreviewColors,
 		normaliseColorForPicker: normaliseColorForPicker,
 		designSystemLabel: designSystemLabel,
+		groupDiagnosticsByReason: groupDiagnosticsByReason,
 	}
-}))
+})

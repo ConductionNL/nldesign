@@ -13,7 +13,7 @@ Defines the "Hide Slogan" feature that removes the Nextcloud slogan/payoff text 
 
 ## Requirements
 
-### REQ-SLGN-001: Configuration Storage
+### Requirement: Configuration Storage
 The hide slogan setting MUST be stored in Nextcloud's `IConfig` as a string value with clear on/off semantics.
 
 #### Scenario: Setting stored as enabled
@@ -40,7 +40,7 @@ The hide slogan setting MUST be stored in Nextcloud's `IConfig` as a string valu
 - THEN the setting MUST still be `'1'` in IConfig
 - AND the slogan MUST remain hidden on the login page
 
-### REQ-SLGN-002: Conditional CSS Loading
+### Requirement: Conditional CSS Loading
 The hide-slogan CSS file MUST only be loaded when the feature is enabled, minimizing unnecessary CSS injection.
 
 #### Scenario: Feature enabled loads CSS
@@ -62,7 +62,7 @@ The hide-slogan CSS file MUST only be loaded when the feature is enabled, minimi
 - AND before any user-agent default styles could interfere
 - AND the `!important` declarations MUST ensure the hiding takes effect regardless of other styles
 
-### REQ-SLGN-003: Slogan Element Hiding
+### Requirement: Slogan Element Hiding
 When the feature is enabled, the login page footer containing the slogan MUST be completely hidden from both visual display and the accessibility tree.
 
 #### Scenario: Footer element hidden with display none
@@ -87,7 +87,7 @@ When the feature is enabled, the login page footer containing the slogan MUST be
 - AND the Nextcloud slogan/payoff text MUST be visible
 - AND no residual hiding styles MUST affect the footer
 
-### REQ-SLGN-004: Login Page Only Scope
+### Requirement: Login Page Only Scope
 The hide slogan CSS MUST only affect the login page footer and MUST NOT affect other footer elements or pages.
 
 #### Scenario: Non-login page footers unaffected
@@ -111,7 +111,7 @@ The hide slogan CSS MUST only affect the login page footer and MUST NOT affect o
 - AND no empty space MUST remain where the slogan was
 - AND the login form vertical centering MUST remain correct
 
-### REQ-SLGN-005: Boolean Conversion
+### Requirement: Boolean Conversion
 The controller MUST correctly convert the boolean API parameter to a string for IConfig storage, using strict type comparison.
 
 #### Scenario: True boolean converted to string '1'
@@ -133,7 +133,7 @@ The controller MUST correctly convert the boolean API parameter to a string for 
 - THEN it MUST compare with `=== '1'` to get boolean `true`
 - AND it MUST NOT use loose comparison that could match other truthy values (e.g., `'yes'`, `'true'`, `1`)
 
-### REQ-SLGN-006: API Endpoint
+### Requirement: API Endpoint
 The app MUST expose an admin-only API endpoint for toggling the hide slogan setting.
 
 #### Scenario: Toggle slogan hiding on
@@ -159,7 +159,7 @@ The app MUST expose an admin-only API endpoint for toggling the hide slogan sett
 - WHEN routes are loaded from `appinfo/routes.php`
 - THEN a POST route for `/settings/slogan` MUST be mapped to `settings#setSloganSetting`
 
-### REQ-SLGN-007: Dual Hiding Strategy
+### Requirement: Dual Hiding Strategy
 The hide slogan CSS MUST use both `display: none` and `visibility: hidden` to ensure complete removal across different rendering contexts.
 
 #### Scenario: Both hiding mechanisms applied
@@ -180,7 +180,7 @@ The hide slogan CSS MUST use both `display: none` and `visibility: hidden` to en
 - WHEN the login page is printed
 - THEN the slogan MUST also be hidden in print (because `display: none !important` applies to all media)
 
-### REQ-SLGN-008: Admin Settings Panel Integration
+### Requirement: Admin Settings Panel Integration
 The hide slogan checkbox in the admin settings MUST reflect and control the current state.
 
 #### Scenario: Checkbox reflects current state on load
@@ -200,7 +200,7 @@ The hide slogan checkbox in the admin settings MUST reflect and control the curr
 - THEN the checkbox label MUST read "Hide Nextcloud slogan/payoff on login page" (via `$l->t()`)
 - AND the label MUST be linked to the checkbox via `for="nldesign-hide-slogan"`
 
-### REQ-SLGN-009: Government Branding Compliance
+### Requirement: Government Branding Compliance
 The hide slogan feature MUST support Dutch government branding requirements for clean login pages.
 
 #### Scenario: Rijkshuisstijl login page compliance
@@ -224,7 +224,7 @@ The hide slogan feature MUST support Dutch government branding requirements for 
 - THEN the slogan MUST be hidden regardless of which token set is selected
 - AND the feature MUST function independently of the token set choice
 
-### REQ-SLGN-010: Effect Requires Page Reload
+### Requirement: Effect Requires Page Reload
 The hide slogan setting takes effect at boot time (CSS injection), so changes MUST take effect on the next page load.
 
 #### Scenario: Setting change not immediate

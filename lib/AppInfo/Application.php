@@ -15,20 +15,21 @@
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
+ * @spec openspec/changes/render-event-injection/tasks.md#task-3.1
  */
 
 declare(strict_types=1);
 
 namespace OCA\NLDesign\AppInfo;
 
-use OCA\NLDesign\Service\AppThemingService;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Themes\NLDesignTheme;
+use OCA\NLDesign\Capabilities;
+use OCA\NLDesign\Listener\ThemeInjectionListener;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\AppFramework\Http\Events\BeforeLoginTemplateRenderedEvent;
+use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 
 /**
  * Main application class for NL Design.
@@ -38,146 +39,122 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
  */
-class Application extends App implements IBootstrap
-{
-    public const APP_ID = 'nldesign';
+class Application extends App implements IBootstrap {
+	public const APP_ID = 'nldesign';
 
-    /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct(appName: self::APP_ID);
-    }//end __construct()
+	/**
+	 * Constructor.
+	 */
+	public function __construct() {
+		parent::__construct(appName: self::APP_ID);
+	}//end __construct()
 
-    /**
-     * Register services and providers.
-     *
-     * No bootstrap-time service registration is required: the `/api/health`
-     * endpoint is served by the thin `Controller\HealthController` subclass of
-     * the OpenRegister AppHost engine's GenericHealthController (ADR-040). The
-     * subclass is autoloaded only when the route is dispatched, never at
-     * bootstrap, so OpenRegister is a SOFT/optional dependency for health only
-     * — Nextcloud still boots and nldesign still themes when OpenRegister is
-     * absent (a request to /api/health would then degrade rather than fatal
-     * the app). The declarative checks live in `src/manifest.json` and use only
-     * the OR-independent primitives (database, filesystem, appEnabled) — never
-     * orAvailable, and no OR-object metrics.
-     *
-     * @param IRegistrationContext $context The registration context.
-     *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter) - required by IBootstrap interface
-     *
-     * @spec openspec/changes/adopt-apphost-2026-06-16/tasks.md#task-2
-     */
-    public function register(IRegistrationContext $context): void
-    {
-        // Health endpoint served by the thin Controller\HealthController
-        // subclass of the AppHost engine — no explicit registration needed.
-    }//end register()
+	/**
+	 * Register services and providers.
+	 *
+	 * No bootstrap-time service registration is required for health: the
+	 * `/api/health` endpoint is served by `Controller\HealthController`, which
+	 * adopts the OpenRegister AppHost observability engine by COMPOSITION
+	 * (ADR-040) — it resolves the engine out of the DI container by FQCN
+	 * string at dispatch time and never names an OpenRegister class in a
+	 * position the autoloader must resolve. OpenRegister is therefore a
+	 * SOFT/optional dependency for health only: Nextcloud still boots,
+	 * nldesign still themes, and every nldesign route still resolves when
+	 * OpenRegister is absent — /api/health then degrades to
+	 * `status: degraded` at HTTP 200 rather than 500ing the app. (It must NOT
+	 * go back to `extends GenericHealthController`: NC's router
+	 * ReflectionClass()es every file in lib/Controller/ while MATCHING any
+	 * route, so an unresolvable parent 500s EVERY route — decidesk#377.)
+	 * The declarative checks live in
+	 * `src/manifest.json` and use only the OR-independent primitives
+	 * (database, filesystem, appEnabled) — never orAvailable, and no OR-object
+	 * metrics. The `Capabilities` class IS registered here — it is the app's
+	 * first real `register()`-time registration — so the huisstijl is exposed
+	 * on every capabilities document without any request-time cost.
+	 *
+	 * `ThemeInjectionListener` is registered for both `BeforeTemplateRenderedEvent`
+	 * and `BeforeLoginTemplateRenderedEvent` — style injection is event-driven,
+	 * not boot-driven (see `openspec/changes/render-event-injection`).
+	 * `registerEventListener()` registers a lazy service: the listener (and its
+	 * whole service graph — config, design system, custom overrides, fonts) is
+	 * only instantiated when one of these two events actually fires, so
+	 * requests that render no template (WebDAV, OCS/API, cron) never pay for
+	 * it.
+	 *
+	 * @param IRegistrationContext $context The registration context.
+	 *
+	 * @return void
+	 *
+	 * @spec openspec/changes/adopt-apphost-2026-06-16/tasks.md#task-2
+	 * @spec openspec/changes/render-event-injection/tasks.md#task-3.1
+	 * @spec openspec/specs/theming-capability/spec.md
+	 */
+	public function register(IRegistrationContext $context): void {
+		// Load the app's composer autoloader so this app's classes are resolvable
+		// process-wide, not only inside this app's own container — required so a
+		// cross-app event listener (e.g. the OpenRegister federated-config type)
+		// can be constructed by another app's dispatcher. Mirrors hermiq.
+		include_once __DIR__ . '/../../vendor/autoload.php';
 
-    /**
-     * Boot the application.
-     *
-     * @param IBootContext $context The boot context.
-     *
-     * @return void
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
-     */
-    public function boot(IBootContext $context): void
-    {
-        $serverContainer = $context->getServerContainer();
+		// Health endpoint served by Controller\HealthController, which drives
+		// the AppHost engine by composition — no explicit registration needed.
+		// Public huisstijl capability — see lib/Capabilities.php.
+		$context->registerCapability(Capabilities::class);
 
-        // Inject our CSS variables.
-        $this->injectThemeCSS(serverContainer: $serverContainer);
-    }//end boot()
+		// Event-driven CSS injection — see lib/Listener/ThemeInjectionListener.php.
+		$context->registerEventListener(BeforeTemplateRenderedEvent::class, ThemeInjectionListener::class);
+		$context->registerEventListener(BeforeLoginTemplateRenderedEvent::class, ThemeInjectionListener::class);
 
-    /**
-     * Inject theme CSS files based on configuration.
-     *
-     * @param mixed $serverContainer The server container.
-     *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.StaticAccess) - \OCP\Util::addStyle() is the Nextcloud API for CSS injection
-     *
-     * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
-     */
-    private function injectThemeCSS($serverContainer): void
-    {
-        // Per-app theming guard: if the app currently being rendered is in the
-        // admin's exclusion list, skip ALL nldesign style injection so its pages
-        // render as stock Nextcloud. Resolution failures (occ/cron, no path info)
-        // fail open to themed — theming is presentation, never security.
-        if ($this->isThemingDisabled(serverContainer: $serverContainer) === true) {
-            return;
-        }
+		// Federated configuration sharing (openregister): contribute the NL Design
+		// theme as a shareable config type so a theme can be published to and
+		// installed from GitHub over OpenRegister's one fleet mechanism.
+		//
+		// THE PRELUDE IS LOAD-BEARING, NOT DEFENSIVE (ADR-040).
+		//
+		// `Coordinator::registerApps()` walks the SORTED app list, calling
+		// `OC_App::registerAutoloading()` and then `register()` for one app at
+		// a time. `nldesign` sorts before `openregister`, so this method runs
+		// while the `OCA\OpenRegister\` PSR-4 prefix does not yet exist — on a
+		// completely healthy instance with OpenRegister installed and enabled.
+		//
+		// Without the prelude below, the `class_exists()` on the next line
+		// answered FALSE every time, the listener was never registered, and
+		// nldesign contributed NO shareable config type at all. Nothing
+		// reported it: the app stayed enabled, every route resolved, the
+		// theme still applied — the only symptom was that federated config
+		// sharing (openspec/specs/federated-config-sharing/spec.md) silently
+		// did nothing.
+		//
+		// See lib/AppInfo/OpenRegisterAutoloader.php: idempotent, swallows a
+		// missing/disabled OpenRegister, and returns false in that case so the
+		// guard below answers FALSE truthfully.
+		(new OpenRegisterAutoloader())->ensure();
 
-        $config         = $serverContainer->get(\OCP\IConfig::class);
-        $tokenSet       = $config->getAppValue(self::APP_ID, 'token_set', 'nextcloud');
-        $hideSlogan     = $config->getAppValue(self::APP_ID, 'hide_slogan', '0') === '1';
-        $showMenuLabels = $config->getAppValue(self::APP_ID, 'show_menu_labels', '0') === '1';
+		if (class_exists(\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class) === true) {
+			$context->registerEventListener(
+				\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class,
+				\OCA\NLDesign\Listener\ShareableConfigTypeListener::class
+			);
+		}
+	}//end register()
 
-        // 1. Resolve which design system this token set uses.
-        $dsService      = $serverContainer->get(DesignSystemService::class);
-        $tokenSetMeta   = $dsService->getTokenSetMeta($tokenSet);
-        $designSystemId = $tokenSetMeta['design_system'] ?? 'nldesign';
-        $designSystem   = $dsService->getDesignSystem($designSystemId);
-
-        // 2. Load design system stylesheets in declared order.
-        // For "none" (stock Nextcloud) this array is empty — no CSS loads.
-        foreach ($designSystem['stylesheets'] as $stylesheet) {
-            \OCP\Util::addStyle(application: self::APP_ID, file: $stylesheet);
-        }
-
-        // 3. Load token values (only when a design system reads --nldesign-* vars).
-        if ($designSystemId !== 'none') {
-            \OCP\Util::addStyle(application: self::APP_ID, file: 'tokens/'.$tokenSet);
-        }
-
-        // 4. Custom overrides — admin-defined token overrides, always loaded last.
-        $customOverridesSvc = $serverContainer->get(CustomOverridesService::class);
-        $customOverridesSvc->ensureExists();
-        \OCP\Util::addStyle(application: self::APP_ID, file: 'custom-overrides');
-
-        // 5. Conditional stylesheets.
-        if ($hideSlogan === true) {
-            \OCP\Util::addStyle(application: self::APP_ID, file: 'hide-slogan');
-        }
-
-        if ($showMenuLabels === true) {
-            \OCP\Util::addStyle(application: self::APP_ID, file: 'show-menu-labels');
-        }
-    }//end injectThemeCSS()
-
-    /**
-     * Resolve whether theming must be skipped for the request being rendered.
-     *
-     * Reads the request path, resolves the app id, and consults the exclusion
-     * list. Wrapped in a try/catch so any resolution failure (CLI/occ, cron, an
-     * unavailable request) fails open to themed.
-     *
-     * @param mixed $serverContainer The server container.
-     *
-     * @return bool True when nldesign style injection must be skipped.
-     *
-     * @spec openspec/changes/per-app-theming-toggle/tasks.md#task-2.1
-     */
-    private function isThemingDisabled($serverContainer): bool
-    {
-        try {
-            $appTheming = $serverContainer->get(AppThemingService::class);
-            $request    = $serverContainer->get(\OCP\IRequest::class);
-            $appId      = $appTheming->resolveAppIdFromPath(pathInfo: $request->getPathInfo());
-
-            return $appTheming->isThemingDisabledFor(appId: $appId);
-        } catch (\Throwable $e) {
-            // Fail open: presentation, not security — a broken resolve must not
-            // strip theming everywhere, nor crash the boot path.
-            return false;
-        }
-    }//end isThemingDisabled()
+	/**
+	 * Boot the application.
+	 *
+	 * Intentionally a no-op: `IBootstrap` requires the method, but style
+	 * injection is entirely event-driven since
+	 * `openspec/changes/render-event-injection` — see
+	 * `lib/Listener/ThemeInjectionListener.php` and
+	 * `lib/Service/CssInjectionService.php`.
+	 *
+	 * @param IBootContext $context The boot context (unused — kept only to satisfy the IBootstrap signature).
+	 *
+	 * @return void
+	 *
+	 * @SuppressWarnings(PHPMD.UnusedFormalParameter) - IBootstrap::boot() mandates this exact signature
+	 *
+	 * @spec openspec/changes/render-event-injection/tasks.md#task-3.2
+	 */
+	public function boot(IBootContext $context): void {
+	}//end boot()
 }//end class

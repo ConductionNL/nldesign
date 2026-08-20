@@ -1,0 +1,301 @@
+<?php
+
+/**
+ * Unit tests for NLDesignEMailTemplate.
+ *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @spec openspec/specs/email-theming/spec.md
+ */
+
+declare(strict_types=1);
+
+namespace OCA\NLDesign\Tests\Unit\Mail;
+
+use OC\Mail\EMailTemplate;
+use OCA\NLDesign\Mail\NLDesignEMailTemplate;
+use OCA\NLDesign\Service\EmailThemingService;
+use OCP\Defaults;
+use OCP\IL10N;
+use OCP\IURLGenerator;
+use OCP\L10N\IFactory;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Test seam: overrides the private-service resolver so a stubbed
+ * EmailThemingService (or null, for the fallback-proof scenario) can be
+ * injected without touching the live \OCP\Server container the real
+ * `Mailer::makeTemplate()` resolves through.
+ */
+class TestableNLDesignEMailTemplate extends NLDesignEMailTemplate {
+
+	/**
+	 * The stubbed email theming service, or null.
+	 *
+	 * @var EmailThemingService|null
+	 */
+	private ?EmailThemingService $stubService = null;
+
+	/**
+	 * Inject a stubbed service (or null, to simulate total resolution failure).
+	 *
+	 * @param EmailThemingService|null $service The stubbed service.
+	 *
+	 * @return void
+	 */
+	public function setStubService(?EmailThemingService $service): void {
+		$this->stubService = $service;
+	}//end setStubService()
+
+	/**
+	 * Test seam override — returns the injected stub instead of resolving
+	 * \OCP\Server::get().
+	 *
+	 * @return EmailThemingService|null The stubbed service.
+	 */
+	protected function getEmailThemingService(): ?EmailThemingService {
+		return $this->stubService;
+	}//end getEmailThemingService()
+}//end class
+
+/**
+ * Unit tests for NLDesignEMailTemplate.
+ */
+class NLDesignEMailTemplateTest extends TestCase {
+
+	/**
+	 * The theming defaults mock.
+	 *
+	 * @var Defaults
+	 */
+	private Defaults $themingDefaults;
+
+	/**
+	 * The URL generator mock.
+	 *
+	 * @var IURLGenerator
+	 */
+	private IURLGenerator $urlGenerator;
+
+	/**
+	 * The l10n factory mock.
+	 *
+	 * @var IFactory
+	 */
+	private IFactory $l10nFactory;
+
+	/**
+	 * Set up shared constructor-argument mocks before each test.
+	 *
+	 * @return void
+	 */
+	protected function setUp(): void {
+		parent::setUp();
+
+		$this->themingDefaults = $this->createMock(Defaults::class);
+		$this->themingDefaults->method('getDefaultColorPrimary')->willReturn('#0082c9');
+		$this->themingDefaults->method('getDefaultTextColorPrimary')->willReturn('#ffffff');
+		$this->themingDefaults->method('getLogo')->willReturn('/core/img/logo/logo.svg');
+		$this->themingDefaults->method('getName')->willReturn('Nextcloud');
+		$this->themingDefaults->method('getSlogan')->willReturn('');
+
+		$this->urlGenerator = $this->createMock(IURLGenerator::class);
+		$this->urlGenerator->method('getAbsoluteURL')->willReturnCallback(
+			fn (string $url) => 'https://cloud.example.com' . $url
+		);
+
+		$l10n = $this->createMock(IL10N::class);
+		$l10n->method('t')->willReturnCallback(fn (string $text, $params = []) => $text);
+
+		$this->l10nFactory = $this->createMock(IFactory::class);
+		$this->l10nFactory->method('get')->willReturn($l10n);
+	}//end setUp()
+
+	/**
+	 * Build a testable branded template, stubbed with the given service.
+	 *
+	 * @param EmailThemingService|null $service The stubbed service, or null.
+	 *
+	 * @return TestableNLDesignEMailTemplate The template under test.
+	 */
+	private function makeTemplate(?EmailThemingService $service): TestableNLDesignEMailTemplate {
+		$template = new TestableNLDesignEMailTemplate(
+			$this->themingDefaults,
+			$this->urlGenerator,
+			$this->l10nFactory,
+			32,
+			32,
+			'test',
+			[]
+		);
+		$template->setStubService($service);
+
+		return $template;
+	}//end makeTemplate()
+
+	/**
+	 * Build a stock EMailTemplate with the same constructor arguments, for
+	 * byte-identical fallback comparison.
+	 *
+	 * @return EMailTemplate The stock template.
+	 */
+	private function makeStockTemplate(): EMailTemplate {
+		return new EMailTemplate(
+			$this->themingDefaults,
+			$this->urlGenerator,
+			$this->l10nFactory,
+			32,
+			32,
+			'test',
+			[]
+		);
+	}//end makeStockTemplate()
+
+	/**
+	 * (a) Header and body button markup use the active token set's color
+	 * and the absolute logo URL.
+	 *
+	 * @return void
+	 */
+	public function testHeaderAndButtonUseActiveTokenSetTheme(): void {
+		$service = $this->createMock(EmailThemingService::class);
+		$service->method('getActiveEmailTheme')->willReturn(
+			[
+				'primaryColor' => '#154273',
+				'primaryTextColor' => '#ffffff',
+				'logoUrl' => 'https://cloud.example.com/apps/nldesign/img/logos/test.svg',
+			]
+		);
+		$service->method('getFooterConfig')->willReturn(['orgName' => '', 'accessibilityUrl' => '', 'privacyUrl' => '']);
+
+		$template = $this->makeTemplate($service);
+		$template->setSubject('Test');
+		$template->addHeader();
+		$template->addHeading('Heading');
+		$template->addBodyText('Body text');
+		$template->addBodyButton('Click', 'https://example.org/action');
+		$template->addFooter();
+
+		$html = $template->renderHtml();
+
+		$this->assertStringContainsString('#154273', $html);
+		$this->assertStringContainsString('https://cloud.example.com/apps/nldesign/img/logos/test.svg', $html);
+	}//end testHeaderAndButtonUseActiveTokenSetTheme()
+
+	/**
+	 * (b) Configured footer org name and both URLs appear in the HTML part
+	 * AND as plain lines in renderText().
+	 *
+	 * @return void
+	 */
+	public function testFooterConfigRendersInBothParts(): void {
+		$service = $this->createMock(EmailThemingService::class);
+		$service->method('getActiveEmailTheme')->willReturn(null);
+		$service->method('getFooterConfig')->willReturn(
+			[
+				'orgName' => 'Gemeente Voorbeeld',
+				'accessibilityUrl' => 'https://voorbeeld.nl/toegankelijkheid',
+				'privacyUrl' => 'https://voorbeeld.nl/privacy',
+			]
+		);
+
+		$template = $this->makeTemplate($service);
+		$template->addHeader();
+		$template->addFooter();
+
+		$html = $template->renderHtml();
+		$text = $template->renderText();
+
+		$this->assertStringContainsString('Gemeente Voorbeeld', $html);
+		$this->assertStringContainsString('https://voorbeeld.nl/toegankelijkheid', $html);
+		$this->assertStringContainsString('https://voorbeeld.nl/privacy', $html);
+
+		$this->assertStringContainsString('Gemeente Voorbeeld', $text);
+		$this->assertStringContainsString('https://voorbeeld.nl/toegankelijkheid', $text);
+		$this->assertStringContainsString('https://voorbeeld.nl/privacy', $text);
+	}//end testFooterConfigRendersInBothParts()
+
+	/**
+	 * (c) With the service resolver returning null, HTML and plain output
+	 * are byte-identical to a stock EMailTemplate render — the fallback proof.
+	 *
+	 * @return void
+	 */
+	public function testNullServiceFallsBackToStockRendering(): void {
+		$branded = $this->makeTemplate(null);
+		$stock = $this->makeStockTemplate();
+
+		foreach ([$branded, $stock] as $tpl) {
+			$tpl->setSubject('Test');
+			$tpl->addHeader();
+			$tpl->addHeading('Heading');
+			$tpl->addBodyText('Body text');
+			$tpl->addBodyButton('Click', 'https://example.org/action');
+			$tpl->addFooter();
+		}
+
+		$this->assertSame($stock->renderHtml(), $branded->renderHtml());
+		$this->assertSame($stock->renderText(), $branded->renderText());
+	}//end testNullServiceFallsBackToStockRendering()
+
+	/**
+	 * (d) The plain-text part of a full email (header/heading/body/button/
+	 * footer) still contains the button URL and the standard footer text —
+	 * plain part stays intact, no HTML leakage.
+	 *
+	 * @return void
+	 */
+	public function testPlainTextPartStaysIntact(): void {
+		$service = $this->createMock(EmailThemingService::class);
+		$service->method('getActiveEmailTheme')->willReturn(
+			[
+				'primaryColor' => '#154273',
+				'primaryTextColor' => '#ffffff',
+				'logoUrl' => null,
+			]
+		);
+		$service->method('getFooterConfig')->willReturn(['orgName' => '', 'accessibilityUrl' => '', 'privacyUrl' => '']);
+
+		$template = $this->makeTemplate($service);
+		$template->addHeader();
+		$template->addHeading('Heading');
+		$template->addBodyText('Body text');
+		$template->addBodyButton('Click here', 'https://example.org/action');
+		$template->addFooter();
+
+		$text = $template->renderText();
+
+		$this->assertStringContainsString('https://example.org/action', $text);
+		$this->assertStringContainsString('Nextcloud', $text);
+		$this->assertStringNotContainsString('<', $text);
+	}//end testPlainTextPartStaysIntact()
+
+	/**
+	 * (e) Footer values containing markup/quotes are HTML-escaped in the
+	 * HTML part, never rendered as live markup.
+	 *
+	 * @return void
+	 */
+	public function testFooterValuesAreOutputEncoded(): void {
+		$service = $this->createMock(EmailThemingService::class);
+		$service->method('getActiveEmailTheme')->willReturn(null);
+		$service->method('getFooterConfig')->willReturn(
+			[
+				'orgName' => '<script>alert(1)</script>',
+				'accessibilityUrl' => 'https://voorbeeld.nl/a"onclick="x',
+				'privacyUrl' => '',
+			]
+		);
+
+		$template = $this->makeTemplate($service);
+		$template->addHeader();
+		$template->addFooter();
+
+		$html = $template->renderHtml();
+
+		$this->assertStringNotContainsString('<script>', $html);
+		$this->assertStringContainsString('&lt;script&gt;', $html);
+		$this->assertStringNotContainsString('"onclick="x"', $html);
+	}//end testFooterValuesAreOutputEncoded()
+}//end class

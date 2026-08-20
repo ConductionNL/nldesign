@@ -10,37 +10,51 @@ enriched_date: 2026-03-20
 Expose application metrics in Prometheus text exposition format at `GET /api/metrics` for monitoring, alerting, and operational dashboards.
 
 @e2e exclude API/backend metrics spec — all scenarios describe HTTP response format, metric values, and controller dependency injection; no admin UI surface. The nldesign app is a CSS-only theming layer with no database tables, so metrics focus on configuration state (active token set, custom overrides count, theming sync operations) and standard application health signals.
-
 ## Requirements
+### Requirement: Metrics Endpoint
 
-### REQ-PROM-001: Metrics Endpoint
-The app MUST expose a Prometheus-compatible metrics endpoint that returns all app metrics in the standard text exposition format.
+The app MUST expose a Prometheus-compatible metrics endpoint that returns all app metrics in the
+standard text exposition format, reachable only by an authenticated Nextcloud admin session (per
+hydra ADR-006: `GET /api/metrics` is "Prometheus text, admin auth"). `MetricsController::index()`
+MUST carry neither `#[PublicPage]` nor `#[NoAdminRequired]`, so Nextcloud's `SecurityMiddleware`
+default (admin-only) applies. The endpoint MAY remain `#[NoCSRFRequired]` (or
+`@NoCSRFRequired`) so an authenticated scraper is not blocked by CSRF token requirements — CSRF
+exemption and authentication are independent properties, and this requirement narrows the
+previous "publicly accessible without CSRF" wording, which incorrectly conflated the two.
 
-#### Scenario: Metrics endpoint returns correct content type
-- GIVEN the admin or monitoring system calls `GET /index.php/apps/nldesign/api/metrics`
-- WHEN the `MetricsController::index()` method handles the request
-- THEN the response MUST have content type `text/plain; version=0.0.4; charset=utf-8`
-- AND the response body MUST contain valid Prometheus text exposition format
+#### Scenario: Metrics endpoint rejects unauthenticated requests
 
-#### Scenario: Metrics endpoint is publicly accessible without CSRF
-- GIVEN a monitoring system (e.g. Prometheus scraper) calls the metrics endpoint
-- WHEN the request is made
-- THEN the `@NoCSRFRequired` annotation MUST allow access without a CSRF token
-- AND this allows automated scraping from external monitoring tools
+- GIVEN an anonymous (non-admin-authenticated) caller requests `GET /index.php/apps/nldesign/api/metrics`
+- WHEN the request reaches `MetricsController::index()`
+- THEN Nextcloud's `SecurityMiddleware` MUST reject the request (no session / non-admin session)
+  because the method carries neither `#[PublicPage]` nor `#[NoAdminRequired]`
+- AND the response MUST NOT contain `nldesign_info`, token-set counts, override counts, or any
+  other metric value
 
-#### Scenario: Metrics endpoint returns all metric families
-- GIVEN the metrics endpoint is called
-- WHEN the response is generated
-- THEN it MUST contain HELP and TYPE lines for each metric family
+#### Scenario: Metrics endpoint serves an authenticated admin without a CSRF token
+
+- GIVEN an authenticated admin session (or an admin app-password via HTTP Basic, as configured for
+  a Prometheus scrape target)
+- WHEN `GET /index.php/apps/nldesign/api/metrics` is called without a CSRF token
+- THEN the request MUST succeed (CSRF exemption still applies for admin-authenticated callers)
+- AND the response MUST have content type `text/plain; version=0.0.4; charset=utf-8`
+
+#### Scenario: Metrics endpoint returns all metric families for an authenticated admin
+
+- GIVEN an authenticated admin session
+- WHEN the metrics endpoint is called
+- THEN it MUST contain HELP and TYPE lines for each metric family exactly as before this change
+  (info, up, token sets total, active token set, custom overrides total, theming syncs total)
 - AND each metric family MUST have at least one sample line
-- AND the response MUST end with a newline character
 
-#### Scenario: Route registration
+#### Scenario: Route registration is unchanged
+
 - GIVEN the app's routes configuration
 - WHEN routes are loaded from `appinfo/routes.php`
-- THEN a GET route for `/api/metrics` MUST be mapped to `metrics#index`
+- THEN a GET route for `/api/metrics` MUST still be mapped to `metrics#index` (only the
+  controller method's auth attributes change, not the route)
 
-### REQ-PROM-002: Application Info Metric
+### Requirement: Application Info Metric
 The app MUST expose an info gauge with version labels for identification.
 
 #### Scenario: Info gauge with version labels
@@ -63,7 +77,7 @@ The app MUST expose an info gauge with version labels for identification.
 - AND the PHP version MUST come from the `PHP_VERSION` constant
 - AND the Nextcloud version MUST come from `IConfig::getSystemValueString('version', '0.0.0')`
 
-### REQ-PROM-003: Application Up Gauge
+### Requirement: Application Up Gauge
 The app MUST expose an up gauge indicating overall application health.
 
 #### Scenario: App is healthy
@@ -85,7 +99,7 @@ The app MUST expose an up gauge indicating overall application health.
   - `# TYPE nldesign_up gauge`
   - `nldesign_up 1`
 
-### REQ-PROM-004: Token Sets Total Metric
+### Requirement: Token Sets Total Metric
 The app MUST expose the total number of available token sets as a gauge.
 
 #### Scenario: Token sets counted from filesystem
@@ -107,7 +121,7 @@ The app MUST expose the total number of available token sets as a gauge.
 - AND a warning MUST be logged via the logger with the exception message
 - AND the metrics endpoint MUST NOT fail entirely
 
-### REQ-PROM-005: Active Token Set Metric
+### Requirement: Active Token Set Metric
 The app MUST expose which token set is currently active as a labeled gauge.
 
 #### Scenario: Active token set reported
@@ -132,7 +146,7 @@ The app MUST expose which token set is currently active as a labeled gauge.
 - THEN the active token set metric MUST be omitted (it is inside the try block)
 - AND only `nldesign_token_sets_total 0` MUST be reported as fallback
 
-### REQ-PROM-006: Custom Overrides Total Metric
+### Requirement: Custom Overrides Total Metric
 The app MUST expose the number of admin-defined custom CSS overrides as a gauge.
 
 #### Scenario: Custom overrides counted
@@ -158,7 +172,7 @@ The app MUST expose the number of admin-defined custom CSS overrides as a gauge.
 - AND a warning MUST be logged
 - AND the metrics endpoint MUST NOT fail entirely
 
-### REQ-PROM-007: Theming Syncs Counter
+### Requirement: Theming Syncs Counter
 The app MUST expose the total number of theming sync operations as a counter.
 
 #### Scenario: Theming syncs counter reported
@@ -184,7 +198,7 @@ The app MUST expose the total number of theming sync operations as a counter.
 - THEN it MUST be cast to integer via `(int)` to handle string storage
 - AND if the value is not set, the default MUST be `'0'`
 
-### REQ-PROM-008: Error Resilience
+### Requirement: Error Resilience
 The metrics endpoint MUST be resilient to individual metric collection failures without failing the entire response.
 
 #### Scenario: Token set metrics fail, other metrics succeed
@@ -208,7 +222,7 @@ The metrics endpoint MUST be resilient to individual metric collection failures 
 - AND both failing metrics MUST fall back to 0
 - AND both warnings MUST be logged independently
 
-### REQ-PROM-009: Health Check Endpoint
+### Requirement: Health Check Endpoint
 The app MUST expose a public health check endpoint at `GET /api/health` for monitoring and load balancers. The endpoint MUST be served by the OpenRegister AppHost observability engine's `GenericHealthController` (ADR-040), via a thin `OCA\NLDesign\Controller\HealthController` subclass so that the route name (`health#index`) and URL are unchanged. The checks MUST be declared in `src/manifest.json` using only the OpenRegister-independent primitives (`database`, `filesystem`, `appEnabled`) — never `orAvailable` — because nldesign has no OpenRegister dependency.
 
 #### Scenario: Health check returns the canonical envelope
@@ -243,7 +257,7 @@ The app MUST expose a public health check endpoint at `GET /api/health` for moni
 - WHEN routes are loaded from `appinfo/routes.php`
 - THEN a GET route for `/api/health` MUST be mapped to `health#index`
 
-### REQ-PROM-010: Prometheus Format Compliance
+### Requirement: Prometheus Format Compliance
 All metrics MUST strictly comply with the Prometheus text exposition format specification.
 
 #### Scenario: HELP line format
@@ -266,7 +280,7 @@ All metrics MUST strictly comply with the Prometheus text exposition format spec
 - AND backslashes MUST be escaped
 - AND newlines MUST be escaped
 
-### REQ-PROM-011: Controller Dependencies
+### Requirement: Controller Dependencies
 The MetricsController MUST receive all required dependencies via constructor injection.
 
 #### Scenario: Dependencies injected
@@ -285,10 +299,46 @@ The MetricsController MUST receive all required dependencies via constructor inj
 - THEN it MUST be served by `OCA\OpenRegister\AppHost\Controller\GenericHealthController` (via the thin `OCA\NLDesign\Controller\HealthController` subclass), NOT by a bespoke nldesign health implementation
 - AND nldesign MUST NOT hand-roll the health checks or the response envelope
 
+### Requirement: Audit Entries Counter Metric
+
+The metrics endpoint MUST expose `nldesign_audit_entries_total` as a Prometheus counter of all
+theming audit entries ever written. The value MUST be sourced from the monotonic IConfig app
+value `audit_entries_total`, which `ThemingAuditService::log()` increments on every successful
+append (same storage pattern as `theming_syncs_total`) — NOT from counting lines in the audit
+file, so log rotation can never make the counter decrease. The metric MUST be emitted with HELP
+and TYPE lines and default to `0` when the app value is unset, and it inherits the endpoint's
+existing admin-auth posture and error-resilience requirements unchanged.
+
+#### Scenario: Counter format
+
+- GIVEN 12 audit entries have been written since installation
+- WHEN an authenticated admin scrapes the metrics endpoint
+- THEN the output MUST include:
+  - `# HELP nldesign_audit_entries_total Total theming audit entries written`
+  - `# TYPE nldesign_audit_entries_total counter`
+  - `nldesign_audit_entries_total 12`
+
+#### Scenario: Counter survives log rotation
+
+- GIVEN the audit file has rotated and the current `audit.jsonl` holds fewer lines than the
+  lifetime total
+- WHEN the metric is collected
+- THEN the value MUST equal the lifetime total from the `audit_entries_total` app value and MUST
+  NOT decrease
+
+#### Scenario: Counter defaults to zero
+
+- GIVEN a fresh installation where no audit entry has been written
+- WHEN the metric is collected from `IConfig::getAppValue('nldesign', 'audit_entries_total', '0')`
+- THEN `nldesign_audit_entries_total 0` MUST be emitted (cast to int from string storage)
+
 ## Current Implementation Status
 
 **Fully implemented:**
-- MetricsController at `lib/Controller/MetricsController.php` with `@NoCSRFRequired` annotation
+- MetricsController at `lib/Controller/MetricsController.php` carries neither `#[PublicPage]` nor
+  `#[NoAdminRequired]`, so the Nextcloud `SecurityMiddleware` admin-only default applies
+  (ADR-006); `@NoCSRFRequired` remains so a Prometheus scraper authenticating as an admin (e.g.
+  via an app password) is not also required to present a CSRF token
 - Info gauge: `nldesign_info` with version, php_version, nextcloud_version labels
 - Up gauge: `nldesign_up` always 1
 - Token sets total: `nldesign_token_sets_total` via `TokenSetService::getAvailableTokenSets()` with try/catch fallback to 0
