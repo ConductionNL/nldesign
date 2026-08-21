@@ -1,0 +1,82 @@
+name: Release
+
+# ONE release workflow, replacing the three callers this app used to carry.
+#
+# nldesign was the LAST app in the fleet still on the split pair
+# (release-development.yml / release-beta.yml / release-stable.yml). Measured
+# 2026-08-21 across nine apps: portaliq, opencatalogi, openregister, docudesk,
+# launchpad, softwarecatalog, larpingapp and zaakafhandelapp all serve
+# `.github/workflows/release.yml` from development; only this repo served the
+# legacy trio.
+#
+# WHY THE PAIR WAS REPLACED, and it is not cosmetic. The legacy workflows
+# rewrote `appinfo/info.xml` in the WORKING TREE only and never committed it,
+# so the tag they cut named a commit still showing the previous version.
+# Nextcloud's own release template asserts the two agree:
+#
+#     [ "$APP_VERSION" = "v$(xpath info.xml //version)" ]
+#
+# This repo was live proof. Tag v1.0.1-beta.20260821073705 names a tree whose
+# info.xml reads 0.1.2 — not merely stale by a patch, but four minor versions
+# adrift and disagreeing with the tag it is supposed to label.
+#
+# The unified workflow commits the bump to a `release/v<version>` branch, tags
+# THAT commit, and opens a pull request to bring the integration branch up. The
+# tag and the package therefore agree without anything pushing at a protected
+# branch.
+#
+# WHAT DOES NOT CHANGE: the version arithmetic. Both compute a beta as "newest
+# stable tag, patch + 1", so numbering continues exactly where it left off.
+# What changes is that the tag now names a tree whose manifest matches it.
+#
+# The `unstable` channel preserves what release-development.yml existed to do.
+# Its rationale was that development releases "reached nobody", so it published
+# a GitHub prerelease with a .tar.gz on every push for the App Versions app to
+# install. The unified workflow does the same and deliberately skips the App
+# Store for this channel (`if: inputs.release-type != 'unstable'` on the
+# publish step), which is the same "a dev build is for people who asked for
+# one" boundary that comment drew.
+#
+# No `node-version` override is passed. The shared workflow now installs the
+# npm that `package.json` declares (`engines.npm: ^11.0.0` here) rather than
+# whatever npm the Node major happens to bundle, which is what portaliq and
+# launchpad previously needed the override for. This repo's `.npmrc` uses
+# `min-release-age`, an npm 11+ feature, so that step is what keeps the
+# cooldown effective.
+
+on:
+  push:
+    branches: [main, beta, development]
+  workflow_dispatch:
+
+# Releases publish artifacts. A cancelled release is neither a success nor a
+# rollback — it is a half-published version — so queued runs wait rather than
+# cancelling the one in flight.
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  unstable:
+    if: github.ref == 'refs/heads/development'
+    uses: ConductionNL/.github/.github/workflows/release.yml@main
+    with:
+      release-type: unstable
+      app-name: nldesign
+    secrets: inherit
+
+  beta:
+    if: github.ref == 'refs/heads/beta'
+    uses: ConductionNL/.github/.github/workflows/release.yml@main
+    with:
+      release-type: beta
+      app-name: nldesign
+    secrets: inherit
+
+  stable:
+    if: github.ref == 'refs/heads/main'
+    uses: ConductionNL/.github/.github/workflows/release.yml@main
+    with:
+      release-type: stable
+      app-name: nldesign
+    secrets: inherit
