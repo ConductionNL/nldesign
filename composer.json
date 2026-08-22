@@ -1,6 +1,6 @@
 {
-    "name": "conductionnl/nldesign",
-    "description": "NL Design System theme for Nextcloud",
+    "name": "conductionnl/thematiq",
+    "description": "Thematiq — NL Design System theming for Nextcloud",
     "license": "EUPL-1.2",
     "authors": [
         {
@@ -11,7 +11,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "OCA\\NLDesign\\": "lib/"
+            "OCA\\Thematiq\\": "lib/"
         }
     },
     "require": {

@@ -1,8 +1,26 @@
 <?xml version="1.0"?>
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-	<id>nldesign</id>
-	<name>NL Design System Theme</name>
+	<!--
+		THE APP ID IS `thematiq`. THE DESIGN SYSTEM IS `nldesign`. THEY ARE NOT
+		THE SAME NAME AND ONLY ONE OF THEM MOVED.
+
+		This element is what Nextcloud namespaces `oc_appconfig`, `oc_preferences`,
+		`/apps/<id>/` routes, `script()`/`style()`/`loadState()` channels and the
+		l10n domain by. It changed from `nldesign` to `thematiq` on 2026-08-22.
+
+		"NL Design System" is an external standard owned by the Dutch government.
+		Its names — the `--nldesign-*` CSS custom properties, the `nldesign-*`
+		class/DOM-id prefixes, the `nldesign` design-system id in
+		design-systems.json, nldesignsystem.nl, the nl-design-system/themes
+		upstream — did NOT change and MUST NOT be changed here. They are matched
+		by string against stylesheets in every other app in the fleet and in
+		@conduction/nextcloud-vue; renaming one here does not rename it there,
+		so the selector simply stops matching and the theme silently falls back
+		to default styling with nothing in any log.
+	-->
+	<id>thematiq</id>
+	<name>Thematiq</name>
 	<summary>Apply Dutch government design tokens (NL Design System) to Nextcloud</summary>
 	<description><![CDATA[
 This app allows you to apply NL Design System design tokens to your Nextcloud instance.
@@ -49,7 +67,7 @@ Gratis en open source onder de EUPL-1.2 licentie.
 	<version>1.1.0</version>
 	<licence>EUPL-1.2</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
-	<namespace>NLDesign</namespace>
+	<namespace>Thematiq</namespace>
 	<category>customization</category>
 	<!--
 		GitHub, not Codeberg. The fleet dropped Forgejo/Codeberg on
@@ -61,14 +79,20 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		The three screenshot URLs were each checked on the new host before
 		being swapped: all answer 200 image/png from raw.githubusercontent
 		on `main`.
-	-->
-	<website>https://github.com/ConductionNL/nldesign</website>
-	<bugs>https://github.com/ConductionNL/nldesign/issues</bugs>
-	<repository type="git">https://github.com/ConductionNL/nldesign.git</repository>
 
-	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot-themes.png</screenshot>
-	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot-themed-login.png</screenshot>
-	<screenshot>https://raw.githubusercontent.com/ConductionNL/nldesign/main/img/screenshot-admin-settings.png</screenshot>
+		2026-08-22: repo renamed ConductionNL/nldesign -> ConductionNL/thematiq.
+		The four URLs below were re-probed on the NEW name before being
+		swapped — raw.githubusercontent.com/ConductionNL/thematiq/main/img/
+		screenshot-themes.png answers 200. GitHub also redirects the old name,
+		so both work; the canonical one is written here.
+	-->
+	<website>https://github.com/ConductionNL/thematiq</website>
+	<bugs>https://github.com/ConductionNL/thematiq/issues</bugs>
+	<repository type="git">https://github.com/ConductionNL/thematiq.git</repository>
+
+	<screenshot>https://raw.githubusercontent.com/ConductionNL/thematiq/main/img/screenshot-themes.png</screenshot>
+	<screenshot>https://raw.githubusercontent.com/ConductionNL/thematiq/main/img/screenshot-themed-login.png</screenshot>
+	<screenshot>https://raw.githubusercontent.com/ConductionNL/thematiq/main/img/screenshot-admin-settings.png</screenshot>
 
 	<dependencies>
 		<php min-version="8.3"/>
@@ -106,26 +130,60 @@ Gratis en open source onder de EUPL-1.2 licentie.
 	<!-- Upstream token freshness check (openspec/specs/upstream-freshness/spec.md):
 	     daily, time-insensitive, disabled by default (admin opt-in toggle). -->
 	<background-jobs>
-		<job>OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob</job>
+		<job>OCA\Thematiq\BackgroundJob\UpstreamFreshnessJob</job>
 	</background-jobs>
 
+	<!--
+		ORDERING IN THIS BLOCK IS LOAD-BEARING.
+
+		The three Migrate* steps rescue the configuration the app-id rename
+		`nldesign` -> `thematiq` would otherwise strand, and they MUST run
+		FIRST in each block. Nextcloud namespaces `oc_appconfig` and
+		`oc_preferences` by app id and there is no in-place app-id upgrade:
+		after the rename every stored row still says `nldesign`, every reader
+		asks for `thematiq`, and every reader supplies a default — so NOTHING
+		ERRORS. For a theming app that means every token set, override, custom
+		font, per-app/per-group exclusion and email-footer field an admin ever
+		configured silently reverts to stock, with nothing in the log.
+
+		GenerateDarkVariantsRepairStep runs AFTER because it WRITES config
+		itself (`dark_variants_generated`). If it ran first, MigrateAppConfigKeys
+		would see that key already present, skip it as "already migrated", and
+		strand the old value.
+
+		The steps are registered under <install> as well as <post-migration>
+		because <install> is the ONLY hook a renamed app's first enable fires —
+		to Nextcloud `thematiq` is a brand-new app, not an upgrade of
+		`nldesign`, so <post-migration> alone would never run on the very
+		instances that need the migration most.
+	-->
 	<repair-steps>
+		<install>
+			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
+			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
+			<step>OCA\Thematiq\Repair\MigrateStoredClassNames</step>
+			<!-- Dark-mode token variants — see the note under <post-migration>. -->
+			<step>OCA\Thematiq\Migration\GenerateDarkVariantsRepairStep</step>
+		</install>
 		<post-migration>
+			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
+			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
+			<step>OCA\Thematiq\Repair\MigrateStoredClassNames</step>
 			<!-- Dark-mode token variants (openspec/specs/dark-mode/spec.md):
 			     regenerate missing/stale css/tokens/dark/{id}.css on
 			     install/upgrade. Degrades to a logged warning (never fatal)
 			     when the app directory is read-only. -->
-			<step>OCA\NLDesign\Migration\GenerateDarkVariantsRepairStep</step>
+			<step>OCA\Thematiq\Migration\GenerateDarkVariantsRepairStep</step>
 		</post-migration>
 	</repair-steps>
 	<commands>
-		<command>OCA\NLDesign\Command\ComplianceReport</command>
-		<command>OCA\NLDesign\Command\GenerateDarkVariants</command>
-		<command>OCA\NLDesign\Command\ConfigExport</command>
-		<command>OCA\NLDesign\Command\ConfigImport</command>
+		<command>OCA\Thematiq\Command\ComplianceReport</command>
+		<command>OCA\Thematiq\Command\GenerateDarkVariants</command>
+		<command>OCA\Thematiq\Command\ConfigExport</command>
+		<command>OCA\Thematiq\Command\ConfigImport</command>
 	</commands>
 	<settings>
-		<admin>OCA\NLDesign\Settings\Admin</admin>
+		<admin>OCA\Thematiq\Settings\Admin</admin>
 		<admin-section>theming</admin-section>
 	</settings>
 </info>
