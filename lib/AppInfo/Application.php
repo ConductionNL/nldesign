@@ -7,11 +7,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Application
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-1
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
@@ -20,10 +20,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\AppInfo;
+namespace OCA\Thematiq\AppInfo;
 
-use OCA\NLDesign\Capabilities;
-use OCA\NLDesign\Listener\ThemeInjectionListener;
+use OCA\Thematiq\Capabilities;
+use OCA\Thematiq\Listener\ThemeInjectionListener;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -40,7 +40,7 @@ use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
  * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-2
  */
 class Application extends App implements IBootstrap {
-	public const APP_ID = 'nldesign';
+	public const APP_ID = 'thematiq';
 
 	/**
 	 * Constructor.
@@ -59,7 +59,7 @@ class Application extends App implements IBootstrap {
 	 * string at dispatch time and never names an OpenRegister class in a
 	 * position the autoloader must resolve. OpenRegister is therefore a
 	 * SOFT/optional dependency for health only: Nextcloud still boots,
-	 * nldesign still themes, and every nldesign route still resolves when
+	 * thematiq still themes, and every thematiq route still resolves when
 	 * OpenRegister is absent — /api/health then degrades to
 	 * `status: degraded` at HTTP 200 rather than 500ing the app. (It must NOT
 	 * go back to `extends GenericHealthController`: NC's router
@@ -109,21 +109,29 @@ class Application extends App implements IBootstrap {
 		// theme as a shareable config type so a theme can be published to and
 		// installed from GitHub over OpenRegister's one fleet mechanism.
 		//
-		// THE PRELUDE IS LOAD-BEARING, NOT DEFENSIVE (ADR-040).
+		// THE PRELUDE IS KEPT ON PURPOSE (ADR-040).
 		//
 		// `Coordinator::registerApps()` walks the SORTED app list, calling
 		// `OC_App::registerAutoloading()` and then `register()` for one app at
-		// a time. `nldesign` sorts before `openregister`, so this method runs
-		// while the `OCA\OpenRegister\` PSR-4 prefix does not yet exist — on a
-		// completely healthy instance with OpenRegister installed and enabled.
+		// a time. Under the app's OLD id, `nldesign` sorted BEFORE
+		// `openregister`, so this method ran while the `OCA\OpenRegister\`
+		// PSR-4 prefix did not yet exist — on a completely healthy instance
+		// with OpenRegister installed and enabled — and the prelude was
+		// strictly required.
 		//
 		// Without the prelude below, the `class_exists()` on the next line
 		// answered FALSE every time, the listener was never registered, and
-		// nldesign contributed NO shareable config type at all. Nothing
+		// the app contributed NO shareable config type at all. Nothing
 		// reported it: the app stayed enabled, every route resolved, the
 		// theme still applied — the only symptom was that federated config
 		// sharing (openspec/specs/federated-config-sharing/spec.md) silently
 		// did nothing.
+		//
+		// Under the new id, `thematiq` sorts AFTER `openregister`, so the
+		// `class_exists()` guard would usually answer TRUE on its own. The
+		// prelude stays anyway: app sort order is not a contract to rely on
+		// (it moves with the app id, and moved once already), and the call is
+		// idempotent and cheap.
 		//
 		// See lib/AppInfo/OpenRegisterAutoloader.php: idempotent, swallows a
 		// missing/disabled OpenRegister, and returns false in that case so the
@@ -133,7 +141,7 @@ class Application extends App implements IBootstrap {
 		if (class_exists(\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class) === true) {
 			$context->registerEventListener(
 				\OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent::class,
-				\OCA\NLDesign\Listener\ShareableConfigTypeListener::class
+				\OCA\Thematiq\Listener\ShareableConfigTypeListener::class
 			);
 		}
 	}//end register()

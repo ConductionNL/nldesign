@@ -17,23 +17,23 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Capabilities
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/theming-capability/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign;
+namespace OCA\Thematiq;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\App\IAppManager;
 use OCP\Capabilities\IPublicCapability;
 use OCP\ICache;
@@ -82,7 +82,7 @@ class Capabilities implements IPublicCapability {
 		private readonly ShippedTokenSetAuditService $auditService,
 		ICacheFactory $cacheFactory,
 	) {
-		$this->cache = $cacheFactory->createDistributed(prefix: 'nldesign_wcag_level');
+		$this->cache = $cacheFactory->createDistributed(prefix: 'thematiq_wcag_level');
 	}//end __construct()
 
 	/**
