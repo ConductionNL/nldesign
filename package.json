@@ -14,11 +14,11 @@
 		"design-tokens",
 		"theming"
 	],
-	"homepage": "https://codeberg.org/Conduction/nldesign",
+	"homepage": "https://github.com/ConductionNL/thematiq",
 	"license": "EUPL-1.2",
 	"repository": {
 		"type": "git",
-		"url": "https://codeberg.org/Conduction/nldesign.git"
+		"url": "https://github.com/ConductionNL/thematiq.git"
 	},
 	"scripts": {
 		"test:l10n": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js",
