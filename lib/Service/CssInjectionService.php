@@ -411,7 +411,7 @@ class CssInjectionService {
 			return;
 		}
 
-		$cssUrl = $this->urlGenerator->linkToRoute('nldesign.font.css') . '?v=' . $this->fontService->getRevision();
+		$cssUrl = $this->urlGenerator->linkToRoute('thematiq.font.css') . '?v=' . $this->fontService->getRevision();
 		$this->emitFontLink(url: $cssUrl);
 	}//end injectCustomFontLink()
 

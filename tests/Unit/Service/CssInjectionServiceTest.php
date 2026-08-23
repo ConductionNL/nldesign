@@ -384,7 +384,7 @@ class CssInjectionServiceTest extends TestCase {
 		);
 		$this->fontService->method('hasFonts')->willReturn(true);
 		$this->fontService->method('getRevision')->willReturn(3);
-		$this->urlGenerator->method('linkToRoute')->with('nldesign.font.css')
+		$this->urlGenerator->method('linkToRoute')->with('thematiq.font.css')
 			->willReturn('https://example.test/apps/thematiq/fonts/css');
 
 		$styleLog = [];

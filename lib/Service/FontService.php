@@ -445,7 +445,7 @@ class FontService {
 	 * @spec openspec/specs/custom-fonts/spec.md
 	 */
 	private function buildFontFaceRule(string $id, string $escapedName): string {
-		$url = $this->urlGenerator->linkToRoute('nldesign.font.serve', ['id' => $id]);
+		$url = $this->urlGenerator->linkToRoute('thematiq.font.serve', ['id' => $id]);
 
 		return '@font-face {' . PHP_EOL
 			. '	font-family: "' . $escapedName . '";' . PHP_EOL
