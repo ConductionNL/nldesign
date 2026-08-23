@@ -21,7 +21,7 @@ const BRAND_THEME = require.resolve('@conduction/docusaurus-preset/theme');
 const config = createConfig({
   title: 'NLDesign',
   tagline: 'NL Design System tokens for Nextcloud',
-  url: 'https://nldesign.conduction.nl',
+  url: 'https://thematiq.conduction.nl',
   baseUrl: '/',
 
   organizationName: 'ConductionNL',
@@ -60,7 +60,7 @@ const config = createConfig({
              plus the standard node_modules bucket. */
           exclude: ['**/node_modules/**', 'src/**'],
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://codeberg.org/Conduction/nldesign/src/branch/main/docs/',
+          editUrl: 'https://github.com/ConductionNL/nldesign/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -87,8 +87,8 @@ const config = createConfig({
         label: 'Documentation',
       },
       {
-        href: 'https://codeberg.org/Conduction/nldesign',
-        label: 'Codeberg',
+        href: 'https://github.com/ConductionNL/nldesign',
+        label: 'GitHub',
         position: 'right',
       },
       { type: 'localeDropdown', position: 'right' },

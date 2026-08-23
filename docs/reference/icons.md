@@ -39,7 +39,7 @@ Icon and logo filenames are a public API consumed by other apps. Within an insta
 
 ## Available Icons
 
-View all available icons in the [icon documentation](https://codeberg.org/Conduction/nldesign/src/branch/main/img/ICONS.md) or browse the files in:
+View all available icons in the [icon documentation](https://github.com/ConductionNL/nldesign/tree/main/img/ICONS.md) or browse the files in:
 - **NL-government icons:** `img/icons/{rvo,open-gemeenten,den-haag}/` (1488 SVG files across 3 sets)
 - **DSFR (French-government) icons:** `img/icons/dsfr/` (1038 SVG files)
 - **Legacy aliases:** `img/icons/*.svg` (77 one-release compatibility files — see CHANGELOG.md, removed next minor release)
@@ -204,7 +204,7 @@ When using icons, always provide appropriate alt text or aria-labels:
 
 Icons are sourced from `@conduction/nextcloud-vue` and `@gouvfr/dsfr`:
 - **Package:** `@conduction/nextcloud-vue` (devDependency, build-time only)
-- **Canonical licence record:** `src/icons/ATTRIBUTION.md` (https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md)
+- **Canonical licence record:** `src/icons/ATTRIBUTION.md` (https://github.com/ConductionNL/nextcloud-vue/tree/main/src/icons/ATTRIBUTION.md)
 - **Licences:** RVO CC0-1.0, OpenGemeenten CC0-1.0, Gemeente Den Haag EUPL-1.2
 - **Package:** `@gouvfr/dsfr` (devDependency, build-time only) — Système de Design de
   l'État, licensed under the Etalab Open Licence 2.0
@@ -217,7 +217,7 @@ app and no shipped asset derives from it.
 
 ## Resources
 
-- **nc-vue icon attribution:** https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md
+- **nc-vue icon attribution:** https://github.com/ConductionNL/nextcloud-vue/tree/main/src/icons/ATTRIBUTION.md
 - **RVO icon source:** https://github.com/nl-design-system/rvo
 - **OpenGemeenten icon source:** https://github.com/OpenGemeenten/Iconenset
 - **Gemeente Den Haag icon source:** https://github.com/nl-design-system/denhaag

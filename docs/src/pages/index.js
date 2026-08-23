@@ -263,7 +263,7 @@ export default function Home() {
           secondaryCta={{ label: 'Read the docs', href: '/docs/intro' }}
           tertiaryCta={{
             label: 'View on GitHub',
-            href: 'https://codeberg.org/Conduction/nldesign',
+            href: 'https://github.com/ConductionNL/nldesign',
           }}
           iconColor="var(--c-orange-knvb)"
           icon={NLDESIGN_ICON}
