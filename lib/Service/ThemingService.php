@@ -167,7 +167,7 @@ class ThemingService {
 			return "Invalid image path for $imageKey: must be in img/logos/ or img/backgrounds/";
 		}
 
-		$appPath = $this->appManager->getAppPath(appId: 'nldesign');
+		$appPath = $this->appManager->getAppPath(appId: 'thematiq');
 		$fullPath = $appPath . '/' . $imagePath;
 		if (file_exists(filename: $fullPath) === false) {
 			return "Image file not found: $imagePath";
@@ -212,7 +212,7 @@ class ThemingService {
 
 		foreach (['logo', 'background'] as $imageKey) {
 			if (isset($params[$imageKey]) === true && $params[$imageKey] !== '') {
-				$appPath = $this->appManager->getAppPath(appId: 'nldesign');
+				$appPath = $this->appManager->getAppPath(appId: 'thematiq');
 				$fullPath = $appPath . '/' . $params[$imageKey];
 				$this->imageManager->updateImage(key: $imageKey, tmpFile: $fullPath);
 				$updated[] = $imageKey;

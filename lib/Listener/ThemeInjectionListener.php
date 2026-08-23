@@ -140,7 +140,7 @@ class ThemeInjectionListener implements IEventListener {
 			// and never arrive here; anything that does is a real listener bug.
 			$this->logger->warning(
 				'nldesign: theme injection failed for this render; the page was served unthemed.',
-				['app' => 'nldesign', 'exception' => $e]
+				['app' => 'thematiq', 'exception' => $e]
 			);
 		}//end try
 
