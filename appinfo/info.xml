@@ -157,14 +157,15 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		`nldesign`, so <post-migration> alone would never run on the very
 		instances that need the migration most.
 	-->
+	<!--
+		Child order is fixed by info.xsd's <xs:sequence>: pre-migration,
+		post-migration, live-migration, install, uninstall. It is a sequence and
+		not a choice, so <install> before <post-migration> fails validation with
+		"Element 'post-migration': This element is not expected. Expected is
+		( uninstall )" — the parser is past install and the only thing that may
+		still follow is uninstall. Both blocks stay; only the order changes.
+	-->
 	<repair-steps>
-		<install>
-			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
-			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
-			<step>OCA\Thematiq\Repair\MigrateStoredClassNames</step>
-			<!-- Dark-mode token variants — see the note under <post-migration>. -->
-			<step>OCA\Thematiq\Migration\GenerateDarkVariantsRepairStep</step>
-		</install>
 		<post-migration>
 			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
 			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
@@ -175,6 +176,13 @@ Gratis en open source onder de EUPL-1.2 licentie.
 			     when the app directory is read-only. -->
 			<step>OCA\Thematiq\Migration\GenerateDarkVariantsRepairStep</step>
 		</post-migration>
+		<install>
+			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
+			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
+			<step>OCA\Thematiq\Repair\MigrateStoredClassNames</step>
+			<!-- Dark-mode token variants — see the note under <post-migration>. -->
+			<step>OCA\Thematiq\Migration\GenerateDarkVariantsRepairStep</step>
+		</install>
 	</repair-steps>
 	<commands>
 		<command>OCA\Thematiq\Command\ComplianceReport</command>
