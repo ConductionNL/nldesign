@@ -24,7 +24,7 @@
 			return
 		}
 
-		var state = OCP.InitialState.loadState('nldesign', 'preview', null)
+		var state = OCP.InitialState.loadState('thematiq', 'preview', null)
 		if (!state || !state.tokenSet) {
 			return
 		}
@@ -52,16 +52,16 @@
 		publishLink.className = 'nldesign-preview-banner-publish button'
 		publishLink.href =
 			OC.generateUrl('/settings/admin/theming') + '#nldesign-settings'
-		publishLink.textContent = t('nldesign', 'Publish')
+		publishLink.textContent = t('thematiq', 'Publish')
 		actions.appendChild(publishLink)
 
 		var discardBtn = document.createElement('button')
 		discardBtn.type = 'button'
 		discardBtn.className = 'nldesign-preview-banner-discard button'
-		discardBtn.textContent = t('nldesign', 'Discard')
+		discardBtn.textContent = t('thematiq', 'Discard')
 		discardBtn.addEventListener('click', function () {
 			discardBtn.disabled = true
-			fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/preview'), {
 				method: 'DELETE',
 				headers: { requesttoken: OC.requestToken },
 			})
@@ -80,7 +80,7 @@
 							&& typeof OCP.Toast.message === 'function'
 						) {
 							OCP.Toast.message(
-								t('nldesign', 'Failed to discard theme preview.'),
+								t('thematiq', 'Failed to discard theme preview.'),
 							)
 						}
 					} catch (e) {

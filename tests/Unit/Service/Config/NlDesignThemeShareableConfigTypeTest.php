@@ -15,11 +15,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service\Config;
+namespace OCA\Thematiq\Tests\Unit\Service\Config;
 
-use OCA\NLDesign\Listener\ShareableConfigTypeListener;
-use OCA\NLDesign\Service\Config\NlDesignThemeShareableConfigType;
-use OCA\NLDesign\Service\ConfigBundleService;
+use OCA\Thematiq\Listener\ShareableConfigTypeListener;
+use OCA\Thematiq\Service\Config\NlDesignThemeShareableConfigType;
+use OCA\Thematiq\Service\ConfigBundleService;
 use OCP\EventDispatcher\Event;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;

@@ -7,18 +7,18 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Exception
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/per-group-theming/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service\Exception;
+namespace OCA\Thematiq\Service\Exception;
 
 /**
  * Thrown when a group-theming mapping entry fails save-time validation: an

@@ -12,10 +12,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\CatalogController;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Controller\CatalogController;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\JSONResponse;

@@ -2,7 +2,7 @@
 #
 # NL Design System API-contract test runner (Newman / Postman).
 #
-# Runs tests/integration/nldesign.postman_collection.json against a live
+# Runs tests/integration/thematiq.postman_collection.json against a live
 # Nextcloud instance serving the nldesign (NL Design System Theme) app. The
 # collection is self-contained and idempotent: it captures the live token_set
 # and custom overrides, asserts the read/write/validation/authz contract, and
@@ -30,7 +30,7 @@ if [ "${NLDESIGN_NEWMAN_LOCKED:-}" != "1" ] && command -v flock >/dev/null 2>&1;
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COLLECTION="${SCRIPT_DIR}/nldesign.postman_collection.json"
+COLLECTION="${SCRIPT_DIR}/thematiq.postman_collection.json"
 # Multipart formdata file `src` paths in the collection (fixtures/*.css) are
 # resolved by newman relative to --working-dir, which DEFAULTS TO THE PROCESS
 # CWD. The shared CI workflow (ConductionNL/.github .github/workflows/quality.yml,

@@ -10,7 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // points at the main checkout so `composer install` never has to run twice).
 // Composer's generated autoload_psr4.php computes its base directory from
 // __DIR__, which PHP resolves through that symlink — so without this fix the
-// OCA\NLDesign\ prefix would silently load classes from the SHARED checkout
+// OCA\Thematiq\ prefix would silently load classes from the SHARED checkout
 // instead of THIS checkout, masking any change made only here (new files
 // would 404 as "class not found"; edited files would test stale code). Force
 // the prefix back onto this checkout's own lib/ so tests always exercise the
@@ -22,7 +22,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // trusting the require_once return value.
 //
 // Fixing the PSR-4 prefix alone is not enough: `optimize-autoloader` (see
-// composer.json) also bakes every already-known OCA\NLDesign\ class into a
+// composer.json) also bakes every already-known OCA\Thematiq\ class into a
 // classMap with an absolute path into the SHARED checkout, and the classMap
 // lookup wins over PSR-4 in Composer's ClassLoader::findFile(). Strip those
 // entries via reflection so every nldesign class — new AND edited — falls

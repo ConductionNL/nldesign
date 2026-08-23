@@ -15,9 +15,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\CustomTokenSetValidator;
+use OCA\Thematiq\Service\CustomTokenSetValidator;
 use PHPUnit\Framework\TestCase;
 
 /**

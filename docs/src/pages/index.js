@@ -3,7 +3,7 @@
  *
  * Composes the brand <DetailHero> + <WidgetShelf> from
  * @conduction/docusaurus-preset/components, mirroring the connext page
- * at sites/www/src/pages/apps/nldesign.mdx.
+ * at sites/www/src/pages/apps/thematiq.mdx.
  *
  * Written as .js (not .mdx) because the docs site has the docs plugin
  * pointed at `path: './'`, and an MDX file in src/pages/ trips the
@@ -257,7 +257,7 @@ export default function Home() {
           tagline={TAGLINE}
           primaryCta={{
             label: 'Install from app store',
-            href: 'https://apps.nextcloud.com/apps/nldesign',
+            href: 'https://apps.nextcloud.com/apps/thematiq',
             tone: 'orange',
           }}
           secondaryCta={{ label: 'Read the docs', href: '/docs/intro' }}

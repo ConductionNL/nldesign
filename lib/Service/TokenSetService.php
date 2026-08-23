@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
+use OCA\Thematiq\AppInfo\Application;
 use OCP\App\IAppManager;
 use OCP\ICache;
 use OCP\ICacheFactory;
@@ -130,7 +130,7 @@ class TokenSetService {
 	 * @return string The app directory path.
 	 */
 	private function getAppPath(): string {
-		return $this->appManager->getAppPath('nldesign');
+		return $this->appManager->getAppPath('thematiq');
 	}//end getAppPath()
 
 	/**
@@ -214,8 +214,9 @@ class TokenSetService {
 	 * `Capabilities::computeWcagLevel()` already uses for the active set,
 	 * cached under the same `ICache` prefix (`nldesign_wcag_level`).
 	 *
+	 * The public catalogue entries.
+	 *
 	 * @return array<int, array{id: string, name: string, design_system: string, theming: array<string, string>, wcagLevel: string|null}>
-	 *         The public catalogue entries.
 	 *
 	 * @spec openspec/specs/app-token-set-selection/spec.md
 	 */

@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Controller
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -20,11 +20,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Controller;
+namespace OCA\Thematiq\Controller;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Service\CustomOverridesService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\TextPlainResponse;
 use OCP\IConfig;

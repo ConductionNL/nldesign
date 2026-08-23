@@ -141,14 +141,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokenset",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokenset",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset"
               ]
@@ -203,14 +203,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]
@@ -270,14 +270,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets"
               ]
@@ -336,14 +336,14 @@
               "raw": "{\n  \"tokenSet\": \"{{probeTokenSet}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokenset",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokenset",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset"
               ]
@@ -401,14 +401,14 @@
               "raw": "{\n  \"tokenSet\": \"newman-not-a-real-token-set\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokenset",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokenset",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset"
               ]
@@ -459,14 +459,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokenset-preview/{{probeTokenSet}}",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokenset-preview/{{probeTokenSet}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset-preview",
                 "{{probeTokenSet}}"
@@ -516,14 +516,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokenset-preview/newman-unknown-set",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokenset-preview/newman-unknown-set",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset-preview",
                 "newman-unknown-set"
@@ -553,14 +553,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/tokensets",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/tokensets",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets"
               ]
@@ -597,14 +597,14 @@
               "raw": "{\n  \"tokenSet\": \"nextcloud\"\n}"
             },
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/tokenset",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/tokenset",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset"
               ]
@@ -660,14 +660,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/theming",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/theming",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "theming"
               ]
@@ -726,14 +726,14 @@
               "raw": "{\n  \"hideSlogan\": false\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/slogan",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/slogan",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "slogan"
               ]
@@ -792,14 +792,14 @@
               "raw": "{\n  \"showMenuLabels\": true\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/menulabels",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/menulabels",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "menulabels"
               ]
@@ -828,14 +828,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/theming",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/theming",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "theming"
               ]
@@ -872,14 +872,14 @@
               "raw": "{\n  \"hideSlogan\": true\n}"
             },
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/slogan",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/slogan",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "slogan"
               ]
@@ -945,14 +945,14 @@
               "raw": "{\n  \"overrides\": {\n    \"--color-primary\": \"#abcdef\"\n  }\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]
@@ -1002,14 +1002,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]
@@ -1066,14 +1066,14 @@
               "raw": "{\n  \"overrides\": \"not-an-object\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]
@@ -1118,14 +1118,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides/export",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides/export",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides",
                 "export"
@@ -1178,14 +1178,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides/import",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides/import",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides",
                 "import"
@@ -1215,14 +1215,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]
@@ -1259,14 +1259,14 @@
               "raw": "{\n  \"overrides\": {}\n}"
             },
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]
@@ -1330,14 +1330,14 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -1397,14 +1397,14 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -1474,14 +1474,14 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -1546,14 +1546,14 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -1618,14 +1618,14 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -1690,14 +1690,14 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -1750,14 +1750,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/custom",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "custom"
@@ -1804,14 +1804,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/{{newmanCustomId}}/export",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/custom/{{newmanCustomId}}/export",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "custom",
@@ -1859,14 +1859,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/custom-newman-does-not-exist/export",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/custom/custom-newman-does-not-exist/export",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "custom",
@@ -1919,14 +1919,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/{{newmanCustomId}}",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/custom/{{newmanCustomId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "custom",
@@ -1977,14 +1977,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokensets/custom/utrecht",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokensets/custom/utrecht",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "custom",
@@ -2025,14 +2025,14 @@
               ]
             },
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/tokensets/upload",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/tokensets/upload",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "upload"
@@ -2062,14 +2062,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/tokensets/custom",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/tokensets/custom",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokensets",
                 "custom"
@@ -2124,14 +2124,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/app-theming",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/app-theming",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "app-theming"
               ]
@@ -2188,14 +2188,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/app-theming",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/app-theming",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "app-theming"
               ]
@@ -2250,14 +2250,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/app-theming",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/app-theming",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "app-theming"
               ]
@@ -2311,14 +2311,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/app-theming",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/app-theming",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "app-theming"
               ]
@@ -2368,14 +2368,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/app-theming",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/app-theming",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "app-theming"
               ]
@@ -2410,14 +2410,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/settings/app-theming",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/settings/app-theming",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "app-theming"
               ]
@@ -2493,14 +2493,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/api/token-sets",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/api/token-sets",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "api",
                 "token-sets"
               ]
@@ -2529,14 +2529,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/api/token-sets",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/api/token-sets",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "api",
                 "token-sets"
               ]
@@ -2603,14 +2603,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/api/contrast/evaluate",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/api/contrast/evaluate",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "api",
                 "contrast",
                 "evaluate"
@@ -2648,14 +2648,14 @@
               }
             ],
             "url": {
-              "raw": "{{noAuthBase}}/index.php/apps/nldesign/api/contrast/evaluate",
+              "raw": "{{noAuthBase}}/index.php/apps/thematiq/api/contrast/evaluate",
               "host": [
                 "{{noAuthBase}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "api",
                 "contrast",
                 "evaluate"
@@ -2724,14 +2724,14 @@
               "raw": "{\n  \"tokenSet\": \"{{origTokenSet}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/tokenset",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/tokenset",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "tokenset"
               ]
@@ -2799,14 +2799,14 @@
               "raw": "{{origOverridesBody}}"
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php/apps/nldesign/settings/overrides",
+              "raw": "{{baseUrl}}/index.php/apps/thematiq/settings/overrides",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "index.php",
                 "apps",
-                "nldesign",
+                "thematiq",
                 "settings",
                 "overrides"
               ]

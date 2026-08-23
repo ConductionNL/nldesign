@@ -11,15 +11,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\ComplianceReportService;
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\CustomTokenSetService;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\ComplianceReportService;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomOverridesService;
+use OCA\Thematiq\Service\CustomTokenSetService;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;

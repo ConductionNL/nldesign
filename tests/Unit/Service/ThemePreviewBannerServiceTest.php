@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\ThemePreviewBannerService;
-use OCA\NLDesign\Service\ThemePreviewService;
+use OCA\Thematiq\Service\ThemePreviewBannerService;
+use OCA\Thematiq\Service\ThemePreviewService;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\IUserSession;
 use PHPUnit\Framework\MockObject\MockObject;

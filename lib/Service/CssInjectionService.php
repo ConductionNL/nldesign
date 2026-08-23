@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -19,9 +19,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
+use OCA\Thematiq\AppInfo\Application;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use Psr\Log\LoggerInterface;
@@ -411,7 +411,7 @@ class CssInjectionService {
 			return;
 		}
 
-		$cssUrl = $this->urlGenerator->linkToRoute('nldesign.font.css') . '?v=' . $this->fontService->getRevision();
+		$cssUrl = $this->urlGenerator->linkToRoute('thematiq.font.css') . '?v=' . $this->fontService->getRevision();
 		$this->emitFontLink(url: $cssUrl);
 	}//end injectCustomFontLink()
 

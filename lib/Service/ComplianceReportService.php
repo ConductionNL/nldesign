@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
+use OCA\Thematiq\AppInfo\Application;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
@@ -215,13 +215,14 @@ class ComplianceReportService {
 	/**
 	 * Generate the full compliance report data structure.
 	 *
+	 * The report, ready for either renderer.
+	 *
 	 * @return array{scope: string, metadata: array<string, mixed>, pairs: array<int, array<string, mixed>>, summary: array<string, mixed>}
-	 *         The report, ready for either renderer.
 	 *
 	 * @spec openspec/specs/compliance-evidence/spec.md
 	 */
 	public function generate(): array {
-		$appPath = $this->appManager->getAppPath('nldesign');
+		$appPath = $this->appManager->getAppPath('thematiq');
 
 		$activeTokenSetId = $this->config->getAppValue(Application::APP_ID, 'token_set', 'nextcloud');
 		$tokenSetMeta = $this->resolveTokenSetMeta(tokenSetId: $activeTokenSetId);
@@ -706,7 +707,7 @@ class ComplianceReportService {
 		return [
 			'instanceId' => $this->config->getSystemValue('instanceid', ''),
 			'instanceUrl' => $this->urlGenerator->getBaseUrl(),
-			'appVersion' => $this->appManager->getAppVersion('nldesign'),
+			'appVersion' => $this->appManager->getAppVersion('thematiq'),
 			'nextcloudVersion' => $this->resolveNextcloudVersion(),
 			'tokenSet' => [
 				'id' => $tokenSetId,

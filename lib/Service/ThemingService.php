@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -21,7 +21,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 use OCA\Theming\ImageManager;
 use OCA\Theming\ThemingDefaults;
@@ -167,7 +167,7 @@ class ThemingService {
 			return "Invalid image path for $imageKey: must be in img/logos/ or img/backgrounds/";
 		}
 
-		$appPath = $this->appManager->getAppPath(appId: 'nldesign');
+		$appPath = $this->appManager->getAppPath(appId: 'thematiq');
 		$fullPath = $appPath . '/' . $imagePath;
 		if (file_exists(filename: $fullPath) === false) {
 			return "Image file not found: $imagePath";
@@ -212,7 +212,7 @@ class ThemingService {
 
 		foreach (['logo', 'background'] as $imageKey) {
 			if (isset($params[$imageKey]) === true && $params[$imageKey] !== '') {
-				$appPath = $this->appManager->getAppPath(appId: 'nldesign');
+				$appPath = $this->appManager->getAppPath(appId: 'thematiq');
 				$fullPath = $appPath . '/' . $params[$imageKey];
 				$this->imageManager->updateImage(key: $imageKey, tmpFile: $fullPath);
 				$updated[] = $imageKey;

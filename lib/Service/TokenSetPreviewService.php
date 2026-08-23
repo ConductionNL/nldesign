@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 use OCP\App\IAppManager;
 
@@ -69,7 +69,7 @@ class TokenSetPreviewService {
 	 * @spec openspec/changes/retrofit-2026-05-24-annotate-nldesign/tasks.md#task-48
 	 */
 	public function getResolvedColors(string $tokenSetId): array {
-		$appPath = $this->appManager->getAppPath('nldesign');
+		$appPath = $this->appManager->getAppPath('thematiq');
 
 		// Step 1: parse defaults.css → --nldesign-* defaults.
 		$nldesignVars = $this->parseCssVars(

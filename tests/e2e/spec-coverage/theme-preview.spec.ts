@@ -35,7 +35,7 @@ import {
 	NONADMIN_PASS,
 } from './_fixtures'
 
-const APP = '/index.php/apps/nldesign'
+const APP = '/index.php/apps/thematiq'
 const THEMING_URL = '/settings/admin/theming'
 
 /** The set previewed throughout. Its display name is asserted in the banner. */
@@ -47,7 +47,7 @@ async function nldesignStyles(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll('link[rel=stylesheet]')]
 			.map((l) => (l as HTMLLinkElement).href)
-			.filter((h) => h.includes('/nldesign/')),
+			.filter((h) => h.includes('/thematiq/')),
 	)
 }
 
@@ -68,7 +68,7 @@ async function nldesignScripts(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll('script[src]')]
 			.map((s) => (s as HTMLScriptElement).src)
-			.filter((h) => h.includes('/nldesign/')),
+			.filter((h) => h.includes('/thematiq/')),
 	)
 }
 

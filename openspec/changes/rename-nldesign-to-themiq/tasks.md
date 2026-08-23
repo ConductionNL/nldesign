@@ -9,7 +9,7 @@
 - **spec_ref**: `openspec/changes/rename-nldesign-to-themiq/specs/themiq-identity/spec.md#requirement-the-app-identity-must-move-as-one-unit`
 - **files**: `appinfo/info.xml`, `lib/**`, `src/**`, `package.json`, `.releaserc.json`, `l10n/*.json`, `.github/workflows/*`
 - **acceptance_criteria**:
-  - App id, `OCA\NLDesign` namespace, appstore identity, l10n domain (37 files), asset prefixes and release config all change together
+  - App id, `OCA\Thematiq` namespace, appstore identity, l10n domain (37 files), asset prefixes and release config all change together
   - A repo search finds no stale identity except the transition alias
   - Assets resolve on a RENDERED page, not merely in the source — a wrong app id gives a 404 with no PHP error, so the page renders unstyled and reads as a CSS bug
 - [ ] Implement

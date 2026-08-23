@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 use OCP\App\IAppManager;
 use Psr\Log\LoggerInterface;
@@ -217,7 +217,7 @@ class DarkPaletteService {
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	public function discoverAllSetIds(): array {
-		$tokensDir = $this->appManager->getAppPath('nldesign') . '/css/tokens';
+		$tokensDir = $this->appManager->getAppPath('thematiq') . '/css/tokens';
 		if (is_dir($tokensDir) === false) {
 			return [];
 		}
@@ -541,8 +541,9 @@ class DarkPaletteService {
 	 * @param array<string, string> $declarations The candidate dark declarations.
 	 * @param string[] $protectedTokens Token names that MUST NOT be rewritten (hand-authored overrides).
 	 *
+	 * The (possibly repaired) declarations and the final warning list.
+	 *
 	 * @return array{declarations: array<string, string>, warnings: array<int, array<string, mixed>>}
-	 *         The (possibly repaired) declarations and the final warning list.
 	 *
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
@@ -741,13 +742,13 @@ class DarkPaletteService {
 	 * @param string $setId The token set id.
 	 *
 	 * @return array{css: string, warnings: array<int, array<string, mixed>>}|null
-	 *         The rendered CSS + warnings, or null when the set is ineligible or
-	 *         has no source file.
+	 *                                                                             The rendered CSS + warnings, or null when the set is ineligible or
+	 *                                                                             has no source file.
 	 *
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	public function generateForSet(string $setId): ?array {
-		$appPath = $this->appManager->getAppPath('nldesign');
+		$appPath = $this->appManager->getAppPath('thematiq');
 		$meta = $this->loadSetMeta(appPath: $appPath, setId: $setId);
 
 		if ($this->isEligible(designSystemId: $meta['design_system']) === false) {
@@ -792,7 +793,7 @@ class DarkPaletteService {
 	 */
 	private function relativeDarkLogoPath(string $logoDarkPath): string {
 		// This app is served from a custom_apps URL prefix (the fleet's
-		// standard deployment — no /apps/nldesign/ alias exists there), so
+		// standard deployment — no /apps/thematiq/ alias exists there), so
 		// css/tokens/{set}.css (2 levels under the app root: css/ →
 		// tokens/) needs 2 ".." to reach img/, not 3 — verified live against
 		// a running custom-app install (css/tokens/rijkshuisstijl.css's
@@ -860,7 +861,7 @@ class DarkPaletteService {
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	public function generateAndWrite(string $setId, bool $force = false): array {
-		$appPath = $this->appManager->getAppPath('nldesign');
+		$appPath = $this->appManager->getAppPath('thematiq');
 		$tokenFile = $appPath . '/css/tokens/' . $setId . '.css';
 		$darkFile = $appPath . '/css/tokens/dark/' . $setId . '.css';
 
@@ -930,8 +931,9 @@ class DarkPaletteService {
 	 *
 	 * @param bool $force Regenerate even fresh files.
 	 *
+	 * The per-set outcome, keyed by set id.
+	 *
 	 * @return array<string, array{written: bool, skipped: bool, reason: string, warnings: array<int, array<string, mixed>>}>
-	 *         The per-set outcome, keyed by set id.
 	 *
 	 * @SuppressWarnings(PHPMD.BooleanArgumentFlag) - see generateAndWrite()'s rationale; this
 	 * simply fans the same `--force` convention out over every discovered set.
@@ -957,7 +959,7 @@ class DarkPaletteService {
 	 * @spec openspec/specs/dark-mode/spec.md
 	 */
 	public function deleteDarkVariant(string $setId): void {
-		$darkFile = $this->appManager->getAppPath('nldesign') . '/css/tokens/dark/' . $setId . '.css';
+		$darkFile = $this->appManager->getAppPath('thematiq') . '/css/tokens/dark/' . $setId . '.css';
 		if (is_file($darkFile) === true && is_writable($darkFile) === true) {
 			unlink($darkFile);
 		}

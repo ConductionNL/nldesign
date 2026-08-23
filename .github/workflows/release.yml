@@ -70,7 +70,7 @@ on:
 #
 # Note for the fleet: no sibling caller declares this yet — portaliq,
 # opencatalogi, openregister and docudesk all inherit the default. The finding
-# applies to them equally; it only BLOCKS here because nldesign's beta ruleset
+# applies to them equally; it only BLOCKS here because thematiq's beta ruleset
 # is the one with `required_review_thread_resolution: true`, so an unresolved
 # CodeQL thread stops the merge instead of merely being noted.
 permissions:
@@ -90,7 +90,7 @@ jobs:
     uses: ConductionNL/.github/.github/workflows/release.yml@main
     with:
       release-type: unstable
-      app-name: nldesign
+      app-name: thematiq
     secrets: inherit
 
   beta:
@@ -98,7 +98,7 @@ jobs:
     uses: ConductionNL/.github/.github/workflows/release.yml@main
     with:
       release-type: beta
-      app-name: nldesign
+      app-name: thematiq
     secrets: inherit
 
   stable:
@@ -106,5 +106,5 @@ jobs:
     uses: ConductionNL/.github/.github/workflows/release.yml@main
     with:
       release-type: stable
-      app-name: nldesign
+      app-name: thematiq
     secrets: inherit

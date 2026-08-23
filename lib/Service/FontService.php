@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
+use OCA\Thematiq\AppInfo\Application;
 use OCP\Files\GenericFileException;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
@@ -445,7 +445,7 @@ class FontService {
 	 * @spec openspec/specs/custom-fonts/spec.md
 	 */
 	private function buildFontFaceRule(string $id, string $escapedName): string {
-		$url = $this->urlGenerator->linkToRoute('nldesign.font.serve', ['id' => $id]);
+		$url = $this->urlGenerator->linkToRoute('thematiq.font.serve', ['id' => $id]);
 
 		return '@font-face {' . PHP_EOL
 			. '	font-family: "' . $escapedName . '";' . PHP_EOL

@@ -11,16 +11,16 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\CustomTokenSetController;
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\CustomTokenSetService;
-use OCA\NLDesign\Service\CustomTokenSetValidator;
-use OCA\NLDesign\Service\DarkPaletteService;
-use OCA\NLDesign\Service\DesignTokensMapper;
-use OCA\NLDesign\Service\ThemingAuditService;
+use OCA\Thematiq\Controller\CustomTokenSetController;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomTokenSetService;
+use OCA\Thematiq\Service\CustomTokenSetValidator;
+use OCA\Thematiq\Service\DarkPaletteService;
+use OCA\Thematiq\Service\DesignTokensMapper;
+use OCA\Thematiq\Service\ThemingAuditService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IConfig;
@@ -36,7 +36,7 @@ use Psr\Log\LoggerInterface;
  * zero-yield 422 with full diagnostics.
  *
  * Uses a real {@see CustomTokenSetService} against a temp app directory
- * (mirroring {@see \OCA\NLDesign\Tests\Unit\Service\CustomTokenSetServiceTest})
+ * (mirroring {@see \OCA\Thematiq\Tests\Unit\Service\CustomTokenSetServiceTest})
  * so the response is exercised end-to-end through storage, not mocked away.
  */
 class CustomTokenSetControllerTest extends TestCase {

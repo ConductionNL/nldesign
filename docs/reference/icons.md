@@ -74,7 +74,7 @@ $iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haa
 ```php
 <?php
 // Read and output SVG content directly
-$iconPath = \OC::$SERVERROOT . '/apps/nldesign/img/icons/den-haag/dh-communication-message.svg';
+$iconPath = \OC::$SERVERROOT . '/apps/thematiq/img/icons/den-haag/dh-communication-message.svg';
 if (file_exists($iconPath)) {
     echo file_get_contents($iconPath);
 }

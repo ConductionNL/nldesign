@@ -46,7 +46,7 @@ async function nldesignStyleHrefs(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll('link[rel=stylesheet]')]
 			.map((l) => (l as HTMLLinkElement).href)
-			.filter((h) => h.includes('/nldesign/')),
+			.filter((h) => h.includes('/thematiq/')),
 	)
 }
 
@@ -264,7 +264,7 @@ test.describe('dark-mode scope selectors — dark OS', () => {
 		// not react to this at all.
 		const requests: string[] = []
 		page.on('request', (r) => {
-			if (r.url().includes('/nldesign/')) {
+			if (r.url().includes('/thematiq/')) {
 				requests.push(r.url())
 			}
 		})

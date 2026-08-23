@@ -16,7 +16,7 @@ Log in to Nextcloud as an administrator. Click your **avatar** (top-right corner
 
 In the Apps section, type **NL Design** in the search bar. The app is listed under the **Customization** category.
 
-You can also find it directly in the [Nextcloud App Store](https://apps.nextcloud.com/apps/nldesign).
+You can also find it directly in the [Nextcloud App Store](https://apps.nextcloud.com/apps/thematiq).
 
 ![NL Design System Theme listing in the Nextcloud App Store, showing the app description and supported token sets](../img/appstore-listing.png)
 

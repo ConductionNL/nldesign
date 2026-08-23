@@ -7,18 +7,18 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-1.3
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 /**
  * Computes WCAG 2.1 relative-luminance contrast ratios for token pairs.
@@ -135,8 +135,9 @@ class ContrastService {
 	 * @param array<int, array{name: string, value: string, role: string}> $candidates The candidate colors to evaluate.
 	 * @param string $background The background color (hex or rgb()/rgba()).
 	 *
+	 * One result per candidate, in the given order.
+	 *
 	 * @return array<int, array{name: string, ratio: float|null, threshold: float, level: string, pass: bool, unevaluated?: bool}>
-	 *         One result per candidate, in the given order.
 	 *
 	 * @spec openspec/specs/app-token-set-selection/spec.md
 	 */

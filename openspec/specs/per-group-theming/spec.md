@@ -169,7 +169,7 @@ staleness bound); mapping changes MUST take effect on the next request.
 `SettingsController` MUST expose `GET /settings/group-theming` (returns the ordered mapping,
 the available groups `{id, displayName}` for the picker, and the available token sets) and
 `POST /settings/group-theming` (replaces the full ordered mapping after validation). Both MUST
-carry the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` posture of all
+carry the `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` posture of all
 `/settings/*` endpoints — admin-only, CSRF-protected, no `#[PublicPage]`, no
 `#[NoAdminRequired]`, no `#[NoCSRFRequired]`.
 

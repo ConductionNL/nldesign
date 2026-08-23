@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EUPL-1.2
  *
  * @category Listener
- * @package  OCA\NLDesign\Listener
+ * @package  OCA\Thematiq\Listener
  *
  * @author    Conduction Development Team <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
@@ -25,10 +25,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Listener;
+namespace OCA\Thematiq\Listener;
 
-use OCA\NLDesign\Service\Config\NlDesignThemeShareableConfigType;
 use OCA\OpenRegister\Service\Config\RegisterShareableConfigTypesEvent;
+use OCA\Thematiq\Service\Config\NlDesignThemeShareableConfigType;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 

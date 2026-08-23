@@ -5,7 +5,7 @@ TBD - created by archiving change upstream-token-freshness. Update Purpose after
 ## Requirements
 ### Requirement: Daily Freshness Background Job
 
-The app MUST provide a background job `OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob`
+The app MUST provide a background job `OCA\Thematiq\BackgroundJob\UpstreamFreshnessJob`
 extending `OCP\BackgroundJob\TimedJob`, registered via `appinfo/info.xml`, with a 24-hour
 interval and `TIME_INSENSITIVE` sensitivity. The job compares the upstream
 `nl-design-system/themes` revision against the `upstreamRef` provenance recorded in
@@ -21,7 +21,7 @@ comparison.
 
 - GIVEN the app is installed on a Nextcloud 34 instance
 - WHEN `occ background-job:list` is inspected
-- THEN `OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob` MUST be listed
+- THEN `OCA\Thematiq\BackgroundJob\UpstreamFreshnessJob` MUST be listed
 - AND the job MUST declare a 24-hour interval and time-insensitive execution
 
 #### Scenario: Upstream change produces a per-set notice

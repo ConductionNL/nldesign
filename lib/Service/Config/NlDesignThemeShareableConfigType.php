@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: EUPL-1.2
  *
  * @category Service
- * @package  OCA\NLDesign\Service\Config
+ * @package  OCA\Thematiq\Service\Config
  *
  * @author    Conduction Development Team <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
@@ -31,10 +31,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service\Config;
+namespace OCA\Thematiq\Service\Config;
 
-use OCA\NLDesign\Service\ConfigBundleService;
 use OCA\OpenRegister\Service\Config\IShareableConfigType;
+use OCA\Thematiq\Service\ConfigBundleService;
 use Psr\Container\ContainerInterface;
 
 /**
