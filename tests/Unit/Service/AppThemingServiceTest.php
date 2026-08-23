@@ -12,9 +12,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\AppThemingService;
+use OCA\Thematiq\Service\AppThemingService;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;

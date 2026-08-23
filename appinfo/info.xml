@@ -10,7 +10,7 @@
 		l10n domain by. It changed from `nldesign` to `thematiq` on 2026-08-22.
 
 		"NL Design System" is an external standard owned by the Dutch government.
-		Its names — the `--nldesign-*` CSS custom properties, the `nldesign-*`
+		Its names — the CSS custom properties prefixed `nldesign`, the `nldesign`
 		class/DOM-id prefixes, the `nldesign` design-system id in
 		design-systems.json, nldesignsystem.nl, the nl-design-system/themes
 		upstream — did NOT change and MUST NOT be changed here. They are matched

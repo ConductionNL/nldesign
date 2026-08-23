@@ -57,7 +57,7 @@ async function statusOf(
 	return (await api(page, method, path, body)).status
 }
 
-const APP = '/index.php/apps/nldesign'
+const APP = '/index.php/apps/thematiq'
 
 test.describe('admin-only enforcement', () => {
 	let nonAdmin: { page: Page; close: () => Promise<void> }
@@ -131,7 +131,7 @@ test.describe('admin-only enforcement', () => {
 			200,
 		)
 		const before = await page.evaluate(async () => {
-			const res = await fetch('/index.php/apps/nldesign/settings/tokenset', {
+			const res = await fetch('/index.php/apps/thematiq/settings/tokenset', {
 				headers: { requesttoken: (window as any).OC.requestToken },
 			})
 			return JSON.stringify(await res.json())
@@ -146,7 +146,7 @@ test.describe('admin-only enforcement', () => {
 		// "...and no configuration MUST change" — the spec's second clause. A
 		// refusal that still mutated state would satisfy the status assertions.
 		const after = await page.evaluate(async () => {
-			const res = await fetch('/index.php/apps/nldesign/settings/tokenset', {
+			const res = await fetch('/index.php/apps/thematiq/settings/tokenset', {
 				headers: { requesttoken: (window as any).OC.requestToken },
 			})
 			return JSON.stringify(await res.json())
@@ -168,7 +168,7 @@ test.describe('admin-only enforcement', () => {
 		// "with no audit content in the response" — a 403 that still leaked the
 		// log body would satisfy a status-only assertion.
 		const leaked = await nonAdmin.page.evaluate(async () => {
-			const res = await fetch('/index.php/apps/nldesign/settings/audit', {
+			const res = await fetch('/index.php/apps/thematiq/settings/audit', {
 				headers: { requesttoken: (window as any).OC.requestToken },
 			})
 			return await res.text()
@@ -246,7 +246,7 @@ test.describe('admin-only enforcement', () => {
 				'/data/appdata_nldesign/audit/audit.jsonl',
 				'/nextcloud/data/appdata_nldesign/audit/audit.jsonl',
 				'/appdata_nldesign/audit/audit.jsonl',
-				'/index.php/apps/nldesign/audit/audit.jsonl',
+				'/index.php/apps/thematiq/audit/audit.jsonl',
 			]
 			for (const path of candidates) {
 				const res: APIResponse = await req.get(path, {

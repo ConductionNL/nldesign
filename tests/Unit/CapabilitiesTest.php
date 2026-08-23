@@ -11,13 +11,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit;
+namespace OCA\Thematiq\Tests\Unit;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Capabilities;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Capabilities;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\App\IAppManager;
 use OCP\ICache;
 use OCP\ICacheFactory;
@@ -133,7 +133,7 @@ class CapabilitiesTest extends TestCase {
 
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')->with(Application::APP_ID, 'logos/rijkshuisstijl.svg')
-			->willReturn('https://cloud.example/apps/nldesign/img/logos/rijkshuisstijl.svg');
+			->willReturn('https://cloud.example/apps/thematiq/img/logos/rijkshuisstijl.svg');
 
 		$designSystemService = $this->createMock(DesignSystemService::class);
 		$designSystemService->method('getTokenSetMeta')->with('rijkshuisstijl')->willReturn(
@@ -166,7 +166,7 @@ class CapabilitiesTest extends TestCase {
 		$this->assertSame(['id' => 'rijkshuisstijl', 'name' => 'Rijkshuisstijl', 'version' => null], $nldesign['tokenSet']);
 		$this->assertSame('nldesign', $nldesign['designSystem']);
 		$this->assertSame(['rvo', 'open-gemeenten', 'den-haag'], $nldesign['iconPacks']);
-		$this->assertSame('https://cloud.example/apps/nldesign/img/logos/rijkshuisstijl.svg', $nldesign['logos']['default']);
+		$this->assertSame('https://cloud.example/apps/thematiq/img/logos/rijkshuisstijl.svg', $nldesign['logos']['default']);
 		$this->assertTrue($nldesign['hideSlogan']);
 		$this->assertFalse($nldesign['showMenuLabels']);
 		$this->assertSame('AA', $nldesign['wcagLevel']);

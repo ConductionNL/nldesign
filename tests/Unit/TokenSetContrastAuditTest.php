@@ -24,11 +24,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit;
+namespace OCA\Thematiq\Tests\Unit;
 
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
 use PHPUnit\Framework\TestCase;
 
 /**

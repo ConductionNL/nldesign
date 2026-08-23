@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,13 +18,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Mail\NLDesignEMailTemplate;
-use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
-use OCA\NLDesign\Service\Exception\FooterValidationException;
-use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Mail\NLDesignEMailTemplate;
+use OCA\Thematiq\Service\Exception\ConfigReadOnlyException;
+use OCA\Thematiq\Service\Exception\FooterValidationException;
+use OCA\Thematiq\Service\Exception\ForeignMailTemplateClassException;
 use OCP\HintException;
 use OCP\IConfig;
 use OCP\IURLGenerator;
@@ -370,8 +370,8 @@ class EmailThemingService {
 	 * Get the current toggle state.
 	 *
 	 * @return array{state: string, configReadOnly: bool, foreignClass: ?string} The state:
-	 *         `state` is one of `disabled`/`enabled`/`foreign`; `foreignClass` is
-	 *         set only when `state` is `foreign`.
+	 *                                                                           `state` is one of `disabled`/`enabled`/`foreign`; `foreignClass` is
+	 *                                                                           set only when `state` is `foreign`.
 	 *
 	 * @spec openspec/specs/email-theming/spec.md
 	 */

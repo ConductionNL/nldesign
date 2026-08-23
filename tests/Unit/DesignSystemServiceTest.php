@@ -11,9 +11,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit;
+namespace OCA\Thematiq\Tests\Unit;
 
-use OCA\NLDesign\Service\DesignSystemService;
+use OCA\Thematiq\Service\DesignSystemService;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;

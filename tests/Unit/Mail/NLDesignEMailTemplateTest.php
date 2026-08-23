@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Mail;
+namespace OCA\Thematiq\Tests\Unit\Mail;
 
 use OC\Mail\EMailTemplate;
-use OCA\NLDesign\Mail\NLDesignEMailTemplate;
-use OCA\NLDesign\Service\EmailThemingService;
+use OCA\Thematiq\Mail\NLDesignEMailTemplate;
+use OCA\Thematiq\Service\EmailThemingService;
 use OCP\Defaults;
 use OCP\IL10N;
 use OCP\IURLGenerator;
@@ -164,7 +164,7 @@ class NLDesignEMailTemplateTest extends TestCase {
 			[
 				'primaryColor' => '#154273',
 				'primaryTextColor' => '#ffffff',
-				'logoUrl' => 'https://cloud.example.com/apps/nldesign/img/logos/test.svg',
+				'logoUrl' => 'https://cloud.example.com/apps/thematiq/img/logos/test.svg',
 			]
 		);
 		$service->method('getFooterConfig')->willReturn(['orgName' => '', 'accessibilityUrl' => '', 'privacyUrl' => '']);
@@ -180,7 +180,7 @@ class NLDesignEMailTemplateTest extends TestCase {
 		$html = $template->renderHtml();
 
 		$this->assertStringContainsString('#154273', $html);
-		$this->assertStringContainsString('https://cloud.example.com/apps/nldesign/img/logos/test.svg', $html);
+		$this->assertStringContainsString('https://cloud.example.com/apps/thematiq/img/logos/test.svg', $html);
 	}//end testHeaderAndButtonUseActiveTokenSetTheme()
 
 	/**

@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 /**
  * Validates admin-authored freeform CSS before it is persisted and served.
@@ -164,7 +164,7 @@ class CustomCssValidator {
 	 * cannot be disarmed by an unrelated, allowed reference elsewhere.
 	 *
 	 * Only `data:` is allowed to carry a scheme. Relative and root-relative
-	 * references (`../img/logo.svg`, `/apps/nldesign/img/logo.svg`) carry no
+	 * references (`../img/logo.svg`, `/apps/thematiq/img/logo.svg`) carry no
 	 * scheme at all, so they never match the scan and stay usable.
 	 *
 	 * @param string $css The admin-submitted CSS.

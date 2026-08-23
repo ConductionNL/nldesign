@@ -11,15 +11,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\CssInjectionService;
-use OCA\NLDesign\Service\CustomCssService;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\FontService;
-use OCA\NLDesign\Service\GroupThemingService;
-use OCA\NLDesign\Service\ThemePreviewBannerService;
+use OCA\Thematiq\Service\CssInjectionService;
+use OCA\Thematiq\Service\CustomCssService;
+use OCA\Thematiq\Service\CustomOverridesService;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\FontService;
+use OCA\Thematiq\Service\GroupThemingService;
+use OCA\Thematiq\Service\ThemePreviewBannerService;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -385,14 +385,14 @@ class CssInjectionServiceTest extends TestCase {
 		$this->fontService->method('hasFonts')->willReturn(true);
 		$this->fontService->method('getRevision')->willReturn(3);
 		$this->urlGenerator->method('linkToRoute')->with('nldesign.font.css')
-			->willReturn('https://example.test/apps/nldesign/fonts/css');
+			->willReturn('https://example.test/apps/thematiq/fonts/css');
 
 		$styleLog = [];
 		$fontLog = [];
 		$service = $this->buildService(styleLog: $styleLog, fontLog: $fontLog);
 		$service->inject('user');
 
-		$this->assertSame(['https://example.test/apps/nldesign/fonts/css?v=3'], $fontLog);
+		$this->assertSame(['https://example.test/apps/thematiq/fonts/css?v=3'], $fontLog);
 	}//end testCustomFontsInjectedWhenConfigured()
 
 	/**
@@ -737,7 +737,7 @@ class CssInjectionServiceTest extends TestCase {
 			['stylesheets' => ['systems/nldesign/fonts']]
 		);
 		$this->fontService->method('hasFonts')->willReturn(true);
-		$this->urlGenerator->method('linkToRoute')->willReturn('/index.php/apps/nldesign/fonts.css');
+		$this->urlGenerator->method('linkToRoute')->willReturn('/index.php/apps/thematiq/fonts.css');
 	}//end configureAllLaterLayers()
 
 	/**
@@ -778,7 +778,7 @@ class CssInjectionServiceTest extends TestCase {
 		$this->assertContains('systems/nldesign/fonts', $styleLog);
 		// ... and so did every layer AFTER it. This is the regression.
 		$this->assertCount(1, $fontLog, 'layer 4.5 was cancelled');
-		$this->assertStringContainsString('/index.php/apps/nldesign/fonts.css', $fontLog[0]);
+		$this->assertStringContainsString('/index.php/apps/thematiq/fonts.css', $fontLog[0]);
 		$this->assertContains('hide-slogan', $styleLog, 'layer 5 was cancelled');
 		$this->assertContains('show-menu-labels', $styleLog, 'layer 5 was cancelled');
 		$this->assertTrue($bannerInjected, 'layer 6 (preview banner) was cancelled');

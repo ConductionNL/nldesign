@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Templates;
+namespace OCA\Thematiq\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 

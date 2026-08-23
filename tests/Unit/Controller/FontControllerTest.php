@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\FontController;
-use OCA\NLDesign\Service\FontService;
+use OCA\Thematiq\Controller\FontController;
+use OCA\Thematiq\Service\FontService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;

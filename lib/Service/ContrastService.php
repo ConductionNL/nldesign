@@ -135,8 +135,9 @@ class ContrastService {
 	 * @param array<int, array{name: string, value: string, role: string}> $candidates The candidate colors to evaluate.
 	 * @param string $background The background color (hex or rgb()/rgba()).
 	 *
+	 * One result per candidate, in the given order.
+	 *
 	 * @return array<int, array{name: string, ratio: float|null, threshold: float, level: string, pass: bool, unevaluated?: bool}>
-	 *         One result per candidate, in the given order.
 	 *
 	 * @spec openspec/specs/app-token-set-selection/spec.md
 	 */

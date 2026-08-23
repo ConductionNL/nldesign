@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\OverridesController;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\ThemingAuditService;
+use OCA\Thematiq\Controller\OverridesController;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomOverridesService;
+use OCA\Thematiq\Service\ThemingAuditService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 

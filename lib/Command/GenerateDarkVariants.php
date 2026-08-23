@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Command
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Command;
+namespace OCA\Thematiq\Command;
 
-use OCA\NLDesign\Service\DarkPaletteService;
+use OCA\Thematiq\Service\DarkPaletteService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

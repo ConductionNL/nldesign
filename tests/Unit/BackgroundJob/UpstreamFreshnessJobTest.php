@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\BackgroundJob;
+namespace OCA\Thematiq\Tests\Unit\BackgroundJob;
 
-use OCA\NLDesign\BackgroundJob\UpstreamFreshnessJob;
-use OCA\NLDesign\Service\UpstreamFreshnessService;
+use OCA\Thematiq\BackgroundJob\UpstreamFreshnessJob;
+use OCA\Thematiq\Service\UpstreamFreshnessService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use PHPUnit\Framework\TestCase;

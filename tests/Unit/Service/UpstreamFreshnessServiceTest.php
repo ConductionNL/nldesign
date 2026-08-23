@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\TokenSetService;
-use OCA\NLDesign\Service\UpstreamFreshnessService;
+use OCA\Thematiq\Service\TokenSetService;
+use OCA\Thematiq\Service\UpstreamFreshnessService;
 use OCP\Http\Client\IClient;
 use OCP\Http\Client\IClientService;
 use OCP\Http\Client\IResponse;

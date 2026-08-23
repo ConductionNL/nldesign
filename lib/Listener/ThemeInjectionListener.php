@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Listener
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -19,10 +19,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Listener;
+namespace OCA\Thematiq\Listener;
 
-use OCA\NLDesign\Service\AppThemingService;
-use OCA\NLDesign\Service\CssInjectionService;
+use OCA\Thematiq\Service\AppThemingService;
+use OCA\Thematiq\Service\CssInjectionService;
 use OCP\AppFramework\Http\Events\BeforeLoginTemplateRenderedEvent;
 use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 use OCP\AppFramework\Http\TemplateResponse;

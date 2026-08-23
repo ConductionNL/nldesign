@@ -12,10 +12,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\ContrastController;
-use OCA\NLDesign\Service\ContrastService;
+use OCA\Thematiq\Controller\ContrastController;
+use OCA\Thematiq\Service\ContrastService;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;

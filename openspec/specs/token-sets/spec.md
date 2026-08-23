@@ -264,7 +264,7 @@ The app MUST expose admin-only API endpoints for listing, getting, and setting t
 #### Scenario: Non-admin access denied
 - GIVEN a non-admin user is authenticated
 - WHEN any `/settings/tokenset` or `/settings/tokensets` endpoint is called
-- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
+- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation
 
 ### Requirement: Token Set Count and Coverage
 

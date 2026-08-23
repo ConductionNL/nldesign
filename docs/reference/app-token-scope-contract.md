@@ -24,7 +24,7 @@ deliberately narrower than admin-only (any logged-in user can read it) and
 narrower than public (an anonymous visitor cannot).
 
 ```
-GET /apps/nldesign/api/token-sets
+GET /apps/thematiq/api/token-sets
 ```
 
 Response:
@@ -68,7 +68,7 @@ same-origin, authenticated browser POST carries the Nextcloud request token
 automatically.
 
 ```
-POST /apps/nldesign/api/contrast/evaluate
+POST /apps/thematiq/api/contrast/evaluate
 Content-Type: application/json
 
 {

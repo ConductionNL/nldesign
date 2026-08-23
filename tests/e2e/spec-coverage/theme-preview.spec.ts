@@ -35,7 +35,7 @@ import {
 	NONADMIN_PASS,
 } from './_fixtures'
 
-const APP = '/index.php/apps/nldesign'
+const APP = '/index.php/apps/thematiq'
 const THEMING_URL = '/settings/admin/theming'
 
 /** The set previewed throughout. Its display name is asserted in the banner. */

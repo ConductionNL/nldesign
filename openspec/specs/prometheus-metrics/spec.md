@@ -223,7 +223,7 @@ The metrics endpoint MUST be resilient to individual metric collection failures 
 - AND both warnings MUST be logged independently
 
 ### Requirement: Health Check Endpoint
-The app MUST expose a public health check endpoint at `GET /api/health` for monitoring and load balancers. The endpoint MUST be served by the OpenRegister AppHost observability engine's `GenericHealthController` (ADR-040), via a thin `OCA\NLDesign\Controller\HealthController` subclass so that the route name (`health#index`) and URL are unchanged. The checks MUST be declared in `src/manifest.json` using only the OpenRegister-independent primitives (`database`, `filesystem`, `appEnabled`) — never `orAvailable` — because nldesign has no OpenRegister dependency.
+The app MUST expose a public health check endpoint at `GET /api/health` for monitoring and load balancers. The endpoint MUST be served by the OpenRegister AppHost observability engine's `GenericHealthController` (ADR-040), via a thin `OCA\Thematiq\Controller\HealthController` subclass so that the route name (`health#index`) and URL are unchanged. The checks MUST be declared in `src/manifest.json` using only the OpenRegister-independent primitives (`database`, `filesystem`, `appEnabled`) — never `orAvailable` — because nldesign has no OpenRegister dependency.
 
 #### Scenario: Health check returns the canonical envelope
 - GIVEN the app configuration is accessible and the database and filesystem are healthy
@@ -296,7 +296,7 @@ The MetricsController MUST receive all required dependencies via constructor inj
 
 #### Scenario: Health controller is engine-owned
 - GIVEN the health endpoint is dispatched
-- THEN it MUST be served by `OCA\OpenRegister\AppHost\Controller\GenericHealthController` (via the thin `OCA\NLDesign\Controller\HealthController` subclass), NOT by a bespoke nldesign health implementation
+- THEN it MUST be served by `OCA\OpenRegister\AppHost\Controller\GenericHealthController` (via the thin `OCA\Thematiq\Controller\HealthController` subclass), NOT by a bespoke nldesign health implementation
 - AND nldesign MUST NOT hand-roll the health checks or the response envelope
 
 ### Requirement: Audit Entries Counter Metric

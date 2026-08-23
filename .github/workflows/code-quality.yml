@@ -233,7 +233,7 @@ jobs:
       # class autoloads only on route dispatch, not at bootstrap."
       #
       # The first run of this job disproved that: with OpenRegister absent,
-      # `/apps/nldesign/` returned **HTTP 500** — `Class
+      # `/apps/thematiq/` returned **HTTP 500** — `Class
       # "OCA\OpenRegister\AppHost\Controller\GenericHealthController" not
       # found`. Nextcloud's router reflects over every registered controller
       # while MATCHING a route, so the missing parent takes down every nldesign
@@ -249,7 +249,7 @@ jobs:
 
       # ── Integration tests ────────────────────────────────────────────────
       # `enable-newman` defaults to FALSE and this caller never set it, so
-      # tests/integration/nldesign.postman_collection.json had never executed in
+      # tests/integration/thematiq.postman_collection.json had never executed in
       # CI. It sits at the default `newman-collection-path` (tests/integration),
       # which is both the directory the validator counts collections in and the
       # directory the run step globs `*.postman_collection.json` in — flat, not

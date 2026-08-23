@@ -29,7 +29,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Controller
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -40,9 +40,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Controller;
+namespace OCA\Thematiq\Controller;
 
-use OCA\NLDesign\AppInfo\Application;
+use OCA\Thematiq\AppInfo\Application;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\AnonRateLimit;
@@ -158,8 +158,9 @@ class HealthController extends Controller {
 	/**
 	 * Run the AppHost observability engine for this app.
 	 *
+	 * Null when the engine is unavailable (openregister absent/disabled).
+	 *
 	 * @return array{status: string, version: string, checks: array<string, string>, httpStatus: int, cors: bool}|null
-	 *         Null when the engine is unavailable (openregister absent/disabled).
 	 */
 	private function engineResult(): ?array {
 		try {

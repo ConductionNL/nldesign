@@ -12,9 +12,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit;
+namespace OCA\Thematiq\Tests\Unit;
 
-use OCA\NLDesign\Service\ContrastService;
+use OCA\Thematiq\Service\ContrastService;
 use PHPUnit\Framework\TestCase;
 
 /**

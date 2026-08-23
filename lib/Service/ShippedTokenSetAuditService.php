@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 use OCP\ICache;
 
@@ -135,8 +135,9 @@ class ShippedTokenSetAuditService {
 	 * @param array<string, mixed> $theming The set's theming block.
 	 * @param string $level The WCAG threshold profile: 'AA' (default) or 'AAA' (7:1 / 4.5:1).
 	 *
+	 * The per-set audit result.
+	 *
 	 * @return array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}
-	 *         The per-set audit result.
 	 *
 	 * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-automated-contrast-audit-over-all-shipped-token-sets
 	 */
@@ -241,8 +242,9 @@ class ShippedTokenSetAuditService {
 	 *
 	 * @param string $appPath The app root path.
 	 *
+	 * One audit result per audited set, ordered deterministically by id.
+	 *
 	 * @return array<int, array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}>
-	 *         One audit result per audited set, ordered deterministically by id.
 	 *
 	 * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-reproducible-contrast-report
 	 */

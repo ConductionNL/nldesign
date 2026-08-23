@@ -7,7 +7,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Settings
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -22,13 +22,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Settings;
+namespace OCA\Thematiq\Settings;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\EmailThemingService;
-use OCA\NLDesign\Service\ThemePreviewService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\EmailThemingService;
+use OCA\Thematiq\Service\ThemePreviewService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;

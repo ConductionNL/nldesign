@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\ConfigBundleController;
-use OCA\NLDesign\Service\ConfigBundleService;
-use OCA\NLDesign\Service\ThemingAuditService;
+use OCA\Thematiq\Controller\ConfigBundleController;
+use OCA\Thematiq\Service\ConfigBundleService;
+use OCA\Thematiq\Service\ThemingAuditService;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +25,7 @@ use RuntimeException;
  * Covers tasks.md#task-4.3: export headers/body, and the import 400/413/415
  * paths plus the success/failure audit-logging contract.
  *
- * The service is mocked outright — {@see \OCA\NLDesign\Tests\Unit\Service\ConfigBundleServiceTest}
+ * The service is mocked outright — {@see \OCA\Thematiq\Tests\Unit\Service\ConfigBundleServiceTest}
  * already covers its real export/import/validation logic end-to-end; this
  * suite only verifies the controller's HTTP mapping and its ONE call site
  * into {@see ThemingAuditService}.

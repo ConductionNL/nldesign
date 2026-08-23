@@ -99,11 +99,11 @@ Or via the REST API:
 
 ```bash
 # Get current overrides
-curl -u admin:password http://nextcloud.example.com/apps/nldesign/api/settings/overrides
+curl -u admin:password http://nextcloud.example.com/apps/thematiq/api/settings/overrides
 
 # Set a specific override
 curl -u admin:password -X POST \
   -H 'Content-Type: application/json' \
   -d '{"overrides": {"--color-primary": "#005A9C"}}' \
-  http://nextcloud.example.com/apps/nldesign/api/settings/overrides
+  http://nextcloud.example.com/apps/thematiq/api/settings/overrides
 ```

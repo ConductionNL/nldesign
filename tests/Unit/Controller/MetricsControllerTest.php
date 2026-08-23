@@ -12,11 +12,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\MetricsController;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Controller\MetricsController;
+use OCA\Thematiq\Service\CustomOverridesService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\TextPlainResponse;

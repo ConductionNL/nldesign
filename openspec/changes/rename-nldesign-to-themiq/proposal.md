@@ -8,7 +8,7 @@ kind: mixed
 
 Rename the app from `nldesign` to `themiq`, under the fleet's `-iq` product
 convention (pipelinq, shillinq, scholiq, portaliq, hermiq). The app id, the
-`OCA\NLDesign` namespace, the appstore identity and every fleet reference move
+`OCA\Thematiq` namespace, the appstore identity and every fleet reference move
 together.
 
 Off-chain from `hydra/openspec/changes/portaliq-phase-two`: nothing in that
@@ -30,7 +30,7 @@ rename of this size done informally leaves half the fleet on the old id.
 ## Affected Projects
 
 - [ ] `nldesign` → `themiq` — app id in `appinfo/info.xml`, the
-      `OCA\NLDesign\*` namespace, `package.json`, CI workflows, l10n (37 files),
+      `OCA\Thematiq\*` namespace, `package.json`, CI workflows, l10n (37 files),
       release config, docs.
 - [ ] The fleet — **468 files outside this repo name the app id**, measured
       2026-08-15. Every one is a caller that breaks silently if it is missed.
