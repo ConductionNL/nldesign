@@ -707,7 +707,7 @@ class ComplianceReportService {
 		return [
 			'instanceId' => $this->config->getSystemValue('instanceid', ''),
 			'instanceUrl' => $this->urlGenerator->getBaseUrl(),
-			'appVersion' => $this->appManager->getAppVersion('nldesign'),
+			'appVersion' => $this->appManager->getAppVersion('thematiq'),
 			'nextcloudVersion' => $this->resolveNextcloudVersion(),
 			'tokenSet' => [
 				'id' => $tokenSetId,
