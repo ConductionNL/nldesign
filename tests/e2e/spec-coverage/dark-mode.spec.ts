@@ -34,7 +34,7 @@ async function nldesignStyles(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll('link[rel=stylesheet]')]
 			.map((l) => (l as HTMLLinkElement).href)
-			.filter((h) => h.includes('/nldesign/')),
+			.filter((h) => h.includes('/thematiq/')),
 	)
 }
 
