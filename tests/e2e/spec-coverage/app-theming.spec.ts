@@ -33,7 +33,7 @@ async function nldesignStyleCount(page: Page): Promise<number> {
 	return page.evaluate(
 		() =>
 			[...document.querySelectorAll('link[rel=stylesheet]')].filter((l) =>
-				(l as HTMLLinkElement).href.includes('/nldesign/'),
+				(l as HTMLLinkElement).href.includes('/thematiq/'),
 			).length,
 	)
 }
