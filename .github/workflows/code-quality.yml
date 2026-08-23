@@ -185,9 +185,9 @@ jobs:
       enable-eslint: true
       enable-sbom: true
       enable-phpunit: true
-      # nldesign ships ZERO .vue files — nc-vue is a build-only devDependency
+      # thematiq ships ZERO .vue files — nc-vue is a build-only devDependency
       # used for icon generation. That is precisely why this app NEEDS e2e
-      # rather than being exempt from it: nldesign's entire product surface is
+      # rather than being exempt from it: thematiq's entire product surface is
       # runtime CSS — design tokens, token sets, dark mode, high-contrast, the
       # NL Design System variable mapping onto Nextcloud's own theming. None of
       # that is observable from a unit test, because there is no component to
@@ -197,7 +197,7 @@ jobs:
       #
       # `playwright-test-path` is left at its default (`tests/e2e`). The shared
       # workflow uses it twice: to assert tests exist, and to locate a config —
-      # first `tests/e2e/playwright.config.ts`, then the repo root. nldesign has
+      # first `tests/e2e/playwright.config.ts`, then the repo root. thematiq has
       # no config under tests/e2e, so the root `playwright.config.ts` is used,
       # whose `chromium` project runs spec-coverage/ and testIgnores visual/
       # (PNG baselines are host-font/GPU specific and cannot gate on a runner).
@@ -208,7 +208,7 @@ jobs:
       # suite is not a candidate for the `fullyParallel` treatment used
       # elsewhere in the fleet.
       enable-playwright: true
-      # A fresh Nextcloud has nldesign's `token_set` unset, which resolves to
+      # A fresh Nextcloud has thematiq's `token_set` unset, which resolves to
       # the `nextcloud` set, whose design_system is `none` — and `none` means
       # CssInjectionService emits NO design-system layer and NO token layer at
       # all. That is a correct, deliberate stock-Nextcloud state, and it is also
@@ -242,7 +242,7 @@ jobs:
       # a failure that names the login form and says nothing about the cause.
       #
       # Installing OpenRegister makes the suite able to run. It does NOT fix
-      # the underlying coupling: nldesign is currently broken standalone, and
+      # the underlying coupling: thematiq is currently broken standalone, and
       # an `extends` cannot be made lazy by DI because it is resolved by the
       # autoloader, not the container. That is tracked separately.
       additional-apps: '[{"repo":"ConductionNL/openregister","app":"openregister","ref":"development"}]'
@@ -263,7 +263,7 @@ jobs:
       # `node` scripts, which is what a leg has to be.
       # Measured on this tree before enabling: BOTH FAIL — `check:manifest` on
       # `top-level: menu (array) is required` + `pages (array) is required`
-      # (nldesign's src/manifest.json does not carry the fleet manifest shape at
+      # (thematiq's src/manifest.json does not carry the fleet manifest shape at
       # all), `test:l10n` on source strings missing from l10n/en.json. Real
       # pre-existing defects; the gate is what makes them visible.
       # `test` / `test:unit` are NOT listed: "Frontend Tests (unit)" runs them.
