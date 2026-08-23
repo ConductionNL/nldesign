@@ -108,7 +108,7 @@ jobs:
   quality:
     uses: ConductionNL/.github/.github/workflows/quality.yml@main
     with:
-      app-name: nldesign
+      app-name: thematiq
       php-version: "8.3"
       # Pinned, because the shared workflow's DEFAULT is '["stable31", "stable32"]'
       # and stable31 CANNOT WORK here. `additional-apps` below installs

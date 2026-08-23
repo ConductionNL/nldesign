@@ -17,7 +17,7 @@ jobs:
     # run failed before any job was created.
     uses: ConductionNL/.github/.github/workflows/issue-triage.yml@main
     with:
-      app-name: nldesign
+      app-name: thematiq
       backlog-existing: ${{ github.event_name == 'workflow_dispatch' && inputs.backlog-existing || false }}
     secrets:
       PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
