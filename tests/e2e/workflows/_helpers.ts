@@ -122,7 +122,7 @@ export async function appAssetUrl(
 				window as unknown as {
 					OC: { filePath: (a: string, t: string, f: string) => string }
 				}
-			).OC.filePath('nldesign', t, f),
+			).OC.filePath('thematiq', t, f),
 		{ t: type, f: file },
 	)
 }

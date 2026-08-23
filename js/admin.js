@@ -647,7 +647,7 @@
 			var proposedBg = proposed.background_color || currentBg
 			var currentLogoUrl = currentTheming.logo_url || ''
 			var proposedLogoPath = proposed.logo
-				? OC.linkTo('nldesign', proposed.logo)
+				? OC.linkTo('thematiq', proposed.logo)
 				: ''
 
 			// Dark logo row — informational only. logo_dark is never sent to
@@ -656,7 +656,7 @@
 			// generated dark stylesheet applies it via --nldesign-logo-url.
 			var darkLogoRow = ''
 			if (proposed.logo_dark) {
-				var darkLogoPath = OC.linkTo('nldesign', proposed.logo_dark)
+				var darkLogoPath = OC.linkTo('thematiq', proposed.logo_dark)
 				darkLogoRow =
 					''
 					+ '    <div class="nldesign-dialog-dark-logo-row">'
