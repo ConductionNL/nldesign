@@ -24,7 +24,7 @@
 			return
 		}
 
-		var state = OCP.InitialState.loadState('nldesign', 'preview', null)
+		var state = OCP.InitialState.loadState('thematiq', 'preview', null)
 		if (!state || !state.tokenSet) {
 			return
 		}

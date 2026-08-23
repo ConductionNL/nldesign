@@ -81,7 +81,7 @@
 				return fallback
 			}
 			try {
-				var value = OCP.InitialState.loadState('nldesign', key, fallback)
+				var value = OCP.InitialState.loadState('thematiq', key, fallback)
 				return value === undefined || value === null ? fallback : value
 			} catch (e) {
 				console.error(
