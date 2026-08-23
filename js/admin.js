@@ -328,7 +328,7 @@
 			valueEl.textContent =
 				packs.length > 0
 					? packs.join(', ')
-					: t('nldesign', 'Nextcloud stock icons (no custom pack)')
+					: t('thematiq', 'Nextcloud stock icons (no custom pack)')
 		}
 
 		// Show/hide the Marianne (French State typeface) acknowledgement gate —
@@ -400,7 +400,7 @@
 		if (previewBtn !== null && tokenSetSelect !== null) {
 			previewBtn.addEventListener('click', function () {
 				previewBtn.disabled = true
-				fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+				fetch(OC.generateUrl('/apps/thematiq/settings/preview'), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -416,13 +416,13 @@
 							window.location.reload()
 						} else {
 							previewBtn.disabled = false
-							notify(t('nldesign', 'Failed to start theme preview.'))
+							notify(t('thematiq', 'Failed to start theme preview.'))
 						}
 					})
 					.catch(function (error) {
 						previewBtn.disabled = false
 						console.error('Error starting theme preview:', error)
-						notify(t('nldesign', 'Failed to start theme preview.'))
+						notify(t('thematiq', 'Failed to start theme preview.'))
 					})
 			})
 		}
@@ -432,7 +432,7 @@
 		if (previewDiscardBtn !== null) {
 			previewDiscardBtn.addEventListener('click', function () {
 				previewDiscardBtn.disabled = true
-				fetch(OC.generateUrl('/apps/nldesign/settings/preview'), {
+				fetch(OC.generateUrl('/apps/thematiq/settings/preview'), {
 					method: 'DELETE',
 					headers: { requesttoken: OC.requestToken },
 				})
@@ -442,7 +442,7 @@
 					.catch(function (error) {
 						previewDiscardBtn.disabled = false
 						console.error('Error discarding theme preview:', error)
-						notify(t('nldesign', 'Failed to discard theme preview.'))
+						notify(t('thematiq', 'Failed to discard theme preview.'))
 					})
 			})
 		}
@@ -468,8 +468,8 @@
 		// server-side from the caller's own preview state; no body is sent.
 		function commitTokenSetChange(tokenSet, publishMode) {
 			var url = publishMode
-				? OC.generateUrl('/apps/nldesign/settings/preview/publish')
-				: OC.generateUrl('/apps/nldesign/settings/tokenset')
+				? OC.generateUrl('/apps/thematiq/settings/preview/publish')
+				: OC.generateUrl('/apps/thematiq/settings/tokenset')
 			var options = {
 				method: 'POST',
 				headers: { requesttoken: OC.requestToken },
@@ -508,18 +508,18 @@
 							checkAndShowThemingDialog(tsData)
 						}
 					} else {
-						notify(t('nldesign', 'Failed to update theme.'))
+						notify(t('thematiq', 'Failed to update theme.'))
 					}
 				})
 				.catch(function (error) {
 					console.error('Error saving token set:', error)
-					notify(t('nldesign', 'Failed to update theme.'))
+					notify(t('thematiq', 'Failed to update theme.'))
 				})
 		}
 
 		// Fetch current NC theming values and show dialog if they differ
 		function checkAndShowThemingDialog(tokenSetData) {
-			var url = OC.generateUrl('/apps/nldesign/settings/theming')
+			var url = OC.generateUrl('/apps/thematiq/settings/theming')
 
 			fetch(url, {
 				headers: {
@@ -539,7 +539,7 @@
 							!== currentTheming.primary_color.toLowerCase()
 					) {
 						diffs.push({
-							label: t('nldesign', 'Primary color'),
+							label: t('thematiq', 'Primary color'),
 							key: 'primary_color',
 							current: currentTheming.primary_color,
 							proposed: proposed.primary_color,
@@ -552,7 +552,7 @@
 							!== currentTheming.background_color.toLowerCase()
 					) {
 						diffs.push({
-							label: t('nldesign', 'Background color'),
+							label: t('thematiq', 'Background color'),
 							key: 'background_color',
 							current: currentTheming.background_color,
 							proposed: proposed.background_color,
@@ -561,22 +561,22 @@
 
 					if (proposed.logo) {
 						diffs.push({
-							label: t('nldesign', 'Logo'),
+							label: t('thematiq', 'Logo'),
 							key: 'logo',
 							current: currentTheming.has_custom_logo
-								? t('nldesign', '(custom logo)')
-								: t('nldesign', '(default)'),
+								? t('thematiq', '(custom logo)')
+								: t('thematiq', '(default)'),
 							proposed: proposed.logo.split('/').pop(),
 						})
 					}
 
 					if (proposed.background) {
 						diffs.push({
-							label: t('nldesign', 'Background image'),
+							label: t('thematiq', 'Background image'),
 							key: 'background',
 							current: currentTheming.has_custom_background
-								? t('nldesign', '(custom)')
-								: t('nldesign', '(default)'),
+								? t('thematiq', '(custom)')
+								: t('thematiq', '(default)'),
 							proposed: proposed.background.split('/').pop(),
 						})
 					}
@@ -664,7 +664,7 @@
 					+ '        <img class="nldesign-dialog-preview-logo" src="'
 					+ escapeHtml(darkLogoPath)
 					+ '" alt="'
-					+ escapeHtml(t('nldesign', 'Dark logo'))
+					+ escapeHtml(t('thematiq', 'Dark logo'))
 					+ '">'
 					+ '      </div>'
 					+ '      <p class="nldesign-dialog-hint">'
@@ -693,7 +693,7 @@
 				+ '    <div class="nldesign-dialog-previews">'
 				+ '      <div class="nldesign-dialog-preview-col">'
 				+ '        <span class="nldesign-dialog-preview-label">'
-				+ escapeHtml(t('nldesign', 'Current'))
+				+ escapeHtml(t('thematiq', 'Current'))
 				+ '</span>'
 				+ '        <div class="nldesign-dialog-preview-box" style="background-color:'
 				+ escapeHtml(currentBg)
@@ -714,7 +714,7 @@
 				+ '      </div>'
 				+ '      <div class="nldesign-dialog-preview-col">'
 				+ '        <span class="nldesign-dialog-preview-label">'
-				+ escapeHtml(t('nldesign', 'Proposed'))
+				+ escapeHtml(t('thematiq', 'Proposed'))
 				+ '</span>'
 				+ '        <div class="nldesign-dialog-preview-box" style="background-color:'
 				+ escapeHtml(proposedBg)
@@ -733,11 +733,11 @@
 				+ '    </div>'
 				+ '    <table class="nldesign-dialog-table">'
 				+ '      <thead><tr><th>'
-				+ escapeHtml(t('nldesign', 'Setting'))
+				+ escapeHtml(t('thematiq', 'Setting'))
 				+ '</th><th>'
-				+ escapeHtml(t('nldesign', 'Current'))
+				+ escapeHtml(t('thematiq', 'Current'))
 				+ '</th><th>'
-				+ escapeHtml(t('nldesign', 'Proposed'))
+				+ escapeHtml(t('thematiq', 'Proposed'))
 				+ '</th></tr></thead>'
 				+ '      <tbody>'
 				+ rows
@@ -754,10 +754,10 @@
 				+ darkLogoRow
 				+ '    <div class="nldesign-dialog-actions">'
 				+ '      <button class="nldesign-dialog-cancel">'
-				+ escapeHtml(t('nldesign', 'Cancel'))
+				+ escapeHtml(t('thematiq', 'Cancel'))
 				+ '</button>'
 				+ '      <button class="nldesign-dialog-confirm">'
-				+ escapeHtml(t('nldesign', 'Update theming'))
+				+ escapeHtml(t('thematiq', 'Update theming'))
 				+ '</button>'
 				+ '    </div>'
 				+ '  </div>'
@@ -791,7 +791,7 @@
 				.addEventListener('click', function () {
 					var btn = this
 					btn.disabled = true
-					btn.textContent = t('nldesign', 'Updating...')
+					btn.textContent = t('thematiq', 'Updating...')
 
 					var payload = {}
 					diffs.forEach(function (diff) {
@@ -808,7 +808,7 @@
 						}
 					})
 
-					var url = OC.generateUrl('/apps/nldesign/settings/theming')
+					var url = OC.generateUrl('/apps/thematiq/settings/theming')
 					fetch(url, {
 						method: 'POST',
 						headers: {
@@ -853,7 +853,7 @@
 							closeDialogOverlay(overlay)
 							console.error('Error updating theming:', error)
 							notify(
-								t('nldesign', 'Failed to update Nextcloud theming.'),
+								t('thematiq', 'Failed to update Nextcloud theming.'),
 							)
 						})
 				})
@@ -1020,7 +1020,7 @@
 
 		// Save dark-mode variants toggle to server
 		function saveDarkVariantsSetting(enabled) {
-			var url = OC.generateUrl('/apps/nldesign/settings/dark-variants')
+			var url = OC.generateUrl('/apps/thematiq/settings/dark-variants')
 
 			fetch(url, {
 				method: 'POST',
@@ -1042,12 +1042,12 @@
 							),
 						)
 					} else {
-						notify(t('nldesign', 'Failed to save setting.'))
+						notify(t('thematiq', 'Failed to save setting.'))
 					}
 				})
 				.catch(function (error) {
 					console.error('Error saving dark variants setting:', error)
-					notify(t('nldesign', 'Failed to save setting.'))
+					notify(t('thematiq', 'Failed to save setting.'))
 				})
 		}
 
@@ -1063,7 +1063,7 @@
 
 		// Save the Marianne acknowledgement gate to server
 		function saveMarianneSetting(enabled) {
-			var url = OC.generateUrl('/apps/nldesign/settings/marianne')
+			var url = OC.generateUrl('/apps/thematiq/settings/marianne')
 
 			fetch(url, {
 				method: 'POST',
@@ -1085,18 +1085,18 @@
 							),
 						)
 					} else {
-						notify(t('nldesign', 'Failed to save setting.'))
+						notify(t('thematiq', 'Failed to save setting.'))
 					}
 				})
 				.catch(function (error) {
 					console.error('Error saving Marianne setting:', error)
-					notify(t('nldesign', 'Failed to save setting.'))
+					notify(t('thematiq', 'Failed to save setting.'))
 				})
 		}
 
 		// Save hide slogan setting to server
 		function saveSloganSetting(hideSlogan) {
-			var url = OC.generateUrl('/apps/nldesign/settings/slogan')
+			var url = OC.generateUrl('/apps/thematiq/settings/slogan')
 
 			fetch(url, {
 				method: 'POST',
@@ -1118,18 +1118,18 @@
 							),
 						)
 					} else {
-						notify(t('nldesign', 'Failed to save setting.'))
+						notify(t('thematiq', 'Failed to save setting.'))
 					}
 				})
 				.catch(function (error) {
 					console.error('Error saving slogan setting:', error)
-					notify(t('nldesign', 'Failed to save setting.'))
+					notify(t('thematiq', 'Failed to save setting.'))
 				})
 		}
 
 		// Save show menu labels setting to server.
 		function saveMenuLabelsSetting(showMenuLabels) {
-			var url = OC.generateUrl('/apps/nldesign/settings/menulabels')
+			var url = OC.generateUrl('/apps/thematiq/settings/menulabels')
 
 			fetch(url, {
 				method: 'POST',
@@ -1151,12 +1151,12 @@
 							),
 						)
 					} else {
-						notify(t('nldesign', 'Failed to save setting.'))
+						notify(t('thematiq', 'Failed to save setting.'))
 					}
 				})
 				.catch(function (error) {
 					console.error('Error saving menu labels setting:', error)
-					notify(t('nldesign', 'Failed to save setting.'))
+					notify(t('thematiq', 'Failed to save setting.'))
 				})
 		}
 
@@ -1180,7 +1180,7 @@
 				return
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/overrides'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -1211,7 +1211,7 @@
 					console.error('Failed to load token editor:', err)
 					container.innerHTML =
 						'<p class="settings-hint">'
-						+ escapeHtml(t('nldesign', 'Could not load token editor.'))
+						+ escapeHtml(t('thematiq', 'Could not load token editor.'))
 						+ '</p>'
 				})
 		}
@@ -1271,14 +1271,14 @@
 				+ '<div class="nldesign-token-editor">'
 				+ '<div class="nldesign-token-editor-header">'
 				+ '<h3>'
-				+ escapeHtml(t('nldesign', 'Custom token overrides'))
+				+ escapeHtml(t('thematiq', 'Custom token overrides'))
 				+ '</h3>'
 				+ '<div class="nldesign-token-editor-actions">'
 				+ '<button class="nldesign-btn nldesign-btn--small" id="nldesign-export-btn">'
-				+ escapeHtml(t('nldesign', 'Download'))
+				+ escapeHtml(t('thematiq', 'Download'))
 				+ '</button>'
 				+ '<label class="nldesign-btn nldesign-btn--small" style="cursor:pointer">'
-				+ escapeHtml(t('nldesign', 'Upload'))
+				+ escapeHtml(t('thematiq', 'Upload'))
 				+ '<input type="file" id="nldesign-import-input" accept=".css" style="display:none">'
 				+ '</label>'
 				+ '</div>'
@@ -1290,7 +1290,7 @@
 				+ '<div class="nldesign-save-bar">'
 				+ '<span class="nldesign-save-status" id="nldesign-save-status"></span>'
 				+ '<button class="nldesign-btn nldesign-btn--primary" id="nldesign-save-btn">'
-				+ escapeHtml(t('nldesign', 'Save overrides'))
+				+ escapeHtml(t('thematiq', 'Save overrides'))
 				+ '</button>'
 				+ '</div>'
 				+ '</div>'
@@ -1354,7 +1354,7 @@
 
 			var badgeHtml = isCustom
 				? '<span class="nldesign-token-custom-badge" title="'
-					+ escapeHtml(t('nldesign', 'Custom value'))
+					+ escapeHtml(t('thematiq', 'Custom value'))
 					+ '"></span>'
 				: ''
 
@@ -1363,7 +1363,7 @@
 			// to satisfy WCAG 1.3.1/4.1.2 (axe "label").
 			var inputLabel = escapeHtml(meta.label || name)
 			var pickerLabel = escapeHtml(
-				t('nldesign', 'Colour picker for {label}', {
+				t('thematiq', 'Colour picker for {label}', {
 					label: meta.label || name,
 				}),
 			)
@@ -1416,10 +1416,10 @@
 				+ '<button class="nldesign-btn nldesign-btn--small nldesign-reset-btn" data-token="'
 				+ escapeHtml(name)
 				+ '" title="'
-				+ escapeHtml(t('nldesign', 'Reset to default'))
+				+ escapeHtml(t('thematiq', 'Reset to default'))
 				+ '" aria-label="'
 				+ escapeHtml(
-					t('nldesign', 'Reset {label} to default', {
+					t('thematiq', 'Reset {label} to default', {
 						label: meta.label || name,
 					}),
 				)
@@ -1572,7 +1572,7 @@
 				return tokenEditorState[k].isDirty === true
 			}).length
 			statusEl.textContent =
-				dirtyCount > 0 ? t('nldesign', 'Unsaved changes') : ''
+				dirtyCount > 0 ? t('thematiq', 'Unsaved changes') : ''
 		}
 
 		function saveOverrides() {
@@ -1590,7 +1590,7 @@
 				btn.disabled = true
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/overrides'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -1610,10 +1610,10 @@
 							tokenEditorState[k].isDirty = false
 						})
 						updateSaveStatus()
-						notify(t('nldesign', 'Token overrides saved.'))
+						notify(t('thematiq', 'Token overrides saved.'))
 					} else {
 						notify(
-							t('nldesign', 'Failed to save overrides:')
+							t('thematiq', 'Failed to save overrides:')
 								+ (data.error || ''),
 						)
 					}
@@ -1623,13 +1623,13 @@
 						btn.disabled = false
 					}
 					console.error('Error saving overrides:', err)
-					notify(t('nldesign', 'Failed to save overrides.'))
+					notify(t('thematiq', 'Failed to save overrides.'))
 				})
 		}
 
 		function exportOverrides() {
 			var a = document.createElement('a')
-			a.href = OC.generateUrl('/apps/nldesign/settings/overrides/export')
+			a.href = OC.generateUrl('/apps/thematiq/settings/overrides/export')
 			a.download = 'custom-overrides.css'
 			document.body.appendChild(a)
 			a.click()
@@ -1640,7 +1640,7 @@
 			var formData = new FormData()
 			formData.append('file', file)
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/overrides/import'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/overrides/import'), {
 				method: 'POST',
 				headers: { requesttoken: OC.requestToken },
 				body: formData,
@@ -1665,12 +1665,12 @@
 						}
 						initTokenEditor()
 					} else {
-						notify(t('nldesign', 'Import failed:') + (data.error || ''))
+						notify(t('thematiq', 'Import failed:') + (data.error || ''))
 					}
 				})
 				.catch(function (err) {
 					console.error('Error importing overrides:', err)
-					notify(t('nldesign', 'Import failed.'))
+					notify(t('thematiq', 'Import failed.'))
 				})
 		}
 
@@ -1689,7 +1689,7 @@
 		) {
 			fetch(
 				OC.generateUrl(
-					'/apps/nldesign/settings/tokenset-preview/'
+					'/apps/thematiq/settings/tokenset-preview/'
 						+ encodeURIComponent(newTokenSetId),
 				),
 				{
@@ -1789,7 +1789,7 @@
 				+ '<div class="nldesign-dialog">'
 				+ '<h3>'
 				+ escapeHtml(
-					t('nldesign', 'Apply token set: {name}').replace(
+					t('thematiq', 'Apply token set: {name}').replace(
 						'{name}',
 						newTokenSetId,
 					),
@@ -1806,33 +1806,33 @@
 				+ '</p>'
 				+ '<div style="margin-bottom:8px">'
 				+ '<button class="nldesign-apply-dialog-toggle" id="nldesign-apply-select-all">'
-				+ escapeHtml(t('nldesign', 'Select all'))
+				+ escapeHtml(t('thematiq', 'Select all'))
 				+ '</button>'
 				+ ' / '
 				+ '<button class="nldesign-apply-dialog-toggle" id="nldesign-apply-deselect-all">'
-				+ escapeHtml(t('nldesign', 'Deselect all'))
+				+ escapeHtml(t('thematiq', 'Deselect all'))
 				+ '</button>'
 				+ '</div>'
 				+ '<table class="nldesign-apply-dialog-table"><thead><tr>'
 				+ '<th></th>'
 				+ '<th>'
-				+ escapeHtml(t('nldesign', 'Token'))
+				+ escapeHtml(t('thematiq', 'Token'))
 				+ '</th>'
 				+ '<th>'
-				+ escapeHtml(t('nldesign', 'Current'))
+				+ escapeHtml(t('thematiq', 'Current'))
 				+ '</th>'
 				+ '<th>'
-				+ escapeHtml(t('nldesign', 'New'))
+				+ escapeHtml(t('thematiq', 'New'))
 				+ '</th>'
 				+ '</tr></thead><tbody>'
 				+ rowsHtml
 				+ '</tbody></table>'
 				+ '<div class="nldesign-dialog-actions">'
 				+ '<button class="nldesign-dialog-cancel">'
-				+ escapeHtml(t('nldesign', 'Cancel'))
+				+ escapeHtml(t('thematiq', 'Cancel'))
 				+ '</button>'
 				+ '<button class="nldesign-dialog-confirm">'
-				+ escapeHtml(t('nldesign', 'Apply selected'))
+				+ escapeHtml(t('thematiq', 'Apply selected'))
 				+ '</button>'
 				+ '</div>'
 				+ '</div>'
@@ -1916,7 +1916,7 @@
 				.addEventListener('click', function () {
 					var btn = this
 					btn.disabled = true
-					btn.textContent = t('nldesign', 'Applying…')
+					btn.textContent = t('thematiq', 'Applying…')
 
 					var toApply = {}
 					overlay
@@ -1932,7 +1932,7 @@
 							}
 						})
 
-					fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), {
+					fetch(OC.generateUrl('/apps/thematiq/settings/overrides'), {
 						headers: { requesttoken: OC.requestToken },
 					})
 						.then(function (r) {
@@ -1945,7 +1945,7 @@
 								toApply,
 							)
 							return fetch(
-								OC.generateUrl('/apps/nldesign/settings/overrides'),
+								OC.generateUrl('/apps/thematiq/settings/overrides'),
 								{
 									method: 'POST',
 									headers: {
@@ -1977,14 +1977,14 @@
 							) {
 								tokenSetSelect.dataset.previousValue = newTokenSetId
 							}
-							notify(t('nldesign', 'Token overrides applied.'))
+							notify(t('thematiq', 'Token overrides applied.'))
 							initTokenEditor()
 						})
 						.catch(function (err) {
 							btn.disabled = false
-							btn.textContent = t('nldesign', 'Apply selected')
+							btn.textContent = t('thematiq', 'Apply selected')
 							console.error('Error applying token set:', err)
-							notify(t('nldesign', 'Failed to apply token set.'))
+							notify(t('thematiq', 'Failed to apply token set.'))
 						})
 				})
 		}
@@ -2048,7 +2048,7 @@
 				return
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/app-theming'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/app-theming'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -2059,7 +2059,7 @@
 				})
 				.catch(function (err) {
 					console.error('Error loading app theming:', err)
-					listEl.textContent = t('nldesign', 'Failed to load apps.')
+					listEl.textContent = t('thematiq', 'Failed to load apps.')
 				})
 
 			saveBtn.addEventListener('click', saveAppTheming)
@@ -2072,7 +2072,7 @@
 		function renderAppThemingList(listEl, apps) {
 			listEl.innerHTML = ''
 			if (apps.length === 0) {
-				listEl.textContent = t('nldesign', 'No apps available.')
+				listEl.textContent = t('thematiq', 'No apps available.')
 				return
 			}
 
@@ -2094,8 +2094,8 @@
 			searchWrap.className = 'nldesign-app-dropdown-search'
 			var search = document.createElement('input')
 			search.type = 'search'
-			search.placeholder = t('nldesign', 'Search apps…')
-			search.setAttribute('aria-label', t('nldesign', 'Search apps'))
+			search.placeholder = t('thematiq', 'Search apps…')
+			search.setAttribute('aria-label', t('thematiq', 'Search apps'))
 			searchWrap.appendChild(search)
 
 			var optList = document.createElement('div')
@@ -2220,7 +2220,7 @@
 					}
 				})
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/app-theming'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/app-theming'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -2246,12 +2246,12 @@
 							),
 						)
 					} else {
-						notify(t('nldesign', 'Failed to save app theming.'))
+						notify(t('thematiq', 'Failed to save app theming.'))
 					}
 				})
 				.catch(function (err) {
 					console.error('Error saving app theming:', err)
-					notify(t('nldesign', 'Failed to save app theming.'))
+					notify(t('thematiq', 'Failed to save app theming.'))
 				})
 		}
 
@@ -2278,7 +2278,7 @@
 				return
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/group-theming'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/group-theming'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -2342,7 +2342,7 @@
 			if (groupThemingRows.length === 0) {
 				var empty = document.createElement('p')
 				empty.className = 'settings-hint'
-				empty.textContent = t('nldesign', 'No group mappings configured.')
+				empty.textContent = t('thematiq', 'No group mappings configured.')
 				listEl.appendChild(empty)
 				return
 			}
@@ -2353,7 +2353,7 @@
 
 				var groupSelect = document.createElement('select')
 				groupSelect.setAttribute('data-field', 'group')
-				groupSelect.setAttribute('aria-label', t('nldesign', 'Group'))
+				groupSelect.setAttribute('aria-label', t('thematiq', 'Group'))
 				groupThemingGroups.forEach(function (g) {
 					var opt = document.createElement('option')
 					opt.value = g.id
@@ -2369,7 +2369,7 @@
 
 				var tokenSetSelect = document.createElement('select')
 				tokenSetSelect.setAttribute('data-field', 'tokenSet')
-				tokenSetSelect.setAttribute('aria-label', t('nldesign', 'Token set'))
+				tokenSetSelect.setAttribute('aria-label', t('thematiq', 'Token set'))
 				groupThemingTokenSets.forEach(function (ts) {
 					var opt = document.createElement('option')
 					opt.value = ts.id
@@ -2388,7 +2388,7 @@
 				moveUpBtn.className = 'nldesign-group-theming-move-up'
 				moveUpBtn.setAttribute(
 					'aria-label',
-					t('nldesign', 'Move mapping up'),
+					t('thematiq', 'Move mapping up'),
 				)
 				moveUpBtn.textContent = '▲'
 				moveUpBtn.disabled = index === 0
@@ -2401,7 +2401,7 @@
 				moveDownBtn.className = 'nldesign-group-theming-move-down'
 				moveDownBtn.setAttribute(
 					'aria-label',
-					t('nldesign', 'Move mapping down'),
+					t('thematiq', 'Move mapping down'),
 				)
 				moveDownBtn.textContent = '▼'
 				moveDownBtn.disabled = index === groupThemingRows.length - 1
@@ -2412,7 +2412,7 @@
 				var removeBtn = document.createElement('button')
 				removeBtn.type = 'button'
 				removeBtn.className = 'nldesign-group-theming-remove'
-				removeBtn.setAttribute('aria-label', t('nldesign', 'Remove mapping'))
+				removeBtn.setAttribute('aria-label', t('thematiq', 'Remove mapping'))
 				removeBtn.textContent = '×'
 				removeBtn.addEventListener('click', function () {
 					groupThemingRows.splice(index, 1)
@@ -2477,7 +2477,7 @@
 				return { group: row.group, tokenSet: row.tokenSet }
 			})
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/group-theming'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/group-theming'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -2509,7 +2509,7 @@
 								'Group theming saved.',
 							)
 						}
-						notify(t('nldesign', 'Group theming saved.'))
+						notify(t('thematiq', 'Group theming saved.'))
 						return
 					}
 
@@ -2541,11 +2541,11 @@
 							'Failed to save group theming.',
 						)
 					}
-					notify(t('nldesign', 'Failed to save group theming.'))
+					notify(t('thematiq', 'Failed to save group theming.'))
 				})
 				.catch(function (err) {
 					console.error('Error saving group theming:', err)
-					notify(t('nldesign', 'Failed to save group theming.'))
+					notify(t('thematiq', 'Failed to save group theming.'))
 				})
 		}
 
@@ -2595,7 +2595,7 @@
 			return (
 				'<div class="nldesign-contrast-warning" role="alert">'
 				+ '<strong>'
-				+ escapeHtml(t('nldesign', 'WCAG 2.1 AA contrast warning'))
+				+ escapeHtml(t('thematiq', 'WCAG 2.1 AA contrast warning'))
 				+ '</strong>'
 				+ '<ul>'
 				+ items
@@ -2614,7 +2614,7 @@
 
 			uploadBtn.addEventListener('click', function () {
 				if (nameInput.value.trim() === '') {
-					notify(t('nldesign', 'Enter a token set name first.'))
+					notify(t('thematiq', 'Enter a token set name first.'))
 					nameInput.focus()
 					return
 				}
@@ -2646,10 +2646,10 @@
 					'nldesign',
 					'No $type could be resolved (never guessed)',
 				),
-				'unsupported-color-space': t('nldesign', 'Unsupported color space'),
-				'unsupported-value-shape': t('nldesign', 'Unsupported value shape'),
-				'alias-cycle': t('nldesign', 'Alias cycle detected'),
-				'alias-target-missing': t('nldesign', 'Alias target does not exist'),
+				'unsupported-color-space': t('thematiq', 'Unsupported color space'),
+				'unsupported-value-shape': t('thematiq', 'Unsupported value shape'),
+				'alias-cycle': t('thematiq', 'Alias cycle detected'),
+				'alias-target-missing': t('thematiq', 'Alias target does not exist'),
 				'alias-depth-exceeded': t(
 					'nldesign',
 					'Alias chain too deep (more than 10 hops)',
@@ -2741,7 +2741,7 @@
 			formData.append('name', name)
 			formData.append('file', file)
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/tokensets/upload'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/tokensets/upload'), {
 				method: 'POST',
 				headers: { requesttoken: OC.requestToken },
 				body: formData,
@@ -2760,7 +2760,7 @@
 						if (resultEl !== null) {
 							resultEl.appendChild(
 								document.createTextNode(
-									t('nldesign', 'Upload failed:')
+									t('thematiq', 'Upload failed:')
 										+ ' '
 										+ (res.data.error || ''),
 								),
@@ -2768,7 +2768,7 @@
 							resultEl.appendChild(buildDiagnosticsFragment(res.data))
 						}
 						notify(
-							t('nldesign', 'Upload failed:')
+							t('thematiq', 'Upload failed:')
 								+ ' '
 								+ (res.data.error || ''),
 						)
@@ -2783,7 +2783,7 @@
 					if (res.data.version) {
 						msg +=
 							' '
-							+ t('nldesign', 'Package version: {version}').replace(
+							+ t('thematiq', 'Package version: {version}').replace(
 								'{version}',
 								res.data.version,
 							)
@@ -2810,7 +2810,7 @@
 				})
 				.catch(function (err) {
 					console.error('Error uploading custom token set:', err)
-					notify(t('nldesign', 'Upload failed.'))
+					notify(t('thematiq', 'Upload failed.'))
 				})
 		}
 
@@ -2819,7 +2819,7 @@
 			if (listEl === null) {
 				return
 			}
-			fetch(OC.generateUrl('/apps/nldesign/settings/tokensets/custom'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/tokensets/custom'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -2862,7 +2862,7 @@
 				if (set.version) {
 					var versionSpan = document.createElement('span')
 					versionSpan.className = 'nldesign-custom-set-version'
-					versionSpan.textContent = t('nldesign', 'v{version}', {
+					versionSpan.textContent = t('thematiq', 'v{version}', {
 						version: set.version,
 					})
 					row.appendChild(versionSpan)
@@ -2872,19 +2872,19 @@
 				badge.className = 'nldesign-badge'
 				if (set.warnings && set.warnings.length > 0) {
 					badge.classList.add('nldesign-badge--warning')
-					badge.textContent = t('nldesign', 'Contrast warning')
+					badge.textContent = t('thematiq', 'Contrast warning')
 				} else {
-					badge.textContent = t('nldesign', 'WCAG AA OK')
+					badge.textContent = t('thematiq', 'WCAG AA OK')
 				}
 				row.appendChild(badge)
 
 				var downloadBtn = document.createElement('button')
 				downloadBtn.type = 'button'
 				downloadBtn.className = 'nldesign-btn nldesign-btn--small'
-				downloadBtn.textContent = t('nldesign', 'Download')
+				downloadBtn.textContent = t('thematiq', 'Download')
 				downloadBtn.addEventListener('click', function () {
 					window.location = OC.generateUrl(
-						'/apps/nldesign/settings/tokensets/custom/'
+						'/apps/thematiq/settings/tokensets/custom/'
 							+ encodeURIComponent(set.id)
 							+ '/export',
 					)
@@ -2895,7 +2895,7 @@
 				deleteBtn.type = 'button'
 				deleteBtn.className =
 					'nldesign-btn nldesign-btn--small nldesign-btn--danger'
-				deleteBtn.textContent = t('nldesign', 'Delete')
+				deleteBtn.textContent = t('thematiq', 'Delete')
 				deleteBtn.addEventListener('click', function () {
 					deleteCustomSet(set.id, set.name || set.id)
 				})
@@ -2911,14 +2911,14 @@
 					'nldesign',
 					'Delete the custom token set "{name}"? If it is currently active, the theme will fall back to Nextcloud.',
 				).replace('{name}', name),
-				t('nldesign', 'Delete custom token set'),
+				t('thematiq', 'Delete custom token set'),
 				function (confirmed) {
 					if (confirmed !== true) {
 						return
 					}
 					fetch(
 						OC.generateUrl(
-							'/apps/nldesign/settings/tokensets/custom/'
+							'/apps/thematiq/settings/tokensets/custom/'
 								+ encodeURIComponent(id),
 						),
 						{
@@ -2950,7 +2950,7 @@
 						.catch(function (err) {
 							console.error('Error deleting custom token set:', err)
 							notify(
-								t('nldesign', 'Failed to delete custom token set.'),
+								t('thematiq', 'Failed to delete custom token set.'),
 							)
 						})
 				},
@@ -2987,7 +2987,7 @@
 
 			uploadBtn.addEventListener('click', function () {
 				if (nameInput.value.trim() === '') {
-					notify(t('nldesign', 'Enter a font display name first.'))
+					notify(t('thematiq', 'Enter a font display name first.'))
 					nameInput.focus()
 					return
 				}
@@ -3013,7 +3013,7 @@
 			formData.append('role', role)
 			formData.append('font', file)
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/fonts/upload'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/fonts/upload'), {
 				method: 'POST',
 				headers: { requesttoken: OC.requestToken },
 				body: formData,
@@ -3030,12 +3030,12 @@
 					if (res.status >= 400) {
 						if (resultEl !== null) {
 							resultEl.textContent =
-								t('nldesign', 'Upload failed:')
+								t('thematiq', 'Upload failed:')
 								+ ' '
 								+ (res.data.error || '')
 						}
 						notify(
-							t('nldesign', 'Upload failed:')
+							t('thematiq', 'Upload failed:')
 								+ ' '
 								+ (res.data.error || ''),
 						)
@@ -3046,13 +3046,13 @@
 						resultEl.style.display = 'none'
 					}
 					notify(
-						t('nldesign', 'Font uploaded. Reload the page to apply it.'),
+						t('thematiq', 'Font uploaded. Reload the page to apply it.'),
 					)
 					loadFonts()
 				})
 				.catch(function (err) {
 					console.error('Error uploading font:', err)
-					notify(t('nldesign', 'Upload failed.'))
+					notify(t('thematiq', 'Upload failed.'))
 				})
 		}
 
@@ -3061,7 +3061,7 @@
 			if (listEl === null) {
 				return
 			}
-			fetch(OC.generateUrl('/apps/nldesign/settings/fonts'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/fonts'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -3072,7 +3072,7 @@
 				})
 				.catch(function (err) {
 					console.error('Error loading fonts:', err)
-					listEl.textContent = t('nldesign', 'Failed to load fonts.')
+					listEl.textContent = t('thematiq', 'Failed to load fonts.')
 				})
 		}
 
@@ -3081,7 +3081,7 @@
 			if (fonts.length === 0) {
 				var empty = document.createElement('p')
 				empty.className = 'settings-hint'
-				empty.textContent = t('nldesign', 'No fonts uploaded yet.')
+				empty.textContent = t('thematiq', 'No fonts uploaded yet.')
 				listEl.appendChild(empty)
 				return
 			}
@@ -3099,8 +3099,8 @@
 				roleBadge.className = 'nldesign-badge'
 				roleBadge.textContent =
 					font.role === 'heading'
-						? t('nldesign', 'Heading')
-						: t('nldesign', 'Body text')
+						? t('thematiq', 'Heading')
+						: t('thematiq', 'Body text')
 				row.appendChild(roleBadge)
 
 				var sizeSpan = document.createElement('span')
@@ -3113,7 +3113,7 @@
 				deleteBtn.type = 'button'
 				deleteBtn.className =
 					'nldesign-btn nldesign-btn--small nldesign-btn--danger'
-				deleteBtn.textContent = t('nldesign', 'Delete')
+				deleteBtn.textContent = t('thematiq', 'Delete')
 				deleteBtn.addEventListener('click', function () {
 					deleteFont(font.id, font.name || font.id)
 				})
@@ -3129,14 +3129,14 @@
 					'nldesign',
 					'Delete the font "{name}"? Pages using it will fall back to Fira Sans.',
 				).replace('{name}', name),
-				t('nldesign', 'Delete font'),
+				t('thematiq', 'Delete font'),
 				function (confirmed) {
 					if (confirmed !== true) {
 						return
 					}
 					fetch(
 						OC.generateUrl(
-							'/apps/nldesign/settings/fonts/'
+							'/apps/thematiq/settings/fonts/'
 								+ encodeURIComponent(id),
 						),
 						{
@@ -3157,12 +3157,12 @@
 								)
 								loadFonts()
 							} else {
-								notify(t('nldesign', 'Failed to delete font.'))
+								notify(t('thematiq', 'Failed to delete font.'))
 							}
 						})
 						.catch(function (err) {
 							console.error('Error deleting font:', err)
-							notify(t('nldesign', 'Failed to delete font.'))
+							notify(t('thematiq', 'Failed to delete font.'))
 						})
 				},
 				true,
@@ -3189,7 +3189,7 @@
 				return
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/audit?limit=20'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/audit?limit=20'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -3202,14 +3202,14 @@
 					console.error('Error loading audit log:', err)
 					renderAuditMessage(
 						tableBody,
-						t('nldesign', 'Failed to load the audit log.'),
+						t('thematiq', 'Failed to load the audit log.'),
 					)
 				})
 
 			if (downloadBtn !== null) {
 				downloadBtn.addEventListener('click', function () {
 					window.location = OC.generateUrl(
-						'/apps/nldesign/settings/audit/export',
+						'/apps/thematiq/settings/audit/export',
 					)
 				})
 			}
@@ -3232,7 +3232,7 @@
 			if (entries.length === 0) {
 				renderAuditMessage(
 					tableBody,
-					t('nldesign', 'No theming changes have been recorded yet.'),
+					t('thematiq', 'No theming changes have been recorded yet.'),
 				)
 				return
 			}
@@ -3278,7 +3278,7 @@
 			var parts = []
 			if (entry.old !== undefined && entry.old !== null) {
 				parts.push(
-					t('nldesign', 'from {value}').replace(
+					t('thematiq', 'from {value}').replace(
 						'{value}',
 						formatAuditValue(entry.old),
 					),
@@ -3286,7 +3286,7 @@
 			}
 			if (entry.new !== undefined && entry.new !== null) {
 				parts.push(
-					t('nldesign', 'to {value}').replace(
+					t('thematiq', 'to {value}').replace(
 						'{value}',
 						formatAuditValue(entry.new),
 					),
@@ -3306,7 +3306,7 @@
 		 * ========================================================================== */
 
 		function downloadConfigBundle() {
-			window.location = OC.generateUrl('/apps/nldesign/settings/config/export')
+			window.location = OC.generateUrl('/apps/thematiq/settings/config/export')
 		}
 
 		function showConfigBundleResult(message) {
@@ -3322,7 +3322,7 @@
 			var formData = new FormData()
 			formData.append('file', file)
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/config/import'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/config/import'), {
 				method: 'POST',
 				headers: { requesttoken: OC.requestToken },
 				body: formData,
@@ -3340,7 +3340,7 @@
 								'Configuration imported successfully. Reloading…',
 							),
 						)
-						notify(t('nldesign', 'Configuration imported successfully.'))
+						notify(t('thematiq', 'Configuration imported successfully.'))
 						window.setTimeout(function () {
 							window.location.reload()
 						}, 1200)
@@ -3354,16 +3354,16 @@
 						)
 					})
 					showConfigBundleResult(
-						t('nldesign', 'Import failed — nothing was applied:')
+						t('thematiq', 'Import failed — nothing was applied:')
 							+ ' '
 							+ lines.join('; '),
 					)
-					notify(t('nldesign', 'Configuration import failed.'))
+					notify(t('thematiq', 'Configuration import failed.'))
 				})
 				.catch(function (err) {
 					console.error('Error importing configuration bundle:', err)
-					showConfigBundleResult(t('nldesign', 'Import failed.'))
-					notify(t('nldesign', 'Configuration import failed.'))
+					showConfigBundleResult(t('thematiq', 'Import failed.'))
+					notify(t('thematiq', 'Configuration import failed.'))
 				})
 		}
 
@@ -3454,7 +3454,7 @@
 				return
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/email-theming'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/email-theming'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -3493,7 +3493,7 @@
 				privacyUrl: privacyInput !== null ? privacyInput.value : '',
 			}
 
-			fetch(OC.generateUrl('/apps/nldesign/settings/email-theming'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/email-theming'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -3517,7 +3517,7 @@
 								'Email template settings saved.',
 							)
 						}
-						notify(t('nldesign', 'Email template settings saved.'))
+						notify(t('thematiq', 'Email template settings saved.'))
 						return
 					}
 
@@ -3578,11 +3578,11 @@
 						return
 					}
 
-					notify(t('nldesign', 'Failed to save email template settings.'))
+					notify(t('thematiq', 'Failed to save email template settings.'))
 				})
 				.catch(function (err) {
 					console.error('Error saving email theming:', err)
-					notify(t('nldesign', 'Failed to save email template settings.'))
+					notify(t('thematiq', 'Failed to save email template settings.'))
 				})
 		}
 
@@ -3656,10 +3656,10 @@
 
 			if (lastCheckedEl !== null) {
 				lastCheckedEl.textContent = data.lastChecked
-					? t('nldesign', 'Last checked: {when}', {
+					? t('thematiq', 'Last checked: {when}', {
 							when: formatCheckedAt(data.lastChecked),
 						})
-					: t('nldesign', 'Not checked yet.')
+					: t('thematiq', 'Not checked yet.')
 			}
 
 			noticesEl.innerHTML = ''
@@ -3674,7 +3674,7 @@
 				var dismissBtn = document.createElement('button')
 				dismissBtn.type = 'button'
 				dismissBtn.className = 'nldesign-btn nldesign-btn--small'
-				dismissBtn.textContent = t('nldesign', 'Dismiss')
+				dismissBtn.textContent = t('thematiq', 'Dismiss')
 				dismissBtn.addEventListener('click', function () {
 					dismissUpstreamNotice(
 						notice.setId,
@@ -3688,7 +3688,7 @@
 		}
 
 		function loadUpstreamFreshness() {
-			fetch(OC.generateUrl('/apps/nldesign/settings/upstream-freshness'), {
+			fetch(OC.generateUrl('/apps/thematiq/settings/upstream-freshness'), {
 				headers: { requesttoken: OC.requestToken },
 			})
 				.then(function (r) {
@@ -3702,7 +3702,7 @@
 
 		function dismissUpstreamNotice(setId, version) {
 			fetch(
-				OC.generateUrl('/apps/nldesign/settings/upstream-freshness/dismiss'),
+				OC.generateUrl('/apps/thematiq/settings/upstream-freshness/dismiss'),
 				{
 					method: 'POST',
 					headers: {
@@ -3733,7 +3733,7 @@
 
 			toggle.addEventListener('change', function () {
 				var enabled = toggle.checked
-				fetch(OC.generateUrl('/apps/nldesign/settings/upstream-freshness'), {
+				fetch(OC.generateUrl('/apps/thematiq/settings/upstream-freshness'), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -3791,7 +3791,7 @@
 				return
 			}
 
-			var url = OC.generateUrl('/apps/nldesign/settings/custom-css')
+			var url = OC.generateUrl('/apps/thematiq/settings/custom-css')
 
 			function setFeedback(message, isError) {
 				if (!feedback) {
@@ -3847,7 +3847,7 @@
 							return
 						}
 						setFeedback(
-							t('nldesign', 'Saved. Reload to see the change.'),
+							t('thematiq', 'Saved. Reload to see the change.'),
 							false,
 						)
 					})
