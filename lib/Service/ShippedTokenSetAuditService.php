@@ -181,7 +181,7 @@ class ShippedTokenSetAuditService {
 	/**
 	 * Compute and cache the WCAG level for one token set, sharing the exact
 	 * cache namespace/key/TTL `Capabilities::computeWcagLevel()` uses for the
-	 * active set (`ICache` prefix `nldesign_wcag_level`, key `level-<id>`,
+	 * active set (`ICache` prefix `thematiq_wcag_level`, key `level-<id>`,
 	 * TTL 3600s), so a set that is both the active theme (warmed by
 	 * `Capabilities` on every capabilities-document read) and a catalogue
 	 * entry (read by the public catalogue endpoint) hits one cache entry
@@ -194,7 +194,7 @@ class ShippedTokenSetAuditService {
 	 * audit has nothing to evaluate and MUST NOT fabricate a conformance
 	 * claim, matching `Capabilities`' own null case exactly.
 	 *
-	 * @param ICache $cache Distributed cache created with prefix `nldesign_wcag_level`.
+	 * @param ICache $cache Distributed cache created with prefix `thematiq_wcag_level`.
 	 * @param string $appPath The app root path.
 	 * @param string $tokenSetId The token set id.
 	 * @param array<string, mixed> $tokenSetMeta The set's manifest entry (design_system, theming, contrast_level).

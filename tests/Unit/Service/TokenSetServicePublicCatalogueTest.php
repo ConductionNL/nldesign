@@ -33,7 +33,7 @@ use Psr\Log\LoggerInterface;
  * scenario: `GET /api/token-sets`' `wcagLevel` for a set that is also the
  * active theme MUST equal `Capabilities`' own computed value for the same
  * set id, and the underlying audit MUST be computed at most once per set id
- * per cache TTL window (the shared `ICache` prefix `nldesign_wcag_level`).
+ * per cache TTL window (the shared `ICache` prefix `thematiq_wcag_level`).
  */
 class TokenSetServicePublicCatalogueTest extends TestCase {
 
