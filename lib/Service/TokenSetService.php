@@ -93,9 +93,12 @@ class TokenSetService {
 
 	/**
 	 * Distributed cache for the resolved WCAG level, keyed by set id.
-	 * Deliberately the same `ICache` prefix (`nldesign_wcag_level`)
+	 * Deliberately the same `ICache` prefix (`thematiq_wcag_level`)
 	 * `Capabilities` uses, so the public catalogue and the active-theme
-	 * capability share one cache entry per set id.
+	 * capability share one cache entry per set id. The two MUST be edited
+	 * together — nothing enforces the pairing, and when the app-id rename moved
+	 * only `Capabilities`, the sharing this comment promises silently stopped
+	 * happening and the level was computed twice.
 	 *
 	 * @var ICache
 	 */
@@ -121,7 +124,7 @@ class TokenSetService {
 		$this->config = $config;
 		$this->logger = $logger;
 		$this->audit = $audit;
-		$this->wcagCache = $cacheFactory->createDistributed(prefix: 'nldesign_wcag_level');
+		$this->wcagCache = $cacheFactory->createDistributed(prefix: 'thematiq_wcag_level');
 	}//end __construct()
 
 	/**
@@ -212,7 +215,7 @@ class TokenSetService {
 	 * `upstreamRef`, which are internal/admin-only fields. `wcagLevel` is
 	 * computed via the same `ShippedTokenSetAuditService::auditSet()` path
 	 * `Capabilities::computeWcagLevel()` already uses for the active set,
-	 * cached under the same `ICache` prefix (`nldesign_wcag_level`).
+	 * cached under the same `ICache` prefix (`thematiq_wcag_level`).
 	 *
 	 * The public catalogue entries.
 	 *
