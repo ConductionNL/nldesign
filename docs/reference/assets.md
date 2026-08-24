@@ -345,7 +345,7 @@ npm run build
 ### Step 4: Enable in Nextcloud
 
 ```bash
-php occ app:enable nldesign
+php occ app:enable thematiq
 ```
 
 ### Step 5: Test

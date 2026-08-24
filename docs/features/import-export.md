@@ -89,10 +89,10 @@ You can also manage overrides directly via the filesystem or Nextcloud's `occ` c
 
 ```bash
 # View current overrides file
-cat /var/www/html/custom_apps/nldesign/css/custom-overrides.css
+cat /var/www/html/custom_apps/thematiq/css/custom-overrides.css
 
 # Reset all overrides
-echo ':root {}' > /var/www/html/custom_apps/nldesign/css/custom-overrides.css
+echo ':root {}' > /var/www/html/custom_apps/thematiq/css/custom-overrides.css
 ```
 
 Or via the REST API:

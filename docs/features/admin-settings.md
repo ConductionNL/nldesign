@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Admin Settings
 
-NL Design provides an admin settings panel for configuring the active theme, optional display settings, and per-token CSS overrides.
+Thematiq provides an admin settings panel for configuring the active theme, optional display settings, and per-token CSS overrides.
 
 ## Accessing Settings
 

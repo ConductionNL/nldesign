@@ -12,14 +12,14 @@ look is no longer trapped inside one app's bespoke components.
 Admin → Theming → NL Design, pick **Summer Breeze** as the token set. Or via CLI:
 
 ```bash
-occ config:app:set nldesign token_set --value summer-breeze
+occ config:app:set thematiq token_set --value summer-breeze
 ```
 
 Switch back to stock with `--value nextcloud`, or any municipality token set.
 
 ## How it is built (Tier 1 — shipped)
 
-Summer Breeze is a self-contained **design system** in the `nldesign` app. It does
+Summer Breeze is a self-contained **design system** in the `thematiq` app. It does
 not reuse the government `nldesign` stylesheets (those deliberately strip shadows
 and sharpen corners — the opposite of this aesthetic). Everything lives under a
 `--summer-*` token namespace so it never collides with `--nldesign-*`.

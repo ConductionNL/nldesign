@@ -1,5 +1,5 @@
 /**
- * NLDesign landing page.
+ * Thematiq landing page.
  *
  * Composes the brand <DetailHero> + <WidgetShelf> from
  * @conduction/docusaurus-preset/components, mirroring the connext page
@@ -21,7 +21,7 @@ import {
   AppMock,
 } from '@conduction/docusaurus-preset/components';
 
-const NLDESIGN_ICON = (
+const THEMATIQ_ICON = (
   <svg viewBox="0 0 24 24">
     <path d="M4 4h16v6H4z" />
     <path d="M4 14h7v6H4z" />
@@ -253,7 +253,7 @@ export default function Home() {
           status={{ label: 'Beta', color: 'var(--c-orange-knvb)' }}
           version="v0.1"
           locales="NL · EN"
-          title="NLDesign"
+          title="Thematiq"
           tagline={TAGLINE}
           primaryCta={{
             label: 'Install from app store',
@@ -266,14 +266,14 @@ export default function Home() {
             href: 'https://github.com/ConductionNL/thematiq',
           }}
           iconColor="var(--c-orange-knvb)"
-          icon={NLDESIGN_ICON}
+          icon={THEMATIQ_ICON}
           illustration={<AppMock app="nldesign" />}
         />
 
         <WidgetShelf
           eyebrow="Tokens we ship"
           title="Type, colour, components, all from design.nl."
-          lede="Install NLDesign and the published NLDS tokens land in your Nextcloud. Type scale, colour palette, component variants, the version from design.nl, not a Conduction interpretation."
+          lede="Install Thematiq and the published NLDS tokens land in your Nextcloud. Type scale, colour palette, component variants, the version from design.nl, not a Conduction interpretation."
           widgets={WIDGETS}
         />
       </main>
