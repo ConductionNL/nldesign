@@ -263,7 +263,7 @@ export default function Home() {
           secondaryCta={{ label: 'Read the docs', href: '/docs/intro' }}
           tertiaryCta={{
             label: 'View on GitHub',
-            href: 'https://github.com/ConductionNL/nldesign',
+            href: 'https://github.com/ConductionNL/thematiq',
           }}
           iconColor="var(--c-orange-knvb)"
           icon={NLDESIGN_ICON}
