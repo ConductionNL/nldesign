@@ -39,7 +39,7 @@ Icon and logo filenames are a public API consumed by other apps. Within an insta
 
 ## Available Icons
 
-View all available icons in the [icon documentation](https://github.com/ConductionNL/nldesign/tree/main/img/ICONS.md) or browse the files in:
+View all available icons in the [icon documentation](https://github.com/ConductionNL/thematiq/tree/main/img/ICONS.md) or browse the files in:
 - **NL-government icons:** `img/icons/{rvo,open-gemeenten,den-haag}/` (1488 SVG files across 3 sets)
 - **DSFR (French-government) icons:** `img/icons/dsfr/` (1038 SVG files)
 - **Legacy aliases:** `img/icons/*.svg` (77 one-release compatibility files — see CHANGELOG.md, removed next minor release)
