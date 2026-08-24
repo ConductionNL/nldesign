@@ -19,5 +19,5 @@ NL Design is an open-source theming app for the Nextcloud workspace. Administrat
 
 - Email: info@conduction.nl
 - Web: https://www.conduction.nl
-- GitHub: https://codeberg.org/Conduction
+- GitHub: https://github.com/ConductionNL
 - Conduction B.V. · KvK 76741850 · Lauriergracht 14h, Amsterdam, Netherlands

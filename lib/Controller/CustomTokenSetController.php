@@ -11,7 +11,7 @@
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.2
