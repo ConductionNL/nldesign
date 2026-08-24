@@ -6,18 +6,18 @@ NL Design is an open-source theming app for the Nextcloud workspace. Administrat
 
 ## Docs
 
-- [Documentation](https://nldesign.conduction.nl/docs/intro): main entry, including tutorials, user guide, and admin guide.
-- [API reference](https://nldesign.conduction.nl/api): OpenAPI documentation.
+- [Documentation](https://thematiq.conduction.nl/docs/intro): main entry, including tutorials, user guide, and admin guide.
+- [API reference](https://thematiq.conduction.nl/api): OpenAPI documentation.
 
 ## Optional
 
 - [Install](https://www.conduction.nl/install): self-host on your Nextcloud instance.
-- [Source code](https://github.com/ConductionNL/nldesign): repository and issue tracker.
-- [App page](https://www.conduction.nl/apps/nldesign): product positioning on conduction.nl.
+- [Source code](https://github.com/ConductionNL/thematiq): repository and issue tracker.
+- [App page](https://www.conduction.nl/apps/thematiq): product positioning on conduction.nl.
 
 ## Contact
 
 - Email: info@conduction.nl
 - Web: https://www.conduction.nl
-- GitHub: https://github.com/ConductionNL
+- GitHub: https://codeberg.org/Conduction
 - Conduction B.V. · KvK 76741850 · Lauriergracht 14h, Amsterdam, Netherlands

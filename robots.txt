@@ -85,4 +85,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://nldesign.conduction.nl/sitemap.xml
+Sitemap: https://thematiq.conduction.nl/sitemap.xml
