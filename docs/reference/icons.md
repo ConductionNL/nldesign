@@ -6,7 +6,7 @@ sidebar_position: 7
 
 ## Overview
 
-The NL Design app includes **1488 icons** materialized from `@conduction/nextcloud-vue`'s
+The Thematiq app includes **1488 icons** materialized from `@conduction/nextcloud-vue`'s
 EUPL-compatible NL-government icon packs (RVO, OpenGemeenten, Gemeente Den Haag), plus
 **1038 icons** materialized from `@gouvfr/dsfr`'s French-government DSFR pack
 (**Etalab-2.0**) — **2526 icons** total — plus **23 logos**, making them available for use
@@ -20,18 +20,18 @@ The icon pack an app should serve travels with the active **design system**, dri
 pack via `DesignSystemService::resolveActiveIconPacks()` / `resolveIconPath()`, or read it
 from the public capability (`capabilities.nldesign.iconPacks`) — see
 `openspec/specs/icon-packs/spec.md`. This does **not** replace Nextcloud core's built-in
-icons; it only switches nldesign's own bundled assets served through `imagePath`.
+icons; it only switches Thematiq's own bundled assets served through `imagePath`.
 
 **The proprietary City-of-Amsterdam icon set (`@amsterdam/design-system-assets`) is NOT
 bundled.** Its `LICENSE.md` marks the set proprietary to the City of Amsterdam,
-restricted to contexts where Amsterdam is the main communicator — nldesign shipping it to
+restricted to contexts where Amsterdam is the main communicator — Thematiq shipping it to
 arbitrary Dutch-government instances was exactly the redistribution its notice forbids.
 It was removed; see `CHANGELOG.md` for the full list of removed filenames and their
 77 one-release legacy-name aliases.
 
 ## Availability and fallbacks
 
-These icon and logo URLs only resolve while the nldesign app is installed **and enabled** on the instance. A consumer app that references `imagePath('nldesign', 'icons/...')` on an instance without nldesign will get a broken image. Consumers MUST either ship a fallback icon or declare a dependency on `nldesign` in their `appinfo/info.xml`.
+These icon and logo URLs only resolve while the thematiq app is installed **and enabled** on the instance. A consumer app that references `imagePath('thematiq', 'icons/...')` on an instance without thematiq will get a broken image. Consumers MUST either ship a fallback icon or declare a dependency on `thematiq` in their `appinfo/info.xml`.
 
 ## Naming stability
 
@@ -52,7 +52,7 @@ View all available icons in the [icon documentation](https://github.com/Conducti
 ```php
 <?php
 // In your template file
-$iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haag/dh-communication-message.svg');
+$iconUrl = \OC::$server->getURLGenerator()->imagePath('thematiq', 'icons/den-haag/dh-communication-message.svg');
 ?>
 <img src="<?php p($iconUrl); ?>" alt="Notifications" class="nldesign-icon" />
 ```
@@ -61,7 +61,7 @@ $iconUrl = \OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haa
 
 ```css
 .my-icon {
-    background-image: url('../../../nldesign/img/icons/den-haag/dh-functional-search.svg');
+    background-image: url('../../../thematiq/img/icons/den-haag/dh-functional-search.svg');
     background-size: contain;
     background-repeat: no-repeat;
     width: 24px;
@@ -150,7 +150,7 @@ Icons are designed to work with the NL Design System color tokens:
 ### Button with Icon
 ```php
 <button class="button-vue--vue-primary">
-    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/rvo/rvo-plus.svg')); ?>"
+    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('thematiq', 'icons/rvo/rvo-plus.svg')); ?>"
          alt="" class="button-icon" />
     Toevoegen
 </button>
@@ -160,7 +160,7 @@ Icons are designed to work with the NL Design System color tokens:
 ```php
 <li>
     <a href="/path">
-        <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haag/dh-objects-house.svg')); ?>"
+        <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('thematiq', 'icons/den-haag/dh-objects-house.svg')); ?>"
              alt="Home icon" />
         Home
     </a>
@@ -170,7 +170,7 @@ Icons are designed to work with the NL Design System color tokens:
 ### Status Indicator
 ```php
 <div class="status-indicator">
-    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('nldesign', 'icons/den-haag/dh-informational-checkcircle.svg')); ?>"
+    <img src="<?php p(\OC::$server->getURLGenerator()->imagePath('thematiq', 'icons/den-haag/dh-informational-checkcircle.svg')); ?>"
          alt="Success" class="status-icon status-icon--success" />
     <span>Voltooid</span>
 </div>
@@ -234,7 +234,7 @@ This decodes the data-URI icon packs at `node_modules/@conduction/nextcloud-vue/
 
 ## Theme-Switchable Icon Packs
 
-Beyond the fixed `imagePath('nldesign', 'icons/{set}/{key}.svg')` contract above, the icon
+Beyond the fixed `imagePath('thematiq', 'icons/{set}/{key}.svg')` contract above, the icon
 pack an app should serve can also travel with the **active design system**:
 
 - `design-systems.json` carries an optional `icon_pack` field per design system
@@ -243,7 +243,7 @@ pack an app should serve can also travel with the **active design system**:
   stock icons).
 - `DesignSystemService::resolveActiveIconPacks(tokenSetId)` resolves the chain `active
   token set -> its design_system -> that design system's icon_pack`, honoring an
-  appconfig `icon_pack` admin override (`occ config:app:set nldesign icon_pack
+  appconfig `icon_pack` admin override (`occ config:app:set thematiq icon_pack
   --value=dsfr`) when it names a real pack directory.
 - `DesignSystemService::resolveIconPath($name, $tokenSetId)` returns the
   `imagePath`-relative path of `$name` in the first pack of the resolved list that
@@ -252,5 +252,5 @@ pack an app should serve can also travel with the **active design system**:
   `/ocs/v2.php/cloud/capabilities` -> `capabilities.nldesign.iconPacks`.
 
 See `openspec/specs/icon-packs/spec.md` for the full contract. **Honest limitation:**
-this only switches nldesign's own bundled icon assets — it does not force-replace
+this only switches Thematiq's own bundled icon assets — it does not force-replace
 Nextcloud core's built-in icon set beyond what the active theme's CSS already restyles.

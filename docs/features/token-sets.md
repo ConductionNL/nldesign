@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Token Sets
 
-NL Design includes **39 token sets** — pre-configured themes for Dutch government organizations. Each token set defines colors, typography, border radius, and other design tokens specific to that organization.
+Thematiq includes **39 token sets** — pre-configured themes for Dutch government organizations. Each token set defines colors, typography, border radius, and other design tokens specific to that organization.
 
 ## Available Token Sets
 

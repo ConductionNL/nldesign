@@ -4,11 +4,11 @@ slug: /
 description: Get started with the NL Design System for Nextcloud. WCAG-AA tokens, components, and CSS variables for government-grade theming across apps.
 ---
 
-# NL Design — User Guide
+# Thematiq — User Guide
 
-**NL Design** is a Nextcloud app that gives your Nextcloud the look and feel of your organisation. It supports all major Dutch municipalities, provinces, and national government organisations — just pick yours from a list and you're done.
+**Thematiq** is a Nextcloud app that gives your Nextcloud the look and feel of your organisation. It supports all major Dutch municipalities, provinces, and national government organisations — just pick yours from a list and you're done.
 
-![The NL Design admin settings panel, showing the Design token set dropdown and the Preview section with styled buttons](img/guide-nl-design-section.png)
+![The Thematiq admin settings panel, showing the Design token set dropdown and the Preview section with styled buttons](img/guide-nl-design-section.png)
 
 ## What you can do with it
 
@@ -19,7 +19,7 @@ description: Get started with the NL Design System for Nextcloud. WCAG-AA tokens
 
 ## Who should read this guide
 
-This guide is for **Nextcloud administrators** who want to apply their organisation's branding. You don't need any technical knowledge — if you can log in to Nextcloud's admin panel, you can use NL Design.
+This guide is for **Nextcloud administrators** who want to apply their organisation's branding. You don't need any technical knowledge — if you can log in to Nextcloud's admin panel, you can use Thematiq.
 
 ## Where to start
 

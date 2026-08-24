@@ -1,9 +1,9 @@
-# NL Design — Overheidsfunctionaliteiten
+# Thematiq — Overheidsfunctionaliteiten
 
 > Functiepagina voor Nederlandse overheidsorganisaties.
 > Gebruik deze checklist om te toetsen aan uw Programma van Eisen.
 
-**Product:** NL Design
+**Product:** Thematiq
 **Categorie:** Overheidstheming & NL Design System integratie
 **Licentie:** EUPL-1.2 (vrije open source)
 **Leverancier:** Conduction B.V.
@@ -88,7 +88,7 @@
 
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
-| A-01 | WCAG 2.1 AA | Beschikbaar | Kern-functionaliteit van NL Design |
+| A-01 | WCAG 2.1 AA | Beschikbaar | Kern-functionaliteit van Thematiq |
 | A-02 | EN 301 549 | Beschikbaar | Via WCAG AA |
 | A-03 | Contrastverhouding minimaal 4.5:1 (tekst) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
 | A-04 | Contrastverhouding minimaal 3:1 (grote tekst/UI) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |

@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # 7-Layer CSS Architecture
 
-NL Design uses a layered CSS architecture to translate NL Design System tokens into Nextcloud styling. Each layer serves a specific purpose and is loaded in a strict order.
+Thematiq uses a layered CSS architecture to translate NL Design System tokens into Nextcloud styling. Each layer serves a specific purpose and is loaded in a strict order.
 
 ## Layer Overview
 
