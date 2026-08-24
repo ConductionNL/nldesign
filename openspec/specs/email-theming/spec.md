@@ -111,7 +111,7 @@ succeed even when the system config cannot be written.
 - GIVEN an authenticated admin with a writable config.php and no `mail_template_class` set
 - WHEN they enable the toggle and save
 - THEN `IConfig::setSystemValue('mail_template_class',
-  'OCA\\NLDesign\\Mail\\NLDesignEMailTemplate')` MUST be called
+  'OCA\\Thematiq\\Mail\\NLDesignEMailTemplate')` MUST be called
 - AND the GET endpoint MUST subsequently report state `enabled`
 
 #### Scenario: Foreign template class is never clobbered
@@ -129,7 +129,7 @@ succeed even when the system config cannot be written.
 - WHEN the admin flips the toggle and saves
 - THEN the endpoint MUST return HTTP 409 with `error: config_read_only` and the exact
   command strings
-  `occ config:system:set mail_template_class --value "OCA\\NLDesign\\Mail\\NLDesignEMailTemplate"`
+  `occ config:system:set mail_template_class --value "OCA\\Thematiq\\Mail\\NLDesignEMailTemplate"`
   and `occ config:system:delete mail_template_class`
 - AND the admin panel MUST revert the checkbox and display those occ commands
 - AND footer values submitted in the same request MUST still be saved (app config), with the

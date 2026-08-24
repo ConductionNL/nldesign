@@ -146,10 +146,24 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		font, per-app/per-group exclusion and email-footer field an admin ever
 		configured silently reverts to stock, with nothing in the log.
 
-		GenerateDarkVariantsRepairStep runs AFTER because it WRITES config
-		itself (`dark_variants_generated`). If it ran first, MigrateAppConfigKeys
-		would see that key already present, skip it as "already migrated", and
-		strand the old value.
+		THE ORDER IS A STANDING INVARIANT, NOT A FACT ABOUT TODAY'S STEP LIST.
+		MigrateAppConfigKeys copies a key only when `thematiq` does not already
+		hold a value for it, so ANY step that writes configuration under the new
+		app id before it runs would make it skip that key as "already present"
+		and strand the admin's real value under `nldesign` forever. New repair
+		steps therefore go BELOW the three Migrate* steps unless there is a
+		specific reason not to.
+
+		As measured on 2026-08-24, GenerateDarkVariantsRepairStep does not in
+		fact write any configuration — it is constructed with only
+		DarkPaletteService and LoggerInterface, and neither touches IAppConfig;
+		it writes css/tokens/dark/{id}.css files. (An earlier version of this
+		comment claimed it wrote a `dark_variants_generated` key. No such key
+		exists anywhere in the app. The ordering is still correct and still
+		required — the invariant above does not depend on that claim — but the
+		reason given for it was not true.) The `dark_variants` app-config key is
+		written only by SettingsController, from an admin action, never by a
+		repair step.
 
 		The steps are registered under <install> as well as <post-migration>
 		because <install> is the ONLY hook a renamed app's first enable fires —
