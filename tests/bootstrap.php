@@ -25,21 +25,32 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // composer.json) also bakes every already-known OCA\Thematiq\ class into a
 // classMap with an absolute path into the SHARED checkout, and the classMap
 // lookup wins over PSR-4 in Composer's ClassLoader::findFile(). Strip those
-// entries via reflection so every nldesign class — new AND edited — falls
+// entries via reflection so every Thematiq class — new AND edited — falls
 // through to the (now-corrected) PSR-4 rule and loads from THIS checkout.
+//
+// THE PREFIX BELOW IS `OCA\Thematiq\`, NOT `OCA\NLDesign\`. It kept naming the
+// pre-rename namespace, which no class has used since `nldesign` -> `thematiq`.
+// That did not fail — it did nothing at all: the PSR-4 rule was registered for
+// a namespace with no classes, and the classMap loop matched no entries, so
+// every real OCA\Thematiq\ classMap entry survived and kept pointing at the
+// SHARED checkout. The protection this whole block exists to provide was
+// therefore silently absent for exactly the namespace it was meant to cover,
+// and the symptom is the one described above: in a worktree whose vendor/ is a
+// symlink, a NEW file 404s as "class not found" and an EDITED file tests the
+// shared checkout's stale copy while reporting a pass.
 foreach (spl_autoload_functions() as $autoloadFunction) {
 	if (is_array($autoloadFunction) === false || ($autoloadFunction[0] instanceof \Composer\Autoload\ClassLoader) === false) {
 		continue;
 	}
 
 	$loader = $autoloadFunction[0];
-	$loader->setPsr4('OCA\\NLDesign\\', [__DIR__ . '/../lib']);
+	$loader->setPsr4('OCA\\Thematiq\\', [__DIR__ . '/../lib']);
 
 	$classMapProperty = (new \ReflectionClass($loader))->getProperty('classMap');
 	$classMapProperty->setAccessible(true);
 	$classMap = $classMapProperty->getValue($loader);
 	foreach (array_keys($classMap) as $mappedClass) {
-		if (str_starts_with($mappedClass, 'OCA\\NLDesign\\') === true) {
+		if (str_starts_with($mappedClass, 'OCA\\Thematiq\\') === true) {
 			unset($classMap[$mappedClass]);
 		}
 	}
@@ -106,7 +117,11 @@ if (!defined('OC_CONSOLE')) {
 
 	if (class_exists('\OC_App')) {
 		\OC_App::loadApps();
-		\OC_App::loadApp('nldesign');
+		// The APP ID, which is `thematiq` since 2026-08-22. Loading `nldesign`
+		// asked the server for an app that no longer exists — a second silent
+		// no-op alongside the PSR-4 prefix above, leaving this app's own
+		// autoloader, container registrations and l10n unloaded for the suite.
+		\OC_App::loadApp('thematiq');
 		OC_Hook::clear();
 	}
 }
