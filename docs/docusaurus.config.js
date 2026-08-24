@@ -60,7 +60,7 @@ const config = createConfig({
              plus the standard node_modules bucket. */
           exclude: ['**/node_modules/**', 'src/**'],
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/ConductionNL/nldesign/tree/main/docs/',
+          editUrl: 'https://github.com/ConductionNL/thematiq/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -87,7 +87,7 @@ const config = createConfig({
         label: 'Documentation',
       },
       {
-        href: 'https://github.com/ConductionNL/nldesign',
+        href: 'https://github.com/ConductionNL/thematiq',
         label: 'GitHub',
         position: 'right',
       },
