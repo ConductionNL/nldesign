@@ -10,4 +10,6 @@ jobs:
   deploy:
     uses: ConductionNL/.github/.github/workflows/documentation.yml@main
     with:
-      cname: nldesign.conduction.nl
+      cname: thematiq.conduction.nl
+
+      docs-hosts: nldesign.conduction.nl,thematiq.conduction.nl
