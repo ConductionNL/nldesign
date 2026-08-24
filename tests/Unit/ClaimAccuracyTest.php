@@ -143,7 +143,7 @@ class ClaimAccuracyTest extends TestCase {
 	}
 
 	/**
-	 * The government checklist states the real licence (EUPL-1.2) and host (Codeberg).
+	 * The government checklist states the real licence (EUPL-1.2) and host (GitHub).
 	 *
 	 * @spec openspec/changes/fix-readiness-claims/tasks.md#task-1.4
 	 */
@@ -161,16 +161,24 @@ class ClaimAccuracyTest extends TestCase {
 			'GOVERNMENT-FEATURES.md must not state AGPL.'
 		);
 
-		// The open-source technical row must reference Codeberg, never GitHub.
+		// The open-source technical row must reference GitHub, never Codeberg.
+		//
+		// This pair used to assert the exact opposite. Codeberg was the
+		// canonical host when this checklist was written; it is now an
+		// unmaintained mirror, and GitHub is the only host — including for
+		// issues. The assertions are INVERTED rather than deleted: this
+		// document is a Programma van Eisen checklist handed to procuring
+		// organisations, so naming the wrong host is a false claim to a
+		// customer, which is exactly what this test class exists to prevent.
 		$this->assertStringContainsString(
-			'Codeberg',
+			'GitHub',
 			$doc,
-			'GOVERNMENT-FEATURES.md must reference the Codeberg source host.'
+			'GOVERNMENT-FEATURES.md must reference the GitHub source host.'
 		);
 		$this->assertDoesNotMatchRegularExpression(
-			'/\bGitHub\b/i',
+			'/\bCodeberg\b/i',
 			$doc,
-			'GOVERNMENT-FEATURES.md must not reference GitHub as the canonical source host.'
+			'GOVERNMENT-FEATURES.md must not reference Codeberg as the canonical source host.'
 		);
 	}
 
