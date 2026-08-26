@@ -191,7 +191,7 @@ The app MUST expose an admin-only API endpoint for toggling the show menu labels
 #### Scenario: Non-admin access denied
 - GIVEN a non-admin user is authenticated
 - WHEN `POST /apps/nldesign/settings/menulabels` is called
-- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
+- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation
 - AND the setting MUST NOT be modified
 
 #### Scenario: Route registration
@@ -292,7 +292,7 @@ The menu labels and hide slogan features MUST be independently configurable and 
   - Menu entry dimensions: `height: var(--header-height)`, `min-width: 80px`, `width: auto`, `flex-shrink: 0` (lines 59-64)
   - Menu entry link layout: `display: flex`, `flex-direction: column`, `align-items: center`, `justify-content: center`, `height: 100%`, `padding: 0` (lines 49-56)
   - Active indicator removed: `.app-menu-entry--active::before` with `background-color: transparent !important` and `opacity: 0 !important` (lines 43-46)
-- Admin-only access: `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on `setMenuLabelsSetting()`
+- Admin-only access: `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation on `setMenuLabelsSetting()`
 - Settings panel checkbox: `templates/settings/admin.php` renders `#nldesign-show-menu-labels` checkbox with correct checked state and localized label text
 - JavaScript handler: `js/admin.js` calls save on checkbox change
 

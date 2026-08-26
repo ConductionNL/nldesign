@@ -151,7 +151,7 @@ The app MUST expose an admin-only API endpoint for toggling the hide slogan sett
 #### Scenario: Non-admin access denied
 - GIVEN a non-admin user is authenticated
 - WHEN `POST /apps/nldesign/settings/slogan` is called
-- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
+- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation
 - AND the setting MUST NOT be modified
 
 #### Scenario: Route registration
@@ -247,7 +247,7 @@ The hide slogan setting takes effect at boot time (CSS injection), so changes MU
 - Boolean conversion: `saveBooleanSetting('hide_slogan', $hideSlogan)` uses strict `=== true` to convert to `'1'`/`'0'` string (`lib/Controller/SettingsController.php` lines 162-170)
 - Conditional CSS loading: `Application::injectThemeCSS()` loads `hide-slogan` CSS only when `$hideSlogan === true` (lines 112-114)
 - CSS file: `css/hide-slogan.css` targets `footer.guest-box`, `#body-login footer.guest-box`, and `body.body-login-container footer.guest-box` with both `display: none !important` and `visibility: hidden !important`
-- Admin-only access: `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on `setSloganSetting()`
+- Admin-only access: `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation on `setSloganSetting()`
 - Settings panel checkbox: `templates/settings/admin.php` renders `#nldesign-hide-slogan` checkbox with correct checked state and localized label text
 - JavaScript handler: `js/admin.js` calls save on checkbox change via `POST /apps/nldesign/settings/slogan`
 

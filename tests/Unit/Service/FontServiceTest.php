@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\FontService;
-use OCA\NLDesign\Service\FontValidator;
+use OCA\Thematiq\Service\FontService;
+use OCA\Thematiq\Service\FontValidator;
 use OCP\Files\IAppData;
 use OCP\Files\NotFoundException;
 use OCP\Files\SimpleFS\ISimpleFile;
@@ -243,7 +243,7 @@ class FontServiceTest extends TestCase {
 
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('linkToRoute')->willReturnCallback(
-			fn (string $route, array $args = []) => '/apps/nldesign/fonts/' . ($args['id'] ?? '') . '.woff2'
+			fn (string $route, array $args = []) => '/apps/thematiq/fonts/' . ($args['id'] ?? '') . '.woff2'
 		);
 
 		$this->service = new FontService($appData, $config, $urlGenerator, new FontValidator());

@@ -1,5 +1,5 @@
 # PHPStan baseline — generated post-canonical-sync (Phase 2 fleet rollout).
-# Cleanup tracked in https://codeberg.org/Conduction/nldesign/issues/98
+# Cleanup tracked in Codeberg issue #98 (pre-migration, not migrated to GitHub).
 # Notable: absorbs OCA\Theming\ImageManager / ThemingDefaults references from
 # lib/Service/ThemingService.php. OCA\Theming is a server-internal namespace
 # (not exposed via OCP); if other apps baseline the same family, consider
@@ -27,32 +27,32 @@ parameters:
 			path: lib/Service/ThemingService.php
 
 		-
-			message: "#^Method OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:getImageManager\\(\\) has invalid return type OCA\\\\Theming\\\\ImageManager\\.$#"
+			message: "#^Method OCA\\\\Thematiq\\\\Service\\\\ThemingService\\:\\:getImageManager\\(\\) has invalid return type OCA\\\\Theming\\\\ImageManager\\.$#"
 			count: 2
 			path: lib/Service/ThemingService.php
 
 		-
-			message: "#^Parameter \\$imageManager of method OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:__construct\\(\\) has invalid type OCA\\\\Theming\\\\ImageManager\\.$#"
+			message: "#^Parameter \\$imageManager of method OCA\\\\Thematiq\\\\Service\\\\ThemingService\\:\\:__construct\\(\\) has invalid type OCA\\\\Theming\\\\ImageManager\\.$#"
 			count: 2
 			path: lib/Service/ThemingService.php
 
 		-
-			message: "#^Parameter \\$themingDefaults of method OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:__construct\\(\\) has invalid type OCA\\\\Theming\\\\ThemingDefaults\\.$#"
+			message: "#^Parameter \\$themingDefaults of method OCA\\\\Thematiq\\\\Service\\\\ThemingService\\:\\:__construct\\(\\) has invalid type OCA\\\\Theming\\\\ThemingDefaults\\.$#"
 			count: 2
 			path: lib/Service/ThemingService.php
 
 		-
-			message: "#^Property OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:\\$imageManager has unknown class OCA\\\\Theming\\\\ImageManager as its type\\.$#"
+			message: "#^Property OCA\\\\Thematiq\\\\Service\\\\ThemingService\\:\\:\\$imageManager has unknown class OCA\\\\Theming\\\\ImageManager as its type\\.$#"
 			count: 2
 			path: lib/Service/ThemingService.php
 
 		-
-			message: "#^Property OCA\\\\NLDesign\\\\Service\\\\ThemingService\\:\\:\\$themingDefaults has unknown class OCA\\\\Theming\\\\ThemingDefaults as its type\\.$#"
+			message: "#^Property OCA\\\\Thematiq\\\\Service\\\\ThemingService\\:\\:\\$themingDefaults has unknown class OCA\\\\Theming\\\\ThemingDefaults as its type\\.$#"
 			count: 2
 			path: lib/Service/ThemingService.php
 
 		-
-			message: "#^Property OCA\\\\NLDesign\\\\Settings\\\\Admin\\:\\:\\$l is never read, only written\\.$#"
+			message: "#^Property OCA\\\\Thematiq\\\\Settings\\\\Admin\\:\\:\\$l is never read, only written\\.$#"
 			count: 1
 			path: lib/Settings/Admin.php
 

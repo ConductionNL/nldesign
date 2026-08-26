@@ -50,8 +50,8 @@ test.describe('icon assets sourced from nc-vue', () => {
 				)
 			}
 			return {
-				icons: oc.filePath('nldesign', 'img', 'icons'),
-				logos: oc.filePath('nldesign', 'img', 'logos'),
+				icons: oc.filePath('thematiq', 'img', 'icons'),
+				logos: oc.filePath('thematiq', 'img', 'logos'),
 			}
 		})
 		ICON_BASE = bases.icons

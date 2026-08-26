@@ -4,7 +4,7 @@
  *
  * Vitest configuration for the NL Design System app's frontend unit tests.
  *
- * nldesign is a CSS/PHP theming app — it has no Vue/Pinia frontend. The
+ * thematiq is a CSS/PHP theming app — it has no Vue/Pinia frontend. The
  * testable client-side logic is the set of PURE design-token / colour
  * transforms used by the admin settings page, extracted into
  * js/lib/tokenTransforms.js (darkenHex, getPreviewColors,

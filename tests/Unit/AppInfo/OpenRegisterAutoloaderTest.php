@@ -11,9 +11,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\AppInfo;
+namespace OCA\Thematiq\Tests\Unit\AppInfo;
 
-use OCA\NLDesign\AppInfo\OpenRegisterAutoloader;
+use OCA\Thematiq\AppInfo\OpenRegisterAutoloader;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

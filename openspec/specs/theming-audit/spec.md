@@ -135,7 +135,7 @@ same change — an unaudited theming write is a spec violation.
 ### Requirement: Admin Audit Endpoints
 
 The app MUST expose the trail to admins only, via a dedicated controller with
-`#[AuthorizedAdminSetting(OCA\NLDesign\Settings\Admin::class)]` on every method:
+`#[AuthorizedAdminSetting(OCA\Thematiq\Settings\Admin::class)]` on every method:
 `GET /settings/audit?limit=N` MUST return the most recent entries as JSON (default 20, hard cap
 200, newest first) and `GET /settings/audit/export` MUST stream the FULL log (rotated generation
 included, oldest first) as Content-Type `application/x-ndjson` with Content-Disposition

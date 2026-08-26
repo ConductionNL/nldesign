@@ -219,7 +219,7 @@ generated file exists. A missing file MUST simply not load (no error).
 The app MUST provide an instance-wide admin toggle for dark variants, stored as the `nldesign`
 app config `dark_variants` (default enabled, `'1'`), exposed as a checkbox in the admin panel
 and as admin-only endpoints `GET/POST /settings/dark-variants` guarded by
-`@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)`. Disabling MUST stop dark
+`@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)`. Disabling MUST stop dark
 variant stylesheets from loading without deleting generated files.
 
 #### Scenario: Toggle disables dark variants

@@ -7,22 +7,22 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Controller
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/custom-fonts/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Controller;
+namespace OCA\Thematiq\Controller;
 
-use OCA\NLDesign\Service\FontService;
-use OCA\NLDesign\Service\FontValidator;
-use OCA\NLDesign\Settings\Admin;
+use OCA\Thematiq\Service\FontService;
+use OCA\Thematiq\Service\FontValidator;
+use OCA\Thematiq\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\AnonRateLimit;

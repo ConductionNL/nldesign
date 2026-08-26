@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Brand Identity
 
-Overview of the brand color, background color, and logo for each token set in the NL Design System app.
+Overview of the brand color, background color, and logo for each token set in the Thematiq app.
 
 Colors are sourced from each organization's official NL Design System token set. Logos are official SVG files sourced from the organization's website or the [NL Design System themes repository](https://github.com/nl-design-system/themes).
 

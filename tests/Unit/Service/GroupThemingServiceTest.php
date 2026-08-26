@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\Exception\GroupThemingValidationException;
-use OCA\NLDesign\Service\GroupThemingService;
-use OCA\NLDesign\Service\ThemePreviewService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Service\Exception\GroupThemingValidationException;
+use OCA\Thematiq\Service\GroupThemingService;
+use OCA\Thematiq\Service\ThemePreviewService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\ICache;
 use OCP\ICacheFactory;
 use OCP\IConfig;

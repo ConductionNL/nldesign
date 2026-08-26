@@ -51,7 +51,7 @@ async function findOptionWithChanges(
 			try {
 				const r = await fetch(
 					OC.generateUrl(
-						'/apps/nldesign/settings/tokenset-preview/'
+						'/apps/thematiq/settings/tokenset-preview/'
 							+ encodeURIComponent(tokenSetId),
 					),
 					{

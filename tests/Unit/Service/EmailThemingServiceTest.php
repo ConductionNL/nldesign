@@ -11,15 +11,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Mail\NLDesignEMailTemplate;
-use OCA\NLDesign\Service\EmailThemingService;
-use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
-use OCA\NLDesign\Service\Exception\FooterValidationException;
-use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
-use OCA\NLDesign\Service\TokenSetPreviewService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Mail\NLDesignEMailTemplate;
+use OCA\Thematiq\Service\EmailThemingService;
+use OCA\Thematiq\Service\Exception\ConfigReadOnlyException;
+use OCA\Thematiq\Service\Exception\FooterValidationException;
+use OCA\Thematiq\Service\Exception\ForeignMailTemplateClassException;
+use OCA\Thematiq\Service\TokenSetPreviewService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\HintException;
 use OCP\IConfig;
 use OCP\IURLGenerator;
@@ -159,7 +159,7 @@ class EmailThemingServiceTest extends TestCase {
 	}//end testEnableThrowsOnReadOnlyHintExceptionFromWrite()
 
 	/**
-	 * Disabling a foreign class is a no-op — nldesign never touches it.
+	 * Disabling a foreign class is a no-op — thematiq never touches it.
 	 *
 	 * @return void
 	 */
@@ -245,8 +245,8 @@ class EmailThemingServiceTest extends TestCase {
 				],
 			]
 		);
-		$this->urlGenerator->method('imagePath')->with('nldesign', 'logos/amsterdam.svg')
-			->willReturn('/apps/nldesign/img/logos/amsterdam.svg');
+		$this->urlGenerator->method('imagePath')->with('thematiq', 'logos/amsterdam.svg')
+			->willReturn('/apps/thematiq/img/logos/amsterdam.svg');
 		$this->urlGenerator->method('getAbsoluteURL')->willReturnCallback(
 			fn (string $url) => 'https://cloud.example.com' . $url
 		);
@@ -256,7 +256,7 @@ class EmailThemingServiceTest extends TestCase {
 		$this->assertNotNull($theme);
 		$this->assertSame('#004699', $theme['primaryColor']);
 		$this->assertSame('#ffffff', $theme['primaryTextColor']);
-		$this->assertSame('https://cloud.example.com/apps/nldesign/img/logos/amsterdam.svg', $theme['logoUrl']);
+		$this->assertSame('https://cloud.example.com/apps/thematiq/img/logos/amsterdam.svg', $theme['logoUrl']);
 	}//end testGetActiveEmailThemeReturnsManifestTheming()
 
 	/**

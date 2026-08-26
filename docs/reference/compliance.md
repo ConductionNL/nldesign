@@ -301,7 +301,7 @@ files (self-hosted, `Etalab-2.0` licensed, from `@gouvfr/dsfr@1.15.1`) under
   `CssInjectionService` loads **only** when BOTH the active design system is
   `lasuite` AND an admin has ticked the *"Our organisation is a French State
   agency (administration de l'État)"* acknowledgement in Administration
-  Settings (`nldesign` / `marianne_enabled` app config, default `'0'`).
+  Settings (`thematiq` / `marianne_enabled` app config, default `'0'`).
 - While that gate is off (the default), **no Marianne byte is ever
   requested** and the `lasuite` set renders the self-hosted **Inter** font
   (SIL Open Font License 1.1) instead — the family stack

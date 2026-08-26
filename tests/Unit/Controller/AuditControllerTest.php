@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\AuditController;
-use OCA\NLDesign\Service\ThemingAuditService;
-use OCA\NLDesign\Settings\Admin;
+use OCA\Thematiq\Controller\AuditController;
+use OCA\Thematiq\Service\ThemingAuditService;
+use OCA\Thematiq\Settings\Admin;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;

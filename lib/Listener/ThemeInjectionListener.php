@@ -7,11 +7,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Listener
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/css-architecture/spec.md
  * @spec openspec/specs/per-app-theming/spec.md
@@ -19,10 +19,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Listener;
+namespace OCA\Thematiq\Listener;
 
-use OCA\NLDesign\Service\AppThemingService;
-use OCA\NLDesign\Service\CssInjectionService;
+use OCA\Thematiq\Service\AppThemingService;
+use OCA\Thematiq\Service\CssInjectionService;
 use OCP\AppFramework\Http\Events\BeforeLoginTemplateRenderedEvent;
 use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -140,7 +140,7 @@ class ThemeInjectionListener implements IEventListener {
 			// and never arrive here; anything that does is a real listener bug.
 			$this->logger->warning(
 				'nldesign: theme injection failed for this render; the page was served unthemed.',
-				['app' => 'nldesign', 'exception' => $e]
+				['app' => 'thematiq', 'exception' => $e]
 			);
 		}//end try
 

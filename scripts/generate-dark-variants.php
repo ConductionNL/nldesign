@@ -8,7 +8,7 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V. <info@conduction.nl>
  *
  * Regenerates every eligible token set's `css/tokens/dark/{id}.css` using
- * OCA\NLDesign\Service\DarkPaletteService directly (no NC server bootstrap —
+ * OCA\Thematiq\Service\DarkPaletteService directly (no NC server bootstrap —
  * only a minimal stub IAppManager that resolves the app path to this repo
  * root). Wired into .github/workflows/sync-tokens.yml so upstream token
  * updates regenerate their dark variants in the same PR (see
@@ -47,9 +47,9 @@ spl_autoload_register(
         }
         );
 
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\DarkPaletteService;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\DarkPaletteService;
 use OCP\App\IAppManager;
 use Psr\Log\AbstractLogger;
 

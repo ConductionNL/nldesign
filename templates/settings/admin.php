@@ -16,9 +16,9 @@
 
 // Load the pure token/colour transforms first so admin.js can consume them via
 // window.NldesignTokenTransforms (admin.js falls back to inline copies if absent).
-script('nldesign', 'lib/tokenTransforms');
-script('nldesign', 'admin');
-style('nldesign', 'admin');
+script('thematiq', 'lib/tokenTransforms');
+script('thematiq', 'admin');
+style('thematiq', 'admin');
 ?>
 
 <!-- Server state for js/admin.js (tokenSets, currentTokenSet, activePreview,

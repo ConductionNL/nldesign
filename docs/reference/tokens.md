@@ -4,12 +4,12 @@ sidebar_position: 1
 
 # CSS Token Architecture
 
-This document describes how NL Design System tokens are mapped to Nextcloud styling in the nldesign app.
+This document describes how NL Design System tokens are mapped to Nextcloud styling in the thematiq app.
 
 ## Three-Layer Architecture
 
 ```
-NL Design System repos          nldesign app                 Nextcloud
+NL Design System repos          thematiq app                 Nextcloud
 (upstream source of truth)      (translation layer)          (target)
 
 ams.color.interactive.default   --nldesign-color-primary     --color-primary
@@ -19,7 +19,7 @@ rhc.color.lintblauw.500         --nldesign-color-header-*    #header { backgroun
 ```
 
 1. **NL Design System repos** define tokens using their own namespaces (`ams.*`, `utrecht.*`, `rhc.*`)
-2. **nldesign token files** (`css/tokens/*.css`) translate those into a unified `--nldesign-*` namespace
+2. **thematiq token files** (`css/tokens/*.css`) translate those into a unified `--nldesign-*` namespace
 3. **theme.css** maps `--nldesign-*` tokens to Nextcloud's CSS variables and element styling
 
 ## Token Reference

@@ -1,9 +1,9 @@
 /**
- * NLDesign landing page.
+ * Thematiq landing page.
  *
  * Composes the brand <DetailHero> + <WidgetShelf> from
  * @conduction/docusaurus-preset/components, mirroring the connext page
- * at sites/www/src/pages/apps/nldesign.mdx.
+ * at sites/www/src/pages/apps/thematiq.mdx.
  *
  * Written as .js (not .mdx) because the docs site has the docs plugin
  * pointed at `path: './'`, and an MDX file in src/pages/ trips the
@@ -21,7 +21,7 @@ import {
   AppMock,
 } from '@conduction/docusaurus-preset/components';
 
-const NLDESIGN_ICON = (
+const THEMATIQ_ICON = (
   <svg viewBox="0 0 24 24">
     <path d="M4 4h16v6H4z" />
     <path d="M4 14h7v6H4z" />
@@ -253,27 +253,27 @@ export default function Home() {
           status={{ label: 'Beta', color: 'var(--c-orange-knvb)' }}
           version="v0.1"
           locales="NL · EN"
-          title="NLDesign"
+          title="Thematiq"
           tagline={TAGLINE}
           primaryCta={{
             label: 'Install from app store',
-            href: 'https://apps.nextcloud.com/apps/nldesign',
+            href: 'https://apps.nextcloud.com/apps/thematiq',
             tone: 'orange',
           }}
           secondaryCta={{ label: 'Read the docs', href: '/docs/intro' }}
           tertiaryCta={{
             label: 'View on GitHub',
-            href: 'https://codeberg.org/Conduction/nldesign',
+            href: 'https://github.com/ConductionNL/thematiq',
           }}
           iconColor="var(--c-orange-knvb)"
-          icon={NLDESIGN_ICON}
+          icon={THEMATIQ_ICON}
           illustration={<AppMock app="nldesign" />}
         />
 
         <WidgetShelf
           eyebrow="Tokens we ship"
           title="Type, colour, components, all from design.nl."
-          lede="Install NLDesign and the published NLDS tokens land in your Nextcloud. Type scale, colour palette, component variants, the version from design.nl, not a Conduction interpretation."
+          lede="Install Thematiq and the published NLDS tokens land in your Nextcloud. Type scale, colour palette, component variants, the version from design.nl, not a Conduction interpretation."
           widgets={WIDGETS}
         />
       </main>

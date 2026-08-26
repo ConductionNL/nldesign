@@ -22,14 +22,16 @@ TBD - created by archiving change fix-readiness-claims. Update Purpose after arc
 - AND no `lib/` PHP file MUST declare AGPL
 
 ### Requirement: Government Checklist States the Real Licence and Host
-`docs/GOVERNMENT-FEATURES.md` — used by procuring organizations as a Programma van Eisen checklist — MUST state the real licence (EUPL-1.2) and the canonical source host (`codeberg.org/Conduction/nldesign`). It MUST NOT state AGPL, and open-source / source-access rows MUST NOT reference GitHub as the canonical repository.
+`docs/GOVERNMENT-FEATURES.md` — used by procuring organizations as a Programma van Eisen checklist — MUST state the real licence (EUPL-1.2) and the canonical source host (`github.com/ConductionNL/thematiq`). It MUST NOT state AGPL, and open-source / source-access rows MUST NOT reference Codeberg as the canonical repository.
+
+This requirement previously named `codeberg.org/Conduction/nldesign` and forbade GitHub. Both halves of that were superseded: the app was renamed nldesign → thematiq, and Codeberg went from canonical host to unmaintained mirror, with GitHub the only host — including for issues. The requirement is inverted rather than dropped, because this checklist is a claim made to a procuring customer: naming a host the organisation no longer publishes to is precisely the class of false claim this capability exists to catch.
 
 #### Scenario: Checklist licence and host are correct
 @e2e exclude documentation invariant — checked against the shipped doc, not a UI flow
 - GIVEN `docs/GOVERNMENT-FEATURES.md`
 - WHEN the "Licentie" line and the open-source technical row are read
 - THEN the licence MUST read EUPL-1.2 (never AGPL)
-- AND the source-access reference MUST point at the Codeberg repository (never GitHub)
+- AND the source-access reference MUST point at the GitHub repository (never Codeberg)
 
 ### Requirement: Font Delivery Documented as Bundled and Self-Hosted
 Nextcloud enforces a strict Content-Security-Policy and government instances are frequently air-gapped, so the app MUST bundle Fira Sans as self-hosted `.woff2/.woff` files under `css/fonts/` and load them from `css/fonts.css` with app-relative `url()` only. Documentation MUST describe this delivery and MUST NOT instruct or claim that fonts load from an external CDN when the code contains no external font URL.

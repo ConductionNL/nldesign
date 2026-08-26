@@ -7,11 +7,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Test
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/custom-css-freeform/spec.md
  * @spec openspec/specs/theming-audit/spec.md#requirement-complete-call-site-coverage
@@ -19,11 +19,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\CustomCssController;
-use OCA\NLDesign\Service\CustomCssService;
-use OCA\NLDesign\Service\ThemingAuditService;
+use OCA\Thematiq\Controller\CustomCssController;
+use OCA\Thematiq\Service\CustomCssService;
+use OCA\Thematiq\Service\ThemingAuditService;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 

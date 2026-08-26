@@ -7,24 +7,24 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/email-theming/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Mail\NLDesignEMailTemplate;
-use OCA\NLDesign\Service\Exception\ConfigReadOnlyException;
-use OCA\NLDesign\Service\Exception\FooterValidationException;
-use OCA\NLDesign\Service\Exception\ForeignMailTemplateClassException;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Mail\NLDesignEMailTemplate;
+use OCA\Thematiq\Service\Exception\ConfigReadOnlyException;
+use OCA\Thematiq\Service\Exception\FooterValidationException;
+use OCA\Thematiq\Service\Exception\ForeignMailTemplateClassException;
 use OCP\HintException;
 use OCP\IConfig;
 use OCP\IURLGenerator;
@@ -48,9 +48,25 @@ class EmailThemingService {
 	/**
 	 * The occ command to enable the branded template manually.
 	 *
+	 * Handed to the admin verbatim when config.php cannot be written — it is
+	 * rendered into the admin panel as a copy-paste command
+	 * (templates/settings/admin.php) and returned by the settings endpoint.
+	 *
+	 * THE NAMESPACE HERE IS `OCA\Thematiq`, NOT `OCA\NLDesign`. This string
+	 * survived the namespace rename as a literal and kept naming the removed
+	 * class: an admin on a read-only config.php who ran it wrote a class that
+	 * does not exist, and `OC\Mail\Mailer::createEMailTemplate()` guards the
+	 * stored value with `class_exists()` and silently falls back to the stock
+	 * template. So the command reported success, the panel showed the value
+	 * set, and branded email never came back — with nothing in any log. It must
+	 * stay in sync with what `enable()` writes below; both now derive from
+	 * {@see NLDesignEMailTemplate}. (The CLASS NAME `NLDesignEMailTemplate` is
+	 * unchanged and correct — it names the NL Design System, which did not move;
+	 * only the namespace did.)
+	 *
 	 * @var string
 	 */
-	public const OCC_ENABLE_COMMAND = 'occ config:system:set mail_template_class --value "OCA\\NLDesign\\Mail\\NLDesignEMailTemplate"';
+	public const OCC_ENABLE_COMMAND = 'occ config:system:set mail_template_class --value "OCA\\Thematiq\\Mail\\NLDesignEMailTemplate"';
 
 	/**
 	 * The occ command to disable the branded template manually.
@@ -370,8 +386,8 @@ class EmailThemingService {
 	 * Get the current toggle state.
 	 *
 	 * @return array{state: string, configReadOnly: bool, foreignClass: ?string} The state:
-	 *         `state` is one of `disabled`/`enabled`/`foreign`; `foreignClass` is
-	 *         set only when `state` is `foreign`.
+	 *                                                                           `state` is one of `disabled`/`enabled`/`foreign`; `foreignClass` is
+	 *                                                                           set only when `state` is `foreign`.
 	 *
 	 * @spec openspec/specs/email-theming/spec.md
 	 */

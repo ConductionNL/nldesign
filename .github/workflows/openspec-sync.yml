@@ -13,6 +13,6 @@ jobs:
     # run failed before any job was created.
     uses: ConductionNL/.github/.github/workflows/openspec-sync.yml@main
     with:
-      app-name: nldesign
+      app-name: thematiq
     secrets:
       PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}

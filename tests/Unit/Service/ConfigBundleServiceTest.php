@@ -11,22 +11,22 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\AppThemingService;
-use OCA\NLDesign\Service\ConfigBundleService;
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\CustomOverridesService;
-use OCA\NLDesign\Service\CustomTokenSetService;
-use OCA\NLDesign\Service\CustomTokenSetValidator;
-use OCA\NLDesign\Service\DarkPaletteService;
-use OCA\NLDesign\Service\EmailThemingService;
-use OCA\NLDesign\Service\FontService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
-use OCA\NLDesign\Service\TokenSetPreviewService;
-use OCA\NLDesign\Service\TokenSetService;
-use OCA\NLDesign\Service\UpstreamFreshnessService;
+use OCA\Thematiq\Service\AppThemingService;
+use OCA\Thematiq\Service\ConfigBundleService;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomOverridesService;
+use OCA\Thematiq\Service\CustomTokenSetService;
+use OCA\Thematiq\Service\CustomTokenSetValidator;
+use OCA\Thematiq\Service\DarkPaletteService;
+use OCA\Thematiq\Service\EmailThemingService;
+use OCA\Thematiq\Service\FontService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\TokenSetPreviewService;
+use OCA\Thematiq\Service\TokenSetService;
+use OCA\Thematiq\Service\UpstreamFreshnessService;
 use OCP\App\IAppManager;
 use OCP\Http\Client\IClientService;
 use OCP\ICache;

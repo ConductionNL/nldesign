@@ -61,7 +61,7 @@ async function findOptionWithChanges(
 						}
 					}
 			).OC.generateUrl(
-				'/apps/nldesign/settings/tokenset-preview/'
+				'/apps/thematiq/settings/tokenset-preview/'
 					+ encodeURIComponent(tokenSetId),
 			)
 			try {

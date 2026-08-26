@@ -106,7 +106,7 @@
                 <referencedClass name="OC\Mail\EMailTemplate"/>
                 <referencedClass name="OC\Mail\Mailer"/>
                 <!-- NLDesign own Settings class (loaded at runtime, not in Psalm analysis path) -->
-                <referencedClass name="OCA\NLDesign\Settings\Admin"/>
+                <referencedClass name="OCA\Thematiq\Settings\Admin"/>
                 <!-- GuzzleHttp (loaded via composer at runtime) -->
                 <referencedClass name="GuzzleHttp\Client"/>
                 <referencedClass name="GuzzleHttp\Exception\GuzzleException"/>

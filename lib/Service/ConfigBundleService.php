@@ -7,21 +7,21 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/config-portability/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\Exception\FooterValidationException;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Service\Exception\FooterValidationException;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use Psr\Log\LoggerInterface;
@@ -349,9 +349,10 @@ class ConfigBundleService {
 	 *
 	 * @param array<string, mixed> $bundle The decoded bundle.
 	 *
+	 * `resolved` carries the normalised, ready-to-apply data for phase 2 (only meaningful when `valid` is
+	 * true).
+	 *
 	 * @return array{valid: bool, errors: array<int, array<string, mixed>>, resolved: array<string, mixed>}
-	 *         `resolved` carries the normalised, ready-to-apply data for phase 2
-	 *         (only meaningful when `valid` is true).
 	 *
 	 * @spec openspec/specs/config-portability/spec.md
 	 */

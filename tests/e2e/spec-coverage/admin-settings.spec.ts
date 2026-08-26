@@ -340,7 +340,7 @@ test.describe('admin-settings', () => {
 	 * SERVER's output, which is what the scenarios above are about.
 	 */
 	const readInitialState = async (page, key: string) => {
-		const el = page.locator(`#initial-state-nldesign-${key}`)
+		const el = page.locator(`#initial-state-thematiq-${key}`)
 		await expect(el).toBeAttached()
 		const encoded = await el.getAttribute('value')
 		expect(encoded).toBeTruthy()
@@ -395,7 +395,7 @@ test.describe('admin-settings', () => {
 		// value here, so the assertion is that the KEY is published, not
 		// that it is truthy.
 		await expect(
-			page.locator('#initial-state-nldesign-activePreview'),
+			page.locator('#initial-state-thematiq-activePreview'),
 		).toBeAttached()
 
 		const source = await readInitialState(page, 'iconPackSource')

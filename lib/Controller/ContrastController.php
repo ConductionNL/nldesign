@@ -7,20 +7,20 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Controller
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/app-token-set-selection/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Controller;
+namespace OCA\Thematiq\Controller;
 
-use OCA\NLDesign\Service\ContrastService;
+use OCA\Thematiq\Service\ContrastService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\JSONResponse;

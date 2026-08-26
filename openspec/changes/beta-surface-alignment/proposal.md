@@ -6,7 +6,7 @@ kind: code
 
 nldesign is Technical Core and already migrated to /connext, but its four public-facing
 surfaces — `appinfo/info.xml`, the conduction.nl product page (EN + NL), and the
-`nldesign.conduction.nl` docs — had drifted apart, which blocks a clean beta release:
+`thematiq.conduction.nl` docs — had drifted apart, which blocks a clean beta release:
 
 1. **`appinfo/info.xml` had no Dutch localisation.** `<name>`, `<summary>`, and
    `<description>` were single, English-only tags with no `lang` attribute, while the fleet

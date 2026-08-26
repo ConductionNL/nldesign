@@ -236,7 +236,7 @@ All settings endpoints and the settings panel MUST be restricted to administrato
 
 #### Scenario: API endpoints restricted to admin via annotation
 @e2e exclude Requires a non-admin session to test the 403 response — test environment only has the admin user.
-- GIVEN the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods
+- GIVEN the `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation on all controller methods
 - WHEN a non-admin user calls any `/settings/*` endpoint
 - THEN the request MUST be rejected with an appropriate error response
 - AND no configuration changes MUST be persisted
@@ -533,7 +533,7 @@ path and covers the complete configuration, unlike the overrides-only download.
 - External link to `https://nldesignsystem.nl/` with arrow indicator (`templates/settings/admin.php` lines 80-82)
 - Vanilla PHP template loads `script('nldesign', 'admin')` and `style('nldesign', 'admin')` with no Vue/webpack (`templates/settings/admin.php` lines 7-8)
 - XSS prevention via `p()` for every value rendered into the template; structured server data is not hand-encoded into markup at all (`templates/settings/admin.php`)
-- `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation on all controller methods (`lib/Controller/SettingsController.php`)
+- `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation on all controller methods (`lib/Controller/SettingsController.php`)
 - Token editor mount point at `#nldesign-token-editor` (`templates/settings/admin.php` lines 74-77)
 - Initial state (`tokenSets`, `currentTokenSet`, `activePreview`, `iconPackSource`) provided for JS initialization (`lib/Settings/Admin.php`); no `data-*` attributes on the `#nldesign-settings` div
 - All user-visible text uses `$l->t()` for localization

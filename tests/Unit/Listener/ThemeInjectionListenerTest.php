@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Listener;
+namespace OCA\Thematiq\Tests\Unit\Listener;
 
-use OCA\NLDesign\Listener\ThemeInjectionListener;
-use OCA\NLDesign\Service\AppThemingService;
-use OCA\NLDesign\Service\CssInjectionService;
+use OCA\Thematiq\Listener\ThemeInjectionListener;
+use OCA\Thematiq\Service\AppThemingService;
+use OCA\Thematiq\Service\CssInjectionService;
 use OCP\AppFramework\Http\Events\BeforeLoginTemplateRenderedEvent;
 use OCP\AppFramework\Http\Events\BeforeTemplateRenderedEvent;
 use OCP\AppFramework\Http\TemplateResponse;

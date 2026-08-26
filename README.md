@@ -50,12 +50,12 @@ Icon and logo filenames are a public API: other apps reference them by name (e.g
 1. Clone or download this app to your Nextcloud apps directory:
    ```bash
    cd /path/to/nextcloud/apps
-   git clone https://codeberg.org/Conduction/nldesign.git
+   git clone https://github.com/ConductionNL/thematiq.git
    ```
 
 2. Install npm dependencies (for fonts and icons):
    ```bash
-   cd nldesign
+   cd thematiq
    npm install
    npm run build
    ```

@@ -7,20 +7,20 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Test
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/custom-css-freeform/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\CustomCssValidator;
+use OCA\Thematiq\Service\CustomCssValidator;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -208,7 +208,7 @@ class CustomCssValidatorTest extends TestCase {
 		$css = '.a { background: url(data:image/gif;base64,R0lGODlhAQABAAAAACw=); }' . "\n"
 			. '.b { background: url("data:image/svg+xml;base64,PHN2Zy8+"); }' . "\n"
 			. ".c { background: url('../img/logo.svg'); }\n"
-			. '.d { background: url(/apps/nldesign/img/logo.svg); }';
+			. '.d { background: url(/apps/thematiq/img/logo.svg); }';
 
 		$this->assertSame([], $this->validator->validate(css: $css));
 

@@ -66,7 +66,7 @@ export async function getOverrides(
 	token: string,
 ): Promise<Record<string, string>> {
 	return await page.evaluate(async (t) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/overrides'), {
+		const r = await fetch(OC.generateUrl('/apps/thematiq/settings/overrides'), {
 			headers: { requesttoken: t },
 		})
 		const j = await r.json()
@@ -83,7 +83,7 @@ export async function setOverrides(
 	const res = await page.evaluate(
 		async ({ t, ov }) => {
 			const r = await fetch(
-				OC.generateUrl('/apps/nldesign/settings/overrides'),
+				OC.generateUrl('/apps/thematiq/settings/overrides'),
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json', requesttoken: t },
@@ -122,7 +122,7 @@ export async function appAssetUrl(
 				window as unknown as {
 					OC: { filePath: (a: string, t: string, f: string) => string }
 				}
-			).OC.filePath('nldesign', t, f),
+			).OC.filePath('thematiq', t, f),
 		{ t: type, f: file },
 	)
 }
@@ -141,7 +141,7 @@ export async function getServedOverrideCss(page: Page): Promise<string> {
 /** Read the active token set (GET /settings/tokenset). */
 export async function getTokenSet(page: Page, token: string): Promise<string> {
 	return await page.evaluate(async (t) => {
-		const r = await fetch(OC.generateUrl('/apps/nldesign/settings/tokenset'), {
+		const r = await fetch(OC.generateUrl('/apps/thematiq/settings/tokenset'), {
 			headers: { requesttoken: t },
 		})
 		const j = await r.json()
@@ -158,7 +158,7 @@ export async function setTokenSet(
 	const res = await page.evaluate(
 		async ({ t, ts }) => {
 			const r = await fetch(
-				OC.generateUrl('/apps/nldesign/settings/tokenset'),
+				OC.generateUrl('/apps/thematiq/settings/tokenset'),
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json', requesttoken: t },
@@ -181,7 +181,7 @@ export async function setSlogan(
 ): Promise<void> {
 	const res = await page.evaluate(
 		async ({ t, v }) => {
-			const r = await fetch(OC.generateUrl('/apps/nldesign/settings/slogan'), {
+			const r = await fetch(OC.generateUrl('/apps/thematiq/settings/slogan'), {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json', requesttoken: t },
 				body: JSON.stringify({ hideSlogan: v }),
@@ -203,7 +203,7 @@ export async function setMenuLabels(
 	const res = await page.evaluate(
 		async ({ t, v }) => {
 			const r = await fetch(
-				OC.generateUrl('/apps/nldesign/settings/menulabels'),
+				OC.generateUrl('/apps/thematiq/settings/menulabels'),
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json', requesttoken: t },

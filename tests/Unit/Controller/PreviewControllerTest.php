@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\PreviewController;
-use OCA\NLDesign\Service\ThemePreviewService;
-use OCA\NLDesign\Settings\Admin;
+use OCA\Thematiq\Controller\PreviewController;
+use OCA\Thematiq\Service\ThemePreviewService;
+use OCA\Thematiq\Settings\Admin;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\IRequest;
 use OCP\IUser;

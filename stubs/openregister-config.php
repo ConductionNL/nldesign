@@ -18,7 +18,7 @@
  * blanket-excluding whole files (the coarser tool the app uses for
  * HealthController's `extends unknown class`). They are wired into analysis
  * ONLY — phpstan.neon `scanDirectories` and psalm.xml `<stubs>` — and are
- * never autoloaded at runtime (composer PSR-4 maps only `OCA\NLDesign\` → lib/,
+ * never autoloaded at runtime (composer PSR-4 maps only `OCA\Thematiq\` → lib/,
  * and this file is under stubs/, outside the test suite), so the real
  * OCA\OpenRegister classes are used whenever OpenRegister is enabled.
  *

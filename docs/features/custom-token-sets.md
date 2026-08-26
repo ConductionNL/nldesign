@@ -122,6 +122,6 @@ Uploaded sets are stored as files in the app directory
 (`css/tokens/custom-{slug}.css`), the same accepted trade-off as
 `custom-overrides.css`. An app-store upgrade that replaces the app directory
 **removes** uploaded sets. **Export your custom sets (Download) before
-upgrading** and re-upload them afterwards. Set metadata lives in the `nldesign`
+upgrading** and re-upload them afterwards. Set metadata lives in the `thematiq`
 appconfig key `custom_token_sets` and survives the upgrade, but a manifest entry
 without a backing file is ignored by discovery.

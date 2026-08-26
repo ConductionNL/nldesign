@@ -1,7 +1,7 @@
 {
-	"name": "nldesign",
+	"name": "thematiq",
 	"version": "0.1.0",
-	"description": "NL Design System Theme for Nextcloud",
+	"description": "Thematiq — NL Design System Theme for Nextcloud",
 	"engines": {
 		"node": "^22.14 || ^24 || >=26",
 		"npm": "^11.0.0"
@@ -14,11 +14,11 @@
 		"design-tokens",
 		"theming"
 	],
-	"homepage": "https://codeberg.org/Conduction/nldesign",
+	"homepage": "https://github.com/ConductionNL/thematiq",
 	"license": "EUPL-1.2",
 	"repository": {
 		"type": "git",
-		"url": "https://codeberg.org/Conduction/nldesign.git"
+		"url": "https://github.com/ConductionNL/thematiq.git"
 	},
 	"scripts": {
 		"test:l10n": "L10N_SRC_DIR=js node tests/l10n/check-l10n.js",
@@ -34,7 +34,7 @@
 		"build:fonts": "node scripts/build-fonts.js",
 		"build:fonts:marianne": "node scripts/build-fonts-marianne.js",
 		"build:icons": "node scripts/build-icons.js",
-		"lint": "echo 'No JavaScript to lint - nldesign is CSS/PHP only'",
+		"lint": "echo 'No JavaScript to lint - thematiq is CSS/PHP only'",
 		"stylelint": "stylelint \"css/**/*.{css,scss}\"",
 		"stylelint:fix": "stylelint \"css/**/*.{css,scss}\" --fix",
 		"test": "echo 'No tests yet'",
