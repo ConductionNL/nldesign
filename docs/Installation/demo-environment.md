@@ -58,7 +58,7 @@ curl -s http://localhost:8604/status.php
 | What | Where |
 | --- | --- |
 | **Public portal** | [http://localhost:8604/apps/portaliq/site?portal=demo](http://localhost:8604/apps/portaliq/site?portal=demo) |
-| **Thematiq** | [http://localhost:8604/apps/thematiq/](http://localhost:8604/apps/thematiq/) |
+| **Thematiq** | [http://localhost:8604/settings/admin/theming](http://localhost:8604/settings/admin/theming) |
 | Admin interface | [http://localhost:8604](http://localhost:8604) — `admin` / `admin` |
 
 ### Why the portal needs `?portal=demo`
