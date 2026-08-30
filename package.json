@@ -55,18 +55,18 @@
 	},
 	"devDependencies": {
 		"@conduction/nextcloud-vue": "^2.22.1",
-		"@cyclonedx/cyclonedx-npm": "^5.0.0",
+		"@cyclonedx/cyclonedx-npm": "^6.0.1",
 		"@nextcloud/prettier-config": "^1.2.0",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",
-		"@vitest/coverage-v8": "^3.2.7",
+		"@vitest/coverage-v8": "^4.1.11",
 		"@vitest/ui": "^3.2.7",
-		"jsdom": "^29.1.1",
+		"jsdom": "^30.0.1",
 		"prettier": "^3.9.6",
 		"stylelint": "^17.4.0",
 		"stylelint-config-standard": "^40.0.0",
 		"ts-node": "^10.9.2",
-		"typescript": "^6.0.3",
+		"typescript": "^7.0.2",
 		"vitest": "^3.2.7"
 	},
 	"prettier": "@nextcloud/prettier-config"
