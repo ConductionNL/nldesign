@@ -4,14 +4,14 @@ sidebar_position: 9
 
 # App Token-Set Selection: Public Catalogue, Contrast, and Scoped-Application Contract
 
-This page documents nldesign's read-only, non-admin consumption surface for a
+This page documents Thematiq's read-only, non-admin consumption surface for a
 **leaf app's own picker** — a builder tool inside another Conduction app
 (OpenBuild's virtual-app theme picker is the live example) — to enumerate the
-NL Design token-set catalogue, evaluate WCAG contrast for arbitrary candidate
+Thematiq token-set catalogue, evaluate WCAG contrast for arbitrary candidate
 colors, and (via a shared client-side applier built elsewhere) apply a token
 set scoped to one element on the page rather than instance-wide.
 
-This is **nldesign's side of the contract only**. The scoped applier itself is
+This is **Thematiq's side of the contract only**. The scoped applier itself is
 implemented in `nextcloud-vue`, shared across every leaf app — this page
 documents the contract it implements against; it ships no Vue and no client
 code.
@@ -24,7 +24,7 @@ deliberately narrower than admin-only (any logged-in user can read it) and
 narrower than public (an anonymous visitor cannot).
 
 ```
-GET /apps/nldesign/api/token-sets
+GET /apps/thematiq/api/token-sets
 ```
 
 Response:
@@ -68,7 +68,7 @@ same-origin, authenticated browser POST carries the Nextcloud request token
 automatically.
 
 ```
-POST /apps/nldesign/api/contrast/evaluate
+POST /apps/thematiq/api/contrast/evaluate
 Content-Type: application/json
 
 {
@@ -109,10 +109,10 @@ data.
 Evaluating contrast for a leaf app's **selection** of an existing catalogue
 entry (any set listed by `GET /api/token-sets` — shipped or already-uploaded
 custom) MUST always be treated as a warning, never a hard block — consistent
-with nldesign's own upload-time policy
+with Thematiq's own upload-time policy
 ([custom-token-sets](../features/custom-token-sets.md): non-blocking WCAG AA
 warnings). Neither endpoint above exposes a mechanism for a caller to
-condition a hard block on nldesign's own contrast data for a selection flow
+condition a hard block on Thematiq's own contrast data for a selection flow
 — there is no `blocked`/`allowed` field to even wire a hard block off of.
 
 This policy governs **selection only**. A leaf app's own **free-hand
@@ -150,7 +150,7 @@ element on a page, rather than instance-wide:
    (degrading to default/unstyled) if it is not — partial rewriting must
    never occur.
 
-nldesign guarantees every shipped `css/tokens/*.css` file (excluding
+Thematiq guarantees every shipped `css/tokens/*.css` file (excluding
 `dark/`) satisfies this flat `:root`-only shape — enforced by an automated
 regression test (`tests/Unit/TokenCssShapeTest.php`) over every shipped set.
 Custom-uploaded sets already satisfy this shape by construction: the
@@ -159,7 +159,7 @@ at-rule at upload time.
 
 ## What this contract is not
 
-- No Vue, no scoped applier implementation ships from nldesign — the
+- No Vue, no scoped applier implementation ships from Thematiq — the
   applier is `nextcloud-vue`'s responsibility.
 - No new appconfig/storage — both endpoints are pure read/compute
   projections over existing state.

@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\ThemePreviewService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Service\ThemePreviewService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\IConfig;
 use OCP\IGroupManager;
 use OCP\IUser;

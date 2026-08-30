@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Command;
+namespace OCA\Thematiq\Tests\Unit\Command;
 
-use OCA\NLDesign\Command\ConfigImport;
-use OCA\NLDesign\Service\ConfigBundleService;
+use OCA\Thematiq\Command\ConfigImport;
+use OCA\Thematiq\Service\ConfigBundleService;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Symfony\Component\Console\Application;

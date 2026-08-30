@@ -12,13 +12,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Settings;
+namespace OCA\Thematiq\Tests\Unit\Settings;
 
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\EmailThemingService;
-use OCA\NLDesign\Service\ThemePreviewService;
-use OCA\NLDesign\Service\TokenSetService;
-use OCA\NLDesign\Settings\Admin;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\EmailThemingService;
+use OCA\Thematiq\Service\ThemePreviewService;
+use OCA\Thematiq\Service\TokenSetService;
+use OCA\Thematiq\Settings\Admin;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;

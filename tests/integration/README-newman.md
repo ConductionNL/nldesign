@@ -1,6 +1,6 @@
 # NL Design System — Newman API-contract suite
 
-`nldesign.postman_collection.json` locks the HTTP contract of nldesign's
+`thematiq.postman_collection.json` locks the HTTP contract of nldesign's
 admin-theming controllers (`appinfo/routes.php` +
 `lib/Controller/SettingsController.php` + `lib/Controller/OverridesController.php`):
 token-set selection + preview, theming values, the login-page slogan/menu-label

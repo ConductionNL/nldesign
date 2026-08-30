@@ -22,7 +22,7 @@ const PROBE_URL = '/settings/user'
  */
 async function darkVariantsEnabled(page: Page): Promise<boolean> {
 	return page.evaluate(async () => {
-		const res = await fetch('/index.php/apps/nldesign/settings/dark-variants', {
+		const res = await fetch('/index.php/apps/thematiq/settings/dark-variants', {
 			headers: { requesttoken: (window as any).OC.requestToken },
 		})
 		return (await res.json()).enabled
@@ -34,7 +34,7 @@ async function nldesignStyles(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll('link[rel=stylesheet]')]
 			.map((l) => (l as HTMLLinkElement).href)
-			.filter((h) => h.includes('/nldesign/')),
+			.filter((h) => h.includes('/thematiq/')),
 	)
 }
 

@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Command;
+namespace OCA\Thematiq\Tests\Unit\Command;
 
-use OCA\NLDesign\Command\GenerateDarkVariants;
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\DarkPaletteService;
+use OCA\Thematiq\Command\GenerateDarkVariants;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\DarkPaletteService;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

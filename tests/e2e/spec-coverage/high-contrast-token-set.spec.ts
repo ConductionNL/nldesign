@@ -73,7 +73,7 @@ test.describe('high-contrast-token-set', () => {
 				}
 			).OC
 			const url = oc.generateUrl(
-				'/apps/nldesign/settings/tokenset-preview/hoog-contrast',
+				'/apps/thematiq/settings/tokenset-preview/hoog-contrast',
 			)
 			const r = await fetch(url, {
 				headers: { requesttoken: oc.requestToken },

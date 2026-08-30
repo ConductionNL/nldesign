@@ -1,6 +1,6 @@
 {
-    "name": "conductionnl/nldesign",
-    "description": "NL Design System theme for Nextcloud",
+    "name": "conductionnl/thematiq",
+    "description": "Thematiq — NL Design System theming for Nextcloud",
     "license": "EUPL-1.2",
     "authors": [
         {
@@ -11,7 +11,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "OCA\\NLDesign\\": "lib/"
+            "OCA\\Thematiq\\": "lib/"
         }
     },
     "require": {
@@ -19,14 +19,14 @@
     },
     "require-dev": {
         "conduction/coding-standard": "^1.0",
-        "conduction/hydra-gates": "^1.0",
+        "conduction/hydra-gates": "^1.8.2",
         "cyclonedx/cyclonedx-php-composer": "^6.2",
         "edgedesign/phpqa": "^1.27",
         "nextcloud/ocp": "^34.0",
         "phpcsstandards/phpcsextra": "^1.4",
         "phpmd/phpmd": "^2.15",
         "phpmetrics/phpmetrics": "^2.8",
-        "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5",
         "roave/security-advisories": "dev-latest",
         "squizlabs/php_codesniffer": "^3.9",

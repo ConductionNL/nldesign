@@ -8,11 +8,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Test
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/css-architecture/spec.md
  * @spec openspec/specs/token-sets/spec.md
@@ -22,13 +22,13 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit;
+namespace OCA\Thematiq\Tests\Unit;
 
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\App\IAppManager;
 use OCP\ICache;
 use OCP\ICacheFactory;

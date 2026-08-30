@@ -11,10 +11,10 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Command;
+namespace OCA\Thematiq\Tests\Unit\Command;
 
-use OCA\NLDesign\Command\ComplianceReport;
-use OCA\NLDesign\Service\ComplianceReportService;
+use OCA\Thematiq\Command\ComplianceReport;
+use OCA\Thematiq\Service\ComplianceReportService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;

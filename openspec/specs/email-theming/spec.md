@@ -5,7 +5,7 @@ TBD - created by archiving change email-template-theming. Update Purpose after a
 ## Requirements
 ### Requirement: NL Design Email Template Class
 
-The app MUST provide a class `OCA\NLDesign\Mail\NLDesignEMailTemplate` that extends
+The app MUST provide a class `OCA\Thematiq\Mail\NLDesignEMailTemplate` that extends
 `OC\Mail\EMailTemplate` and is instantiable by `OC\Mail\Mailer::makeTemplate()` with the
 server's fixed constructor argument list (the class MUST NOT alter the constructor signature).
 Extending the private-namespace `OC\Mail\EMailTemplate` is the sanctioned mechanism here: the
@@ -18,7 +18,7 @@ it cannot derive — a theming failure MUST never prevent an email from being bu
 
 #### Scenario: Header and buttons use active token set colors and logo
 
-- GIVEN `mail_template_class` is set to `OCA\NLDesign\Mail\NLDesignEMailTemplate`
+- GIVEN `mail_template_class` is set to `OCA\Thematiq\Mail\NLDesignEMailTemplate`
 - AND the active token set is `amsterdam` with `theming.primary_color: #004699` and
   `theming.logo` set in `token-sets.json`
 - WHEN the server composes any templated email (e.g. password reset) and `renderHtml()` is
@@ -49,7 +49,7 @@ it cannot derive — a theming failure MUST never prevent an email from being bu
 
 #### Scenario: Stale config after app removal does not break mail
 
-- GIVEN `mail_template_class` still names `OCA\NLDesign\Mail\NLDesignEMailTemplate` but the
+- GIVEN `mail_template_class` still names `OCA\Thematiq\Mail\NLDesignEMailTemplate` but the
   nldesign app is disabled or removed (class not autoloadable)
 - WHEN `Mailer::makeTemplate()` runs
 - THEN the server's own `class_exists` guard (`Mailer.php:133`) falls back to the stock
@@ -100,7 +100,7 @@ HTML-escaped and URLs attribute-escaped in the HTML part; stored URLs MUST be va
 The nldesign admin settings panel MUST provide an "Use NL Design email template" toggle plus
 the three footer fields, backed by admin-only endpoints `GET/POST /settings/email-theming`
 (`#[AuthorizedAdminSetting]`, CSRF-protected). Enabling MUST set the system config
-`mail_template_class` to `OCA\NLDesign\Mail\NLDesignEMailTemplate`; disabling MUST delete the
+`mail_template_class` to `OCA\Thematiq\Mail\NLDesignEMailTemplate`; disabling MUST delete the
 system value. The service MUST never overwrite a `mail_template_class` value that names a
 different class — that state MUST be reported as `foreign` and the toggle disabled with an
 explanation. Footer app-config writes MUST be applied independently of the toggle so they
@@ -111,7 +111,7 @@ succeed even when the system config cannot be written.
 - GIVEN an authenticated admin with a writable config.php and no `mail_template_class` set
 - WHEN they enable the toggle and save
 - THEN `IConfig::setSystemValue('mail_template_class',
-  'OCA\\NLDesign\\Mail\\NLDesignEMailTemplate')` MUST be called
+  'OCA\\Thematiq\\Mail\\NLDesignEMailTemplate')` MUST be called
 - AND the GET endpoint MUST subsequently report state `enabled`
 
 #### Scenario: Foreign template class is never clobbered
@@ -129,7 +129,7 @@ succeed even when the system config cannot be written.
 - WHEN the admin flips the toggle and saves
 - THEN the endpoint MUST return HTTP 409 with `error: config_read_only` and the exact
   command strings
-  `occ config:system:set mail_template_class --value "OCA\\NLDesign\\Mail\\NLDesignEMailTemplate"`
+  `occ config:system:set mail_template_class --value "OCA\\Thematiq\\Mail\\NLDesignEMailTemplate"`
   and `occ config:system:delete mail_template_class`
 - AND the admin panel MUST revert the checkbox and display those occ commands
 - AND footer values submitted in the same request MUST still be saved (app config), with the

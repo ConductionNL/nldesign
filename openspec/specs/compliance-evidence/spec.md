@@ -188,7 +188,7 @@ docs — may claim WCAG compliance of the instance (claim-accuracy discipline,
 ### Requirement: Admin Export Endpoint
 
 The report MUST be exportable via `GET /apps/nldesign/settings/compliance-report?format=json|markdown`
-on `SettingsController`, carrying the same `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)`
+on `SettingsController`, carrying the same `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)`
 posture as every other `/settings/*` endpoint (admin-only, CSRF-protected — no `#[PublicPage]`,
 no `#[NoAdminRequired]`, no `#[NoCSRFRequired]`). The response MUST be served as a download with
 `Content-Disposition: attachment` and a filename embedding the instance id, token set id, and

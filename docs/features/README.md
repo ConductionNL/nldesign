@@ -1,8 +1,8 @@
-# NL Design — Features
+# Thematiq — Features
 
-NL Design is a Nextcloud theming app that applies Dutch government design standards (Rijkshuisstijl and other NL Design System token sets) to every part of the Nextcloud interface. It functions as a Nextcloud Theme Editor: administrators select a pre-built organization token set or fine-tune individual CSS variables, and the result is propagated to both the NL Design CSS layer and Nextcloud's built-in theming system.
+Thematiq is a Nextcloud theming app that applies Dutch government design standards (Rijkshuisstijl and other NL Design System token sets) to every part of the Nextcloud interface. It functions as a Nextcloud Theme Editor: administrators select a pre-built organization token set or fine-tune individual CSS variables, and the result is propagated to both the NL Design System CSS layer and Nextcloud's built-in theming system.
 
-NL Design has no direct GEMMA component mapping — it is a cross-cutting infrastructure concern that ensures WCAG AA accessibility and Dutch government branding across all Conduction apps.
+Thematiq has no direct GEMMA component mapping — it is a cross-cutting infrastructure concern that ensures WCAG AA accessibility and Dutch government branding across all Conduction apps.
 
 ## Standards Compliance
 
@@ -29,12 +29,12 @@ NL Design has no direct GEMMA component mapping — it is a cross-cutting infras
 | [Hide Slogan](./toggles.md) | Removes Nextcloud's default login-page slogan for a clean government-branded login | [toggles.md](./toggles.md) |
 | [Show Menu Labels](./toggles.md) | Replaces header app icons with text labels; improves discoverability per Dutch government UX guidelines | [toggles.md](./toggles.md) |
 | [Component Tokens](./token-sets.md) | `--nldesign-component-*` prefix bridging `--utrecht-*` component tokens to the nldesign namespace | [token-sets.md](./token-sets.md) |
-| [App Compatibility](./app-compatibility.md) | Integration guide for other Nextcloud apps to ensure CSS-variable compatibility with nldesign | [app-compatibility.md](./app-compatibility.md) |
+| [App Compatibility](./app-compatibility.md) | Integration guide for other Nextcloud apps to ensure CSS-variable compatibility with Thematiq | [app-compatibility.md](./app-compatibility.md) |
 | [Prometheus Metrics](./css-architecture.md) | Active token set, custom override count, theming sync operations — in Prometheus text format | — |
 
 ## Architecture
 
-NL Design operates as a pure CSS layer — no database tables. Configuration is stored in `IAppConfig`. The CSS stack loads in a defined order:
+Thematiq operates as a pure CSS layer — no database tables. Configuration is stored in `IAppConfig`. The CSS stack loads in a defined order:
 
 1. Design system base CSS (`design-systems.json` bundle)
 2. Organization token set (`css/tokens/{id}.css`)
@@ -44,6 +44,6 @@ The token sync workflow (nightly GitHub Actions) pulls updates from the upstream
 
 ## GEMMA Mapping
 
-| GEMMA Component | NL Design Role |
+| GEMMA Component | Thematiq Role |
 |-----------------|----------------|
 | N.v.t. | Cross-cutting theming infrastructure for all Conduction Nextcloud apps |

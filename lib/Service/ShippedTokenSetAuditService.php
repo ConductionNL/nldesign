@@ -7,11 +7,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-automated-contrast-audit-over-all-shipped-token-sets
  * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-reproducible-contrast-report
@@ -19,7 +19,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
 use OCP\ICache;
 
@@ -135,8 +135,9 @@ class ShippedTokenSetAuditService {
 	 * @param array<string, mixed> $theming The set's theming block.
 	 * @param string $level The WCAG threshold profile: 'AA' (default) or 'AAA' (7:1 / 4.5:1).
 	 *
+	 * The per-set audit result.
+	 *
 	 * @return array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}
-	 *         The per-set audit result.
 	 *
 	 * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-automated-contrast-audit-over-all-shipped-token-sets
 	 */
@@ -180,7 +181,7 @@ class ShippedTokenSetAuditService {
 	/**
 	 * Compute and cache the WCAG level for one token set, sharing the exact
 	 * cache namespace/key/TTL `Capabilities::computeWcagLevel()` uses for the
-	 * active set (`ICache` prefix `nldesign_wcag_level`, key `level-<id>`,
+	 * active set (`ICache` prefix `thematiq_wcag_level`, key `level-<id>`,
 	 * TTL 3600s), so a set that is both the active theme (warmed by
 	 * `Capabilities` on every capabilities-document read) and a catalogue
 	 * entry (read by the public catalogue endpoint) hits one cache entry
@@ -193,7 +194,7 @@ class ShippedTokenSetAuditService {
 	 * audit has nothing to evaluate and MUST NOT fabricate a conformance
 	 * claim, matching `Capabilities`' own null case exactly.
 	 *
-	 * @param ICache $cache Distributed cache created with prefix `nldesign_wcag_level`.
+	 * @param ICache $cache Distributed cache created with prefix `thematiq_wcag_level`.
 	 * @param string $appPath The app root path.
 	 * @param string $tokenSetId The token set id.
 	 * @param array<string, mixed> $tokenSetMeta The set's manifest entry (design_system, theming, contrast_level).
@@ -241,8 +242,9 @@ class ShippedTokenSetAuditService {
 	 *
 	 * @param string $appPath The app root path.
 	 *
+	 * One audit result per audited set, ordered deterministically by id.
+	 *
 	 * @return array<int, array{id: string, textRatio: float|null, uiRatio: float|null, textThreshold: float, uiThreshold: float, verdict: string}>
-	 *         One audit result per audited set, ordered deterministically by id.
 	 *
 	 * @spec openspec/specs/token-set-contrast-audit/spec.md#requirement-reproducible-contrast-report
 	 */

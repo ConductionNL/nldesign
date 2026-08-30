@@ -7,11 +7,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Service
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.2
@@ -20,9 +20,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Service;
+namespace OCA\Thematiq\Service;
 
-use OCA\NLDesign\AppInfo\Application;
+use OCA\Thematiq\AppInfo\Application;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use RuntimeException;
@@ -434,7 +434,7 @@ class CustomTokenSetService {
 	 * @spec openspec/changes/custom-token-set-upload/tasks.md#task-2.1
 	 */
 	private function getCssPath(string $id): string {
-		return $this->appManager->getAppPath('nldesign') . '/css/tokens/' . $id . '.css';
+		return $this->appManager->getAppPath('thematiq') . '/css/tokens/' . $id . '.css';
 	}//end getCssPath()
 
 	/**

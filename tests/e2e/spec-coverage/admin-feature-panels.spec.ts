@@ -71,7 +71,7 @@ test.describe('admin panels for the market-gap wave features', () => {
 
 		const state = await apiGet(
 			page,
-			'/index.php/apps/nldesign/settings/dark-variants',
+			'/index.php/apps/thematiq/settings/dark-variants',
 		)
 		expect(await toggle.isChecked()).toBe(state.enabled)
 	})
@@ -95,7 +95,7 @@ test.describe('admin panels for the market-gap wave features', () => {
 		// Default OFF: the app must make no outbound request unless asked.
 		const status = await apiGet(
 			page,
-			'/index.php/apps/nldesign/settings/upstream-freshness',
+			'/index.php/apps/thematiq/settings/upstream-freshness',
 		)
 		expect(status.enabled).toBe(false)
 

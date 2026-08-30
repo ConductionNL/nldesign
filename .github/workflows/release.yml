@@ -49,6 +49,34 @@ on:
     branches: [main, beta, development]
   workflow_dispatch:
 
+# LEAST PRIVILEGE, DECLARED HERE RATHER THAN INHERITED.
+#
+# Without this block the caller inherits the repository default, which is
+# `write` on every scope — far more than a release needs, and CodeQL flags it
+# as "Actions job or workflow does not limit the permissions of the
+# GITHUB_TOKEN".
+#
+# A reusable workflow cannot grant itself more than its caller holds, so these
+# two are the ceiling for everything the shared workflow does. They are exactly
+# what its `release` job declares:
+#
+#   contents: write        — create the tag and the GitHub release
+#   pull-requests: write   — open the version-bump PR, because the bump is
+#                            routed through a pull request rather than pushed
+#                            at a protected branch
+#
+# Every other scope (packages, actions, deployments, id-token, …) drops to
+# none, which is the point.
+#
+# Note for the fleet: no sibling caller declares this yet — portaliq,
+# opencatalogi, openregister and docudesk all inherit the default. The finding
+# applies to them equally; it only BLOCKS here because thematiq's beta ruleset
+# is the one with `required_review_thread_resolution: true`, so an unresolved
+# CodeQL thread stops the merge instead of merely being noted.
+permissions:
+  contents: write
+  pull-requests: write
+
 # Releases publish artifacts. A cancelled release is neither a success nor a
 # rollback — it is a half-published version — so queued runs wait rather than
 # cancelling the one in flight.
@@ -56,13 +84,20 @@ concurrency:
   group: release-${{ github.ref_name }}
   cancel-in-progress: false
 
+# `previous-app-id` is the App Store id this app shipped under before the
+# rename. The store keys everything on the id, so `thematiq` is a brand new
+# entry starting from nothing -- without this the version line restarts
+# BELOW what the app already published as `nldesign`, and the store accepts
+# that with a 200 and then never offers it to anyone. Drop the input once
+# the `nldesign` entry is retired.
 jobs:
   unstable:
     if: github.ref == 'refs/heads/development'
     uses: ConductionNL/.github/.github/workflows/release.yml@main
     with:
       release-type: unstable
-      app-name: nldesign
+      app-name: thematiq
+      previous-app-id: nldesign
     secrets: inherit
 
   beta:
@@ -70,7 +105,8 @@ jobs:
     uses: ConductionNL/.github/.github/workflows/release.yml@main
     with:
       release-type: beta
-      app-name: nldesign
+      app-name: thematiq
+      previous-app-id: nldesign
     secrets: inherit
 
   stable:
@@ -78,5 +114,6 @@ jobs:
     uses: ConductionNL/.github/.github/workflows/release.yml@main
     with:
       release-type: stable
-      app-name: nldesign
+      app-name: thematiq
+      previous-app-id: nldesign
     secrets: inherit

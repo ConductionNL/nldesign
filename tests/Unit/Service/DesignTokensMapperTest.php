@@ -11,9 +11,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\DesignTokensMapper;
+use OCA\Thematiq\Service\DesignTokensMapper;
 use PHPUnit\Framework\TestCase;
 
 /**

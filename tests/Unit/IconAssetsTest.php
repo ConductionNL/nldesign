@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit;
+namespace OCA\Thematiq\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 

@@ -7,21 +7,21 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Mail
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/specs/email-theming/spec.md
  */
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Mail;
+namespace OCA\Thematiq\Mail;
 
 use OC\Mail\EMailTemplate;
-use OCA\NLDesign\Service\EmailThemingService;
+use OCA\Thematiq\Service\EmailThemingService;
 
 /**
  * Branded email template — extends the server's private EMailTemplate.
@@ -84,8 +84,8 @@ class NLDesignEMailTemplate extends EMailTemplate {
 	 * Resolve the active token set's email theme, or null if unavailable.
 	 *
 	 * @return array{primaryColor: string, primaryTextColor: string, logoUrl: ?string}|null
-	 *         The resolved theme, or null when no service/active theme is
-	 *         available.
+	 *                                                                                      The resolved theme, or null when no service/active theme is
+	 *                                                                                      available.
 	 *
 	 * @spec openspec/specs/email-theming/spec.md
 	 */
@@ -356,7 +356,7 @@ class NLDesignEMailTemplate extends EMailTemplate {
 	 * @spec openspec/specs/email-theming/spec.md
 	 */
 	private function renderComplianceFooterHtml(array $footerConfig, ?string $lang): string {
-		$l10n = $this->l10nFactory->get('nldesign', $lang);
+		$l10n = $this->l10nFactory->get('thematiq', $lang);
 
 		$lines = [];
 		if ($footerConfig['orgName'] !== '') {
@@ -405,7 +405,7 @@ class NLDesignEMailTemplate extends EMailTemplate {
 	 * @spec openspec/specs/email-theming/spec.md
 	 */
 	private function renderComplianceFooterPlain(array $footerConfig, ?string $lang): string {
-		$l10n = $this->l10nFactory->get('nldesign', $lang);
+		$l10n = $this->l10nFactory->get('thematiq', $lang);
 
 		$plain = '';
 		if ($footerConfig['orgName'] !== '') {

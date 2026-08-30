@@ -4,11 +4,11 @@
  * The ADR-040 OpenRegister autoload prelude, as one named, testable unit.
  *
  * @category  AppInfo
- * @package   OCA\NLDesign\AppInfo
+ * @package   OCA\Thematiq\AppInfo
  * @author    Conduction B.V. <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://github.com/ConductionNL/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * SPDX-License-Identifier: EUPL-1.2
  * SPDX-FileCopyrightText: 2026 Conduction B.V. <info@conduction.nl>
@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\AppInfo;
+namespace OCA\Thematiq\AppInfo;
 
 use OCP\App\IAppManager;
 use OCP\Server;
@@ -29,13 +29,18 @@ use Throwable;
  * ---------------
  * `Coordinator::registerApps()` walks the SORTED app list, calling
  * `OC_App::registerAutoloading()` and then `register()` for one app at a time.
- * `nldesign` sorts before `openregister`, so `Application::register()` runs
- * while the `OCA\OpenRegister\` PSR-4 prefix does not yet exist — on a
- * completely healthy instance with OpenRegister installed and enabled.
+ * Under the app's OLD id, `nldesign` sorted before `openregister`, so
+ * `Application::register()` ran while the `OCA\OpenRegister\` PSR-4 prefix did
+ * not yet exist — on a completely healthy instance with OpenRegister installed
+ * and enabled.
  *
  * Any `class_exists()` probe on an OpenRegister class in that window answers
  * FALSE and the branch it guards silently takes the wrong path, permanently
  * and with no error anywhere. See ADR-040.
+ *
+ * Under the new id, `thematiq` sorts AFTER `openregister`, so that window is
+ * normally closed — but app sort order is not a contract to rely on and this
+ * call is idempotent and cheap, so the prelude stays.
  *
  * WHY IT IS A CLASS AND NOT FOUR INLINE LINES
  * -------------------------------------------

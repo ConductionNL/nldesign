@@ -12,14 +12,14 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Capabilities;
-use OCA\NLDesign\Service\ContrastService;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\DesignSystemService;
-use OCA\NLDesign\Service\ShippedTokenSetAuditService;
-use OCA\NLDesign\Service\TokenSetService;
+use OCA\Thematiq\Capabilities;
+use OCA\Thematiq\Service\ContrastService;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\DesignSystemService;
+use OCA\Thematiq\Service\ShippedTokenSetAuditService;
+use OCA\Thematiq\Service\TokenSetService;
 use OCP\App\IAppManager;
 use OCP\ICache;
 use OCP\ICacheFactory;
@@ -33,7 +33,7 @@ use Psr\Log\LoggerInterface;
  * scenario: `GET /api/token-sets`' `wcagLevel` for a set that is also the
  * active theme MUST equal `Capabilities`' own computed value for the same
  * set id, and the underlying audit MUST be computed at most once per set id
- * per cache TTL window (the shared `ICache` prefix `nldesign_wcag_level`).
+ * per cache TTL window (the shared `ICache` prefix `thematiq_wcag_level`).
  */
 class TokenSetServicePublicCatalogueTest extends TestCase {
 
@@ -148,7 +148,7 @@ class TokenSetServicePublicCatalogueTest extends TestCase {
 		);
 
 		$urlGenerator = $this->createMock(IURLGenerator::class);
-		$urlGenerator->method('imagePath')->willReturn('https://cloud.example/apps/nldesign/img/logos/rijkshuisstijl.svg');
+		$urlGenerator->method('imagePath')->willReturn('https://cloud.example/apps/thematiq/img/logos/rijkshuisstijl.svg');
 
 		$capabilities = new Capabilities(
 			$config,

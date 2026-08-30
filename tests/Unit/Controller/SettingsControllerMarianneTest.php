@@ -12,18 +12,18 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\SettingsController;
-use OCA\NLDesign\Service\AppThemingService;
-use OCA\NLDesign\Service\ComplianceReportService;
-use OCA\NLDesign\Service\EmailThemingService;
-use OCA\NLDesign\Service\GroupThemingService;
-use OCA\NLDesign\Service\ThemingAuditService;
-use OCA\NLDesign\Service\ThemingService;
-use OCA\NLDesign\Service\TokenSetPreviewService;
-use OCA\NLDesign\Service\TokenSetService;
-use OCA\NLDesign\Service\UpstreamFreshnessService;
+use OCA\Thematiq\Controller\SettingsController;
+use OCA\Thematiq\Service\AppThemingService;
+use OCA\Thematiq\Service\ComplianceReportService;
+use OCA\Thematiq\Service\EmailThemingService;
+use OCA\Thematiq\Service\GroupThemingService;
+use OCA\Thematiq\Service\ThemingAuditService;
+use OCA\Thematiq\Service\ThemingService;
+use OCA\Thematiq\Service\TokenSetPreviewService;
+use OCA\Thematiq\Service\TokenSetService;
+use OCA\Thematiq\Service\UpstreamFreshnessService;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\IConfig;
 use OCP\IRequest;

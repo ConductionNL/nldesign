@@ -11,14 +11,14 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Controller;
+namespace OCA\Thematiq\Tests\Unit\Controller;
 
-use OCA\NLDesign\Controller\CustomTokenSetController;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\CustomTokenSetService;
-use OCA\NLDesign\Service\CustomTokenSetValidator;
-use OCA\NLDesign\Service\DesignTokensMapper;
-use OCA\NLDesign\Service\ThemingAuditService;
+use OCA\Thematiq\Controller\CustomTokenSetController;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomTokenSetService;
+use OCA\Thematiq\Service\CustomTokenSetValidator;
+use OCA\Thematiq\Service\DesignTokensMapper;
+use OCA\Thematiq\Service\ThemingAuditService;
 use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IRequest;

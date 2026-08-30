@@ -12,9 +12,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Tests\Unit\Service;
+namespace OCA\Thematiq\Tests\Unit\Service;
 
-use OCA\NLDesign\Service\AppThemingService;
+use OCA\Thematiq\Service\AppThemingService;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
@@ -123,7 +123,7 @@ class AppThemingServiceTest extends TestCase {
 			}
 		);
 
-		$this->service->setDisabledApps(['calendar', 'nldesign', 'settings', 'theming']);
+		$this->service->setDisabledApps(['calendar', 'thematiq', 'settings', 'theming']);
 		$this->assertSame(['calendar'], json_decode((string)$captured, true));
 	}//end testSetDisabledAppsDropsProtectedIds()
 
@@ -181,7 +181,7 @@ class AppThemingServiceTest extends TestCase {
 	public function testGetThemableAppsListsEnabledAppsWithState(): void {
 		$this->config->method('getAppValue')->willReturn('["calendar"]');
 		$this->appManager->method('getInstalledApps')
-			->willReturn(['files', 'calendar', 'nldesign', 'settings', 'theming']);
+			->willReturn(['files', 'calendar', 'thematiq', 'settings', 'theming']);
 		$this->appManager->method('getAppInfo')->willReturnCallback(
 			fn ($id) => ['name' => ucfirst($id)]
 		);

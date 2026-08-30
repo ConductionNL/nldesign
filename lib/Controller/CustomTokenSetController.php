@@ -7,11 +7,11 @@
  * SPDX-FileCopyrightText: 2026 Conduction B.V.
  *
  * @category  Controller
- * @package   OCA\NLDesign
+ * @package   OCA\Thematiq
  * @author    Conduction <info@conduction.nl>
  * @copyright 2026 Conduction B.V.
  * @license   EUPL-1.2 https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- * @link      https://codeberg.org/Conduction/nldesign
+ * @link      https://github.com/ConductionNL/thematiq
  *
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.1
  * @spec openspec/changes/custom-token-set-upload/tasks.md#task-3.2
@@ -22,15 +22,15 @@
 
 declare(strict_types=1);
 
-namespace OCA\NLDesign\Controller;
+namespace OCA\Thematiq\Controller;
 
-use OCA\NLDesign\AppInfo\Application;
-use OCA\NLDesign\Service\CssParserService;
-use OCA\NLDesign\Service\CustomTokenSetService;
-use OCA\NLDesign\Service\CustomTokenSetValidator;
-use OCA\NLDesign\Service\DesignTokensMapper;
-use OCA\NLDesign\Service\ThemingAuditService;
-use OCA\NLDesign\Settings\Admin;
+use OCA\Thematiq\AppInfo\Application;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomTokenSetService;
+use OCA\Thematiq\Service\CustomTokenSetValidator;
+use OCA\Thematiq\Service\DesignTokensMapper;
+use OCA\Thematiq\Service\ThemingAuditService;
+use OCA\Thematiq\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\DataDownloadResponse;

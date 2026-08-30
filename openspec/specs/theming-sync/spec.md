@@ -262,7 +262,7 @@ The app MUST provide an admin-only API endpoint that validates and applies themi
 #### Scenario: Non-admin access denied
 - GIVEN a non-admin user is authenticated
 - WHEN `POST /apps/nldesign/settings/theming` is called
-- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\NLDesign\Settings\Admin)` annotation
+- THEN the request MUST be rejected by the `@AuthorizedAdminSetting(settings=OCA\Thematiq\Settings\Admin)` annotation
 
 #### Scenario: Empty request applies nothing
 - GIVEN a request with no parameters

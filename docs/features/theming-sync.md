@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Theming Sync
 
-When you select a token set in the NL Design admin settings, the app automatically syncs key values with Nextcloud's built-in theming system.
+When you select a token set in the Thematiq admin settings, the app automatically syncs key values with Nextcloud's built-in theming system.
 
 ## What Gets Synced
 
@@ -16,7 +16,7 @@ When you select a token set in the NL Design admin settings, the app automatical
 
 ## Why Sync Matters
 
-NL Design controls visual styling through CSS injection, but Nextcloud's built-in theming system controls elements that CSS can't reach:
+Thematiq controls visual styling through CSS injection, but Nextcloud's built-in theming system controls elements that CSS can't reach:
 
 - **Email templates** use the primary color from theming settings
 - **Mobile apps** display the primary color and logo from theming settings

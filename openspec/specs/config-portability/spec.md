@@ -127,7 +127,7 @@ validation path.
 ### Requirement: Admin UI Bundle Endpoints
 
 The app MUST expose the bundle over HTTP for the settings panel via a dedicated controller with
-`#[AuthorizedAdminSetting(OCA\NLDesign\Settings\Admin::class)]` on every method:
+`#[AuthorizedAdminSetting(OCA\Thematiq\Settings\Admin::class)]` on every method:
 `GET /settings/config/export` MUST return the bundle as an attachment named
 `nldesign-config.json` with Content-Type `application/json`; `POST /settings/config/import` MUST
 accept a multipart upload (256 KB cap, HTTP 413 beyond), run the same two-phase import, and

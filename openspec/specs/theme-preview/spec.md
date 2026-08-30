@@ -113,7 +113,7 @@ without an active preview.
 ### Requirement: Preview Lifecycle Endpoints
 
 The app MUST expose three admin-only endpoints, each annotated
-`#[AuthorizedAdminSetting(OCA\NLDesign\Settings\Admin::class)]`: `POST /settings/preview`
+`#[AuthorizedAdminSetting(OCA\Thematiq\Settings\Admin::class)]`: `POST /settings/preview`
 (start, body `tokenSet`), `DELETE /settings/preview` (discard), and
 `POST /settings/preview/publish` (publish). The acting uid MUST be resolved from `IUserSession`,
 never from request input. Publish MUST promote the caller's previewed id to the instance-wide
