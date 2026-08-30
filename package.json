@@ -67,7 +67,7 @@
 		"stylelint-config-standard": "^40.0.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^6.0.3",
-		"vitest": "^3.2.7"
+		"vitest": "^4.1.11"
 	},
 	"prettier": "@nextcloud/prettier-config"
 }
