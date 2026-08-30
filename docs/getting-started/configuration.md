@@ -8,7 +8,7 @@ This page walks you through picking your organisation's theme and adjusting the 
 
 ## Where to find the settings
 
-After installing NL Design, navigate to:
+After installing Thematiq, navigate to:
 
 1. Click your **avatar** (top-right corner)
 2. Choose **Administration settings**

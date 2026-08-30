@@ -1,12 +1,12 @@
 // @ts-check
 
 /**
- * NLDesign documentation site.
+ * Thematiq documentation site.
  *
  * Built on @conduction/docusaurus-preset for brand defaults (tokens,
  * theme swizzles for Navbar / Footer, four-locale i18n scaffolding,
  * KvK / BTW copyright). Site-specific overrides — locales, sidebar
- * path, mermaid theme, custom prism themes, nldesign-only navbar items —
+ * path, mermaid theme, custom prism themes, thematiq-only navbar items —
  * are passed through createConfig() opts.
  */
 
@@ -19,13 +19,15 @@ const { createConfig, baseFooterLinks } = require('@conduction/docusaurus-preset
 const BRAND_THEME = require.resolve('@conduction/docusaurus-preset/theme');
 
 const config = createConfig({
-  title: 'NLDesign',
+  title: 'Thematiq',
+  /* The app renamed to Thematiq; the design system it implements did not.
+     "NL Design System" is the external Dutch government standard — leave it. */
   tagline: 'NL Design System tokens for Nextcloud',
   url: 'https://thematiq.conduction.nl',
   baseUrl: '/',
 
   organizationName: 'ConductionNL',
-  projectName: 'nldesign',
+  projectName: 'thematiq',
 
   /* The brand preset's default i18n block (nl/en/de/fr) is replaced
      wholesale here. Per ADR-030 §7 the docs site ships only the `en`
@@ -41,10 +43,10 @@ const config = createConfig({
     },
   },
 
-  /* The nldesign docs source lives at the repo root of `docs/` rather
+  /* The thematiq docs source lives at the repo root of `docs/` rather
      than under a `docs/` subfolder, so we override the preset's default
      `presets:` block to point `docs.path` at './' and disable the blog
-     plugin. customCss carries nldesign-specific CSS only — brand tokens
+     plugin. customCss carries thematiq-specific CSS only — brand tokens
      and the theme swizzles are auto-loaded by the brand theme entry in
      `themes:` below. */
   presets: [
@@ -73,10 +75,10 @@ const config = createConfig({
   themes: [BRAND_THEME, '@docusaurus/theme-mermaid'],
 
   /* Brand navbar provides locale dropdown + GitHub by default; we
-     replace items[] with nldesign's own (Documentation sidebar link,
-     nldesign GitHub link, locale dropdown). Object.assign in
+     replace items[] with thematiq's own (Documentation sidebar link,
+     thematiq GitHub link, locale dropdown). Object.assign in
      createConfig is shallow, so items: replaces wholesale — re-include
-     the locale dropdown and add the nldesign GitHub repo link
+     the locale dropdown and add the thematiq GitHub repo link
      explicitly. */
   navbar: {
     items: [
@@ -113,7 +115,7 @@ const config = createConfig({
   /* themeConfig is shallow-merged into the preset's defaults
      (colorMode + navbar + footer). prism + mermaid land alongside. */
   themeConfig: {
-    image: 'img/og-nldesign.png',
+    image: 'img/og-thematiq.png',
     prism: {
       theme: require('prism-react-renderer/themes/github'),
       darkTheme: require('prism-react-renderer/themes/dracula'),

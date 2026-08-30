@@ -2,7 +2,7 @@
 sidebar_position: 8
 ---
 
-# NL Design — Developer Guide
+# Thematiq — Developer Guide
 
 ## Branching Strategy
 

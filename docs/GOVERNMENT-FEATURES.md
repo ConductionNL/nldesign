@@ -1,9 +1,9 @@
-# NL Design — Overheidsfunctionaliteiten
+# Thematiq — Overheidsfunctionaliteiten
 
 > Functiepagina voor Nederlandse overheidsorganisaties.
 > Gebruik deze checklist om te toetsen aan uw Programma van Eisen.
 
-**Product:** NL Design
+**Product:** Thematiq
 **Categorie:** Overheidstheming & NL Design System integratie
 **Licentie:** EUPL-1.2 (vrije open source)
 **Leverancier:** Conduction B.V.
@@ -60,7 +60,7 @@
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
 | T-01 | On-premise / self-hosted | Beschikbaar | Nextcloud-app |
-| T-02 | Open source | Beschikbaar | EUPL-1.2, Codeberg |
+| T-02 | Open source | Beschikbaar | EUPL-1.2, GitHub |
 | T-03 | CSS Custom Properties | Beschikbaar | Standaard W3C-mechanisme |
 | T-04 | NL Design System community-tokens | Beschikbaar | Officiële community-tokens |
 | T-05 | Geen JavaScript-overhead | Beschikbaar | Pure CSS-theming |
@@ -88,7 +88,7 @@
 
 | # | Eis | Status | Toelichting |
 |---|-----|--------|-------------|
-| A-01 | WCAG 2.1 AA | Beschikbaar | Kern-functionaliteit van NL Design |
+| A-01 | WCAG 2.1 AA | Beschikbaar | Kern-functionaliteit van Thematiq |
 | A-02 | EN 301 549 | Beschikbaar | Via WCAG AA |
 | A-03 | Contrastverhouding minimaal 4.5:1 (tekst) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
 | A-04 | Contrastverhouding minimaal 3:1 (grote tekst/UI) | Beschikbaar | Via design tokens; per set geverifieerd in [contrast-report](reference/contrast-report.md) |
@@ -119,7 +119,7 @@
 | BO-02 | Automatische updates | Beschikbaar | Via Nextcloud app-updater |
 | BO-03 | Admin settings pagina | Beschikbaar | Token set selectie en configuratie |
 | BO-04 | Documentatie | Beschikbaar | Feature docs beschikbaar |
-| BO-05 | Open source community | Beschikbaar | Codeberg Issues |
+| BO-05 | Open source community | Beschikbaar | GitHub Issues |
 | BO-06 | Professionele ondersteuning (SLA) | Op aanvraag | Via Conduction B.V. |
 
 ---

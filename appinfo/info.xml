@@ -64,7 +64,7 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		which quoted the grep command in order to WARN about the problem —
 		made it read ")[^". The warning reproduced the bug it described.
 	-->
-	<version>1.1.0</version>
+	<version>1.1.2-unstable.20260829125748</version>
 	<licence>EUPL-1.2</licence>
 	<author mail="info@conduction.nl" homepage="https://www.conduction.nl/">Conduction</author>
 	<namespace>Thematiq</namespace>
@@ -146,10 +146,24 @@ Gratis en open source onder de EUPL-1.2 licentie.
 		font, per-app/per-group exclusion and email-footer field an admin ever
 		configured silently reverts to stock, with nothing in the log.
 
-		GenerateDarkVariantsRepairStep runs AFTER because it WRITES config
-		itself (`dark_variants_generated`). If it ran first, MigrateAppConfigKeys
-		would see that key already present, skip it as "already migrated", and
-		strand the old value.
+		THE ORDER IS A STANDING INVARIANT, NOT A FACT ABOUT TODAY'S STEP LIST.
+		MigrateAppConfigKeys copies a key only when `thematiq` does not already
+		hold a value for it, so ANY step that writes configuration under the new
+		app id before it runs would make it skip that key as "already present"
+		and strand the admin's real value under `nldesign` forever. New repair
+		steps therefore go BELOW the three Migrate* steps unless there is a
+		specific reason not to.
+
+		As measured on 2026-08-24, GenerateDarkVariantsRepairStep does not in
+		fact write any configuration — it is constructed with only
+		DarkPaletteService and LoggerInterface, and neither touches IAppConfig;
+		it writes css/tokens/dark/{id}.css files. (An earlier version of this
+		comment claimed it wrote a `dark_variants_generated` key. No such key
+		exists anywhere in the app. The ordering is still correct and still
+		required — the invariant above does not depend on that claim — but the
+		reason given for it was not true.) The `dark_variants` app-config key is
+		written only by SettingsController, from an admin action, never by a
+		repair step.
 
 		The steps are registered under <install> as well as <post-migration>
 		because <install> is the ONLY hook a renamed app's first enable fires —
@@ -170,6 +184,34 @@ Gratis en open source onder de EUPL-1.2 licentie.
 			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
 			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
 			<step>OCA\Thematiq\Repair\MigrateStoredClassNames</step>
+			<!--
+				THE THIRD STORE KEYED BY APP ID, AND THE STEPS ABOVE DO NOT
+				COVER IT. `oc_appconfig` and `oc_preferences` are Nextcloud's;
+				this one is OpenRegister's
+				`openregister_schemas.application`.
+
+				OpenRegister resolves the two halves of a configuration by
+				DIFFERENT keys: a REGISTER by slug alone, a SCHEMA by the PAIR
+				(application, slug) via findByApplicationAndSlug(). An import
+				passes `appId: Application::APP_ID` = `thematiq`, while any
+				schema written under the old id still carries
+				`application = nldesign` — so the pair matches nothing, and
+				ImportHandler's not-found branch is not an error path, it is the
+				"create a new one" path. The import then builds a SECOND, EMPTY
+				schema set while every stored object stays bound to the old
+				rows. Nothing errors; the collections just render empty.
+
+				This app's theming lives in Nextcloud's own IConfig, not in
+				OpenRegister objects, so on a clean instance this step finds
+				nothing and says "nothing to do". It is registered as the guard
+				for an instance that DOES carry `nldesign` schema rows, where
+				the failure is silent rather than loud.
+
+				Refuses rather than merges where a slug already has a twin under
+				the new application id, never deletes a schema, and never throws
+				— an escaping exception in <install> aborts the install.
+			-->
+			<step>OCA\Thematiq\Repair\MigrateSchemaApplicationId</step>
 			<!-- Dark-mode token variants (openspec/specs/dark-mode/spec.md):
 			     regenerate missing/stale css/tokens/dark/{id}.css on
 			     install/upgrade. Degrades to a logged warning (never fatal)
@@ -180,6 +222,11 @@ Gratis en open source onder de EUPL-1.2 licentie.
 			<step>OCA\Thematiq\Repair\MigrateAppConfigKeys</step>
 			<step>OCA\Thematiq\Repair\MigrateUserPreferences</step>
 			<step>OCA\Thematiq\Repair\MigrateStoredClassNames</step>
+			<!-- Schema half of the same app-id rename; see the note under
+			     <post-migration>. An app-id rename presents to Nextcloud as a
+			     FRESH INSTALL, so this block is the one that actually fires on
+			     the upgrade the step exists for. -->
+			<step>OCA\Thematiq\Repair\MigrateSchemaApplicationId</step>
 			<!-- Dark-mode token variants — see the note under <post-migration>. -->
 			<step>OCA\Thematiq\Migration\GenerateDarkVariantsRepairStep</step>
 		</install>

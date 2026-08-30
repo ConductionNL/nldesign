@@ -155,7 +155,7 @@ beyond what the active theme's CSS already restyles.
 ## Licence attribution
 
 Canonical licence record for the NL packs: `@conduction/nextcloud-vue`'s
-`src/icons/ATTRIBUTION.md` (https://codeberg.org/Conduction/nextcloud-vue/src/branch/main/src/icons/ATTRIBUTION.md).
+`src/icons/ATTRIBUTION.md` (https://github.com/ConductionNL/nextcloud-vue/blob/main/src/icons/ATTRIBUTION.md).
 The DSFR pack is licensed under the Etalab Open Licence 2.0
 (https://github.com/etalab/licence-ouverte/blob/master/LO.md), redistributed via
 `@gouvfr/dsfr` — Système de Design de l'État (https://www.systeme-de-design.gouv.fr/).

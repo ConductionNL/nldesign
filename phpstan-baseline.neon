@@ -1,5 +1,5 @@
 # PHPStan baseline — generated post-canonical-sync (Phase 2 fleet rollout).
-# Cleanup tracked in https://codeberg.org/Conduction/nldesign/issues/98
+# Cleanup tracked in Codeberg issue #98 (pre-migration, not migrated to GitHub).
 # Notable: absorbs OCA\Theming\ImageManager / ThemingDefaults references from
 # lib/Service/ThemingService.php. OCA\Theming is a server-internal namespace
 # (not exposed via OCP); if other apps baseline the same family, consider
