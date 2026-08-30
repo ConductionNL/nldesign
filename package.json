@@ -60,14 +60,14 @@
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",
 		"@vitest/coverage-v8": "^4.1.11",
-		"@vitest/ui": "^3.2.7",
+		"@vitest/ui": "^4.1.11",
 		"jsdom": "^30.0.1",
 		"prettier": "^3.9.6",
 		"stylelint": "^17.4.0",
 		"stylelint-config-standard": "^40.0.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^7.0.2",
-		"vitest": "^3.2.7"
+		"vitest": "^4.1.11"
 	},
 	"prettier": "@nextcloud/prettier-config"
 }
