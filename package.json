@@ -59,7 +59,7 @@
 		"@nextcloud/prettier-config": "^1.2.0",
 		"@openfun/cunningham-tokens": "^3.0.0",
 		"@playwright/test": "^1.60.0",
-		"@vitest/coverage-v8": "^3.2.7",
+		"@vitest/coverage-v8": "^4.1.11",
 		"@vitest/ui": "^3.2.7",
 		"jsdom": "^29.1.1",
 		"prettier": "^3.9.6",
