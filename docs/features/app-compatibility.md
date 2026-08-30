@@ -4,23 +4,23 @@ sidebar_position: 6
 
 # App Compatibility
 
-This guide explains how Nextcloud app developers can ensure their apps work correctly when NL Design is active.
+This guide explains how Nextcloud app developers can ensure their apps work correctly when Thematiq is active.
 
 ## Key Principles
 
 ### Use Nextcloud's CSS Variables
 
-NL Design works by overriding Nextcloud's CSS custom properties. If your app uses these variables, it will automatically pick up the correct colors:
+Thematiq works by overriding Nextcloud's CSS custom properties. If your app uses these variables, it will automatically pick up the correct colors:
 
 ```css
-/* Good — uses Nextcloud variables, works with NL Design */
+/* Good — uses Nextcloud variables, works with Thematiq */
 .my-button {
   background-color: var(--color-primary);
   color: var(--color-primary-text);
   border-radius: var(--border-radius-element);
 }
 
-/* Bad — hardcoded colors, ignores NL Design theming */
+/* Bad — hardcoded colors, ignores Thematiq theming */
 .my-button {
   background-color: #0082c9;
   color: white;
@@ -47,7 +47,7 @@ Common variables to use:
 
 ### Use Standard Nextcloud Components
 
-If you're building a Vue.js Nextcloud app, use components from `@nextcloud/vue`. These components already use the correct CSS variables and will inherit NL Design theming automatically.
+If you're building a Vue.js Nextcloud app, use components from `@nextcloud/vue`. These components already use the correct CSS variables and will inherit Thematiq theming automatically.
 
 ### Test with Multiple Token Sets
 
@@ -61,7 +61,7 @@ Test your app with at least 3-4 different token sets to catch contrast and layou
 
 ## Testing Your App
 
-1. Install NL Design in your development environment
+1. Install Thematiq in your development environment
 2. Enable it and select a token set
 3. Navigate through your app and check:
    - All text is readable (contrast)
@@ -70,11 +70,11 @@ Test your app with at least 3-4 different token sets to catch contrast and layou
    - Icons are visible against the header background
 4. Switch to a different token set and repeat
 
-## What NL Design Overrides
+## What Thematiq Overrides
 
-NL Design maps 49 of Nextcloud's 102 CSS variables. The full mapping is documented in the [CSS Variable Mappings reference](../reference/mappings).
+Thematiq maps 49 of Nextcloud's 102 CSS variables. The full mapping is documented in the [CSS Variable Mappings reference](../reference/mappings).
 
-Variables that NL Design intentionally does **not** override:
+Variables that Thematiq intentionally does **not** override:
 - Layout dimensions (header height, sidebar width, breakpoints)
 - Background images and gradients (user-configurable)
 - Spacing and clickable area sizes (accessibility standards)

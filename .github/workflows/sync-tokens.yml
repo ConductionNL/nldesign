@@ -13,13 +13,7 @@ permissions:
 jobs:
   sync-tokens:
     runs-on: ubuntu-latest
-    # Observed across 11 executions: median 0.3 min, max 1.9 min. It clones an
-    # upstream repo and pushes a branch, so it is network-bound; 15 min is a
-    # wide margin over every real run.
-    #
-    # Bounded HERE, on main, deliberately. GitHub runs `schedule:` workflows
-    # from the DEFAULT branch only, so the copy that fires nightly at 03:00 UTC
-    # is this one — a timeout added on `development` would never reach it.
+    # Observed n=11 (2026): max 1.9 min, median 0.3 min. Bound loosely at 15.
     timeout-minutes: 15
     steps:
       - name: Checkout repository
@@ -31,17 +25,34 @@ jobs:
           node-version: '20'
 
       - name: Clone NL Design System themes
+        id: clone_themes
         run: |
           git clone --depth 1 https://github.com/nl-design-system/themes.git /tmp/themes
+          echo "sha=$(git -C /tmp/themes rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run token generation script
         run: |
-          node scripts/generate-tokens.mjs /tmp/themes
+          node scripts/generate-tokens.mjs /tmp/themes ${{ steps.clone_themes.outputs.sha }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer
+
+      - name: Install PHP dependencies
+        run: composer install --no-progress --no-interaction
+
+      - name: Regenerate dark-mode variants
+        # Any upstream token change regenerates its dark variant in the same
+        # PR (openspec/specs/dark-mode/spec.md, tasks.md#task-2.4). --force
+        # ensures a source-hash-unchanged set is not silently left stale.
+        run: php scripts/generate-dark-variants.php --force
 
       - name: Check for changes
         id: changes
         run: |
-          git add css/tokens/ token-sets.json
+          git add css/tokens/ css/tokens/dark/ token-sets.json
           if git diff --cached --quiet; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           else

@@ -2,75 +2,75 @@
 
 /**
  * Build Design Tokens Script
- * 
+ *
  * Extracts design tokens from official NL Design System npm packages
  * and generates CSS token files for each organization.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const TOKENS_DIR = path.join(__dirname, '..', 'css', 'tokens');
+const TOKENS_DIR = path.join(__dirname, '..', 'css', 'tokens')
 
 // Create tokens directory if it doesn't exist
 if (!fs.existsSync(TOKENS_DIR)) {
-    fs.mkdirSync(TOKENS_DIR, { recursive: true });
-    console.log('✓ Created css/tokens directory');
+	fs.mkdirSync(TOKENS_DIR, { recursive: true })
+	console.log('✓ Created css/tokens directory')
 }
 
 /**
  * Generate Rijkshuisstijl tokens
  */
 function generateRijkshuisstijl() {
-    console.log('\nGenerating Rijkshuisstijl tokens...');
-    
-    // Try to load from npm package
-    let tokens = {};
-    try {
-        tokens = require('@rijkshuisstijl-community/design-tokens');
-        console.log('  ✓ Loaded @rijkshuisstijl-community/design-tokens');
-    } catch (e) {
-        console.log('  ⚠ Package not installed, keeping manual tokens');
-        return; // Keep existing manual file
-    }
+	console.log('\nGenerating Rijkshuisstijl tokens...')
 
-    // Keep the existing manually-defined tokens as they're already comprehensive
-    console.log('  ℹ Using existing comprehensive Rijkshuisstijl tokens');
-    console.log('  ℹ Manual tokens are already aligned with community package');
+	// Try to load from npm package
+	let tokens = {}
+	try {
+		tokens = require('@rijkshuisstijl-community/design-tokens')
+		console.log('  ✓ Loaded @rijkshuisstijl-community/design-tokens')
+	} catch (e) {
+		console.log('  ⚠ Package not installed, keeping manual tokens')
+		return // Keep existing manual file
+	}
+
+	// Keep the existing manually-defined tokens as they're already comprehensive
+	console.log('  ℹ Using existing comprehensive Rijkshuisstijl tokens')
+	console.log('  ℹ Manual tokens are already aligned with community package')
 }
 
 /**
  * Generate Utrecht tokens
  */
 function generateUtrecht() {
-    console.log('\nGenerating Utrecht tokens...');
-    
-    let tokens = {};
-    try {
-        tokens = require('@utrecht/design-tokens');
-        console.log('  ✓ Loaded @utrecht/design-tokens');
-    } catch (e) {
-        console.log('  ⚠ Package not installed, keeping manual tokens');
-        return;
-    }
+	console.log('\nGenerating Utrecht tokens...')
 
-    console.log('  ℹ Using existing comprehensive Utrecht tokens');
-    console.log('  ℹ Manual tokens are already aligned with official package');
+	let tokens = {}
+	try {
+		tokens = require('@utrecht/design-tokens')
+		console.log('  ✓ Loaded @utrecht/design-tokens')
+	} catch (e) {
+		console.log('  ⚠ Package not installed, keeping manual tokens')
+		return
+	}
+
+	console.log('  ℹ Using existing comprehensive Utrecht tokens')
+	console.log('  ℹ Manual tokens are already aligned with official package')
 }
 
 /**
  * Generate Amsterdam tokens
  */
 function generateAmsterdam() {
-    console.log('\nGenerating Amsterdam tokens...');
-    
-    let tokens = {};
-    try {
-        tokens = require('@nl-design-system-unstable/amsterdam-design-tokens');
-        console.log('  ✓ Loaded @nl-design-system-unstable/amsterdam-design-tokens');
-        
-        // Amsterdam needs to be created - use their design tokens
-        const css = `/**
+	console.log('\nGenerating Amsterdam tokens...')
+
+	let tokens = {}
+	try {
+		tokens = require('@nl-design-system-unstable/amsterdam-design-tokens')
+		console.log('  ✓ Loaded @nl-design-system-unstable/amsterdam-design-tokens')
+
+		// Amsterdam needs to be created - use their design tokens
+		const css = `/**
  * Gemeente Amsterdam Design Tokens
  *
  * Based on the Amsterdam Design System.
@@ -156,61 +156,60 @@ function generateAmsterdam() {
 	--nldesign-border-radius-rounded: 16px;
 	--nldesign-border-radius-pill: 100px;
 }
-`;
-        
-        fs.writeFileSync(path.join(TOKENS_DIR, 'amsterdam.css'), css);
-        console.log('  ✓ Generated amsterdam.css from npm package');
-        
-    } catch (e) {
-        console.log('  ⚠ Package not installed:', e.message);
-    }
+`
+
+		fs.writeFileSync(path.join(TOKENS_DIR, 'amsterdam.css'), css)
+		console.log('  ✓ Generated amsterdam.css from npm package')
+	} catch (e) {
+		console.log('  ⚠ Package not installed:', e.message)
+	}
 }
 
 /**
  * Generate Den Haag tokens
  */
 function generateDenHaag() {
-    console.log('\nGenerating Den Haag tokens...');
-    
-    try {
-        const tokens = require('@nl-design-system-unstable/denhaag-design-tokens');
-        console.log('  ✓ Loaded @nl-design-system-unstable/denhaag-design-tokens');
-    } catch (e) {
-        console.log('  ⚠ Package not installed, keeping manual tokens');
-        return;
-    }
+	console.log('\nGenerating Den Haag tokens...')
 
-    console.log('  ℹ Using existing comprehensive Den Haag tokens');
+	try {
+		const tokens = require('@nl-design-system-unstable/denhaag-design-tokens')
+		console.log('  ✓ Loaded @nl-design-system-unstable/denhaag-design-tokens')
+	} catch (e) {
+		console.log('  ⚠ Package not installed, keeping manual tokens')
+		return
+	}
+
+	console.log('  ℹ Using existing comprehensive Den Haag tokens')
 }
 
 /**
  * Generate Rotterdam tokens
  */
 function generateRotterdam() {
-    console.log('\nGenerating Rotterdam tokens...');
-    
-    try {
-        const tokens = require('@nl-design-system-unstable/rotterdam-design-tokens');
-        console.log('  ✓ Loaded @nl-design-system-unstable/rotterdam-design-tokens');
-    } catch (e) {
-        console.log('  ⚠ Package not installed, keeping manual tokens');
-        return;
-    }
+	console.log('\nGenerating Rotterdam tokens...')
 
-    console.log('  ℹ Using existing comprehensive Rotterdam tokens');
+	try {
+		const tokens = require('@nl-design-system-unstable/rotterdam-design-tokens')
+		console.log('  ✓ Loaded @nl-design-system-unstable/rotterdam-design-tokens')
+	} catch (e) {
+		console.log('  ⚠ Package not installed, keeping manual tokens')
+		return
+	}
+
+	console.log('  ℹ Using existing comprehensive Rotterdam tokens')
 }
 
 // Run all generators
-console.log('🎨 Building design tokens from NL Design System packages...\n');
-console.log('═'.repeat(60));
+console.log('🎨 Building design tokens from NL Design System packages...\n')
+console.log('═'.repeat(60))
 
-generateRijkshuisstijl();
-generateUtrecht();
-generateAmsterdam();
-generateDenHaag();
-generateRotterdam();
+generateRijkshuisstijl()
+generateUtrecht()
+generateAmsterdam()
+generateDenHaag()
+generateRotterdam()
 
-console.log('\n' + '═'.repeat(60));
-console.log('\n✅ Token build complete!');
-console.log('\nTokens are kept as manually-defined CSS files for compatibility.');
-console.log('NPM packages are used for validation and future updates.\n');
+console.log('\n' + '═'.repeat(60))
+console.log('\n✅ Token build complete!')
+console.log('\nTokens are kept as manually-defined CSS files for compatibility.')
+console.log('NPM packages are used for validation and future updates.\n')

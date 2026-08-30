@@ -1,0 +1,218 @@
+/**
+ * La Frankendesk — Token Set
+ *
+ * Standard Layer-3 `--nldesign-*` overrides for the `frankendesk` token set
+ * (REQ-TSET-005). Same identity values as `lasuite.css` — this set shares
+ * `design_system: "lasuite"` and is a deliberate visual copy of the lasuite
+ * bundle, distinguished only by carrying Conduction's own "La Frankendesk"
+ * logo (img/logos/frankendesk.svg), which the `lasuite` entry itself may
+ * not (its logo slot is compliance-locked empty — see
+ * openspec/specs/lasuite-stack/spec.md).
+ *
+ * Colour source: Cunningham (`@gouvfr-lasuite/cunningham-react`, MIT) —
+ * see css/systems/lasuite/defaults.css for full attribution.
+ */
+
+:root {
+	/* La Suite brand — brand-650 */
+	--nldesign-color-primary: #4844ad;
+	--nldesign-color-primary-text: #ffffff;
+	--nldesign-color-primary-hover: #36347d;
+	--nldesign-color-primary-light: #eef1fa;
+	--nldesign-color-primary-light-hover: #dde2f5;
+
+	/* Background tones — Cunningham greyscale (gray-000/025/050). */
+	--nldesign-color-background-hover: #f0f0f3;
+	--nldesign-color-background-dark: #e2e2ea;
+	--nldesign-color-background-darker: #c5c6d5;
+
+	/* Header — white, matching the element-overrides hairline treatment. */
+	--nldesign-color-header-background: #ffffff;
+	--nldesign-color-header-text: #1b1b23;
+	--nldesign-color-nav-background: #ffffff;
+
+	/* Text */
+	--nldesign-color-text: #1b1b23;
+	--nldesign-color-text-muted: #75758a;
+	--nldesign-color-text-light: #ffffff;
+
+	/* Border */
+	--nldesign-color-border: #c5c6d5;
+	--nldesign-color-border-dark: #75758a;
+
+	/*
+	 * Typography — INTER FIRST, and Marianne deliberately not named at all.
+	 *
+	 * `Marianne, Inter, sans-serif` is what La Suite declares, and it does not
+	 * survive being reused. Marianne is the French state's typeface: we ship no
+	 * `@font-face` for it, so it renders only where somebody happens to have it
+	 * installed. Measured here, this portal's body text came out at 222.89px for
+	 * a fixed string against Inter's 209.13px — a THIRD face neither we nor the
+	 * design system chose, which would differ again on the next machine.
+	 *
+	 * Inter is self-hosted (nldesign/css/fonts-conduction.css), so it renders
+	 * the same everywhere, and it is what Cunningham falls back to anyway.
+	 *
+	 * This is the one place the delta departs from its parent on purpose rather
+	 * than to express La Franken's identity.
+	 */
+	--nldesign-font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+	/* Border radius — Cunningham is a flat 4px system. */
+	--nldesign-border-radius: 4px;
+	--nldesign-border-radius-small: 4px;
+	--nldesign-border-radius-large: 4px;
+	--nldesign-border-radius-rounded: 4px;
+
+	/* La Frankendesk mark. Path is relative to THIS file's served URL
+	   (css/tokens/{id}.css → two levels up is the app root, e.g.
+	   /custom_apps/nldesign/css/tokens/frankendesk.css →
+	   /custom_apps/nldesign/img/logos/frankendesk.svg). The other
+	   logo-carrying token sets (amsterdam.css, rotterdam.css, ...) used
+	   three levels up, which 404s on any custom-app install — fixed
+	   alongside this file. */
+	--nldesign-logo-url: url('../../img/logos/frankendesk.svg');
+
+	/* ---------------------------------------------------------------- */
+	/* DELTA over `lasuite` — the public-portal presentation layer.       */
+	/* ---------------------------------------------------------------- */
+	/* The parent set is a Layer-3 `--nldesign-*` list built for theming  */
+	/* Nextcloud. Everything below is what a PUBLIC PORTAL additionally   */
+	/* needs: the surfaces the shared bridge reads, and the geometry that */
+	/* makes a page look composed rather than merely coloured. Values     */
+	/* follow the Cunningham idiom the parent's palette comes from —      */
+	/* white chrome, restrained rules, generous insets, 8px radii.        */
+	/* ---------------------------------------------------------------- */
+
+	/* Chrome: a white bar with a hairline rule, like La Suite's own. */
+	--nldesign-color-footer-background: #1b1b23;
+	--nldesign-color-footer-text: #ffffff;
+	--nldesign-header-background: #ffffff;
+	--nldesign-header-padding-inline: 40px;
+	--nldesign-header-border-width: 1px;
+	--nldesign-header-border-color: #e2e2ea;
+	--nldesign-nav-font-size: 14px;
+	--nldesign-nav-font-weight: 500;
+	--nldesign-nav-item-padding-inline: 12px;
+	--nldesign-nav-link-color: #1b1b23;
+	--nldesign-container-max: 1200px;
+	--nldesign-container-padding-inline: 24px;
+
+	/* Type: Inter is now actually served (css/fonts-conduction.css). */
+	--nldesign-body-font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+	/* Hero: the brand violet, with a headline that carries the page. */
+	--nldesign-hero-padding-block-start: 56px;
+	--nldesign-hero-padding-block-end: 64px;
+	--nldesign-hero-title-size: 48px;
+	--nldesign-hero-title-weight: 700;
+	--nldesign-hero-title-line-height: 1.1;
+	--nldesign-hero-title-color: #ffffff;
+	--nldesign-hero-title-gap: 12px;
+	--nldesign-hero-body-color: #eef1fa;
+	--nldesign-hero-body-size: 20px;
+	--nldesign-hero-body-line-height: 1.5;
+	--nldesign-hero-body-weight: 400;
+	--nldesign-hero-body-gap: 32px;
+	/* A measure, not the full band: a one-line lead across 1200px is a line a
+	   reader loses their place in. */
+	--nldesign-hero-body-measure: 62ch;
+	--nldesign-hero-radius: 0px;
+
+	/* Rhythm: the distance between a band and the section that follows it, and
+	   between the rows of a list. Cunningham's spacing scale is a 8px base, so
+	   these are multiples of it rather than free numbers. */
+	--nldesign-section-gap: 48px;
+	--nldesign-list-gap: 16px;
+	--nldesign-list-rule-width: 1px;
+	--nldesign-list-rule-color: #e2e2ea;
+
+	/* Cards: white, hairline, roomy — Cunningham keeps elevation for
+	   things that float, not for things that sit. */
+	--nldesign-card-background: #ffffff;
+	--nldesign-card-border-width: 1px;
+	--nldesign-card-border-color: #e2e2ea;
+	--nldesign-card-radius: 8px;
+	--nldesign-card-padding: 24px;
+	--nldesign-card-gap: 8px;
+	--nldesign-card-shadow: none;
+	--nldesign-card-shadow-hover: 0 2px 8px rgba(27, 27, 35, 0.10);
+	--nldesign-card-heading-color: #1b1b23;
+	--nldesign-card-heading-weight: 600;
+	--nldesign-card-heading-size: 18px;
+	/*
+	 * The parent's muted grey is #75758a, which on white measures 4.499:1 —
+	 * AA by a thousandth, and it FAILS. Measured on four card descriptions.
+	 * Body copy takes one step darker; the parent's value stays untouched for
+	 * everything that is not a paragraph a citizen has to read.
+	 */
+	--nldesign-card-body-color: #6b6b80;
+	--nldesign-card-body-size: 15px;
+	--nldesign-card-body-line-height: 22px;
+
+	/*
+	 * Footer: dark ink, restrained link colour, no mono affectation — that
+	 * flourish is Conduction's, not La Suite's.
+	 *
+	 * These are La Franken's own values on the 8px grid, NOT Conduction's
+	 * numbers reused. The footer gained a brand column, socials, a colophon and
+	 * a legal bar, and every one of them is inert until a theme names it: with
+	 * these unset the citizen portal rendered its wordmark, its description and
+	 * its legal line as three lines of text touching each other.
+	 */
+	--nldesign-footer-padding-block: 56px;
+	--nldesign-footer-padding-block-end: 32px;
+	--nldesign-footer-grid-columns: 320px repeat(auto-fill, 200px);
+	--nldesign-footer-column-gap: 40px;
+
+	/* Brand column. */
+	--nldesign-footer-wordmark-size: 20px;
+	--nldesign-footer-wordmark-weight: 700;
+	--nldesign-footer-wordmark-color: #ffffff;
+	--nldesign-footer-wordmark-line-height: 28px;
+	--nldesign-footer-brand-size: 14px;
+	--nldesign-footer-brand-line-height: 22px;
+	--nldesign-footer-brand-color: rgba(255, 255, 255, 0.75);
+	--nldesign-footer-brand-margin-block: 12px 0;
+	--nldesign-footer-brand-measure: 320px;
+	--nldesign-footer-social-size: 40px;
+	--nldesign-footer-social-radius: 8px;
+	--nldesign-footer-social-gap: 8px;
+	--nldesign-footer-social-color: rgba(255, 255, 255, 0.85);
+	--nldesign-footer-social-border-width: 1px;
+	--nldesign-footer-social-border-color: rgba(255, 255, 255, 0.2);
+	--nldesign-footer-social-margin-block: 24px 0;
+
+	/* Column headings and links. */
+	--nldesign-footer-heading-size: 13px;
+	--nldesign-footer-heading-weight: 600;
+	--nldesign-footer-heading-color: rgba(255, 255, 255, 0.6);
+	--nldesign-footer-heading-spacing: 0.8px;
+	--nldesign-footer-heading-transform: uppercase;
+	--nldesign-footer-heading-line-height: 18px;
+	--nldesign-footer-heading-margin-block-end: 14px;
+	--nldesign-footer-link-size: 15px;
+	--nldesign-footer-link-line-height: 22px;
+	--nldesign-footer-link-color: #c5c6d5;
+	--nldesign-footer-item-margin-block-end: 10px;
+	--nldesign-footer-item-marker: none;
+
+	/* Legal bar. */
+	--nldesign-footer-legal-size: 13px;
+	--nldesign-footer-legal-line-height: 20px;
+	--nldesign-footer-legal-color: rgba(255, 255, 255, 0.55);
+	--nldesign-footer-legal-link-color: rgba(255, 255, 255, 0.75);
+	--nldesign-footer-legal-link-decoration: underline;
+	--nldesign-footer-legal-rule-width: 1px;
+	--nldesign-footer-legal-rule-color: rgba(255, 255, 255, 0.12);
+	--nldesign-footer-legal-padding-block-start: 24px;
+	--nldesign-footer-legal-gap: 16px;
+	--nldesign-footer-legal-link-gap: 8px;
+}
+
+/* The #header .logo override that used to live here moved to
+   css/token-overrides/frankendesk.css. A shipped token file is exactly one
+   flat `:root { }` block — the scoped-application contract depends on that
+   shape (TokenCssShapeTest) — and an element rule here broke it for every
+   consumer in order to style one header. The override still loads, and still
+   after element-overrides.css; see CssInjectionService::injectTokenSetOverrides(). */

@@ -1,16 +1,37 @@
+# NL Design — Conduction PHPStan config.
+#
+# The shared base is the single source of truth. Everything here is either the
+# app's own tracked debt or an ignore naming a symbol that exists in no other
+# fleet app. Anything you are tempted to add that another app would also need
+# belongs in the base, not here.
+includes:
+    - vendor/conduction/hydra-gates/quality-config/phpstan-base.neon
+    # Per-app tracked lint debt (auto-generated via `phpstan --generate-baseline`).
+    - phpstan-baseline.neon
+
 parameters:
-    level: 5
-    paths:
-        - lib
-    bootstrapFiles:
-        - vendor/autoload.php
+    # App-specific only. The base already sets level, paths, bootstrapFiles,
+    # excludePaths, scanDirectories and every fleet-wide ignore.
     excludePaths:
-        - vendor
+        # HealthController extends the OpenRegister AppHost engine's
+        # GenericHealthController (ADR-040) — a SOFT/optional dependency autoloaded
+        # only on route dispatch, never at bootstrap, so OpenRegister is genuinely
+        # absent during static analysis. PHPStan's "extends unknown class" / "calls
+        # parent:: but does not extend any class" errors are structural
+        # (class-hierarchy) errors that cannot be suppressed via ignoreErrors —
+        # excludePaths is the tool's own recommended fix. Mirrors the file's existing
+        # @psalm-suppress UndefinedClass rationale.
+        - lib/Controller/HealthController.php
+        # Extends the server-private OC\Mail\EMailTemplate (the sanctioned
+        # mail_template_class hook) — same "extends unknown class" shape as
+        # HealthController; behavior is covered by tests/Unit/Mail/.
+        - lib/Mail/NLDesignEMailTemplate.php
+
     scanDirectories:
-        - vendor/nextcloud/ocp
-    reportUnmatchedIgnoredErrors: false
-    ignoreErrors:
-        # Nextcloud internal classes that PHPStan might not recognize
-        - '#Call to an undefined method OC::#'
-        - '#Class OC not found#'
-        - '#Access to static property \$server on an unknown class OC#'
+        # Declaration-only stubs for OpenRegister's federated-config contract
+        # (IShareableConfigType + RegisterShareableConfigTypesEvent), a soft
+        # runtime dependency absent during analysis. Lets phpstan resolve the
+        # interface NlDesignThemeShareableConfigType implements and the event
+        # ShareableConfigTypeListener dispatches on — without excludePaths.
+        # See stubs/openregister-config.php. Never autoloaded at runtime.
+        - stubs

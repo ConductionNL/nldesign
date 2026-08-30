@@ -89,21 +89,21 @@ You can also manage overrides directly via the filesystem or Nextcloud's `occ` c
 
 ```bash
 # View current overrides file
-cat /var/www/html/custom_apps/nldesign/css/custom-overrides.css
+cat /var/www/html/custom_apps/thematiq/css/custom-overrides.css
 
 # Reset all overrides
-echo ':root {}' > /var/www/html/custom_apps/nldesign/css/custom-overrides.css
+echo ':root {}' > /var/www/html/custom_apps/thematiq/css/custom-overrides.css
 ```
 
 Or via the REST API:
 
 ```bash
 # Get current overrides
-curl -u admin:password http://nextcloud.example.com/apps/nldesign/api/settings/overrides
+curl -u admin:password http://nextcloud.example.com/apps/thematiq/api/settings/overrides
 
 # Set a specific override
 curl -u admin:password -X POST \
   -H 'Content-Type: application/json' \
   -d '{"overrides": {"--color-primary": "#005A9C"}}' \
-  http://nextcloud.example.com/apps/nldesign/api/settings/overrides
+  http://nextcloud.example.com/apps/thematiq/api/settings/overrides
 ```

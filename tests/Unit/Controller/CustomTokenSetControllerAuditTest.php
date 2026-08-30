@@ -1,0 +1,218 @@
+<?php
+
+/**
+ * Unit tests for CustomTokenSetController's theming-audit call-site wiring.
+ *
+ * SPDX-License-Identifier: EUPL-1.2
+ * SPDX-FileCopyrightText: 2026 Conduction B.V.
+ *
+ * @spec openspec/changes/theming-audit-log/tasks.md#task-5.3
+ */
+
+declare(strict_types=1);
+
+namespace OCA\Thematiq\Tests\Unit\Controller;
+
+use OCA\Thematiq\Controller\CustomTokenSetController;
+use OCA\Thematiq\Service\CssParserService;
+use OCA\Thematiq\Service\CustomTokenSetService;
+use OCA\Thematiq\Service\CustomTokenSetValidator;
+use OCA\Thematiq\Service\DesignTokensMapper;
+use OCA\Thematiq\Service\ThemingAuditService;
+use OCP\IConfig;
+use OCP\IL10N;
+use OCP\IRequest;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Covers tasks.md#task-2.3 / #task-5.3: upload() logs one
+ * custom_set_uploaded entry (id, name, declaration count, content hash) and
+ * delete() logs one custom_set_deleted entry that records whether the
+ * delete reset the active token set to `nextcloud`.
+ */
+class CustomTokenSetControllerAuditTest extends TestCase {
+
+	/**
+	 * In-memory appconfig store: key => value.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $appConfig = ['token_set' => 'nextcloud'];
+
+	/**
+	 * The mocked storage/lifecycle service.
+	 *
+	 * @var CustomTokenSetService&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private CustomTokenSetService $service;
+
+	/**
+	 * The mocked audit service.
+	 *
+	 * @var ThemingAuditService&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private ThemingAuditService $auditService;
+
+	/**
+	 * The mocked request.
+	 *
+	 * @var IRequest&\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private IRequest $request;
+
+	/**
+	 * The controller under test.
+	 *
+	 * @var CustomTokenSetController
+	 */
+	private CustomTokenSetController $controller;
+
+	protected function setUp(): void {
+		parent::setUp();
+
+		$this->service = $this->createMock(CustomTokenSetService::class);
+		$this->auditService = $this->createMock(ThemingAuditService::class);
+		$this->request = $this->createMock(IRequest::class);
+
+		$l = $this->createMock(IL10N::class);
+		$l->method('t')->willReturnCallback(fn (string $text, array $params = []) => $text);
+
+		$config = $this->createMock(IConfig::class);
+		$config->method('getAppValue')->willReturnCallback(
+			fn (string $app, string $key, $default = '') => ($this->appConfig[$key] ?? $default)
+		);
+
+		$this->controller = new CustomTokenSetController(
+			'nldesign',
+			$this->request,
+			$this->service,
+			new CustomTokenSetValidator(),
+			new CssParserService(),
+			$this->createMock(DesignTokensMapper::class),
+			$l,
+			$this->auditService,
+			$config
+		);
+	}//end setUp()
+
+	/**
+	 * A successful CSS upload logs one custom_set_uploaded entry with the
+	 * id, name, declaration count, and a hashed content identifier.
+	 */
+	public function testUploadLogsOneEntry(): void {
+		$css = ':root { --nldesign-color-primary: #007bc7; }';
+
+		$this->request->method('getParam')->willReturnCallback(
+			function (string $key, $default = null) {
+				if ($key === 'name') {
+					return 'Gemeente Voorbeeld';
+				}
+
+				return $default;
+			}
+		);
+		$this->request->method('getUploadedFile')->willReturn(
+			[
+				'tmp_name' => $this->writeTempCssFile(css: $css),
+				'name' => 'gemeente.css',
+				'size' => strlen($css),
+			]
+		);
+
+		$this->service->method('slugify')->willReturn('gemeente-voorbeeld');
+		$this->service->method('store')->willReturn(['id' => 'custom-gemeente-voorbeeld', 'warnings' => []]);
+		$this->service->method('getRawContent')->willReturn($css);
+
+		$this->auditService->expects($this->once())
+			->method('log')
+			->with(
+				'custom_set_uploaded',
+				$this->callback(function (array $context): bool {
+					return ($context['id'] === 'custom-gemeente-voorbeeld')
+						&& ($context['name'] === 'Gemeente Voorbeeld')
+						&& ($context['declarationCount'] === 1)
+						&& str_starts_with($context['contentHash'], 'sha256:');
+				})
+			);
+
+		$response = $this->controller->upload();
+
+		$this->assertSame(200, $response->getStatus());
+	}//end testUploadLogsOneEntry()
+
+	/**
+	 * Deleting the currently active custom set logs custom_set_deleted with
+	 * activeReset === true.
+	 */
+	public function testDeleteActiveSetLogsActiveReset(): void {
+		$this->appConfig['token_set'] = 'custom-gemeente-voorbeeld';
+
+		$this->service->method('isCustomId')->willReturn(true);
+		$this->service->method('getRawContent')->willReturn(':root { --nldesign-color-primary: #007bc7; }');
+		$this->service->method('delete')->willReturn(true);
+
+		$this->auditService->expects($this->once())
+			->method('log')
+			->with(
+				'custom_set_deleted',
+				$this->callback(function (array $context): bool {
+					return ($context['id'] === 'custom-gemeente-voorbeeld')
+						&& ($context['activeReset'] === true)
+						&& str_starts_with($context['contentHash'], 'sha256:');
+				})
+			);
+
+		$response = $this->controller->delete(id: 'custom-gemeente-voorbeeld');
+
+		$this->assertSame(200, $response->getStatus());
+	}//end testDeleteActiveSetLogsActiveReset()
+
+	/**
+	 * Deleting a non-active custom set logs activeReset === false.
+	 */
+	public function testDeleteInactiveSetLogsNoActiveReset(): void {
+		$this->appConfig['token_set'] = 'nextcloud';
+
+		$this->service->method('isCustomId')->willReturn(true);
+		$this->service->method('getRawContent')->willReturn(':root { --nldesign-color-primary: #007bc7; }');
+		$this->service->method('delete')->willReturn(true);
+
+		$this->auditService->expects($this->once())
+			->method('log')
+			->with(
+				'custom_set_deleted',
+				$this->callback(fn (array $context): bool => ($context['activeReset'] === false))
+			);
+
+		$this->controller->delete(id: 'custom-gemeente-voorbeeld');
+	}//end testDeleteInactiveSetLogsNoActiveReset()
+
+	/**
+	 * A 404 (nothing to delete) logs nothing.
+	 */
+	public function testDeleteNotFoundLogsNothing(): void {
+		$this->service->method('isCustomId')->willReturn(true);
+		$this->service->method('getRawContent')->willReturn(null);
+		$this->service->method('delete')->willReturn(false);
+
+		$this->auditService->expects($this->never())->method('log');
+
+		$response = $this->controller->delete(id: 'custom-does-not-exist');
+
+		$this->assertSame(404, $response->getStatus());
+	}//end testDeleteNotFoundLogsNothing()
+
+	/**
+	 * Write a CSS string to a temp file for getUploadedFile()['tmp_name'].
+	 *
+	 * @param string $css The CSS content.
+	 *
+	 * @return string The temp file path.
+	 */
+	private function writeTempCssFile(string $css): string {
+		$path = tempnam(sys_get_temp_dir(), 'nldesign-customset-');
+		file_put_contents($path, $css);
+
+		return $path;
+	}//end writeTempCssFile()
+}//end class

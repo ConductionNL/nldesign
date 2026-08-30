@@ -1,0 +1,5 @@
+{
+  "phpunit": 11.37,
+  "vitest": 56.98,
+  "tolerance": 0.5
+}

@@ -5,16 +5,32 @@ sidebar_position: 4
 # NL Design System Token Audit Report
 
 **Date**: 2026-02-03  
-**Purpose**: Verify correctness of all design token implementations  
-**Status**: ✅ Comprehensive Review Complete
+**Purpose**: Manual review of the five originally-shipped organization token sets  
+**Status**: ✅ Manual review complete for the five named sets only
 
 ---
 
+## Scope
+
+> **This document covers only the five originally-reviewed sets** — **Rijkshuisstijl,
+> Utrecht, Amsterdam, Den Haag, Rotterdam**. The app now ships many more
+> community-derived token sets (bodegraven-reeuwijk, borne, buren, … see
+> `token-sets.json`). **Those additional sets have NOT been individually audited by
+> hand and are not covered by the verdict below.**
+>
+> Contrast for **all** shipped sets (including the community sets) is now verified
+> automatically and reproducibly by the `shipped-token-set-contrast-audit` PHPUnit
+> gate; read its machine-generated results in
+> [`contrast-report.md`](./contrast-report.md), which supersedes the manual
+> shipped-set verdict in this document.
+
 ## Executive Summary
 
-All 5 organization token sets have been thoroughly reviewed and validated against official specifications and best practices from the NL Design System community.
+The five organization token sets named above have been reviewed by hand and validated
+against official specifications and best practices from the NL Design System community.
+The remaining community-derived sets are **not individually audited** here.
 
-**Overall Status**: ✅ **EXCELLENT** - All implementations are correct and comprehensive
+**Overall Status (five named sets only)**: ✅ **EXCELLENT** - the five reviewed implementations are correct and comprehensive
 
 ---
 
@@ -321,8 +337,8 @@ All token sets include:
 
 ## Recommendations
 
-### ✅ No Changes Required
-All token implementations are **correct, complete, and production-ready**.
+### ✅ No Changes Required (for the five reviewed sets)
+The five manually-reviewed token implementations are **correct, complete, and production-ready**. The community-derived sets are covered by the automated contrast audit, not this section.
 
 ### 🎯 Optional Enhancements (Low Priority)
 1. **Add more intermediate shades** - Currently have primary + hover + light, could add "dark" variants
@@ -340,9 +356,9 @@ All token implementations are **correct, complete, and production-ready**.
 
 ## Conclusion
 
-### ✅ **ALL TOKEN IMPLEMENTATIONS ARE CORRECT**
+### ✅ **THE FIVE REVIEWED TOKEN IMPLEMENTATIONS ARE CORRECT**
 
-Our implementation is:
+For the five manually-reviewed sets, our implementation is:
 - ✅ **Accurate** - All colors match official specifications
 - ✅ **Complete** - All required tokens present
 - ✅ **Consistent** - Uniform structure across organizations
@@ -351,12 +367,18 @@ Our implementation is:
 - ✅ **Documented** - Thoroughly explained
 - ✅ **Maintainable** - Clear, organized, extensible
 
-### Final Score: 100/100
+### Final Score (five named sets only): 100/100
 
-**Status**: ✅ **APPROVED FOR PRODUCTION**
+**Status**: ✅ The five manually-reviewed sets (Rijkshuisstijl, Utrecht, Amsterdam, Den Haag, Rotterdam) are production-ready.
+
+> This verdict applies **only** to those five sets. The additional community-derived
+> token sets are not covered here; their contrast is verified by the automated
+> `shipped-token-set-contrast-audit` gate — see
+> [`contrast-report.md`](./contrast-report.md).
 
 ---
 
-**Audited by**: AI Assistant  
+**Audited by**: AI Assistant (manual review, five named sets only)  
 **Review Date**: 2026-02-03  
-**Next Review**: 2027-02-03 (or when official specs update)
+**Next Review**: 2027-02-03 (or when official specs update)  
+**Automated shipped-set contrast audit**: [`contrast-report.md`](./contrast-report.md)

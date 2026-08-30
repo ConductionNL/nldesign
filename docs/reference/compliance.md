@@ -63,36 +63,39 @@ According to CommunicatieRijk, all Rijksoverheid organizations **must** implemen
 - ✅ Paars (#42145f)
 - ✅ Mauve (#b4a7c9)
 
-### 3. Typography ⚠️ PARTIALLY IMPLEMENTED
+### 3. Typography ✅ IMPLEMENTED (open-source substitute)
 
 **Requirement:** Use RijksoverheidSansWebText as primary font
 
-**Current Status:** ⚠️ Font declared but not loaded
-- Font family variable defined in CSS
-- Web font files not included
-- Fallback to system fonts currently used
+**Current Status:** ✅ Bundled Fira Sans is loaded as the open-source substitute; the
+proprietary RijksoverheidSansWebText is intentionally absent (it requires an account and
+approval from the Rijkshuisstijl website and cannot be redistributed).
+- `--nldesign-font-family` maps to `'Fira Sans'`
+- Fira Sans woff2/woff files are committed under `css/systems/nldesign/fonts/` and loaded
+  by `css/fonts.css` via app-relative `url()` — self-hosted, no external CDN
+- Self-hosting keeps the fonts inside Nextcloud's default Content-Security-Policy and works
+  on air-gapped government instances
 
-**Required Actions:**
-- [ ] Obtain RijksoverheidSansWebText font files
-- [ ] Add @font-face declarations
-- [ ] Load WOFF/WOFF2 files
-- [ ] Implement proper fallback chain
-- [ ] Optimize font loading (subset, preload)
+**Optional actions (only for organizations with a Rijkshuisstijl licence):**
+- [ ] Obtain the licensed RijksoverheidSansWebText font files
+- [ ] Add @font-face declarations for the licensed font ahead of Fira Sans in the fallback chain
 
 **Implementation Notes:**
 ```css
-/* Add to rijkshuisstijl.css or separate font.css */
+/* Fira Sans is already bundled and loaded from css/fonts.css: */
 @font-face {
-    font-family: 'RijksoverheidSansWebText';
-    src: url('../fonts/RijksoverheidSansWebText-Regular.woff2') format('woff2');
-    font-weight: normal;
+    font-family: 'Fira Sans';
+    src: local('Fira Sans'),
+         url('fonts/fira-sans-latin-400-normal.woff2') format('woff2'),
+         url('fonts/fira-sans-latin-400-normal.woff') format('woff');
+    font-weight: 400;
     font-display: swap;
 }
 ```
 
 **Resources:**
 - [Typography Guidelines](https://www.rijkshuisstijl.nl/basiselementen/typografie)
-- Font files require account and approval from Rijkshuisstijl website
+- Proprietary RijksoverheidSansWebText files require an account and approval from the Rijkshuisstijl website
 
 ### 4. Visual Style (Beeldtaal) ⚠️ NEEDS REVIEW
 
@@ -190,8 +193,8 @@ According to CommunicatieRijk, all Rijksoverheid organizations **must** implemen
 
 | Element | Status | Notes |
 |---------|--------|-------|
-| Font family | ⚠️ | Declared but files not loaded |
-| Font fallback | ✅ | System fonts working |
+| Font family | ✅ | Bundled Fira Sans loaded self-hosted (proprietary RijksoverheidSansWebText intentionally absent) |
+| Font fallback | ✅ | System fonts as fallback after Fira Sans |
 | Line height | ✅ | Nextcloud defaults acceptable |
 | Font sizes | ✅ | Nextcloud hierarchy preserved |
 
@@ -209,7 +212,7 @@ According to CommunicatieRijk, all Rijksoverheid organizations **must** implemen
 - Background removal (100%)
 
 **Partially Implemented (⚠️ 20%):**
-- Typography (font declared but not loaded)
+- Typography (bundled Fira Sans loaded; proprietary RijksoverheidSansWebText intentionally absent — licence-gated)
 - Visual style (mostly compliant)
 
 **Not Implemented (❌ 10%):**
@@ -224,9 +227,9 @@ According to CommunicatieRijk, all Rijksoverheid organizations **must** implemen
    - Legal requirement for Rijksoverheid organizations
    - Estimated effort: 4-6 hours
 
-2. **Load Typography Font Files** ⚠️
-   - Required for full Rijkshuisstijl compliance
-   - Improves brand consistency
+2. **Load licensed RijksoverheidSansWebText (optional)** ⚠️
+   - Bundled Fira Sans already loads as the open-source substitute
+   - Only needed for organizations with a Rijkshuisstijl font licence that require the exact proprietary face
    - Estimated effort: 2-3 hours
 
 ### Medium Priority (Recommended)
@@ -281,6 +284,41 @@ According to CommunicatieRijk, all Rijksoverheid organizations **must** implemen
 - [x] Firefox (latest)
 - [ ] Safari (latest)
 - [ ] Mobile browsers
+
+## La Suite numérique — Marianne Font Compliance
+
+The `lasuite` token set (Cunningham design system, La Suite numérique
+parity) is a separate compliance situation from the Rijkshuisstijl checklist
+above — it targets French State visual identity, not Dutch.
+
+**Marianne is the official typeface of the French State, reserved for
+French State administrations.** This app bundles the Marianne `woff2` font
+files (self-hosted, `Etalab-2.0` licensed, from `@gouvfr/dsfr@1.15.1`) under
+`css/systems/lasuite/fonts/marianne/`, but they are **off by default**:
+
+- The real, `url()`-sourced `@font-face Marianne` declarations live in a
+  separate stylesheet, `css/systems/lasuite/marianne.css`, which
+  `CssInjectionService` loads **only** when BOTH the active design system is
+  `lasuite` AND an admin has ticked the *"Our organisation is a French State
+  agency (administration de l'État)"* acknowledgement in Administration
+  Settings (`thematiq` / `marianne_enabled` app config, default `'0'`).
+- While that gate is off (the default), **no Marianne byte is ever
+  requested** and the `lasuite` set renders the self-hosted **Inter** font
+  (SIL Open Font License 1.1) instead — the family stack
+  (`--lasuite-font-family: Marianne, Inter, sans-serif`) simply falls
+  through.
+- Enabling the gate is the operator's affirmation of French-State
+  eligibility — see [`AGREEMENT-MARIANNE.md`](../../AGREEMENT-MARIANNE.md)
+  for the full operator agreement and
+  [`MARIANNE-LICENCE.md`](../../MARIANNE-LICENCE.md) for the licence text
+  and restriction, verbatim.
+- Marianne is bundled and self-hosted from this app's own directory only —
+  **no CDN, no external host is ever contacted** for the font, gate on or
+  off.
+
+This is **not** an unconditionally free/open font, and this app never claims
+otherwise: do not enable the Marianne gate unless the organisation operating
+this instance is itself a French State agency.
 
 ## Resources and References
 
